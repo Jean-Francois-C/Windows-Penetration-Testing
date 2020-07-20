@@ -1,0 +1,146 @@
+============================================================================
+LAPS Auditing for Pentesters 
+============================================================================
+
+=> https://github.com/leoloobeek/LAPSToolkit
+
+Functions written in PowerShell that leverage PowerView to audit and attack Active Directory environments that have deployed Microsoft's Local Administrator Password Solution (LAPS). 
+It includes finding groups specifically delegated by sysadmins, finding users with "All Extended Rights" that can view passwords, and viewing all computers with LAPS enabled.
+
+
+Get-LAPSComputers:
+Displays all computers with LAPS enabled, password expriation, and password if user has access
+
+Find-LAPSDelegatedGroups:
+Searches through all OUs to see which AD groups can read the ms-Mcs-AdmPwd attribute
+
+Find-AdmPwdExtendedRights:
+Parses through ExtendedRights for each AD computer with LAPS enabled and looks for which group has read access and if any user has "All Extended Rights". 
+Sysadmins may not be aware the users with All Extended Rights can view passwords and may be less protected than the users in the delegated groups. 
+An example is the user which adds a computer to the domain automatically receives the "All Extended Rights" permission. 
+Since this function will parse ACLs for each AD computer, this can take very long with a larger domain.
+
+
+
+PS C:\Users\Administrator\Desktop\Tools> Import-Module .\LAPSTOOLKIT.ps1
+
+PS C:\Users\Administrator\Desktop\Tools> Get-LAPSComputers
+
+ComputerName                            Password                                Expiration
+------------                            --------                                ----------
+TEMP-DC.Security-Test-Lab.Local         uLAcHm7+l9p6!5                          05/19/2020 01:18:26
+
+
+PS C:\Users\Administrator\Desktop\Tools> Find-AdmPwdExtendedRights
+
+ComputerName                            Identity                                Reason
+------------                            --------                                ------
+TEMP-DC.Security-Test-Lab.Local         SECURITY-LAB\LAPS-Admin                 Delegated
+
+
+PS C:\Users\Administrator\Desktop\Tools> Find-LAPSDelegatedGroups
+
+OrgUnit                                                     Delegated Groups
+-------                                                     ----------------
+OU=Domain Controllers,DC=Security-Test-Lab,DC=Local         SECURITY-LAB\LAPS-Admin
+OU=Admin,DC=Security-Test-Lab,DC=Local                      SECURITY-LAB\LAPS-Admin
+OU=Tier 0,OU=Admin,DC=Security-Test-Lab,DC=Local            SECURITY-LAB\LAPS-Admin
+OU=T0-Accounts,OU=Tier 0,OU=Admin,DC=Security-Test-Lab,D... SECURITY-LAB\LAPS-Admin
+OU=T0-Servers,OU=Tier 0,OU=Admin,DC=Security-Test-Lab,DC... SECURITY-LAB\LAPS-Admin
+OU=T0-Devices,OU=Tier 0,OU=Admin,DC=Security-Test-Lab,DC... SECURITY-LAB\LAPS-Admin
+OU=T0-Permissions,OU=Tier 0,OU=Admin,DC=Security-Test-La... SECURITY-LAB\LAPS-Admin
+OU=T0-Roles,OU=Tier 0,OU=Admin,DC=Security-Test-Lab,DC=L... SECURITY-LAB\LAPS-Admin
+OU=Tier 1,OU=Admin,DC=Security-Test-Lab,DC=Local            SECURITY-LAB\LAPS-Admin
+OU=T1-Accounts,OU=Tier 1,OU=Admin,DC=Security-Test-Lab,D... SECURITY-LAB\LAPS-Admin
+OU=T1-Servers,OU=Tier 1,OU=Admin,DC=Security-Test-Lab,DC... SECURITY-LAB\LAPS-Admin
+OU=T1-Devices,OU=Tier 1,OU=Admin,DC=Security-Test-Lab,DC... SECURITY-LAB\LAPS-Admin
+OU=T1-Permissions,OU=Tier 1,OU=Admin,DC=Security-Test-La... SECURITY-LAB\LAPS-Admin
+OU=T1-Roles,OU=Tier 1,OU=Admin,DC=Security-Test-Lab,DC=L... SECURITY-LAB\LAPS-Admin
+OU=Tier 2,OU=Admin,DC=Security-Test-Lab,DC=Local            SECURITY-LAB\LAPS-Admin
+OU=T2-Accounts,OU=Tier 2,OU=Admin,DC=Security-Test-Lab,D... SECURITY-LAB\LAPS-Admin
+OU=T2-Servers,OU=Tier 2,OU=Admin,DC=Security-Test-Lab,DC... SECURITY-LAB\LAPS-Admin
+OU=T2-Devices,OU=Tier 2,OU=Admin,DC=Security-Test-Lab,DC... SECURITY-LAB\LAPS-Admin
+OU=T2-Permissions,OU=Tier 2,OU=Admin,DC=Security-Test-La... SECURITY-LAB\LAPS-Admin
+OU=T2-Roles,OU=Tier 2,OU=Admin,DC=Security-Test-Lab,DC=L... SECURITY-LAB\LAPS-Admin
+OU=Staging,OU=Admin,DC=Security-Test-Lab,DC=Local           SECURITY-LAB\LAPS-Admin
+
+
+============================================================================
+Example of LAPS (bad) deployment
+============================================================================
+
+MS dictionary definition of LAPS
+--------------------------------
+The "Local Administrator Password Solution" (LAPS) provides management of local account passwords of domain joined computers. 
+Passwords are stored in Active Directory (AD) and protected by ACL, so only eligible users can read it or request its reset
+
+URL: https://www.veeam.com/blog/fr/microsoft-laps-deployment-configuration-troubleshoot-guide.html
+
+1. Download and install "LAPS.x64.msi"
+
+2. Run these commands while logged in to the network as a schema admin.
+
+	PS C:\Shadow\LAPS> Import-module AdmPwd.PS
+	PS C:\Shadow\LAPS> Update-AdmPwdADSchema
+
+	Operation            DistinguishedName                                                 Status
+	---------            -----------------                                                 ------
+	AddSchemaAttribute   cn=ms-Mcs-AdmPwdExpirationTime,CN=Schema,CN=Configuration,DC=S... EntryAlreadyExists
+	AddSchemaAttribute   cn=ms-Mcs-AdmPwd,CN=Schema,CN=Configuration,DC=Security-Test-L... EntryAlreadyExists
+	ModifySchemaClass    cn=computer,CN=Schema,CN=Configuration,DC=Security-Test-Lab,DC... AttributeOrValueExists
+
+
+3. Go to the Group Management Console Editor 
+   -> Computer configuration -> Strategies -> Administrative Template -> LAPS
+   -> Enable local password management => Enabled
+
+	PS C:\Shadow\LAPS> gpedit.msc
+
+
+4. Add read permission over the LAPS password to the group "LAPS-Admin"
+
+PS C:\Users\Administrator> Set-AdmPwdReadPasswordPermission -OrgUnit "OU=Admin,DC=Security-Test-Lab,DC=Local" -AllowedPrincipals "LAPS-Admin"
+
+Name                 DistinguishedName                                                 Status
+----                 -----------------                                                 ------
+Admin                OU=Admin,DC=Security-Test-Lab,DC=Local                            Delegated
+
+
+PS C:\Users\Administrator> net group LAPS-Admin
+Group name     LAPS-Admin
+Comment        Members are be able to read/reset the LAPS Passwords
+
+Members
+-------------------------------------------------------------------------------
+4154423654SA             Administrator            LEIGH_SAVAGE
+WESTON_EDWARDS
+The command completed successfully.
+
+5. Check that it worked
+
+PS C:\Shadow\LAPS> Get-Command -Module AdmPwd.PS
+
+CommandType     Name                                               ModuleName
+-----------     ----                                               ----------
+Cmdlet          Find-AdmPwdExtendedRights                          AdmPwd.PS
+Cmdlet          Get-AdmPwdPassword                                 AdmPwd.PS
+Cmdlet          Reset-AdmPwdPassword                               AdmPwd.PS
+Cmdlet          Set-AdmPwdAuditing                                 AdmPwd.PS
+Cmdlet          Set-AdmPwdComputerSelfPermission                   AdmPwd.PS
+Cmdlet          Set-AdmPwdReadPasswordPermission                   AdmPwd.PS
+Cmdlet          Set-AdmPwdResetPasswordPermission                  AdmPwd.PS
+Cmdlet          Update-AdmPwdADSchema                              AdmPwd.PS
+
+
+PS C:\Shadow\LAPS> Get-AdmPwdPassword
+
+cmdlet Get-AdmPwdPassword at command pipeline position 1
+Supply values for the following parameters:
+ComputerName: Temp-DC
+
+ComputerName         DistinguishedName                             Password           ExpirationTimestamp
+------------         -----------------                             --------           -------------------
+TEMP-DC              CN=TEMP-DC,OU=Domain Controllers,DC=Securi... uLAcHm7+l9p6!5     5/19/2020 1:18:26 AM
+
+
+
