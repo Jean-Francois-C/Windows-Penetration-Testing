@@ -11,7 +11,8 @@ During penetration tests, very often after uploading a webshell, finding an RCE 
 Most of the time these service accounts have the 'SeImpersonate' or 'SeAssignPrimaryToken' privileges that can be used to escalate our privileges to become local administrator.
 
 For the last few years, I have been using the tool 'https://github.com/ohpe/juicy-potato/' that is working well and is very stable. 
-You have to compile it and as usual it is recommended to rename some stuff in the code to modify the signature of the file and avoid being detected by AntiVirus. 
+You have to compile it and as usual it is recommended to rename some stuff in the code to modify the signature of the file and to avoid being detected by AntiVirus. 
+I tested it successfully several times on: Windows server 2008 R2 and Windows server 2016. It is also reported to work on Windows server 2012 Datacenter and Windows 10.
 
 Example : 
 ./juicy-jfc.exe 
