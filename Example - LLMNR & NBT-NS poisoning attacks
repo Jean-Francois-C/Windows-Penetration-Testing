@@ -1,5 +1,5 @@
 ==================================================================================================================
-LLMNR and NBT-NS poisoning attack
+LLMNR and NBT-NS poisoning attacks
 ==================================================================================================================
 
 > Adversaries can spoof an authoritative source for name resolution on a victim network by responding to LLMNR (UDP 5355)/NBT-NS (UDP 137) traffic
