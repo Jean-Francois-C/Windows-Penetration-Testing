@@ -8,7 +8,7 @@ Thus, an attacker having collected the TGS of all the accounts with servicePrinc
 
 
 ========================================================================================
-STEP 1. Perfrom a Kerberoasting attack to collect/dump TGS tikets for SPNs
+STEP 1. Perform a Kerberoasting attack to collect/dump TGS tikets for SPNs
 ========================================================================================
 
 Example 1 - Use the Impacket framework script 'GetUserSPNs.py'
