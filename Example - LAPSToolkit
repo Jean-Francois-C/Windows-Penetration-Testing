@@ -66,7 +66,7 @@ OU=Staging,OU=Admin,DC=Security-Test-Lab,DC=Local           SECURITY-LAB\LAPS-Ad
 
 
 ============================================================================
-Example of LAPS (bad) deployment
+Example of LAPS deployment
 ============================================================================
 
 MS dictionary definition of LAPS
