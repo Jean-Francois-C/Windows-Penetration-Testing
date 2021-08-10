@@ -1,3 +1,8 @@
+
+==============================================================================================
+Windows local privilege escalation example - AutoRun and weak file permissions
+==============================================================================================
+
 Detection - Windows VM (target)
 --------------------------------
 
@@ -59,9 +64,7 @@ Detection - Windows VM (target)
 		                                                                                            GENERIC_READ
 		                                                                                            GENERIC_EXECUTE
 
-	
 5. Notice that the group “Everyone” has “FILE_ALL_ACCESS” permission on the file “program.exe”.
-
 
 
 Exploitation - Windows VM (target)
