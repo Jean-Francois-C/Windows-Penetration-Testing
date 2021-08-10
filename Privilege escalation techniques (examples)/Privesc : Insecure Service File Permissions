@@ -1,5 +1,5 @@
 ==============================================================================================
-Windows local privilege escalation example - Service File Permission Weakness
+Windows local privilege escalation example - Insecure Service File Permissions
 ==============================================================================================
 
 Detection - Windows VM (target)
