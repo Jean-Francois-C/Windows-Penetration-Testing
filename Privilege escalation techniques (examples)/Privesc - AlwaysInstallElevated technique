@@ -1,5 +1,5 @@
 ==============================================================================================
-Windows local privilege escalation - AlwaysInstallElevated technique
+Windows local privilege escalation example - AlwaysInstallElevated technique
 ==============================================================================================
 
 Detection - Windows VM (target)
