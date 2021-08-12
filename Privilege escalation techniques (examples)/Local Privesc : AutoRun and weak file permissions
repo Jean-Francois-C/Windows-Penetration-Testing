@@ -5,7 +5,7 @@ Windows local privilege escalation example - AutoRun and weak file permissions
 Detection - Windows VM (target)
 --------------------------------
 
-1. Open command prompt and type:
+1. Open a command prompt and type:
 
 	C:\Temp\Autoruns> Autoruns64.exe -accepteula
 	
