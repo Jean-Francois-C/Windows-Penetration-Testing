@@ -1,5 +1,5 @@
 ======================================================================================================================
-Examples - Pass-The-Hash attack
+Pass-The-Hash attack
 ======================================================================================================================
 
 Pass-the-hash is a lateral movement technique in which an attacker can abuse the challenge-and-response nature of the NTLMv2 authentication protocol
