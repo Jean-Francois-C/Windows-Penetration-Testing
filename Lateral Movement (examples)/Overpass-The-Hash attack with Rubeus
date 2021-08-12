@@ -1,8 +1,8 @@
 ======================================================================================================================
-Example - Over Pass the Hash with the tool RUBEUS
+Example - Overpass-The-Hash attack with the tool Rubeus
 ======================================================================================================================
 
-The 'Over Pass the hash' technique is a combination of passing the hash and passing the ticket. 
+The 'Overpass-the-hash' technique is a combination of passing the hash and passing the ticket. 
 It can be done using the Rubeus (C# toolset for raw Kerberos interaction and abuses).
 Link: https://github.com/GhostPack/Rubeus
  
