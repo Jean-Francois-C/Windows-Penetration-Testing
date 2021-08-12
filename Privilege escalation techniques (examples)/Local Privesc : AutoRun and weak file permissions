@@ -121,6 +121,6 @@ Exploitation - Windows VM (target)
 
 3. To simulate the privilege escalation effect, logoff and then log back on as an administrator user.
 
-	=> we obtain meterpreter session with admin priv
+	=> we obtain a meterpreter session with admin priv
 	OR
 	=> Process Explorer is launched at startup
