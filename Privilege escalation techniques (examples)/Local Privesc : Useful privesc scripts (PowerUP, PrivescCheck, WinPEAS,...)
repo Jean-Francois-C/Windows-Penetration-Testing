@@ -3,10 +3,11 @@ Windows Privilege Escalation Scripts & Techniques
 ======================================================================================================================
 
 There are numerous scripts that are useful to enumerate a Windows machine and find local privilege escalation flaws such as:
-- PowerUP
-- PrivescCheck
-- JAWS
-- WinPEAS
+- PowerUP.ps1
+- PrivescCheck.ps1
+- Privesc.ps1
+- JAWS.ps1
+- WinPEAS.bat
 - ...
 
 How to detect and exploit Windows local privilege escalation vulnerabilities:
@@ -15,7 +16,6 @@ How to detect and exploit Windows local privilege escalation vulnerabilities:
 - https://book.hacktricks.xyz/windows/windows-local-privilege-escalation
 - https://www.ired.team/offensive-security/privilege-escalation
 - ...
-
 
 ======================================================================================================================
 1. PowerUP script
@@ -2397,14 +2397,9 @@ svchost.exe                    508 BrokerInfrastructure, DcomLaunch, LSM,
 svchost.exe                    536 RpcEptMapper, RpcSs
 dwm.exe                        644 N/A
 svchost.exe                    676 Dhcp, EventLog, lmhosts, Wcmsvc
-svchost.exe                    720 AeLookupSvc, CertPropSvc, gpsvc, IKEEXT,
-                                   iphlpsvc, LanmanServer, ProfSvc, Schedule,
-                                   SENS, SessionEnv, ShellHWDetection, Themes,
-                                   Winmgmt
-svchost.exe                    784 EventSystem, FontCache, netprofm, nsi,
-                                   WinHttpAutoProxySvc
-svchost.exe                    864 CryptSvc, Dnscache, LanmanWorkstation,
-                                   NlaSvc, WinRM
+svchost.exe                    720 AeLookupSvc, CertPropSvc, gpsvc, IKEEXT, iphlpsvc, LanmanServer, ProfSvc, Schedule, SENS, SessionEnv, ShellHWDetection, Themes, Winmgmt
+svchost.exe                    784 EventSystem, FontCache, netprofm, nsi, WinHttpAutoProxySvc
+svchost.exe                    864 CryptSvc, Dnscache, LanmanWorkstation, NlaSvc, WinRM
 svchost.exe                    992 BFE, DPS, MpsSvc
 spoolsv.exe                    436 Spooler
 httpd.exe                      532 jenkinsApache
@@ -2436,31 +2431,26 @@ TrustedInstaller.exe          3452 TrustedInstaller
 TiWorker.exe                  3340 N/A
 tasklist.exe                  3472 N/A
 
-   [i] Checking file permissions of running processes (File backdooring - maybe the same files start automatically when
-Administrator logs in)
+   [i] Checking file permissions of running processes (File backdooring - maybe the same files start automatically when Administrator logs in)
+
 C:\Windows\Explorer.EXE NT SERVICE\TrustedInstaller:(F)
-
 C:\Program Files\Internet Explorer\iexplore.exe NT SERVICE\TrustedInstaller:(F)
-
 C:\Program Files (x86)\Internet Explorer\IEXPLORE.EXE NT SERVICE\TrustedInstaller:(F)
-
 C:\Program Files (x86)\Internet Explorer\IEXPLORE.EXE NT SERVICE\TrustedInstaller:(F)
 
 
    [i] Checking directory permissions of running processes (DLL injection)
+   
 C:\Windows\ NT SERVICE\TrustedInstaller:(F)
-
 C:\Program Files\Internet Explorer\ NT SERVICE\TrustedInstaller:(F)
-
 C:\Program Files (x86)\Internet Explorer\ NT SERVICE\TrustedInstaller:(F)
-
 C:\Program Files (x86)\Internet Explorer\ NT SERVICE\TrustedInstaller:(F)
 
 
  ?[33m[+]?[97m RUN AT STARTUP
-   [i] Check if you can modify any binary that is going to be executed by admin or if you can impersonate a not found bi
-nary
+   [i] Check if you can modify any binary that is going to be executed by admin or if you can impersonate a not found binary
    [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#run-at-startup
+   
 C:\Documents and Settings\All Users\Start Menu\Programs\Startup BUILTIN\Users:(F)
 
 C:\Documents and Settings\All Users\Start Menu\Programs\Startup\desktop.ini BUILTIN\Administrators:(F)
@@ -2616,7 +2606,6 @@ WSTask                                   N/A                    Ready
 
 HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer
     AlwaysInstallElevated    REG_DWORD    0x1
-
 
 ?[32m[*]?[97m NETWORK
  ?[33m[+]?[97m CURRENT SHARES
@@ -2889,9 +2878,7 @@ Persistent Routes:
 
  ?[33m[+]?[97m WIFI
 ?[32m[*]?[97m BASIC USER INFO
-   [i] Check if you are inside the Administrators group or if you have enabled any token that can be use to escalate pri
-vileges like SeImpersonatePrivilege, SeAssignPrimaryPrivilege, SeTcbPrivilege, SeBackupPrivilege, SeRestorePrivilege, Se
-CreateTokenPrivilege, SeLoadDriverPrivilege, SeTakeOwnershipPrivilege, SeDebbugPrivilege
+   [i] Check if you are inside the Administrators group or if you have enabled any token that can be use to escalate privileges like SeImpersonatePrivilege, SeAssignPrimaryPrivilege, SeTcbPrivilege, SeBackupPrivilege, SeRestorePrivilege, SeCreateTokenPrivilege, SeLoadDriverPrivilege, SeTakeOwnershipPrivilege, SeDebbugPrivilege
    [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#users-and-groups
 
  ?[33m[+]?[97m CURRENT USER
@@ -2927,7 +2914,6 @@ The request will be processed at a domain controller for domain WORKGROUP.
 
 USER INFORMATION
 ----------------
-
 User Name              SID
 ====================== =============================================
 win-evagj1t16qd\backup S-1-5-21-3698357007-189532211-3203426890-1008
@@ -2935,7 +2921,6 @@ win-evagj1t16qd\backup S-1-5-21-3698357007-189532211-3203426890-1008
 
 GROUP INFORMATION
 -----------------
-
 Group Name                             Type             SID          Attributes
 ====================================== ================ ============ ==================================================
 Everyone                               Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group
@@ -2964,7 +2949,6 @@ SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
  ?[33m[+]?[97m USERS
 
 User accounts for \\WIN-EVAGJ1T16QD
-
 -------------------------------------------------------------------------------
 Administrator            backup                   Guest
 user
@@ -3093,7 +3077,6 @@ Currently stored credentials:
  ?[33m[+]?[97m DPAPI MASTER KEYS
    [i] Use the Mimikatz 'dpapi::masterkey' module with appropriate arguments (/rpc) to decrypt
    [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#dpapi
-
 
     Directory: C:\Users\backup\AppData\Roaming\Microsoft\Protect
 Mode                LastWriteTime     Length Name
