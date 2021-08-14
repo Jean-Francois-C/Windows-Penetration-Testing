@@ -2,8 +2,6 @@
 Windows local privilege escalation attack using PowerUP
 =============================================================================================
 
-Link: https://github.com/PowerShellMafia/PowerSploit/tree/master/Privesc
-
 The Powershell script 'PowerUp.ps1' aims to be a clearing-house of common Windows privilege escalation vectors that rely on misconfiguration.
 It can be used to both detect and exploit common privilege escalation flaws.
 Examples:
@@ -13,12 +11,24 @@ Examples:
 	+ Registry Checks
 	+ Miscellaneous Checks
   + ...
+  
+PowerUp is not supported anymore. 
+
+Links with the last commit date: 
+- 2017 > https://github.com/PowerShellMafia/PowerSploit/tree/master/Privesc
+- 2015 > https://github.com/PowerShellEmpire/PowerTools/blob/master/PowerUp/PowerUp.ps1
+- 2014 > https://github.com/HarmJ0y/PowerUp/blob/master/PowerUp.ps1
+
 
 Important note: Before running the PowerUP script it is important to obfuscate it a little and to disable the AMSI to avoid AV.
 
 =============================================================================================
-Example - Output of the script using the 'invoke-allchecks' command as a low-privileged user
+Example 1 - Output of the PowerUP script on a vulnerable Windows server 2012 R2 
 =============================================================================================
+
+Notes: 
+- Script run as using a low-privileged user
+- PowerUP version used: https://github.com/PowerShellEmpire/PowerTools/blob/master/PowerUp/PowerUp.ps1
 
 PS C:\> powershell -ep bypass
 PS C:\> import-module .\PowerUp.ps1
