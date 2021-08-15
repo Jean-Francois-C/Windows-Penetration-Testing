@@ -2,8 +2,8 @@
 Local Privilege Escalation from a Windows Service account to 'NT AUTHORITY\SYSTEM' using the tool 'PrintSpoofer'
 =============================================================================================================================
 
-Windows local privilege escalation from 'LOCAL/NETWORK SERVICE' to 'NT AUTHORITY\SYSTEM' by abusing SeImpersonatePrivilege on Windows 10 and Server 2016/2019 
-with the tool 'PrintSpoofer'.
+Windows local privilege escalation from 'LOCAL/NETWORK SERVICE' to 'NT AUTHORITY\SYSTEM' by abusing SeImpersonatePrivilege on Windows 10
+and Server 2016/2019 with the tool 'PrintSpoofer'.
 
 > Github link: https://github.com/itm4n/PrintSpoofer
 
