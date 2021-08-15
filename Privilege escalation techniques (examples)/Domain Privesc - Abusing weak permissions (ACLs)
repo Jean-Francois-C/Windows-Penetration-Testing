@@ -73,7 +73,7 @@ PS C:\Users\auditor\Documents> crackmapexec.exe -u webadmin -d security-lab -p P
 
 
 ============================================================================================================
-Example - Output of the tool ACLscan
+Example - Output of the tool ACLight scan
 ============================================================================================================
 
 Welcome, starting Multi-Layered ACLight scan
