@@ -4,7 +4,7 @@ Abusing 'DNSadmins' privileges to become Domain Administrator
 ========================================================================================================================
 
 => Accounts member of the default AD security group 'DNSadmins' can load/execute an arbitrary DLL with SYSTEM privileges on the DNS server
-   which is also almost always the Domain Controller (indeed most companies use their Domain Controllers as a internal DNS servers). 
+   which is also almost always the Domain Controller in a Windows network (indeed most companies use their Domain Controllers as a internal DNS servers). 
    Thus these accounts can take full control over the Domain.
 
 Usefull links:
@@ -225,7 +225,7 @@ SERVICE_NAME: dns
         WAIT_HINT          : 0x0
 
 
-=> We are now Domain Admin !  Our 'auditor' account has been added to the 'Domain Admins' group 
+=> We are now Domain Admin !  Our 'auditor' account has been added to the 'Domain Admins' group.
    We can now log into the DC as admin with wmiexec...
 
 C:\Users\Administrator\Documents\Tools-AD> wmiexec.exe auditor@192.168.1.50
