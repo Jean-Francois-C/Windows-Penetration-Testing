@@ -28,7 +28,8 @@ PoC - Step 1. Detection of a computer account with a Kerberos Unconstrained Dele
 There are several commands and tools that can be used during the Domain enumeration phase to identify a "Kerberos Unconstrained Delegation"
 
 => BloodHound
-=> PingCastle 
+=> PingCastle
+=> ADcollector
 => Powershell command (With AD-Module) such as: PS C:\AD\Tools> Get-ADComputer -Filter {TrustedForDelegation -eq $True}
 
 => PowerView
