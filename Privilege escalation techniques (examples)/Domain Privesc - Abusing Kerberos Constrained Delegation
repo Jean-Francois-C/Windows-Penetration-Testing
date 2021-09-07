@@ -63,8 +63,8 @@ There are several commands and tools that can be used during the Domain enumerat
 
 
 ==========================================================================================================================================================
-PoC - Step 2. Use the account "svcwebadmin" and the tool Rubeus to generate a TGS ticket (CIFS) as a Domain Admin account for the server 'dbserver01'
-              CIFS = Admin access to all the shares
+PoC - Step 2. Use the account "svcwebadmin" and the tool Rubeus to generate a TGS ticket (CIFS) for a Domain Admin account for the server 'dbserver01'
+              CIFS (TGS) = remote admin access to shares
 ==========================================================================================================================================================
 
 
@@ -185,11 +185,9 @@ Could not start PSEXESVC service on dbserver01.security-test-lab.local:
 Access is denied.
 
 
-security-lab\Administrator
-
 =============================================================================================================================================================
-PoC - Step 3. Use the account 'svcwebadmin' and the tool Rubeus to generate TGS tickets (HOST,HTTP) as Domain Admin account for the server 'dbserver01'
-              HOST+HTTP = PowerShell Remoting as security-lab\Administrator
+PoC - Step 3. Use the account 'svcwebadmin' and the tool Rubeus to generate TGS tickets (HOST,HTTP) for a Domain Admin account for the server 'dbserver01'
+              HOST + HTTP (TGS) = PowerShell Remoting as security-lab\Administrator
 =============================================================================================================================================================
 
 
@@ -287,7 +285,7 @@ Cached Tickets: (8)
         Kdc Called:
 
 
-=> It worked. We can now log into the server 'dbserver01' as the Domain Admin account 'security-lab\administrator' !!!
+=> It worked. We can now log into the server 'dbserver01' as the Domain Admin account 'security-lab\administrator' !!
 
 PS C:\AD\jfc-tools> Enter-PSSession dbserver01.security-test-lab.local
 
@@ -305,5 +303,4 @@ CIFS          => allow remote admin access to shares
 HOST + HTTP   => allow PowerShell Remoting
 LDAP          => allow DCsync
 HOST + RPCSS  => allow remote WMI access
-
 
