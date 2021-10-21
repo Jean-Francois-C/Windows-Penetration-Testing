@@ -21,9 +21,9 @@ There are several commands and tools that can be used during the Domain enumerat
    
    Example - Extract for the file 'Users.csv'
    
-    UserName	    Name		        Enabled	Delegation Permitted	Delegation Type		Delegation Protocol		Delegation Services	Logon 							
+    UserName	    Name		        Enabled	Delegation Permitted	Delegation Type		Delegation Protocol		Delegation Services	 							
     -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    svcwebadmin		webserver svc		TRUE	  TRUE					        Constrained			  Any			CIFS/dbserver01.security-test-lab.local, CIFS/dbserver01	
+    svcwebadmin		webserver svc		TRUE	  TRUE			Constrained			  Any			CIFS/dbserver01.security-test-lab.local, CIFS/dbserver01	
     <SNIP>
 
 
