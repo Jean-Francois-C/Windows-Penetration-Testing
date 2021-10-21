@@ -23,7 +23,7 @@ There are several commands and tools that can be used during the Domain enumerat
    
     UserName	    Name		        Enabled	Delegation Permitted	Delegation Type		Delegation Protocol		Delegation Services	Logon 							
     -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    svcwebadmin		webserver svc		TRUE	  TRUE					        Constrained			  Any						        CIFS/dbserver01.security-test-lab.local, CIFS/dbserver01	
+    svcwebadmin		webserver svc		TRUE	  TRUE					        Constrained			  Any			CIFS/dbserver01.security-test-lab.local, CIFS/dbserver01	
     <SNIP>
 
 
