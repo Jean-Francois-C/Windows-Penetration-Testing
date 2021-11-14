@@ -11,10 +11,10 @@ PoC - Step 1. Enumerate user/service accounts and computer accounts that have ke
 =======================================================================================================================================
 
 There are several commands and tools that can be used during the Domain enumeration phase to identify accounts that have kerberos constrained delegation enabled:
-
 => BloodHound
 => PingCastle
 => ADcollector
+
 
 => ADRecon.ps1
    Review the files 'Users.csv' and 'Computers.csv' and look for user/service accounts and computer accounts that have kerberos constrained delegation enabled
