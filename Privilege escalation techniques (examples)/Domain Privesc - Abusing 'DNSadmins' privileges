@@ -2,7 +2,8 @@
 Abusing 'DNSadmins' privileges to become Domain Administrator
 ========================================================================================================================
 
-=> Accounts member of the default AD security group 'DNSadmins' can load/execute an arbitrary DLL with SYSTEM privileges on the DNS server
+=> DNSAdmins has administrative access to Microsoft Active Directory DNS and is often granted the ability to logon to Domain Controllers.
+   Accounts member of the default AD security group 'DNSadmins' can load & execute an arbitrary DLL with SYSTEM privileges on the DNS server
    which is also almost always the Domain Controller in a Windows network (indeed most companies use their Domain Controllers as a internal DNS servers). 
    Thus these accounts can take full control over the Domain.
 
