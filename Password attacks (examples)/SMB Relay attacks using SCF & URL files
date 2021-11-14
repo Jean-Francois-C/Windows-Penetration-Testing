@@ -2,20 +2,20 @@
 SMB Relay attacks using SCF & URL files 
 ==================================================================================================================
 
-During an internal penetration test if you discover a Windows file share with write permissions for your account or for unauthenticated users
-then you can write on this file share a malicious .SCF file (Shell Command File) with a link to a specific malicious UNC path and/or a .URL file 
-with a link to a specific malicious URL which will allow you to:
-- capture the NTLMv2 password hash (using the tool Responder) of the users who will browse the network file share;
+During an internal penetration test if you discover a file share over the network with write permissions for your account or for unauthenticated users
+then you can create a .SCF file (Shell Command File) with a link to a malicious UNC path (e.g. your Kali) and/or a .URL file with a link to a malicious URL
+which will allow you to:
+- capture the NTLMv2 password hash (using the tool Responder) of the users who browsed the network file share;
 - perform a SMB relay attack (using the tool SMBrelayx.py or Metasploit) to attempt to run commands on a remote server with the privileges
-  of the users who will browse the network file share.
+  of the users who browsed the network file share.
 
 Notes: 
-- SMB relay attacks can also be used in conjunction with Network Sniffing and LLMNR/NBT-NS Poisoning.
+- SMB relay attacks can also be used in conjunction with LLMNR/NBT-NS Poisoning.
 - SMB relay attacks won't work if SMB signing is enabled (which is the case by default in recent versions of Windows OS).
 
 
 ==================================================================================================================
-Step 1. Identify a Windows file share with write permissions 
+Step 1. Identify a file share over the network with write permissions 
 ==================================================================================================================
 
 Many techniques and tools can be used to identify Windows file shares with write permissions over a network 
@@ -23,7 +23,7 @@ Many techniques and tools can be used to identify Windows file shares with write
 
 
 ==================================================================================================================
-Step 2. Write a malicious .URL file and/or a malicious .SCF file on the Windows file share
+Step 2. Write a malicious .URL file and/or a malicious .SCF file on the file share
 ==================================================================================================================
 
 $ cat MaliciousURLfile.url
@@ -45,7 +45,7 @@ NOTE: IP of my KALI '192.168.1.45'.
 
 
 ===================================================================================================================
-Step 3. Start RESPONDER and wait for a user to browse the Windows file share hosting the malicious SCF & URL files
+Step 3. Start RESPONDER and wait for a user to browse the file share hosting the malicious SCF & URL files
 ===================================================================================================================
 
 When a user browses the file share (i.e. shared folder hosting the malicious SCF & URL files) we can capture his NTLMv2 password hash with the tool Responder.
@@ -217,7 +217,7 @@ __
 
 
 ===============================================================================================================================================
-Step 4. Perform a SMB relay attack when a user (with a privileged account) browses the network file share hosting the malicious SCF & URL files
+Step 4. Perform a SMB relay attack when a user (with a privileged account) browses the file share hosting the malicious SCF & URL files
 ===============================================================================================================================================
 
 Option 1. Use SMBrelayx.py (Impacket python framework)
