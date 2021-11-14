@@ -2,26 +2,28 @@
 SMB Relay attacks using SCF & URL files 
 ==================================================================================================================
 
-During an internal penetration test if you discover a network file share with write permissions for your account or for unauthenticated users
+During an internal penetration test if you discover a Windows file share with write permissions for your account or for unauthenticated users
 then you can write on this file share a malicious .SCF file (Shell Command File) with a link to a specific malicious UNC path and/or a .URL file 
-with a link to a specific malicious URL which will allow you to either:
+with a link to a specific malicious URL which will allow you to:
 - capture the NTLMv2 password hash (using the tool Responder) of the users who will browse the network file share;
-- perform a SMB relay attack (using the tool SMBrelayx.py or Metasploit) to attempt to run commands with the privileges of the users who will browse the network file share.
+- perform a SMB relay attack (using the tool SMBrelayx.py or Metasploit) to attempt to run commands on a remote server with the privileges
+  of the users who will browse the network file share.
 
 Notes: 
-- The SMB relay attack can be also with an LLMR & NBTNS poisonning attack. 
-- The SMB relay attack won't work if SMB signing is enabled (which is the case by default in recent versions of Windows OS).
+- SMB relay attacks can also be used in conjunction with Network Sniffing and LLMNR/NBT-NS Poisoning.
+- SMB relay attacks won't work if SMB signing is enabled (which is the case by default in recent versions of Windows OS).
 
 
 ==================================================================================================================
-Step 1. Identify a network file share with write permissions
+Step 1. Identify a Windows file share with write permissions 
 ==================================================================================================================
 
-Many techniques and tools can be used (e.g. native Windows commands, powershell scripts, nmap, ...)
+Many techniques and tools can be used to identify Windows file shares with write permissions over a network 
+(e.g. native Windows commands, PowerView powershell scripts, nmap, crackmapexec, ...)
 
 
 ==================================================================================================================
-Step 2. Write a malicious .URL file and/or a malicious .SCF file on the network file share
+Step 2. Write a malicious .URL file and/or a malicious .SCF file on the Windows file share
 ==================================================================================================================
 
 $ cat MaliciousURLfile.url
@@ -43,10 +45,10 @@ NOTE: IP of my KALI '192.168.1.45'.
 
 
 ===================================================================================================================
-Step 3. Start RESPONDER and wait for a user to browse the network file share hosting the malicious SCF & URL files
+Step 3. Start RESPONDER and wait for a user to browse the Windows file share hosting the malicious SCF & URL files
 ===================================================================================================================
 
-When a user browses the file share, we capture his NTLMv2 password hash.
+When a user browses the file share (i.e. shared folder hosting the malicious SCF & URL files) we can capture his NTLMv2 password hash with the tool Responder.
 
 ┌──(kali㉿kali)-[~]
 └─$ sudo responder -I eth0 -wrf -v                                                                                                                                                                                        1 ⨯
@@ -263,8 +265,6 @@ Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
 [*] Setting up HTTP Server
 
 [*] Servers started, waiting for connections
-[*] SMBD: Received connection from 192.168.1.41, attacking target 192.168.1.50
-[-] Authenticating against 192.168.1.50 as DESKTOP-Test\jeff FAILED
 
 [*] HTTPD: Received connection from 192.168.1.41, attacking target 192.168.1.50
 [*] SMBD: Received connection from 192.168.1.41, attacking target 192.168.1.50
