@@ -42,9 +42,9 @@ Command=ToggleDesktop
 NOTE: IP of my KALI '192.168.1.45'.
 
 
-==================================================================================================================
-Step 3. Start RESPONDER and wait for a user to browse the network file share hosting our malicious SCF & URL files
-==================================================================================================================
+===================================================================================================================
+Step 3. Start RESPONDER and wait for a user to browse the network file share hosting the malicious SCF & URL files
+===================================================================================================================
 
 When a user browses the file share, we capture his NTLMv2 password hash.
 
@@ -215,7 +215,7 @@ __
 
 
 ===============================================================================================================================================
-Step 4. Perform a SMB relay attack when a user (with a privileged account) browses the network file share hosting our malicious SCF & URL files
+Step 4. Perform a SMB relay attack when a user (with a privileged account) browses the network file share hosting the malicious SCF & URL files
 ===============================================================================================================================================
 
 Option 1. Use SMBrelayx.py (Impacket python framework)
