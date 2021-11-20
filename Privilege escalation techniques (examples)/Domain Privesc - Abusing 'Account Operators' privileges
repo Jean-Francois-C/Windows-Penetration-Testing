@@ -1,0 +1,85 @@
+========================================================================================================================
+Abusing 'Account Operators' privileges to become Domain Administrator
+========================================================================================================================
+    
+=> Members of the group 'Account Operators' have the rights to create and modify accounts and groups in the domain. 
+   However, this group cannot directly modify AD admin groups (i.e. 'Enterprise Admins', 'Domain Admins', 'Administrators' of DC, 'Backup Operators' and 'Print Operators'),
+   Also Members of the group 'Account Operators' have the ability to log on to Domain Controllers by default (assigned via the Default Domain Controllers Policy GPO). 
+
+=> Link: https://adsecurity.org/?p=3700
+ 
+=> There are many ways to take over a Domain and become Domain Admin with an account member of the group 'Account Operators'.
+   I will just detail below a few ways to privesc to Domain Admin.
+
+========================================================================================================================
+Privesc example 1
+========================================================================================================================
+
+Context: The Windows administrators are not following the Microsoft AD Tier model.
+
+Note:    The "Active Directory Tier Model" is a logical separation of AD assets, having some kind of security boundaries in between. 
+         The idea is to protect the most valued identities within the active directory (Tier 0), while standard desktops and users (Tier2, and in some cases Tier 3)
+         can surf the web, check their email, or access services and applications that reside on a different tier (Tier 1).
+         
+Attack methodology
+------------------
+-> Step 1. Create a Windows domain account and add it into the domain groups which are used to manage the Windows servers and the Windows laptops. 
+           For instance:
+           > a domain group named like 'server-local-admin' which is member of the local group 'Administrators' of the Windows servers
+           > a domain group named like 'workplace-support-admin' or 'laptop-admin' which is member of the local group 'Administrators' of the Windows laptops
+
+-> Step 2. Use this account to log into:
+           > a Windows server on which a 'Domain Admin' service account is running
+           > a Windows server on which a 'Domain Admin' user is logged
+           > a Windows laptop on which a 'Domain Admin' user is logged
+           
+-> Step 3. Dump the credentials from memory and use them with the Pass-The-Hash technique to log into the Domain Controller as 'Domain Admin'.
+
+
+========================================================================================================================
+Privesc example 2 
+========================================================================================================================
+
+Context: LAPS is used to manage the password of the local administrator account on Windows servers and laptops.
+         There is a Windows domain server with Kerberos unconstrained delegation enabled on it.
+
+Note:    The "Local Administrator Password Solution" (LAPS) provides management of local account passwords of domain joined computers. 
+         Passwords are stored in Active Directory (AD) and protected by ACL, so only eligible users can read it or request its reset.
+         
+Attack methodology
+------------------
+-> Step 1. Create a Windows domain account and add it into the domain group which is used to manage LAPS. 
+           The powershell script 'LAPSToolkit' (https://github.com/leoloobeek/LAPSToolkit) can be used to identify the domain group and/or accounts managing LAPS.
+
+-> Step 2. Use this account to display in clear-text the password of the default administrator of Windows domain server with Kerberos unconstrained delegation enabled on it.
+           
+-> Step 3. Use the credentials to log into this Windows server as local administrator.
+           Abuse the PrinterBug or PetitPotam vulnerability to force 1 of the Domain Controller to contact this Windows server.
+           
+-> Step 4. Dump from memory the Kerberos TGT of the Domain Controller computer account.
+           Then use it to perform a DCsync attack (e.g. with the tool rubeus and Mimikatz) and collect the password hashes of any of the 'Domain Admin' accounts.
+           Finally to log into the Domain Controller as 'Domain Admin' using Pass-The-Hash technique.
+      
+========================================================================================================================
+Privesc example 3
+========================================================================================================================
+
+> Account Operators: 
+  By default, this built-in group has no members, and it can create and manage users and groups in the domain, including its own membership and that of the Server Operators group. 
+  This group is considered a service administrator group because it can modify Server Operators, which in turn can modify domain controller settings.
+  Source (Microsoft - Link - https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn579255(v=ws.11))
+
+> Server Operators
+  Members of the 'Server Operators' group can logon to, shut down, and perform backup/restore operations on Domain Controllers :-).
+
+Attack methodology
+------------------
+-> Step 1. Create a Windows domain account and add it into the 'Server Operators' domain group.
+
+-> Step 2. Log into the Domain Controller as 'Server Operators' and perform a backup of the NTDS.DIT file and the registry hive HKLM/SYSTEM.
+
+-> Step 3. Extract the password hashes of all Windows accounts from the NTDS.DIT file (e.g. using the tool secretsdump).
+
+-> Step 4. Finally to log into the Domain Controller as 'Domain Admin' using Pass-The-Hash technique.
+
+ 
