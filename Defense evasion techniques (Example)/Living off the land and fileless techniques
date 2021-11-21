@@ -1,0 +1,51 @@
+============================================================================================
+Living off the land and filess techniques
+============================================================================================
+
+--------------------------------------------------------------------------------------------
+Why using 'living off the land and fileless' techniques ?
+--------------------------------------------------------------------------------------------
+> The purpose of the 'living off the land and fileless' techniques is to avoid getting detected and blocked by the antivirus and end-point protection
+  solutions installed on Windows machines during penetration tests by running scripts and shellcodes directly into memory and making use as much as possible
+  of the sysadmin tools and software that already installed on targeted computers.
+  
+  The four main categories of living off the land and fileless attack techniques are: 
+  - memory-only threats, 
+  - fileless persistence, 
+  - dual-use tools,
+  - non-PE file attacks.
+
+  In general, creating less new files on the hard disk means less chance of being detected by traditional security tools and therefore minimizes
+  the risk of an attack being detected and blocked.
+
+  Before executing a "hacking" and/or security audit scripts (e.g. '.ps1', '.vbs', '.bat') on a Windows machine is important to disable the Antimalware Scan Interface (AMSI)
+  to avoid our scripts being scanned and potentially blocked by the AV installed on the Windows machine.
+
+--------------------------------------------------------------------------------------------
+Microsoft Antimalware Scan Interface (AMSI)
+--------------------------------------------------------------------------------------------
+> The Microsoft Antimalware Scan Interface (AMSI) provides enhanced malware protection by allowing the Antivirus solution installed on a Windows machine
+  to scan the applications and scripts before they are executed. 
+  
+  For instance, the AMSI feature is integrated into these components of Windows 10 when they are executed:
+  - User Account Control, or UAC (elevation of EXE, COM, MSI, or ActiveX installation)
+  - PowerShell (scripts, interactive use, and dynamic code evaluation)
+  - Windows Script Host (wscript.exe and cscript.exe)
+  - JavaScript and VBScript
+  - Office VBA macros
+
+> The Windows Antimalware Scan Interface (AMSI) is a versatile interface standard that allows the applications and services to integrate with any antimalware product
+  that's present on a Windows machine (e.g. Windows Defender AntiVirus is enabled by default on Windows 10/11).
+  AMSI is agnostic of antimalware vendor; it's designed to allow for the most common malware scanning and protection techniques provided
+  by today's antimalware products that can be integrated into applications. 
+
+> There are many techniques to bypass AMSI. The techniques vary slightly, but mostly the amsi.dll is manipulated in memory. 
+  The goal of attackers is to prevent a scan from taking place or to deliver a “clean” result and not being flagged as “malicious”. 
+  This can be done by patching the dll in memory or by placing a separate amsi.dll in the current working directory.
+
+  Usefull links:
+  - https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
+  - https://s3cur3th1ssh1t.github.io/Bypass_AMSI_by_manual_modification/
+  
+  
+  
