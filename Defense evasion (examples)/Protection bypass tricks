@@ -4,7 +4,7 @@ Protection bypass tricks
 
 
 ==================================================================================================================
-1. Commands to disable and bypass Windows Defender AV 
+1. Commands to disable/bypass Windows Defender AV 
 ==================================================================================================================
 
 1.1 Commands to check if Windows Defender is enabled on a machine
@@ -116,7 +116,6 @@ Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
 
 C:\>
 
-
 ==================================================================================================================
 3. Commands to bypass/disable Applocker (with local admin priv)
 ==================================================================================================================
@@ -166,7 +165,7 @@ C:\Temp> procdump.exe -accepteula -ma lsass.exe memorydump.dmp
 
 
 ==================================================================================================================
-4. Commands How to enable Windows PowerShell 2.0 in Windows 10 (it requires administrative privileges)
+4. Commands to enable Windows PowerShell 2.0 in Windows 10 (it requires admin privileges)
 ====================================================================================================================
 
 Since there is no AMSI in PowerShell v2.0 it is interesting to use it when possible. 
