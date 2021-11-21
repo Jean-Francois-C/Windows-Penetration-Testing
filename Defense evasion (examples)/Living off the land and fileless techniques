@@ -46,8 +46,27 @@ Microsoft Antimalware Scan Interface (AMSI)
   Usefull links:
   - https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
   - https://s3cur3th1ssh1t.github.io/Bypass_AMSI_by_manual_modification/
-  
-  
+ 
+---------------------------------------------------------------
+Windows Security features
+---------------------------------------------------------------
+> Microsoft has added some security features in PowerShell v5 to help out the Blue teams such as: 
+  - Constrained Language Mode, 
+  - Deep Scriptblock logging, 
+  - system wide transcripts,
+  - Antimalware Scan Interface (AMSI)  
+  - ...
+
+> Other classic defenses:
+  + Windows Defender 
+    - Real-Time protection and Antimalware Scan Interface (AMSI) 
+    - Tamper protection (prevents other form tampering with important security features)
+  + AppLocker
+  + Software Restriction Policy
+
+  Note: Microsoft has introduced Credential Guard in Windows 10 Enterprise and Windows Server 2016, which uses virtualization-based security to isolate secrets,
+  and it is effective in preventing Mimikatz from retrieving hashes directly from memory.
+
 ==================================================================================================================
 Example - AMSI bypass techniques on a fully patched Windows 10 laptop with Defender (AV) enabled and up-to-date
 ==================================================================================================================
