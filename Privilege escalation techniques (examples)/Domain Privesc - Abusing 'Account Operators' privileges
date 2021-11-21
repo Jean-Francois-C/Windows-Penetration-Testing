@@ -37,7 +37,30 @@ Attack methodology
 
 
 ========================================================================================================================
-Privesc example 2 
+Privesc example 2
+========================================================================================================================
+
+Context: The Domain Controllers are VM machines running on a vCenter Hypervisor and vCenter admins are using domain credentials to manage the vCenter.
+
+Attack methodology
+------------------
+-> Step 1. Create a Windows domain account and add it into the domain group used to manage the vCenter server.
+           For instance it can be a domain group named like 'vcenter-admins' or 'hypervisor-operator'.
+
+-> Step 2. Log into the vCenter server's Web admin console using your new account.
+           > Browse the vCenter server's Web admin console : https://vcenter_server_ip_address_or_fqdn
+           > On the vSphere Welcome page, select 'Launch vSphere Client (HTML5)' and then enter your creds.
+
+-> Step 3. Once logged we can:
+           > Perform a snapshot of a Domain Controller, 
+           > Copy/download their memory dump files (.vmsn & .vmem)
+           > Extract from VM memory the password hashes of high privileged acccounts (e.g. Domain Admins, Administrators of DC, krbtgt account)
+
+-> Step 4. Finally log into the Domain Controller as 'Domain Admin' using Pass-The-Hash technique.
+
+
+========================================================================================================================
+Privesc example 3
 ========================================================================================================================
 
 Context: LAPS is used to manage the password of the local administrator account on Windows servers and laptops.
@@ -60,26 +83,3 @@ Attack methodology
            Then use it to perform a DCsync attack (e.g. with the tool rubeus and Mimikatz) and collect the password hashes of any of the 'Domain Admin' accounts.
            Finally to log into the Domain Controller as 'Domain Admin' using Pass-The-Hash technique.
       
-========================================================================================================================
-Privesc example 3
-========================================================================================================================
-
-> Account Operators: 
-  By default, this built-in group has no members, and it can create and manage users and groups in the domain, including its own membership and that of the Server Operators group. 
-  This group is considered a service administrator group because it can modify Server Operators, which in turn can modify domain controller settings.
-  Source (Microsoft - Link - https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn579255(v=ws.11))
-
-> Server Operators
-  Members of the 'Server Operators' group can logon to, shut down, and perform backup/restore operations on Domain Controllers :-).
-
-Attack methodology
-------------------
--> Step 1. Create a Windows domain account and add it into the 'Server Operators' domain group.
-
--> Step 2. Log into the Domain Controller as 'Server Operators' and perform a backup of the NTDS.DIT file and the registry hive HKLM/SYSTEM.
-
--> Step 3. Extract the password hashes of all Windows accounts from the NTDS.DIT file (e.g. using the tool secretsdump).
-
--> Step 4. Finally log into the Domain Controller as 'Domain Admin' using Pass-The-Hash technique.
-
- 
