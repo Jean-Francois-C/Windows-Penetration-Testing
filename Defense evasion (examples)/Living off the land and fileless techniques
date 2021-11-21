@@ -148,7 +148,6 @@ AbuseFunction  : Write-HijackDll -OutputFile 'C:\Users\auditor\AppData\Local\Mic
 PS C:\temp>
 
 
-
 -------------------------------------------------------------------------------------------------------------------------
 Example 2 - AMSI bypass with a local admin user logged on a Window server with Defender (AV) enabled and up-to-date
 -------------------------------------------------------------------------------------------------------------------------
@@ -209,4 +208,3 @@ SID               : S-1-5-90-1
 	 * Username : SERVER02$
 	 * Domain   : SECURITY-LAB
 <SNIP>
-
