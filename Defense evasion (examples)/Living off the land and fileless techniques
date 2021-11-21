@@ -6,7 +6,7 @@ Living off the land and filess techniques
 Why using 'living off the land and fileless' techniques ?
 ---------------------------------------------------------------
 > The purpose of the 'living off the land and fileless' techniques is to avoid getting detected and blocked by the antivirus and end-point protection
-  solutions installed on Windows machines during penetration tests by running scripts and shellcodes directly into memory and making use as much as possible
+  solutions installed on modern Windows machines during penetration tests by running scripts and shellcodes directly into memory and making use as much as possible
   of the sysadmin tools and software that already installed on targeted computers.
   
   The four main categories of living off the land and fileless attack techniques are: 
@@ -24,8 +24,8 @@ Why using 'living off the land and fileless' techniques ?
 ---------------------------------------------------------------
 Microsoft Antimalware Scan Interface (AMSI)
 ---------------------------------------------------------------
-> The Microsoft Antimalware Scan Interface (AMSI) provides enhanced malware protection by allowing the Antivirus solution installed on a Windows machine
-  to scan the applications and scripts before they are executed. 
+> The Microsoft Antimalware Scan Interface (AMSI) provides enhanced malware protection by allowing the Antivirus solution installed on a modern Windows machine
+  (i.e. Windows 10/11 or Windows server 2016/2019) to scan the applications and scripts before they are executed. 
   
   For instance, the AMSI feature is integrated into these components of Windows 10 when they are executed:
   - User Account Control, or UAC (elevation of EXE, COM, MSI, or ActiveX installation)
