@@ -1,6 +1,6 @@
-==================================================================================================================
+========================================================================================================================
 Living off the land and filess techniques
-==================================================================================================================
+========================================================================================================================
 
 ---------------------------------------------------------------
 Why using 'living off the land and fileless' techniques ?
@@ -67,13 +67,13 @@ Windows Security features
   Note: Microsoft has introduced Credential Guard in Windows 10 Enterprise and Windows Server 2016, which uses virtualization-based security to isolate secrets,
   and it is effective in preventing Mimikatz from retrieving hashes directly from memory.
 
-==================================================================================================================
-Example - AMSI bypass techniques on a fully patched Windows 10 laptop with Defender (AV) enabled and up-to-date
-==================================================================================================================
+==========================================================================================================================
+Example - AMSI bypass techniques 
+==========================================================================================================================
 
----------------------------------------------------------------
-Example 1 - AMSI bypass as a low privileged user
----------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+Example 1 - AMSI bypass with a low privileged user logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
+--------------------------------------------------------------------------------------------------------------------------
 
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
@@ -149,21 +149,15 @@ PS C:\temp>
 
 
 
----------------------------------------------------------------
-Example 2 - AMSI bypass as a local administrator user
----------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------
+Example 2 - AMSI bypass with a local admin user logged on a Window server with Defender (AV) enabled and up-to-date
+-------------------------------------------------------------------------------------------------------------------------
 
 ┌──(kali㉿kali)-[~/Documents]
 └─$ sudo evil-winrm -i 192.168.1.49 -u admin -p 'Adm1n2022' -s '/home/kali/Documents/' -e '/home/kali/Documents/'
 
 Evil-WinRM shell v3.3
-
-Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
-
-Data: For more information, check Evil-WinRM Github: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
-
-Info: Establishing connection to remote endpoint
-
+<SNIP>
 *Evil-WinRM* PS C:\Users\admin\Documents> menu
 
    ,.   (   .      )               "            ,.   (   .      )       .   
