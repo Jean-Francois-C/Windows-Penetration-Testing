@@ -214,7 +214,7 @@ C:\> netsh firewall set service remotedesktop enable
 
 
 ==================================================================================================================
-6. Commands to run commands as "NT Authority/System"
+7. Commands to run commands as "NT Authority/System"
 ==================================================================================================================
 
 From (Local) Administrator to "NT Authority/System":
