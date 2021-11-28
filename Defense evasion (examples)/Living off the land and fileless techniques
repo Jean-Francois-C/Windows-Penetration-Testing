@@ -39,9 +39,13 @@ Microsoft Antimalware Scan Interface (AMSI)
   AMSI is agnostic of antimalware vendor; it's designed to allow for the most common malware scanning and protection techniques provided
   by today's antimalware products that can be integrated into applications. 
 
-> There are many techniques to bypass AMSI. The techniques vary slightly, but mostly the amsi.dll is manipulated in memory. 
+> There are many techniques to bypass AMSI such as:
+  - patching the amsi.dll in memory
+  - setting the “amsiInitFailed” flag to prevent AMSI scanning capability for the current process (the strings 'AmsiUtils' & 'amsiInitFailed' are encoded to avoid the AV to detect and block the AMSI bypass)
+  - forcing an error i.e. forcing the AMSI initialization to fail (amsiInitFailed) so no scan will be initiated for the current process
+  - placing a separate amsi.dll in the current working directory
+  - registry Key Modification
   The goal of attackers is to prevent a scan from taking place or to deliver a “clean” result and not being flagged as “malicious”. 
-  This can be done by patching the dll in memory or by placing a separate amsi.dll in the current working directory.
 
   Usefull links:
   - https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
@@ -66,6 +70,7 @@ Windows Security features
 
   Note: Microsoft has introduced Credential Guard in Windows 10 Enterprise and Windows Server 2016, which uses virtualization-based security to isolate secrets,
   and it is effective in preventing Mimikatz from retrieving hashes directly from memory.
+
 
 ================================================================================================================================================
 Example - AMSI bypass techniques 
@@ -149,7 +154,7 @@ PS C:\temp>
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-Example/Test 1 - AMSI bypass with a local admin user remotely logged on a Windows 2016 server with Defender (AV) enabled and up-to-date
+Example/Test 2 - AMSI bypass with a local admin user remotely logged on a Windows 2016 server with Defender (AV) enabled and up-to-date
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 $ evil-winrm -u Administrator -p Test1234 -i 192.168.1.38 -s '/home/kali/Documents/'                                    
