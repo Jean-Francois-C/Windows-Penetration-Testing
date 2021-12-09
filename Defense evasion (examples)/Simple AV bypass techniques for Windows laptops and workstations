@@ -1,8 +1,8 @@
 ===========================================================================================================================
-Simple AV bypass techniques for Windows laptops and workstations (with a physical access)
+Simple AV bypass techniques for Windows laptops and workstations 
 ===========================================================================================================================
 
-Here is a list of simple AV bypass techniques for Windows laptops and workstations (when you have a physical access).
+Here is a list of simple AV bypass techniques for Windows laptops and workstations.
 For AV bypass tricks using AMSI bypass techniques see my file 'Living off the land and fileless techniques'.
 
 
@@ -10,7 +10,7 @@ For AV bypass tricks using AMSI bypass techniques see my file 'Living off the la
 Context 1 - You are not local administrator of the Windows laptop/workstation
 ===========================================================================================================================
 
-Example 1 - Windows laptop encrypted with Bitlocker
+Example 1 - Windows laptop encrypted with Bitlocker (with a physical access)
 ===========================================================================================================================
 Step 1 - Check if (as a low priv user) you can read on the Active Directory the Bitlocker Recovery key of your laptop or workstation 
          (example: with the PowerShell script ADRecon.ps1)
@@ -52,7 +52,7 @@ Step 5 - Backdoor the laptop/workstation to gain local admin privileges
             > Reboot and you are now local admin
            
            
-Example 2 - Unencrypted Windows workstation/laptop (Method 1)
+Example 2 - Unencrypted Windows workstation/laptop (with a physical access - Method 1)
 ===========================================================================================================================
 Step 1 - Reboot the workstation or laptop
 
@@ -81,7 +81,7 @@ Step 5 - Backdoor the laptop/workstation to gain local admin privileges
             > Reboot and you are now local admin
 
 
-Example 3 - Unencrypted Windows workstation/laptop (Method 2)
+Example 3 - Unencrypted Windows workstation/laptop (with a physical access - Method 2)
 ==========================================================================================================================
 Step 1 - Boot on a Kon-Boot live USB key
 
@@ -130,7 +130,7 @@ Example 2 - Simply stop or disable the AV software as a local admin
 
 > If the AV software is poorly configured, as a local admin you can simply open the GUI and click on "disable" to stop the AV protection (i.e., real time monitoring, scheduled scans, etc..)
 
-> With the Windows Defender AV you can disable it using either the GUI or command (i.e., real time monitoring, scheduled scans, etc..)
+> With the Windows Defender AV you can disable it using either the GUI or command lines (i.e., real time monitoring, scheduled scans, etc..)
 
 > You can also download the AV or EDR software installer tool and run it. very often you will have the option to uninstall the AV or EDR software.
 
@@ -138,7 +138,7 @@ Example 2 - Simply stop or disable the AV software as a local admin
 Example 3 - Block the SOC "detection"
 ===========================================================================================================================
 
-> As a local admin you can add rules in the local Windows firewall that will prevent the AV and EDR agents running on the laptop
-  to send alerts to the EDR central console.
+> As a local admin you can add rules in the local Windows firewall that will prevent the AV and/or EDR agents running on the laptop
+  to send alerts to the AV and/or EDR central console.
 
 
