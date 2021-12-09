@@ -15,8 +15,8 @@ Example 1 - Windows laptop encrypted with Bitlocker
 Step 1 - Check if (as a low priv user) you can read on the Active Directory the Bitlocker Recovery key of your laptop or workstation 
          (example: with the PowerShell script ADRecon.ps1)
          OR
-         Contact the IT support service and ask over the phone or by chat for the Bitlocker Recovery key of your laptop 
-         (e.g., pretend that you have a problem when you start your laptop and that the screen is requesting your Bitlocker Recovery key)
+         Contact the IT support service and ask over the phone (or by chat) the Bitlocker Recovery key of your laptop 
+         (e.g., pretend that you have a problem when you start your laptop and that the login screen is requesting your Bitlocker Recovery key)
 
 Step 2 - Reboot your laptop/workstation and click on the options/buttons below:
          ➤ press the "echap" key to go to the Bitloker Recovery mode
@@ -92,7 +92,7 @@ Notes:
 - For Windows systems it allows to enter any password protected profile without any knowledge of the password.
 
 
-Example 4 - Find and exploit a local privesc flaw on the Windows laptop/workstation then disable or bypass the AV proetcion
+Example 4 - Find and exploit a local privesc flaw on the Windows laptop/workstation then disable or bypass the AV protecion
 ===========================================================================================================================
 Step 1 - Find and exploit a local privesc flaw
          ➤ Exploiting security misconfiguration
@@ -132,7 +132,7 @@ Example 2 - Simply stop or disable the AV software as a local admin
 
 > With the Windows Defender AV you can disable it using either the GUI or command (i.e., real time monitoring, scheduled scans, etc..)
 
-> You can also download the AV or EDR software installer tool and run it. Often you will have the option to uninstall the AV or EDR software.
+> You can also download the AV or EDR software installer tool and run it. very often you will have the option to uninstall the AV or EDR software.
 
 
 
