@@ -1,0 +1,138 @@
+===========================================================================================================================
+AV bypass techniques for Windows laptops and workstations
+===========================================================================================================================
+
+Here is a list of simple AV bypass techniques for Windows laptops and workstation.
+For AV bypass using AMSI bypass techniques see my file 'Living off the land and fileless techniques'.
+
+
+===========================================================================================================================
+Context 1 - You are not local administrator of the Windows laptop/workstation
+===========================================================================================================================
+
+Example 1 - Windows laptop encrypted with Bitlocker
+===========================================================================================================================
+Step 1 - Check if (as a low priv user) you can read on the Active Directory the Bitlocker Recovery key of your laptop or workstation 
+         (example: with the PowerShell script ADRecon.ps1)
+         OR
+         Contact the IT support service and ask over the phone or by chat for the Bitlocker Recovery key of your laptop 
+         (e.g., pretend that you have a problem when you start your laptop and that the screen is requesting your Bitlocker Recovery key)
+
+Step 2 - Reboot your laptop/workstation and click on the options/buttons below:
+         ➤ press the "echap" key to go to the Bitloker Recovery mode
+         ➤ press again the "echap" key to have more recovery options
+         ➤ select "Skip this drive"
+         ➤ click on "Troubleshoot"
+         ➤ click on "Advanced options"
+         ➤ click on "Command Prompt"
+         An administrator command shell prompt appears ("Administrator: X:\Windows\system32\cmd.exe")
+
+Step 3 - On the command shell prompt run the following commands:
+         ➤ X:\Windows\system32> wmic logicaldisk 
+         ➤ X:\Windows\system32> manage-bde -unlock C: -RecoveryPassword YOUR-BITLOCKER-RECOVERY-KEY-HERE
+         ➤ X:\Windows\system32> cd C:\
+         ➤ C:\>
+
+Step 4 - Delete or rename the AV and EDR software binaries (e.g. folder "C:\Program Files (86)\Symantec\Symantec Endpoint Protection\")
+         The AV and EDR software won't work when you will restart the laptop/workstation
+
+Step 5 - Backdoor the laptop/workstation to gain local admin privileges
+         ➤ Method 1: 
+            > Replace the binary "C:\WINDOWS\System32\sthc.exe" (sticky key) by "cmd.exe" that you have copied and renamed as "sthc.exe"
+            > Reboot the laptop and on the login page, press 5 times in short succession the "Shift" key
+            > A command shell prompt will appears with "local system" privileges
+            > Add your account into the local admin group
+            > Reboot and you are now local admin
+           
+         ➤ Method 2: 
+            > Replace and rename Utilman.exe (keys CTRL+U) by cmd.exe in the folder "C:\WINDOWS\System32\"
+            > Reboot the laptop and on the login page, press the buttons (keys CTRL+U)
+            > A command shell prompt will appears with "local system" privileges
+            > Add your account into the local admin group
+            > Reboot and you are now local admin
+           
+           
+Example 2 - Unencrypted Windows workstation/laptop (Method 1)
+===========================================================================================================================
+Step 1 - Reboot the workstation or laptop
+
+Step 2 - Change the boot order in the BIOS to boot on a live USB key with Kali
+         OR
+         Physically extract the hard drive
+
+Step 3 - Mount (offline) the file system of the workstation or laptop
+
+Step 4 - Rename or delete the AV and EDR software binaries
+         The AV and EDR software won't work when you will restart the laptop/workstation
+
+Step 5 - Backdoor the laptop/workstation to gain local admin privileges
+         ➤ Method 1: 
+            > Replace the binary "C:\WINDOWS\System32\sthc.exe" (sticky key) by "cmd.exe" that you have copied and renamed as "sthc.exe"
+            > Reboot the laptop and on the login page, press 5 times in short succession the "Shift" key
+            > A command shell prompt will appears with "local system" privileges
+            > Add your account into the local admin group
+            > Reboot and you are now local admin
+           
+         ➤ Method 2: 
+            > Replace and rename Utilman.exe (keys CTRL+U) by cmd.exe in the folder "C:\WINDOWS\System32\"
+            > Reboot the laptop and on the login page, press the buttons (keys CTRL+U)
+            > A command shell prompt will appears with "local system" privileges
+            > Add your account into the local admin group
+            > Reboot and you are now local admin
+
+
+Example 3 - Unencrypted Windows workstation/laptop (Method 2)
+==========================================================================================================================
+Step 1 - Boot on a Kon-Boot live USB key
+
+Step 2 - Log into the laptop/workstation as the default local admin account.
+
+Notes:
+- KoonBoot is a software which allows to change contents of a linux kernel and Windows kernel on the fly (while booting).
+- For Windows systems it allows to enter any password protected profile without any knowledge of the password.
+
+
+Example 4 - Find and exploit a local privesc flaw 
+===========================================================================================================================
+Step 1 - Find and exploit a local privesc flaw on the Windows laptop/workstation
+         ➤ Exploiting security misconfiguration
+            > weak service permissions
+            > weak file permissions
+            > weak registry permissions
+            > weak passwords
+            > password reuse
+            > clear-text passwords stored/hardcoded in scripts, in unattended install files, thick-client applications,... 
+            > DLL side-loading attack
+            > AlwaysInstallElevated trick
+            > ...
+         ➤ Exploiting unpatched known vulnerabilities 
+            > Windows local exploit (e.g. Windows Installer privesc (CVE-2021-41379), HiveNightmare exploit (CVE-2021-36934))
+            > Exploit for any vulnerable service/software running with "Local System" or local administrator privilege
+  
+Step 2 - Disable or bypass the AV and EDR software using one of techniques listed in the next section
+
+
+===========================================================================================================================
+Context 2 - You are local administrator of the Windows laptop/workstation
+===========================================================================================================================
+
+Example 1 - When you can't stop or disable the AV software (even as local admin)
+===========================================================================================================================
+Step 1 - Download and install VirtualBox or VMware Workstation the Windows laptop/workstation
+
+Step 2 - Create a Kali VM
+
+Step 3 - You can now use all your favorite pentest tools and scripts without being blocked by the AV or the EDR
+
+
+Example 2 - Simply stop or disable the AV software as a local admin
+===========================================================================================================================
+
+> If the AV software is poorly configured, as a local admin you can simply open the GUI and click on "disable" to stop the AV protection (i.e., real time monitoring, scheduled scans, etc..)
+
+> With the Windows Defender AV you can disable it using either the GUI or command (i.e., real time monitoring, scheduled scans, etc..)
+
+> You can also download the AV or EDR software installer tool and run it. Often you will have the option to uninstall the AV or EDR software.
+
+
+
