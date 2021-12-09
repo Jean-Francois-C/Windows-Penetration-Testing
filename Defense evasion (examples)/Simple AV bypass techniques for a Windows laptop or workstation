@@ -92,7 +92,7 @@ Notes:
 - For Windows systems it allows to enter any password protected profile without any knowledge of the password.
 
 
-Example 4 - Find and exploit a local privesc flaw on the Windows laptop/workstation then disable or bypass the AV protecion
+Example 4 - Find & exploit a local privesc flaw on the Windows laptop/workstation, then disable or bypass the AV protection
 ===========================================================================================================================
 Step 1 - Find and exploit a local privesc flaw
          ➤ Exploiting security misconfiguration
@@ -134,5 +134,11 @@ Example 2 - Simply stop or disable the AV software as a local admin
 
 > You can also download the AV or EDR software installer tool and run it. very often you will have the option to uninstall the AV or EDR software.
 
+
+Example 3 - Block the SOC "detection"
+===========================================================================================================================
+
+> As a local admin you can add rules in the local Windows firewall that will prevent the AV and EDR agents running on the laptop
+  to send alerts to the EDR central console.
 
 
