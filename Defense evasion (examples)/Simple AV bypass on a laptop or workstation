@@ -1,5 +1,5 @@
 ===========================================================================================================================
-AV bypass techniques for Windows laptops and workstations
+Simple AV bypass techniques for Windows laptops and workstations
 ===========================================================================================================================
 
 Here is a list of simple AV bypass techniques for Windows laptops and workstation.
@@ -92,9 +92,9 @@ Notes:
 - For Windows systems it allows to enter any password protected profile without any knowledge of the password.
 
 
-Example 4 - Find and exploit a local privesc flaw 
+Example 4 - Find and exploit a local privesc flaw on the Windows laptop/workstation then disable or bypass the AV proetcion
 ===========================================================================================================================
-Step 1 - Find and exploit a local privesc flaw on the Windows laptop/workstation
+Step 1 - Find and exploit a local privesc flaw
          ➤ Exploiting security misconfiguration
             > weak service permissions
             > weak file permissions
