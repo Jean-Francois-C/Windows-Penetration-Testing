@@ -40,16 +40,16 @@ Step 5 - Backdoor the laptop/workstation to gain local admin privileges
          ➤ Method 1: 
             > Replace the binary "C:\WINDOWS\System32\sthc.exe" (sticky key) by "cmd.exe" that you have copied and renamed as "sthc.exe"
             > Reboot the laptop and on the login page, press 5 times in short succession the "Shift" key
-            > A command shell prompt will appears with "local system" privileges
+            > A command shell prompt will appear with "SYSTEM" privileges
             > Add your account into the local admin group
-            > Reboot and you are now local admin
+            > You are now local admin
            
          ➤ Method 2: 
             > Replace and rename Utilman.exe (keys CTRL+U) by cmd.exe in the folder "C:\WINDOWS\System32\"
             > Reboot the laptop and on the login page, press the buttons (keys CTRL+U)
-            > A command shell prompt will appears with "local system" privileges
+            > A command shell prompt will appear with "SYSTEM" privileges
             > Add your account into the local admin group
-            > Reboot and you are now local admin
+            > You are now local admin
            
            
 Example 2 - Unencrypted Windows workstation/laptop (with a physical access - Method 1)
@@ -62,32 +62,32 @@ Step 2 - Change the boot order in the BIOS to boot on a live USB key with Kali
 
 Step 3 - Mount (offline) the file system of the workstation or laptop
 
-Step 4 - Rename or delete the AV and EDR software binaries
-         The AV and EDR software won't work when you will restart the laptop/workstation
+Step 4 - Rename or delete the AV and EDR software binaries so the AV and EDR software won't work when you will restart the laptop/workstation
 
 Step 5 - Backdoor the laptop/workstation to gain local admin privileges
          ➤ Method 1: 
             > Replace the binary "C:\WINDOWS\System32\sthc.exe" (sticky key) by "cmd.exe" that you have copied and renamed as "sthc.exe"
             > Reboot the laptop and on the login page, press 5 times in short succession the "Shift" key
-            > A command shell prompt will appears with "local system" privileges
+            > A command shell prompt will appear with "SYSTEM" privileges
             > Add your account into the local admin group
-            > Reboot and you are now local admin
+            > You are now local admin
            
          ➤ Method 2: 
             > Replace and rename Utilman.exe (keys CTRL+U) by cmd.exe in the folder "C:\WINDOWS\System32\"
             > Reboot the laptop and on the login page, press the buttons (keys CTRL+U)
-            > A command shell prompt will appears with "local system" privileges
+            > A command shell prompt will appear with "SYSTEM" privileges
             > Add your account into the local admin group
-            > Reboot and you are now local admin
+            > You are now local admin
 
 
 Example 3 - Unencrypted Windows workstation/laptop (with a physical access - Method 2)
 ==========================================================================================================================
-Step 1 - Boot on a Kon-Boot live USB key
+Step 1 - Boot the laptop/workstation on a Kon-Boot live USB key
 
 Step 2 - Log into the laptop/workstation as the default local admin account.
 
 Notes:
+- URL: https://kon-boot.com
 - KoonBoot is a software which allows to change contents of a linux kernel and Windows kernel on the fly (while booting).
 - For Windows systems it allows to enter any password protected profile without any knowledge of the password.
 
