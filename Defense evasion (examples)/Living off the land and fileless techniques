@@ -73,9 +73,8 @@ Windows Security features
 
 
 ================================================================================================================================================
-1. Examples of manual AMSI bypass techniques 
+1. Examples of manual AMSI and AV bypass techniques 
 ================================================================================================================================================
-
 
 Test 1 - Manual AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
 ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -194,7 +193,7 @@ This script contains malicious content and has been blocked by your antivirus so
 
 
 ===================================================================================================================================================
-2. Examples of AMSI bypass using the tool evil-winrm
+2. Examples of AMSI and AV bypass using the tool EVIL-WINRM (in Kali)
 ===================================================================================================================================================
 
 Test 1 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
