@@ -1,5 +1,5 @@
 ==================================================================================================================
-Protection bypass tricks
+Protection bypass - Usefull commands & tricks
 ==================================================================================================================
 
 
@@ -41,7 +41,7 @@ timestamp                : Mon, 22 Nov 2021 06:29:02 GMT
 PSComputerName           :
 
 
-1.2 Command to disable real time monitoring for Windows Defender
+1.2 Command to disable real-time monitoring for Windows Defender
 ---------------------------------------------------------------------------------
 PS C:\> Set-MpPreference -DisableRealtimeMonitoring $true
 
