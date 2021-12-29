@@ -643,10 +643,8 @@ C:\Users\auditor> exit
 VERBOSE: Failed to redirect data from Stream 1 to Stream 2
 
 
-
-
 ===================================================================================================================================================
-5. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
+4. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
 ===================================================================================================================================================
 
 Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
