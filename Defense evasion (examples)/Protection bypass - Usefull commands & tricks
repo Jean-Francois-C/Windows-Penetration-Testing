@@ -254,7 +254,4 @@ From (Local) Administrator to "NT Authority/System":
   > Commands:
   PS\>: import-module psgetsys.ps1
   PS\>: ./psgetsys.ps1 878 Windows/system32/cmd.exe
-
-- Method 
-
       
