@@ -1,17 +1,17 @@
-===========================================================================================================================
+====================================================================================================================================
 Simple AV bypass techniques for Windows laptops and workstations 
-===========================================================================================================================
+====================================================================================================================================
 
 Here is a list of simple AV bypass techniques for Windows laptops and workstations.
 For AV bypass tricks using AMSI bypass techniques see my file 'Living off the land and fileless techniques'.
 
 
-===========================================================================================================================
+====================================================================================================================================
 Context 1 - You are not local administrator of the Windows laptop/workstation
-===========================================================================================================================
+====================================================================================================================================
 
 Example 1 - Windows laptop encrypted with Bitlocker (with a physical access)
-===========================================================================================================================
+====================================================================================================================================
 Step 1 - Check if (as a low priv user) you can read on the Active Directory the Bitlocker Recovery key of your laptop or workstation 
          (example: with the PowerShell script ADRecon.ps1)
          OR
@@ -53,7 +53,7 @@ Step 5 - Backdoor the laptop/workstation to gain local admin privileges
            
            
 Example 2 - Unencrypted Windows workstation/laptop (with a physical access - Method 1)
-===========================================================================================================================
+====================================================================================================================================
 Step 1 - Reboot the workstation or laptop
 
 Step 2 - Change the boot order in the BIOS to boot on a live USB key with Kali
@@ -81,7 +81,7 @@ Step 5 - Backdoor the laptop/workstation to gain local admin privileges
 
 
 Example 3 - Unencrypted Windows workstation/laptop (with a physical access - Method 2)
-==========================================================================================================================
+====================================================================================================================================
 Step 1 - Boot the laptop/workstation on a Kon-Boot live USB key
 
 Step 2 - Log into the laptop/workstation as the default local admin account.
@@ -93,7 +93,7 @@ Notes:
 
 
 Example 4 - Simple trick to prevent an Antivirus / EndPoint Protection solution to block the execution of a binary
-===========================================================================================================================
+====================================================================================================================================
 On a Windows laptop protected by a Symantec (EPP) Antivirus, my recompiled/packed version of wmiexec.exe was detected and deleted when I uploaded it, 
 however it was not detected nor blocked when I ran it from a remote shared folder.
 
@@ -115,7 +115,7 @@ Step 3 - Run your pentest tool (which is stored remotely on the shared folder - 
                   
                   
 Example 5 - Find & exploit a local privesc flaw on the Windows laptop/workstation, then disable or bypass the AV protection
-===========================================================================================================================
+====================================================================================================================================
 Step 1 - Find and exploit a local privesc flaw
          ➤ Exploiting security misconfiguration
             > weak service permissions
@@ -135,12 +135,38 @@ Step 2 - Disable or bypass the AV and EDR software using one of techniques liste
 
 
 
-===========================================================================================================================
+====================================================================================================================================
 Context 2 - You are local administrator of the Windows laptop/workstation
-===========================================================================================================================
+====================================================================================================================================
 
-Example 1 - When you can't stop or disable the AV software (even as local admin)
-===========================================================================================================================
+
+Example 1 - Simply stop or disable the AV software as a local admin or 'NT AUTHORITY\System'
+====================================================================================================================================
+
+> If the AV software is poorly configured, as a local admin you can simply disable or stop the AV protection (e.g, real time monitoring, scheduled scans)
+  by using either the AV software's GUI or command lines (without to have to enter a password).
+  You can also download the AV or EDR software installer tool and run it. Very often you will have the option to uninstall the AV or EDR software (if you have local admin rights).
+  
+  Examples for Windows Defender:
+  ➤ Set-MpPreference -DisableRealtimeMonitoring $true
+  ➤ Set-MpPreference -DisableIOAVProtection $true
+  
+  
+> You can kill protected processes such as AV software and EDR by using the tool 'Process Hacker' running with local admin rights.
+  Process Hacker uses a driver to call an internal Microsoft kernel function for process termination. 
+  This tool uses privileges like 'SeLoadDriverPrivilege' to do be able to kill protected processes.
+  (https://processhacker.sourceforge.io)
+  
+  
+> You can also try to kill the AV software and EDR services after getting a shell running with 'NT AUTHORITY\System' privileges.
+  Example:
+  ➤ PsExec64.exe -i -s cmd.exe
+  then
+  ➤ taskkill /IM <process.exe> /F
+
+  
+Example 2 - You can't stop or disable the AV software (exemple: you are not allowed by your client to do it during a pentest)
+====================================================================================================================================
 Step 1 - Download and install VirtualBox or VMware Workstation on the Windows laptop/workstation
 
 Step 2 - Create a Kali VM
@@ -148,20 +174,11 @@ Step 2 - Create a Kali VM
 Step 3 - You can now use all your favorite pentest tools and scripts without being blocked by the AV or the EDR
 
 
-Example 2 - Simply stop or disable the AV software as a local admin
-===========================================================================================================================
-
-> If the AV software is poorly configured, as a local admin you can simply open the GUI and click on "disable" to stop the AV protection (i.e., real time monitoring, scheduled scans, etc..)
-
-> With the Windows Defender AV you can disable it using either the GUI or command lines (i.e., real time monitoring, scheduled scans, etc..)
-
-> You can also download the AV or EDR software installer tool and run it. very often you will have the option to uninstall the AV or EDR software.
-
-
 Example 3 - Block the SOC "detection"
-===========================================================================================================================
+====================================================================================================================================
 
-> As a local admin you can add rules in the local Windows firewall that will prevent the AV and/or EDR agents running on the laptop
+> As a local admin you can add rules in the local Windows firewall that will prevent the AV software and/or EDR agents running on the laptop
   to send alerts to the AV and/or EDR central console.
 
-
+> Identify misconfiguration in the AV and/or EDR software such as tools that are authorized (whitelist) only based on their names 
+  (checks only based on name and not on a hash signature nor a full storage path).
