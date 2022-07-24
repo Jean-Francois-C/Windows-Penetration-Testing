@@ -52,25 +52,42 @@ Microsoft Antimalware Scan Interface (AMSI)
   - https://s3cur3th1ssh1t.github.io/Bypass_AMSI_by_manual_modification/
  
 ---------------------------------------------------------------
-Windows Security features
+Windows Security features (reminder)
 ---------------------------------------------------------------
-> Microsoft has added some security features in PowerShell v5 to help out the Blue teams such as: 
-  - Constrained Language Mode, 
-  - Deep Scriptblock logging, 
-  - system wide transcripts,
+> PowerShell security features
+  Microsoft has added some security features in PowerShell v5 to help out the Blue teams such as: 
+  - Constrained Language Mode
+    It is a setting in PowerShell that greatly limits what commands can be performed. This can potentially reduce the available attack surface to adversary's. 
+  - Deep Script Block Logging
+    It records block of code as they are executed therefore it captures the complete activity and full content of the script. 
+    It maintains the complete audit trail of each activity which can be used later in forensics and to study the malicious behavior. 
+    It records all the activity at time of execution thus provides the complete details.
+    Everytime an adversary executes an encoded PowerShell script or command, script block logging provides that data in its raw form.
+  - System-Wide Transcripts
+    It creates a record of all or part of a PowerShell session to a text file. 
+    The transcript includes all command that the user types and all output that appears on the console.
   - Antimalware Scan Interface (AMSI)  
   - ...
 
-> Other classic defenses:
-  + Windows Defender 
-    - Real-Time protection and Antimalware Scan Interface (AMSI) 
-    - Tamper protection (prevents other form tampering with important security features)
-  + AppLocker
-  + Software Restriction Policy
+> Windows Defender AV
+  - Real-Time protection and Antimalware Scan Interface (AMSI) 
+  - Automatic and manual scanning
+  - Tamper protection (prevents other form tampering with important security features)
+  - Sample submissions
+  - ...
 
-  Note: Microsoft has introduced Credential Guard in Windows 10 Enterprise and Windows Server 2016, which uses virtualization-based security to isolate secrets,
-  and it is effective in preventing Mimikatz from retrieving hashes directly from memory.
-
+> Software whitelisting using AppLocker 
+  - AppLocker is an application whitelisting technology introduced with Microsoft's Windows 7 OS. It allows restricting which programs users 
+    can execute based on the program's path, publisher, or hash, and in an enterprise can be configured via Group Policy.
+  - AppLocker can control the following file types: Executables, DLLs, Scripts, Windows Installers, Packaged apps and installers.
+  - AppLocker supports three types of rules: Hash, Path, Publisher.
+  
+  Note: Microsoft Software Restriction Policy (SRP) can still be used but is "deprecated". AppLocker is recommended for supported Windows OS.
+  
+> Windows Event Tracing (ETW) 
+  - ETW provides a way to trace and log events from both user and kernel mode. 
+  - It is used by AV and EDR to detect attacks.
+  
 
 ================================================================================================================================================
 1. Examples of manual AMSI and AV bypass techniques 
