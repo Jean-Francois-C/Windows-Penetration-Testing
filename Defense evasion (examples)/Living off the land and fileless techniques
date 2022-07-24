@@ -52,7 +52,7 @@ Microsoft Antimalware Scan Interface (AMSI)
   - https://s3cur3th1ssh1t.github.io/Bypass_AMSI_by_manual_modification/
  
 ---------------------------------------------------------------
-Windows Security features (reminder)
+Windows Security features and Microsoft security products
 ---------------------------------------------------------------
 > PowerShell security features
   Microsoft has added some security features in PowerShell v5 to help out the Blue teams such as: 
@@ -87,7 +87,10 @@ Windows Security features (reminder)
   - ETW provides a way to trace and log events from both user and kernel mode. 
   - It is used by AV and EDR to detect attacks.
   
-
+> Microsoft Defender for Endpoint (formerly known as Microsoft Defender Advanced Threat Protection (ATP))
+  - It is a post-breach solution that complements Microsoft Defender AV.
+  - It is an EDR that detects and remediates advanced attacks on endpoints. 
+  
 ================================================================================================================================================
 1. Examples of manual AMSI and AV bypass techniques 
 ================================================================================================================================================
