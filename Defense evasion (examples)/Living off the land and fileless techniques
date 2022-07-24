@@ -80,8 +80,7 @@ Windows Security features (reminder)
   - AppLocker is an application whitelisting technology introduced with Microsoft's Windows 7 OS. It allows restricting which programs users 
     can execute based on the program's path, publisher, or hash, and in an enterprise can be configured via Group Policy.
   - AppLocker can control the following file types: Executables, DLLs, Scripts, Windows Installers, Packaged apps and installers.
-  - AppLocker supports three types of rules: Hash, Path, Publisher.
-  
+  - AppLocker supports Windows 10/11 and Windows server 2016 and above.
   Note: Microsoft Software Restriction Policy (SRP) can still be used but is "deprecated". AppLocker is recommended for supported Windows OS.
   
 > Windows Event Tracing (ETW) 
