@@ -10,7 +10,7 @@ Index
 ======
 1. Powershell Remoting
 2. WMIC
-3. Create remotely a scheduled task (native command 'schtasks') + Powershell reverse shell (InvokePowerShellTcp.ps1)
+3. Scheduled task (native command 'schtasks') + Powershell reverse shell
 4. RDP
 
 
