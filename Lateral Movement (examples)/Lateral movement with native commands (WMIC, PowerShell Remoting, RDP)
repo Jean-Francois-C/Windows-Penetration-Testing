@@ -1,10 +1,16 @@
 
 ========================================================================================================================
-Lateral movement with native commands (WMIC, PowerShell Remoting) 
+Lateral movement with native commands (WMIC, PowerShell Remoting, RDP) 
 ========================================================================================================================
 
 Requirement: 
 > You need valid admin credentials on the remote Windows server or worksation
+
+Index
+======
+1. Powershell Remoting
+2. WMIC
+3. RDP
 
 
 ========================================================================================================================
@@ -136,5 +142,4 @@ Members
 Administrator
 auditor
 The command completed successfully.
-
 
