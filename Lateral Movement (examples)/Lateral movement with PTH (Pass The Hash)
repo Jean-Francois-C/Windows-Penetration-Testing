@@ -11,6 +11,12 @@ Numerous tools can be used to perform a Pass-the-hash attack such as the Impacke
 > https://github.com/byt3bl33d3r/CrackMapExec
 > ...
 
+Index
+======
+1. WMIexec (Impacket version)
+2. PSexec (Impacket version)
+3. Mimikatz
+4. CrackMapExec
 
 ========================================================================================================================
 Example 1 - WMIexec (Impacket version)
