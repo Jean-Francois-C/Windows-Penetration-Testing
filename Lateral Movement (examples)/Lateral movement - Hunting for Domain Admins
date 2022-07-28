@@ -57,7 +57,7 @@ PS C:\> .\ADRecon.ps1 -DomainController <IP or FQDN> -Credential <domain\usernam
 
 
 ======================================================================================================================
-Method 3 - Find machines on which 'Domain Admin' accounts are logged-in using PowerView and various PowerShell scripts
+Method 3 - Find computers on which 'Domain Admin' accounts are logged-in using PowerView and various PowerShell scripts
 ======================================================================================================================
 
 Example 1. 'Invoke-UserHunter' (PowerView)
@@ -85,16 +85,29 @@ Ps C:\audit\tools> ...
 
 
 =====================================================================================================================
-Method 4 - Find computers on which 'Domain Admin' accounts are logged-in usingsing sharphound and BloodHound
+Method 4 - Find computers on which 'Domain Admin' accounts are logged-in using sharphound and BloodHound
 =====================================================================================================================
 
 > https://github.com/BloodHoundAD/BloodHound
 
+BloodHound uses graph theory to reveal the hidden and often unintended relationships within an Active Directory or Azure environment. 
+Attackers/auditors/pentesters can use BloodHound to easily identify highly complex attack paths that would otherwise be impossible to quickly identify. 
+
 Using the tool Bloodhound we can try to find a path to become Domain Admins using the credentials that we have. 
 The generated graph shows the number of hops required to reach a machine where a Domain Admin is logged-in. 
 
-BloodHound uses graph theory to reveal the hidden and often unintended relationships within an Active Directory or Azure environment. 
-Attackers can use BloodHound to easily identify highly complex attack paths that would otherwise be impossible to quickly identify. 
-Defenders can use BloodHound to identify and eliminate those same attack paths. 
-Both blue and red teams can use BloodHound to easily gain a deeper understanding of privilege relationships in an Active Directory or Azure environment.
+Example of commands (sharphound)
+---------------------------------
+C:\> runas /netonly /user:domain\user powershell -ep bypass
+PS C:\audit\tools> import-module sharphound.ps1
+PS C:\audit\tools> invoke-bloodhound -collectionmethod all -domain <domain-name>
+
+Example of commands (Neo4j)
+---------------------------------
+C:\audit\tools> neo4j.bat install-service
+C:\audit\tools> cd C:\path-to-neo4j\bin\
+C:\path-to-neo4j\bin\> net start neo4j
+...
+
+
 
