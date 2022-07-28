@@ -1,10 +1,10 @@
 =====================================================================================================================
-Various ways to find servers and workstations on which 'Domain Admin' accounts are logged-in
+Various ways to find Windows servers and workstations on which 'Domain Admin' accounts are logged-in
 =====================================================================================================================
 
-During a penetration test, once you have become local admin of multiple servers/workstations of a domain, one of the easiest ways to take over the Domain and become
-'Domain Admin' is to identify Windows servers and workstations on which high privileged accounts (e.g. Domain Admins, ...) are logged-in and and then log into
-these servers and/or workstations to dump from memory their credentials (e.g. using procdump/mimikatz). 
+During a penetration test, once you have become local admin of multiple servers/workstations of a Domain, one of the easiest ways to take over the Domain and become
+'Domain Admin' is to identify Windows servers and workstations on which high privileged accounts (e.g. Domain Admins, Account Operators,...) are logged-in and 
+then log into these servers and/or workstations to dump from memory their credentials (e.g. using procdump/mimikatz). 
 
 There are various techniques and tools that can be used to hunt for high privileged windows accounts (e.g. Enterprise Admins, Domain Admins, Administrators of the DC,
 Account Operators, Backup Operators, ...) over the network.
