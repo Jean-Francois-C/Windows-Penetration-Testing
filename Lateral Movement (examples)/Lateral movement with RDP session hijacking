@@ -2,11 +2,11 @@
 Lateral movement with RDP session hijacking
 ========================================================================================================================
 
-During a penetration test, if you gain remote access (with local admin priv) on a target Windows server or workstation, you can hijack 
-the RDP session of any other user that were logged into the system but are now disconnected. You can also do it with a currenlty logged user 
+During a penetration test, if you gain remote access (with local admin priv) on a target Windows server or workstation, you can hijack (without knowing their password)
+the RDP session of any other user that were logged into the system but are now disconnected. You can also do it with a currently logged user 
 but he will be kick-out of his session and this will be suspicious.
 
-This technique allows  to move laterally by hijacking other user sessions without the need to know their passwords or dump and crack (or PTH)
+This technique allows to move laterally by hijacking other user sessions without the need to know their passwords or dump and crack (or PTH)
 their password hashes to impersonate them.
 
 
@@ -15,13 +15,13 @@ PoC - RDP session hijacking using TSCON
 ========================================================================================================================
 
 Step 1 - We use the account 'auditor' to log into a remote Windows server (using RDP)
-------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
 
 > Note: The account 'auditor' has local admin priv on the remote Windows server
 
 
-Step 2 - We use the 'query user' command to display the list of available sessions
-----------------------------------------------------------------------------------------
+Step 2 - We use the 'query user' command to display the list of available sessions on the remote server
+--------------------------------------------------------------------------------------------------------
 
 C:\Users\Auditor> query user
  USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME
