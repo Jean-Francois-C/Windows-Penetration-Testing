@@ -1,0 +1,100 @@
+=====================================================================================================================
+Various ways to find servers and workstations on which 'Domain Admin' accounts are logged-in
+=====================================================================================================================
+
+During a penetration test, once you have become local admin of multiple servers/workstations of a domain, one of the easiest ways to take over the Domain and become
+'Domain Admin' is to identify Windows servers and workstations on which high privileged accounts (e.g. Domain Admins, ...) are logged-in and and then log into
+these servers and/or workstations to dump from memory their credentials (e.g. using procdump/mimikatz). 
+
+There are various techniques and tools that can be used to hunt for high privileged windows accounts (e.g. Enterprise Admins, Domain Admins, Administrators of the DC,
+Account Operators, Backup Operators, ...) over the network.
+
+
+=====================================================================================================================
+Method 1 - Find computers on which 'Domain Admin' accounts are logged-in using native Windows commands and utilities
+=====================================================================================================================
+
+Example 1. 'Qwinsta' or 'Query session'
+---------------------------------------
+C:\> qwinsta /server:hostname1
+C:\> qwinsta /server:hostname2
+C:\> ...
+OR
+C:\> Invoke-command -Scriptblock {hostname,qwinsta} -ComputerName (get-content C:\audit\tools\hostname-list.txt) -Credential domain\username
+
+
+Example 2. 'Query user'
+---------------------------------------
+C:\> query user /server:hostname1
+C:\> query user /server:hostname2
+C:\> ...
+OR
+C:\> quser /server:hostname1
+C:\> quser /server:hostname2
+C:\> ...
+OR
+PS C:\> Invoke-command -Scriptblock {hostname,quser} -ComputerName (get-content C:\audit\tools\hostname-list.txt) -Credential domain\username
+
+
+Example 3. Windows Sysinternals tool 'PsLoggedOn'
+------------------------------------------------------
+C:\> psloggedon.exe \\computername1 username
+C:\> psloggedon.exe \\computername2 username
+C:\> ...
+
+
+=====================================================================================================================
+Method 2 - Review the SPNs (Service Principal Names)
+=====================================================================================================================
+
+Services registered to run on a Windows server under a particular domain account will register that service for that user in the AD.
+By listing and reviewing the list of SPNs you can identify Windows computers on wich high privileged windows accounts (e.g. Domain Admins) are logged-in and used to run services.
+
+The tool Adrecon can be used to list the SPNs and the Domain Admins
+--------------------------------------------------------------------
+PS C:\> . .\ADRecon.ps1
+PS C:\> .\ADRecon.ps1 -DomainController <IP or FQDN> -Credential <domain\username> -Collect UserSPNs,ComputerSPNs,Groups,GroupMembers,Users  
+
+
+======================================================================================================================
+Method 3 - Find machines on which 'Domain Admin' accounts are logged-in using PowerView and various PowerShell scripts
+======================================================================================================================
+
+Example 1. 'Invoke-UserHunter' (PowerView)
+---------------------------------------------
+Ps C:\audit\tools> <AMSI BYPASS COMMANDS...>
+Ps C:\audit\tools> . .\Powerview_dev.ps1
+Ps C:\audit\tools> Invoke-UserHunter -Verbose -Checkaccess -GroupName "Domain Admins" -SearchForest
+
+
+Example 2. 'Get-NetLoggedon' (PowerView)
+---------------------------------------------
+Ps C:\audit\tools> <AMSI BYPASS COMMANDS...>
+Ps C:\audit\tools> . .\Powerview_dev.ps1
+Ps C:\audit\tools> Get-NetLoggedon -ComputerName computer1
+Ps C:\audit\tools> Get-NetLoggedon -ComputerName computer2
+Ps C:\audit\tools> ...
+
+
+Example 3. 'Get-Netsession' 
+---------------------------------------------
+Ps C:\audit\tools> Get-NetSession –Computername computer1
+Ps C:\audit\tools> Get-NetSession –Computername computer1
+Ps C:\audit\tools> ...
+(https://github.com/proxb/PInvoke/blob/master/Get-NetSession.ps1)
+
+
+=====================================================================================================================
+Method 4 - Find computers on which 'Domain Admin' accounts are logged-in usingsing sharphound and BloodHound
+=====================================================================================================================
+
+> https://github.com/BloodHoundAD/BloodHound
+
+Using the tool Bloodhound we can try to find a path to become Domain Admins using the credentials that we have. 
+The generated graph shows the number of hops required to reach a machine where a Domain Admin is logged-in. 
+
+BloodHound uses graph theory to reveal the hidden and often unintended relationships within an Active Directory or Azure environment. 
+Attackers can use BloodHound to easily identify highly complex attack paths that would otherwise be impossible to quickly identify. 
+Defenders can use BloodHound to identify and eliminate those same attack paths. 
+Both blue and red teams can use BloodHound to easily gain a deeper understanding of privilege relationships in an Active Directory or Azure environment.
+
