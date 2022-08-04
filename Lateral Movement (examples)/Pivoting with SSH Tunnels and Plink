@@ -39,8 +39,8 @@ Step 5. Execute a 'plink.exe' command with your webshell to create a SSH tunnel 
 Step 6. Use RDP over the SSH tunnel (remote port forward rule) to log into the compromised Windows server from Internet with your Kali Linux VM
         and pivot to attack the internal network.
         
-        On your Kali Linux VM you can use 'rdesktop' or 'xfreerdp' pointing to localhost and the port 1080 that will redirect your connection through the
-        SSH tunnel to the port 3389 of the compromised Windows server.
+        On your Kali Linux VM you can use 'rdesktop' or 'xfreerdp' pointing to localhost and the port 1080
+        => the RDP connection will be redirected through the SSH tunnel to the port 3389 of the compromised Windows server.
         
         # sudo apt-get update
         # sudo sudo apt install freerdp2-x11 freerdp2-shadow-x11
