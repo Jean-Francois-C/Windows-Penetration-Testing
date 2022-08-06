@@ -43,7 +43,7 @@ Step 6. Use RDP over the SSH tunnel (remote port forward rule) to log into the c
         => the RDP connection will be redirected through the SSH tunnel to the port 3389 of the compromised Windows server.
         
         # sudo apt-get update
-        # sudo sudo apt install freerdp2-x11 freerdp2-shadow-x11
+        # sudo apt install freerdp2-x11 freerdp2-shadow-x11
         # xfreerdp /f /u:<local-admin-username> /p:PASSWORD /v:localhost:1080 
         
         OR
