@@ -8,6 +8,10 @@ Pivoting with Ligolo on a Windows server (basic example)
 Ligolo is a simple and lightweight tool for establishing SOCKS5 or TCP tunnels from a reverse connection in complete safety (TLS certificate with elliptical curve).
 It is comparable to Meterpreter with Autoroute + Socks4a, but more stable and faster.
 
+Ligolo consists of two modules:
+> localrelay - It is intended to be launched on the control server (the attacker server).
+> ligolo - It is the program to run on the target computer.
+
 
 Context
 --------
