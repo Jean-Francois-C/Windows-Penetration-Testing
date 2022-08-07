@@ -240,18 +240,16 @@ Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
 |S-chain|-<>-127.0.0.1:1080-<><>-X.X.1.64:49154-<><>-OK
 [!] Launching semi-interactive shell - Careful what you execute
 [!] Press help for extra shell commands
+
 C:\>hostname
 SQLDBSRV
-
 C:\>whoami
 test-lab\administrator
-
 C:\>
 
 
 Example 3 - RDP connection to an internal server over the ligolo tunnel
 --------------------------------------------------------------------------------
-
 
 jeff@kali:~/Documents/Tools$ proxychains xfreerdp /f /u:administrator /p:Test1234 /v:X.X.1.64:3389
 ProxyChains-3.1 (http://proxychains.sf.net)
