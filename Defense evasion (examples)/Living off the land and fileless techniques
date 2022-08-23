@@ -18,8 +18,8 @@ Why using 'living off the land and fileless' techniques ?
   In general, creating less new files on the hard disk means less chance of being detected by traditional security tools and therefore minimizes
   the risk of an attack being detected and blocked.
 
-  Before executing a "hacking" and/or security audit scripts (e.g. '.ps1', '.vbs', '.bat') on a Windows machine is important to disable the Antimalware Scan Interface (AMSI)
-  to avoid our scripts being scanned and potentially blocked by the AV installed on the Windows machine.
+  Before executing a "hacking" and/or security audit scripts (e.g. '.ps1', '.vbs', '.bat') on a Windows machine it is recommended to disable the 
+  Antimalware Scan Interface (AMSI) to avoid our scripts being scanned and potentially blocked by the AV installed on the Windows machine.
 
 ---------------------------------------------------------------
 Microsoft Antimalware Scan Interface (AMSI)
