@@ -1,6 +1,6 @@
 
 ========================================================================================================================
-Lateral movement using native commands (WMIC, PowerShell Remoting, RDP) 
+Lateral movement using native commands (WMIC, PowerShell Remoting, Schtasks, RDP) 
 ========================================================================================================================
 
 Requirement: 
