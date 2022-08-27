@@ -18,4 +18,7 @@ affect with your MITM attack).
 Step 1 -  You have gain access to a workstation or server and you verify the configuration of WSUS
 ============================================================================================================
 
-PS C:\ > reg query HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate /v WUServer
+PS C:\> reg query HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate /v WUServer
+
+HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\WindowsUpdate
+    WUServer    REG_SZ    http://192.168.1.12:8535/
