@@ -1,0 +1,21 @@
+============================================================================================================
+Abusing non-SSL WSUS traffic with wsuxploit
+============================================================================================================
+
+=> Source: https://github.com/pimps/wsuxploit
+
+This is a MiTM weaponized exploit script to inject 'fake' updates into non-SSL WSUS traffic. 
+It is based on the WSUSpect Proxy application that was introduced to public on the Black Hat USA 2015 presentation, 'WSUSpect – Compromising the Windows Enterprise via Windows Update'.
+
+
+Scenario
+----------
+During an internal penetration test, you discover that the WSUS server address of your target network (workstations & servers) uses the HTTP protocol. 
+As a result you can impersonate the WSUS server using a MITM attack and get SYSTEM access to the windows targets inside of the internal (that you can 
+affect with your MITM attack).
+
+
+Step 1 -  You have gain access to a workstation or server and you verify the configuration of WSUS
+============================================================================================================
+
+PS C:\ > reg query HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate /v WUServer
