@@ -1,8 +1,8 @@
 ================================================================================================================================================
-Simple test of AMSI and AV bypass using the tool 'Invoke-Obfuscation'
+AMSI and AV bypass using the tool 'Invoke-Obfuscation'
 ================================================================================================================================================
 
-The objective of this test is to run a reverse shell obfuscated with 'Invoke-Obfuscation' on a Windows 10 laptop without being detected and 
+The objective of this simple test is to run a reverse shell obfuscated with 'Invoke-Obfuscation' on a Windows 10 laptop without being detected and 
 blocked by the Windows Defender AV (that is enabled and up-to-date on the target laptop).
 
 > URL of the tool: https://github.com/danielbohannon/Invoke-Obfuscation
