@@ -228,7 +228,7 @@ This script contains malicious content and has been blocked by your antivirus so
 
 
 ================================================================================================================================================
-III. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (patching technique)
+III. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 ================================================================================================================================================
 
 Test 1 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
