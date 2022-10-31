@@ -9,12 +9,11 @@ Antivirus/EDR bypass using the packer 'NimCrypt2'
 Features:
 --------
  - SandBox check
- - AMSI bypass
- - ETW bypass
+ - AMSI (Antimalware Scan Interface) bypass
+ - ETW (Event Tracing for Windows) bypass
  - Use of direct syscalls and the ability to load regular PE files as well as raw shellcode
  - ...
  
-
 
 ================================================================================================================================================
 Example 1 - The tool SharpSecDump is not detected nor blocked by Defender AV after being packed by Nimcrypt2
@@ -110,7 +109,7 @@ NL$KM:6f11bbb5951aab1a3bf8bb712f79084c0b35eaea18c73ecad75aa4759920e644ce53902da5
 
 
 ================================================================================================================================================
-Example 2 - The tool Rubeus is detected but not blocked by Defender AV after being packed by Nimcrypt2
+Example 2 - The tool Rubeus is detected when executed but not blocked by Defender AV after being packed by Nimcrypt2
 ================================================================================================================================================
 
 STEP 1 - Download the code of the tool Rubeus from Github and compile it
