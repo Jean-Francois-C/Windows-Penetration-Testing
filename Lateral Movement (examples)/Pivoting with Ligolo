@@ -1,4 +1,3 @@
-
 ===========================================================================================================================================
 Pivoting with Ligolo on a Windows server (basic example)
 ===========================================================================================================================================
@@ -25,7 +24,7 @@ This Windows server is located inside your client's internal network (protected 
 Step 1 - Build the 2 Ligolo binaries: the 'localrelay' to run on your attack server and the ligolo client to run on the compromised server
 ===========================================================================================================================================
 
-Follow instrcutions available in the Github page "https://github.com/sysdream/ligolo"
+Follow the instrcutions available in the Github page "https://github.com/sysdream/ligolo"
 
 Notes:
 ======
@@ -136,7 +135,7 @@ INFO[0056] Yamux session established.
 2. Configure Proxychains (socks5) 
 -----------------------------------------------------------
 
-=> You need to add 'socks5  127.0.0.1 1080' into the config file '/etc/proxychains.conf'
+=> You need to add 'socks5  127.0.0.1 1080' into the configuration file '/etc/proxychains.conf'
 
 jeff@kali:~/Documents/Tools$ sudo vi /etc/proxychains.conf 
 jeff@kali:~/Documents/Tools$ cat /etc/proxychains.conf 
