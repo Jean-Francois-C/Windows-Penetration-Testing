@@ -2,16 +2,18 @@
 Pivoting with Meterpreter (Metasploit) 
 ===========================================================================================================================================
 
-Context / Test lab
---------------------
+Test lab
+---------
 > Kali Linux (192.168.56.104)
 > Windows 10 Laptop with Defender AV enabled and up-to-date (192.168.1.113)
 > Windows 2016 server with Defender AV enabled and up-to-date (192.168.1.196)
 > Windows DC 2016 with Defender AV enabled and up-to-date (192.168.1.30)
 
+Context
+---------
 The Kali Linux box can't reach the network 192.168.1.0/24. 
-To be able to pivot and reach all the machines located in the network 192.168.1.0/24 we will execute a meterpreter session (reverse HTTPS shell with the autorun
-command and a proxy socks) on the WIndows 10 laptop to pivot and then attack the Windows server and the Domain Controller.
+To be able to reach the machines located in the network 192.168.1.0/24 we will execute a meterpreter session (reverse HTTPS shell with the autorun
+command and a proxy socks) on the Windows 10 laptop to pivot and then attack the machines located in the network 192.168.1.0/24.
 
 
 ===========================================================================================================================================
@@ -327,15 +329,11 @@ The above X.509 certificate could not be verified, possibly because you do not h
 the CA certificate in your certificate store, or the certificate has expired.
 Please look at the OpenSSL documentation on how to add a private CA to the store.
 Do you trust the above certificate? (Y/T/N) y
-[18:53:28:562] [1711:1712] [INFO][com.freerdp.gdi] - Local framebuffer format  PIXEL_FORMAT_BGRX32
-[18:53:28:562] [1711:1712] [INFO][com.freerdp.gdi] - Remote framebuffer format PIXEL_FORMAT_BGRA32
-[18:53:28:691] [1711:1712] [INFO][com.freerdp.channels.rdpsnd.client] - [static] Loaded fake backend for rdpsnd
-[18:53:28:692] [1711:1712] [INFO][com.freerdp.channels.drdynvc.client] - Loading Dynamic Virtual Channel rdpgfx
-[18:53:29:687] [1711:1712] [WARN][com.freerdp.client.x11] - xf_lock_x11_:       [1] recursive lock from xf_process_x_events
-
 <SNIP>
 [18:54:16:997] [1711:1712] [INFO][com.freerdp.core] - ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
 [18:54:16:997] [1711:1712] [ERROR][com.freerdp.core] - rdp_set_error_info:freerdp_set_last_error_ex ERRINFO_LOGOFF_BY_USER [0x0001000C]
+
+=> The RDP connection works well.
 
 
 Example 3 - WGET request to a Web server (192.168.1.254) over the meterpreter tunnel
