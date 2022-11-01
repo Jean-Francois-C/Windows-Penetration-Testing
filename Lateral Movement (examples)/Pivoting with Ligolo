@@ -1,5 +1,5 @@
 ===========================================================================================================================================
-Pivoting with Ligolo on a Windows server (basic example)
+Pivoting with Ligolo  (basic example)
 ===========================================================================================================================================
 
 => Github page "https://github.com/sysdream/ligolo"
@@ -10,7 +10,6 @@ It is comparable to Meterpreter with Autoroute + Socks4a, but more stable and fa
 Ligolo consists of two modules:
 > localrelay - It is intended to be launched on the control server (the attacker server).
 > ligolo - It is the program to run on the target computer.
-
 
 Context
 --------
