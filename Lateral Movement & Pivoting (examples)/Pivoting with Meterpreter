@@ -12,7 +12,7 @@ Test lab
 Context
 ---------
 The Kali Linux box can't reach the network 192.168.1.0/24. 
-To be able to reach the machines located in the network 192.168.1.0/24 we will execute a meterpreter session (reverse HTTPS shell with the autorun
+To be able to reach the machines located in the network 192.168.1.0/24 we will execute a meterpreter session (reverse HTTPS shell with the autoroute
 command and a proxy socks) on the Windows 10 laptop to pivot and then attack the machines located in the network 192.168.1.0/24.
 
 
