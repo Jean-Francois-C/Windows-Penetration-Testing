@@ -9,6 +9,7 @@ Numerous tools can be used to perform a Pass-the-hash attack such as the Impacke
 > https://github.com/SecureAuthCorp/impacket
 > https://github.com/gentilkiwi/mimikatz
 > https://github.com/byt3bl33d3r/CrackMapExec
+> https://github.com/Kevin-Robertson/Invoke-TheHash
 > ...
 
 Index
@@ -141,7 +142,7 @@ WMI and SMB connections are accessed through the .NET TCPClient.
 Authentication is performed by passing an NTLM hash into the NTLMv2 authentication protocol. 
 Local administrator privilege is not required client-side.
 
-Note: These powersehll scripts are flagged by AV so it is necessary to bypass the AMSI and obfuscate them to avoid detection.
+Note: These powershell scripts are flagged by AV so it is necessary to bypass the AMSI and obfuscate them to avoid detection.
 
 PoC - Invoke-SMBEnum.ps1
 -------------------------
