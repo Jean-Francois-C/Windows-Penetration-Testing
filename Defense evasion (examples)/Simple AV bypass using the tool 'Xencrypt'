@@ -61,7 +61,8 @@ under certain conditions.
 [*] Writing 'C:\Users\Administrator.PO718687\Desktop\invoke-encryptedm1m1.ps1' ...
 [+] Done!
 
-=> The file generated (invoke-encryptedm1m1.ps1) is not detected by the Windows Defender antivirus.
+
+=> I scanned the file generated (invoke-encryptedm1m1.ps1) with several antivirus (e.g. Defender, McAfee) and it was not detected.
 
 
 Step 2 - Check that the encrypted 'invoke-mimkatz.ps1' is working properly by running it (after bypassing the AMSI)
@@ -129,6 +130,9 @@ under certain conditions.
 [*] Finalizing code layer ...
 [*] Writing 'C:\Users\Administrator\Documents\Tools-AD\invoke-encryptedRub3u3.ps1' ...
 [+] Done!
+
+
+=> I scanned the file generated (invoke-encryptedRub3u3.ps1) with several antivirus (e.g. Defender, McAfee) and it was not detected.
 
 
 Step 2 - Check that the encrypted 'invoke-rubeus.ps1' is working properly by running it (after bypassing the AMSI)
