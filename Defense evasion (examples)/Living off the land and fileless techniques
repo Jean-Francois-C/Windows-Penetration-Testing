@@ -7,7 +7,8 @@ INDEX
 I.   Reminder & Definitions
 II.  Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
 III. Example of AMSI and AV bypass by patching the AMSI DLL
-IV.  Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+IV.  Example of AMSI and AV bypass by modifying a registry key (admin priv required)
+V.   Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 
 
 ================================================================================================================================================
@@ -54,6 +55,9 @@ Microsoft Antimalware Scan Interface (AMSI)
   
 > The AMSI protects PowerShell by loading AMSI’s DLL (amsi.dll) into the PowerShell’s memory space.
   It scans the PowerShell console input by using Windows Defender (or other AV) to determine whether to block the payload operation or allow it to continue.
+  Prior to execution the following two API’s are used by the antivirus to scan the buffer and strings for signs of malware.
+  - AmsiScanBuffer()
+  - AmsiScanString()
 
 > There are many techniques to bypass AMSI such as:
   - patching the amsi.dll in memory
@@ -66,7 +70,9 @@ Microsoft Antimalware Scan Interface (AMSI)
   Usefull links:
   - https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
   - https://s3cur3th1ssh1t.github.io/Bypass_AMSI_by_manual_modification/
- 
+  - https://amsi.fail
+  - https://cheatsheet.haax.fr/windows-systems/privilege-escalation/amsi_and_evasion/
+  
 ---------------------------------------------------------------
 Windows Security features and Microsoft security products
 ---------------------------------------------------------------
@@ -255,7 +261,18 @@ At line:1 char:1
 
 
 ================================================================================================================================================
-IV. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+IV. Example of AMSI and AV bypass technique by modifying a registry key (admin priv required)
+================================================================================================================================================
+
+AMSI Providers are responsible for the scanning process by the antivirus product and are registered in a location in the registry. 
+The GUID for Windows Defender is: HKLM:\SOFTWARE\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}
+We can remove the registry key to bypass/disable the AMSI if we have local administrator privileges but it is not stealth.
+
+PS C:\> Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}" -Recurse
+
+
+================================================================================================================================================
+V. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 ================================================================================================================================================
 
 Test 1 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
@@ -478,7 +495,7 @@ Affected items:
 
 
 ===================================================================================================================================================
-V. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
+VI. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
 ===================================================================================================================================================
 
 Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
