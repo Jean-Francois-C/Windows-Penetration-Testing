@@ -6,12 +6,13 @@ Antivirus/EDR bypass using the packer 'NimCrypt2'
 
 => Source: https://github.com/icyguider/Nimcrypt2
 
-Features:
+Options
 --------
  - SandBox check
  - AMSI (Antimalware Scan Interface) bypass
  - ETW (Event Tracing for Windows) bypass
  - Use of direct syscalls and the ability to load regular PE files as well as raw shellcode
+ - Unhook ntdll.dll to bypass EDR detection (-u parameter)
  - ...
  
 
