@@ -4,15 +4,16 @@ Protection bypass - Usefull commands & tricks
 
 INDEX
 ---------
-1. Commands to disable/bypass Windows Defender AV
-2. Commands to bypass the Antimalware Scan Interface (AMSI) for the current PowerShell session
-3. Command to disable ETW (Event Tracing for Windoww) for the current PowerShell session
-4. Commands to bypass/disable Applocker (with local admin priv)
-5. Commands to enable Windows PowerShell 2.0 in Windows 10 (it requires admin privileges)
-6. Commands to disable/enable the Windows Firewall 
-7. Commands to enable RDP Access on a Windows machine
-8. Methods to run commands as "NT Authority/System"
-9. Simple trick to prevent an Antivirus / EndPoint Protection solution to block the execution of a binary
+1.  Commands to disable/bypass Windows Defender AV
+2.  Commands to bypass the Antimalware Scan Interface (AMSI) for the current PowerShell session
+3.  Command to disable ETW (Event Tracing for Windoww) for the current PowerShell session
+4.  Commands to bypass/disable Applocker (with local admin priv)
+5.  Commands to enable Windows PowerShell 2.0 in Windows 10 (it requires admin privileges)
+6.  Commands to disable/enable the Windows Firewall 
+7.  Commands to enable RDP Access on a Windows machine
+8.  Methods to run commands as "NT Authority/System"
+9.  Simple trick to prevent an Antivirus / EndPoint Protection solution to block the execution of a binary
+10. Unhooking NTDLL.dll to bypass EDR solutions
 
 
 ==================================================================================================================
@@ -357,4 +358,38 @@ Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
 
 C:\>
 
-      
+==================================================================================================================
+10. Unhooking NTDLL.dll to bypass EDR solutions
+==================================================================================================================
+
+APIs (application programming interfaces) are the interfaces by which code is used to make things happen on a computer system. 
+Windows has a set of APIs (such as syscall) that can be called to execute instructions that require direct system or kernel-level access. 
+Most EDR solutions use the gateway NTDLL.dll by “hooking” into it to watch for suspicious calls to memory.
+
+The Windows OS has two different privilege levels, that were implemented to protect the OS from for example crashes caused by installed applications. 
+All applications installed on a Windows System run in the so called User-mode and the kernel and device drivers run in the so called Kernel-mode. 
+
+Applications in the User-mode cannot access or manipulate memory sections in the Kernel-mode. AV/EDR systems can only monitor application behaviour in
+the User-mode, due to the Kernel Patch Protection. And the very last instance in the User-mode are the Windows API functions from NTDLL.dll. 
+
+If any function from NTDLL.dll is called, the CPU switches to Kernel-mode next, which cannot be monitored by AV/EDR vendors anymore. 
+The single functions of NTDLL.dll are called Syscalls.
+As of the NTDLL.dll functions are the last intance, that can be monitored for suspicious activities from attackers or malware by AV/EDR vendors, 
+they are typically doing exactly that. 
+They inject a custom DLL-file into every new process. You can find DLL files, loaded into a process from AV/EDR Vendors via for example 
+Sysinternals procexp64.exe.
+
+Unhooking refers to a method that attackers can use to load a fresh, unhooked version of ntdll.dll AFTER Windows has already loaded the EDR-hooked
+version at process launch. At this point the EDR is flying blind to any code that is running and it is unable to monitor the return address for 
+any API calls made, rendering it useless. 
+
+
+Examples of tools
+===================
+> https://github.com/cube0x0/SyscallPack
+> https://github.com/Mr-Un1k0d3r/EDRs
+> https://github.com/GetRektBoy724/SharpUnhooker
+
+> Nimcrypt2 is a PE packer/loader designed to bypass AV/EDR. It use direct syscalls and has ability to load regular PE files as well as raw shellcode.
+  Nimcrypt2 allows to unhook the ntdll.dll.
+  GITHUB: https://github.com/icyguider/Nimcrypt2
