@@ -4,14 +4,18 @@ Simple AV bypass using the tool 'Xencrypt' (PowerShell crypter)
 
 => Source: https://github.com/the-xentropy/xencrypt
 
-The objective is to use 'Xencrypt.ps1' to encrypt offensive powershell scripts to be able to copy them on the disk of a target Windows laptop or Windows server   
-without having them being detected and deleted by Defender AV (or other AV products)
+The objective is to use 'Xencrypt.ps1' to encrypt offensive PowerShell scripts to be able to copy them on the disk of a target Windows laptop or Windows server   
+without having them being detected and deleted by the MS Defender AV (or other AV products).
 
-Obvisouly before running the encrypted offensive powershell scripts (stored locally on our target) it will still be necessary to bypass the AMSI first
-to avoid AV detection.
+Xencrypt allows to encrypt multiple times offensive PowerShell scripts (i.e. recursive layering = crypter crypting the crypted output).
+
+Once encrypted, offensive PowerShell scripts such as "invoke-mimikatz.ps1" will not be detected by AntiVirus products (i.e. malware signature scan) when they 
+will be downloaded or copied on a target. However they will still be detected at runtime by most AV's real time protection and/or sandbox checks. 
+So before running an encrypted offensive PowerShell script, it will be necessary to bypass the Windows Antimalware Scan Interface (AMSI).
+
 
 =========================================================================================================================================================
-PoC 1 - Example with the script 'Invoke-mimkatz.ps1' and a Windows 10 laptop (fully patched with Defender AV enabled and up-to-date)
+PoC 1 - Example with the script 'Invoke-mimkatz.ps1' encrypted 3 times and a Windows 10 laptop (fully patched with MS Defender AV enabled and up-to-date)
 =========================================================================================================================================================
 
 Step 1 - Encrypt the script 'Invoke-mimkatz.ps1' with 3 iterations of Xencrypt
@@ -104,7 +108,7 @@ SID               : S-1-5-21-936125016-2310263949-2175806047-500
 <SNIP>
 
 =========================================================================================================================================================
-PoC 2 - Example with the script 'Invoke-rubeus.ps1' and a Windows 10 laptop (fully patched with Defender AV enabled and up-to-date)
+PoC 2 - Example with the script 'Invoke-rubeus.ps1' encrypted 2 times and a Windows 10 laptop (fully patched with MS Defender AV enabled and up-to-date)
 =========================================================================================================================================================
 
 Step 1 - Encrypt the script 'Invoke-rubeus.ps1' with 2 iterations of Xencrypt
@@ -176,4 +180,5 @@ PS C:\Users\Administrator\Documents\Tools-AD> invoke-rubeus
         Rubeus.exe brute </password:PASSWORD | /passwords:PASSWORDS_FILE> [/user:USER | /users:USERS_FILE] [/domain:DOMAIN] [/creduser:DOMAIN\\USER & /credpassword:PASSWORD] [/ou:ORGANIZATION_UNIT] [/dc:DOMAIN_CONTROLLER] [/outfile:RESULT_PASSWORD_FILE] [/noticket] [/verbose] [/nowrap]
 
 <SNIP>
+
 
