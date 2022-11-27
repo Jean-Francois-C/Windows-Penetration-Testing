@@ -237,7 +237,7 @@ PS C:\Windows\system32> whoami
 nt authority\system
 
 ========================================================================================================================
-Example 4 - Remote File Access to C$ + Upload of an executbale file in the startup folder
+Example 4 - Remote File Access to C$ + Upload of an executable file in the startup folder
 ========================================================================================================================
 
 We can copy a 'malicious' executable file and drop it in the Startup folder, so that it executes every time a user logs in as a user.
