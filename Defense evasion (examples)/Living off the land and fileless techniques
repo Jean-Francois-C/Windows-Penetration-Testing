@@ -11,13 +11,13 @@ I.   Reminder & Definitions
      ➤ Windows Security features and Microsoft security products
 
 II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (AMSI) and AV products to be able to download and execute (in-memory) 
-     any offensive PowerShell scripts
+     any offensive PowerShell scripts (and PE files thanks to Invoke-ReflectivePEInjection technique)
      ➤ Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in the PowerShell session 
      ➤ Example of AMSI and AV bypass by patching the AMSI DLL
      ➤ Example of AMSI and AV bypass by modifying a registry key (admin priv required)
      ➤ Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 
-III. Example of technique to download and execute in-memory Portable Executable (PE) files and to bypass AV products, ETW, ...
+III. Examples of techniques to download and execute in-memory offensive Portable Executable (PE) files (without using PowerShell) to bypass AV products
      ➤ Example of AV bypass using the tool 'FilelessRemotePE'
 
 
@@ -29,8 +29,9 @@ I. Reminder & Definitions
 Why using 'living off the land and fileless' techniques ?
 ---------------------------------------------------------------
 > The purpose of the 'living off the land and fileless' techniques is to avoid getting detected and blocked by the antivirus and end-point protection
-  solutions installed on modern Windows machines during penetration tests by running scripts and shellcodes directly into memory and making use as much as possible
-  of the sysadmin tools and software that already installed on targeted computers.
+  solutions installed on modern Windows machines during penetration tests by:
+  - running scripts, portable executable files and shellcodes directly into memory  
+  - using as much as possible legitimate sysadmin tools and software that are already installed on the targeted computers.
   
   The four main categories of living off the land and fileless attack techniques are: 
   - memory-only threats, 
@@ -124,7 +125,6 @@ Windows Security features and Microsoft security products
   - It is an EDR that detects and remediates advanced attacks on endpoints. 
   
  
-
 ================================================================================================================================================
 II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (AMSI) & AV products to be able to download and execute 
      in-memory any offensive PowerShell scripts 
@@ -575,13 +575,13 @@ SID               : S-1-5-90-1
 <SNIP>
 
 
-================================================================================================================================================
-III. Example of technique to download and execute in-memory Portable Executable (PE) files and to bypass AV products, ETW, ...
-================================================================================================================================================
+===========================================================================================================================================================
+III. Examples of techniques to download and execute in-memory offensive Portable Executable (PE) files (without using PowerShell) to bypass AV products
+===========================================================================================================================================================
 
-------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 3.1 Example of AV bypass using the tool 'FilelessRemotePE'
-------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/D1rkMtr/FilelessRemotePE
 
