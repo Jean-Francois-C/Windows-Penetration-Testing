@@ -389,6 +389,7 @@ Examples of tools
 > https://github.com/cube0x0/SyscallPack
 > https://github.com/Mr-Un1k0d3r/EDRs
 > https://github.com/GetRektBoy724/SharpUnhooker
+> https://github.com/D1rkMtr/FilelessRemotePE
 
 > Nimcrypt2 is a PE packer/loader designed to bypass AV/EDR. It use direct syscalls and has ability to load regular PE files as well as raw shellcode.
   Nimcrypt2 allows to unhook the ntdll.dll.
