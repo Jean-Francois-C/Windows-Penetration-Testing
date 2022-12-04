@@ -1,5 +1,5 @@
 ======================================================================================================================================================
-Pivoting with Ligolo  (basic example)
+Pivoting with Chisel  (basic example)
 ======================================================================================================================================================
 
 Chisel is a fast TCP/UDP tunnel, transported over HTTP, secured via SSH. It is a single executable including both client and server (written in Go (golang)). 
