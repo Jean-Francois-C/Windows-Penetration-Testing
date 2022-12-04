@@ -20,7 +20,7 @@ PoC/Example - Step 1 - Run Chisel in 'server mode' on your attack server (e.g. a
 Setting Up the Chisel Server
 -----------------------------
 >  server: run the server mode
->  -p 8080: port for the chisel server to listen on
+>  -p 443: port for the chisel server to listen on
 >  --reverse: allows reverse port forwarding
 >  --reverse:  Allow clients to specify reverse port forwarding remotes in addition to normal remotes.
 >  --key "private": use "private" string to seed the generation of a ECDSA public and private key pair
