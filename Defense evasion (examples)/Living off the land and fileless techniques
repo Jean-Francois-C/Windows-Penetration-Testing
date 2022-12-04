@@ -687,6 +687,10 @@ The tool "EAPrimer" can be used to load .Net assemblies (C#) from a filepath (lo
 On startup, it will attempt to perform in-memory patching of AMSI to bypass detection. 
 By default, the output is written to the console, however, this can be directed to a file or even sent via HTTP POST request to a remote server.
 
+Reminder: 
+An assembly is a collection of types and resources that are built to work together and form a logical unit of functionality. 
+Assemblies take the form of executable (.exe) or dynamic link library (. dll) files, and are the building blocks of .NET applications.
+
 
 Test/PoC - Download and execution in-memory of Rubeus.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
