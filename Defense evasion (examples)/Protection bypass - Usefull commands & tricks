@@ -232,6 +232,15 @@ Examples of tools
 
     PS C:\> [Reflection.Assembly]::LoadWithPartialName('System.Core').GetType('System.Diagnostics.Eventing.EventProvider').GetField('m_enabled','NonPublic,Instance').SetValue([Ref].Assembly.GetType('System.Management.Automation.Tracing.PSEtwLogProvider').GetField('etwProvider','NonPublic,Static').GetValue($null),0)
 
+ > PowerExec.ps1 
+   https://github.com/tmenochet/PowerExec
+   PowerExec combines various bypass techniques and execution methods for fileless lateral movement.
+   Bypass techniques can be specified within the function New-PowerLoader:
+   - AMSI - Bypass Antimalware Scan Interface via in-memory patching
+   - ETW - Bypass Event Tracing for Windows via in-memory patching
+   - SBL - Disable PowerShell Script Block Logging
+   - PML - Disable PowerShell Module Logging
+
 
 Other - Commands to display event logs
 --------------------------------------
