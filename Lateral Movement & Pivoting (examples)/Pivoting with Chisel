@@ -32,18 +32,15 @@ jeff@kali:~/Documents/Tools$ cd chisel
 ----------------
 jeff@kali:~/Documents/Tools/chisel$ go build -ldflags="-s -w"
 
-
 //Windows x32 version
 ----------------------
 jeff@kali:~/Documents/Tools/chisel$ GOOS=windows GOARCH=386 go build -ldflags="-s -w"
 jeff@kali:~/Documents/Tools/chisel$ mv chisel.exe chisel386.exe 
 
-
 //Windows x64 version
 ----------------------
 jeff@kali:~/Documents/Tools/chisel$ GOOS=windows GOARCH=amd64 go build -ldflags="-s -w"
 jeff@kali:~/Documents/Tools/chisel$ mv chisel.exe chiselamd64.exe 
-
 
 //Packing chisel Windows x32 PE with the packer amber (https://github.com/EgeBalci/amber)
 ------------------------------------------------------------------------------------------
@@ -80,6 +77,10 @@ upx: compress: FileNotFoundException: compress: No such file or directory
    8123904 ->   2289152   28.18%    win32/pe     chisel386.exe              
 
 Packed 1 file.
+
+We can edit the PE with an Hex Editor (https://hexed.it/) to try to avoid AV detection.
+=> manual editing at the UPX0 header section => replace the hex values x55 x50 x58 x30 (UPX0) by x41 x41 x41 x30 (AAA0)
+(https://github.com/cybertechniques/example-techniques-obfuscation-packing-upx)
 
 
 ======================================================================================================================================================
