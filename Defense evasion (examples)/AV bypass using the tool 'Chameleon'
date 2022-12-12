@@ -17,3 +17,48 @@ The tool has been developed as a Python port of the Chimera project.. As such, i
 > semi-random backticks insertion
 > case randomization
 > encoding
+
+
+=========================================================================================================================================================
+PoC - Example with the script 'PowerUp.ps1' running on a Windows 10 laptop (fully patched with Defender AV enabled and up-to-date)
+=========================================================================================================================================================
+
+
+Step 1 - Obfuscate the script  'PowerUp.ps1' with Chameleon.py on a Kali VM
+----------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/chameleon-main$ python3 ./chameleon.py -a ./powerup.ps1 -o ./chameleon-powerup.ps1
+sh: 1: color: not found
+__________________________________________________________________________________
+    
+  ▒▒▒▒▒▒  ▒▒   ▒▒  ▒▒▒▒▒  ▒▒▒    ▒▒▒ ▒▒▒▒▒▒▒ ▒▒     ▒▒▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒  ▒▒  ▒▒▒
+  ▒▒      ▒▒   ▒▒ ▒▒   ▒▒ ▒▒▒▒  ▒▒▒▒ ▒▒      ▒▒     ▒▒      ▒▒   ▒▒ ▒▒▒▒ ▒▒ ▒▒▒▒
+  ▓▓      ▓▓▓▓▓▓▓ ▓▓▓▓▓▓▓ ▓▓ ▓▓▓▓ ▓▓ ▓▓▓▓▓   ▓▓     ▓▓▓▓▓   ▓▓   ▓▓ ▓▓ ▓▓▓▓   ▓▓
+  ██      ██   ██ ██   ██ ██  ██  ██ ██      ██     ██      ██   ██ ██  ███   ██
+  ██████  ██   ██ ██   ██ ██      ██ ███████ ██████ ███████  █████  ██   ██   ██
+----------------------------------------------------------------------------------
+▒ by d3adc0de (@klezVirus)
+__________________________________________________________________________________
+
+[+] Starting obfuscation at 2022-12-12 23:41:19.257577
+  [*] Zeroing out comments... Done
+[+] Chameleon: standard obfuscation
+  [*] Identifying scoped variables and reflective constructors
+    [>] Generating function mapping... Success
+    [>] Identified 67 scoped variables which will not be obfuscated
+  [*] Variables Obfuscation... Done
+  [*] Data Types Obfuscation... Done
+  [*] Function Obfuscation... Done
+  [*] Nishang Obfuscation... Done
+  [*] Cases randomization... Done
+  [*] IP Address to Hex... Done                                                                                                 
+  [*] Comments Obfuscation... Done                                                                                              
+  [*] Indentation Randomization... Done                                                                                         
+  [*] Strings Obfuscation... Done                                                                                               
+[+] Chameleon: obfuscation via encoding                                                                                                            
+  [*] Writing obfuscated payload to ./chameleon-powerup.ps1... Done                                                                                
+[+] Ended obfuscation at 2022-12-12 23:41:32.871769
+
+
+Step 2 - Check that the obfuscated 'Invoke-WMIExec.ps1' is working properly without being detected by the AMSI / Defender AV
+-----------------------------------------------------------------------------------------------------------------------------
