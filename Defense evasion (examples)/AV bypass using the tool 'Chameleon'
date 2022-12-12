@@ -1,0 +1,19 @@
+=========================================================================================================================================================
+Simple AV bypass using the PowerShell obfuscation script 'Chameleon'
+=========================================================================================================================================================
+
+Chameleon is yet another PowerShell obfuscation tool designed to bypass AMSI and commercial antivirus solutions.
+
+=> Source: https://github.com/klezVirus/chameleon
+
+The objective is to use 'chameleon.py' to obfuscate offensive powershell scripts so we can copy them on the disk of a target Windows laptop or Windows server   
+and then run them without being detected and deleted by the Microsoft Defender AV (or other AV products).
+
+The tool has been developed as a Python port of the Chimera project.. As such, it uses mostly the same techniques to evade common detection signatures, such as:
+> comment deletion/substitution
+> string substitution (variables, functions, data-types)
+> variable concatenation
+> indentation randomization
+> semi-random backticks insertion
+> case randomization
+> encoding
