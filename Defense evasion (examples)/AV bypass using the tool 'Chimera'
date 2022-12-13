@@ -65,6 +65,9 @@ jeff@kali:~/Documents/Tools/Chimera$ ./Chimera.sh -f shells/Invoke-WMIExec.ps1 -
  ░ Obfuscated file: /tmp/chimera-Invoke-WMI3x3c.ps1 
 
 
+Important note : Do not delete the comment section before obfuscating the scripts as the name of the original parameters will be replaced by 
+                 the obfuscated ones in this section and we will need to know them to run the script :-)
+
 => I scanned the file generated (chimera-Invoke-WMI3x3c.ps1) with the Microsoft Defender antivirus and it was not detected.
 
 
