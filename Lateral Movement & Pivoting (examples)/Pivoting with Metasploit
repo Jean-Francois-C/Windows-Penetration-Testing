@@ -1,5 +1,5 @@
 ===========================================================================================================================================
-Pivoting with Meterpreter (Metasploit) 
+Pivoting with Metasploit
 ===========================================================================================================================================
 
 During during penetration tests, Command and Control solutions (C2) like the Metasploit framework can be used to create a reverse tunnel between
