@@ -789,7 +789,7 @@ PS C:\Users\Administrator\Documents\Tools-AD>
 <SNIP>
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-3.2 Example of AV bypass using the tool 'EAPrimer'
+3.2 Example of AMSI and AV bypass using the tool 'EAPrimer'
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/m8sec/EAPrimer
