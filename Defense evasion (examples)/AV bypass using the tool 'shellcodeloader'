@@ -1,0 +1,42 @@
+=========================================================================================================================================================
+AV bypass using the obfuscation script 'Harriet'
+=========================================================================================================================================================
+
+Source: => https://github.com/knownsec/shellcodeloader
+
+> ShellcodeLoader for windows to bypass AV.
+> There are 13 shellcode loading modes in 32 bits and 12 shellcode loading modes in 64 bits.
+> Shellcode is automatically encrypted. The md5 of loaders that come from the same shellcode are different,because the generator uses time as seed
+  to randomly generate 128-bit keys for encryption.
+  
+  
+=========================================================================================================================================================
+PoC - Example with a stageless Meterpreter (x64) https reverse shell running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+=========================================================================================================================================================
+
+Step 1 - Generate a stageless Meterpreter (x64) https reverse shell using Msfvenom
+==================================================================================
+
+
+
+Step 2 - Generate a "shellcodeloader"
+==================================================================================
+
+Settings
+--------
+> Shellcode used = Meterpreter (x64) stageless reverse https in format "raw.bin"
+> Setting "x64" = enabled
+> Setting "Anti-sandbox" = enabled
+> Setting "Autostart" = disabled
+
+Only the shelcode loader generated with the following loading methods are not detected by the Defender AV:
+> Direct Load
+> CreateThreatPoolWait Load
+> Fiber Load
+
+
+Step 3 - Download and execute the shellcode loader on a target Windows 10 laptop (with the MS Defender Antivirus enabled & up-to-date)
+=======================================================================================================================================
+
+
+
