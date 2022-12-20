@@ -31,7 +31,7 @@ Settings
 > Setting "Anti-sandbox" = enabled
 > Setting "Autostart" = disabled
 
-Only the shelcode loader generated with the following loading methods are not detected by the Defender AV:
+Only the shellcode loaders (for x64 shellcodes) generated with the following loading methods were not detected by the Defender AV during my tests:
 > Direct Load
 > CreateThreatPoolWait Load
 > Fiber Load
