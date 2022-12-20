@@ -12,7 +12,7 @@ There are four modules:
 > QueueUserAPC shellcode execution
 > ThreadPoolWait shellcode execution.
 
-All of the modules use XOR encryption for strings and function obfuscation and AES encryption for payload exection. 
+All of the modules use XOR encryption for strings and function obfuscation and AES encryption for payload execution. 
 Once the payload is compiled, the script uses SigThief to sign the binary with a Microsoft certificate.
 
 
