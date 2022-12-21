@@ -1,10 +1,10 @@
 =========================================================================================================================================================
-AV bypass using the obfuscation script 'Harriet'
+AV bypass using the tool 'Harriet'
 =========================================================================================================================================================
 
 Source: => https://github.com/assume-breach/Home-Grown-Red-Team/tree/main/Harriet
 
-Harriet is shellcode loader that uses AES encryption and function/variable obfuscation to get around AV and Windows Defender. 
+Harriet is shellcode loader that uses AES encryption and function/variable obfuscation to get around AV solutions such as Windows Defender. 
 
 There are four modules:
 > AES Encrypted payload
