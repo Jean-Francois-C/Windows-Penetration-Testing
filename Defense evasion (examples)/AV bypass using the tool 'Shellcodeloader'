@@ -4,10 +4,12 @@ AV bypass using the tool 'Shellcodeloader'
 
 Source: => https://github.com/knownsec/shellcodeloader
 
-> Shellcode loader to bypass AV solutions on Windows machines.
+It is a shellcode loader that uses encryption to get around AV solutions such as Windows Defender. 
+
+> The tool is composed of a generator (Shellcodeloader.exe) and numerous loader templates.
 > There are 13 shellcode loading modes in 32 bits and 12 shellcode loading modes in 64 bits.
-> The Shellcode given as input is automatically encrypted. The md5 of loaders that come from the same shellcode are different, because the generator uses time
-  as seed to randomly generate 128-bit keys for encryption.
+> The Shellcode given as input is automatically encrypted. The md5 of loaders that come from the same shellcode are different, because the generator uses
+  time as seed to randomly generate 128-bit keys for encryption.
   
   
 =========================================================================================================================================================
