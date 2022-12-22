@@ -108,6 +108,7 @@ The goal of attackers is to prevent a scan from taking place or to deliver a “
 
 => Good article: https://pentestlaboratories.com/2021/05/17/amsi-bypass-methods/
 
+
 # AMSI Bypass generator website
 ================================
 -> https://amsi.fail
@@ -196,7 +197,6 @@ Unhooking refers to a method that attackers can use to load a fresh, unhooked ve
 version at process launch. At this point the EDR is flying blind to any code that is running and it is unable to monitor the return address for 
 any API calls made, rendering it useless. 
 
-
 Examples of tools
 ------------------
 > https://github.com/cube0x0/SyscallPack
@@ -213,6 +213,7 @@ Examples of tools
   Multiple userland unhooking techniques are also implemented to evade userland monitoring.
   GITHUB: https://github.com/wavestone-cdt/EDRSandblast
 
+
 =============================================
 3. Bypassing Event Tracing for Windows (ETW)
 =============================================
@@ -228,7 +229,8 @@ ETW consumers are now integrated into many EDR endpoint agents in order to recei
 ETW is not strings detection-based, if you’re using C# it’s gathering information like namespace names, class names, and method names. 
 Renaming all of these in your code is a great first step for bypassing ETW. 
  
- 
+=> Good article: https://www.socinvestigation.com/the-flow-of-event-telemetry-blocking-detection-response/
+
 Examples of tools
 ------------------
  > BypassETW_CSharp (ETW bypass with Csharp)
