@@ -19,9 +19,9 @@ II.  Examples of AMSI bypass techniques to be able to download and execute strai
 
 III. Examples of techniques to bypass AV products and to download and execute straight into memory any offensive Portable Executable (PE) files
      (without using PowerShell) 
-     ➤ Example of AV bypass (ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE'   (it runs only C/C++/ASM based binaries)
-     ➤ Example of AV bypass (AMSI + ETW patching) using the tool 'ExecRemoteAssembly' 		 (it runs only .Net assemblies based on C#)
-     ➤ Example of AV bypass (AMSI patching) using the tool 'EAPrimer'				 (it runs only .Net assemblies based on C#)
+     ➤ Example of AV bypass (fileless technique + ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE' (it runs only C/C++/ASM based binaries)
+     ➤ Example of AV bypass (fileless technique + AMSI and ETW patching) using the tool 'ExecRemoteAssembly' 	    (it runs only .Net assemblies based on C#)
+     ➤ Example of AV bypass (fileless technique + AMSI patching) using the tool 'EAPrimer'			    (it runs only .Net assemblies based on C#)
 
 
 ================================================================================================================================================
