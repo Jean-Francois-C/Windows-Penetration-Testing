@@ -129,8 +129,8 @@ Windows Security features and Microsoft security products
   
  
 ================================================================================================================================================
-II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (AMSI) & AV products to be able to download and execute 
-     in-memory any offensive PowerShell scripts 
+II.  Examples of AMSI bypass techniques to be able to download and execute straight into memory any offensive PowerShell scripts (and PE files 
+     thanks to the Invoke-ReflectivePEInjection technique) without being detected by AV products 
 ================================================================================================================================================
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -615,11 +615,12 @@ SID               : S-1-5-90-1
 
 
 ===========================================================================================================================================================
-III. Examples of techniques to download and execute in-memory offensive Portable Executable (PE) files (without using PowerShell) to bypass AV products
+III. Examples of techniques to bypass AV products and to download and execute straight into memory any offensive Portable Executable (PE) files
+     (without using PowerShell) 
 ===========================================================================================================================================================
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-3.1 Example of AV bypass (ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE'  
+3.1 Example of AV bypass (Fileless technique + ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE'  
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/D1rkMtr/FilelessRemotePE
@@ -826,7 +827,7 @@ PS C:\Users\Administrator\Documents\Tools-AD>
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-3.2 Example of AV bypass (AMSI + ETW patching) using the tool 'ExecRemoteAssembly' 
+3.2 Example of AV bypass (Fileless technique + AMSI & ETW patching) using the tool 'ExecRemoteAssembly' 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/D1rkMtr/ExecRemoteAssembly
@@ -920,7 +921,7 @@ PS C:\Users\Administrator\Documents\Tools-AD\ExecRemoteAssembly-main> .\ExecRemo
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-3.3 Example of AV bypass (AMSI patching) using the tool 'EAPrimer'	
+3.3 Example of AV bypass (Fileless technique + AMSI patching) using the tool 'EAPrimer'	
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/m8sec/EAPrimer
