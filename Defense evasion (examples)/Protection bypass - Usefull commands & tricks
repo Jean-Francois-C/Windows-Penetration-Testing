@@ -89,9 +89,11 @@ If a signature in the script is registered by the AMSI antimalware service provi
 
 To put this into context, consider the following steps PowerShell takes to integrate with AMSI:
 > When a PowerShell process is created, AMSI.DLL is loaded from disk into its address space.
-> Within AMSI.DLL, there’s a function known as AmsiScanBuffer(), essentially the function used to scan a script’s content.
+> Within AMSI.DLL, there are two types of scanning: 
+  + AmsiScanString() which is used to scan text 
+  + AmsiScanBuffer() which is used to scan the buffer (binary / script content) .
 > In the PowerShell command prompt, any supplied content would first be sent to AmsiScanBuffer(), before any execution takes place.
-> Subsequently, AmsiScanBuffer() would check with the registered anti-virus to determine if any signatures have been created.
+> Subsequently, AmsiScanBuffer() and AmsiScanString() would check with the registered anti-virus to determine if any signatures have been created.
 > If the content is deemed malicious, it would be blocked.
 
 Since AMSI relies on being loaded within the process executing the actual script, techniques to break or patch specific functions within amsi.dll are well known.
@@ -104,6 +106,7 @@ There are many techniques to bypass AMSI such as:
 - registry key modification
 The goal of attackers is to prevent a scan from taking place or to deliver a “clean” result and not being flagged as “malicious”. 
 
+=> Good article: https://pentestlaboratories.com/2021/05/17/amsi-bypass-methods/
 
 # AMSI Bypass generator website
 ================================
