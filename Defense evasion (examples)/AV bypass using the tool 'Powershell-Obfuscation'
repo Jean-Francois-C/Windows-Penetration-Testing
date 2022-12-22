@@ -51,7 +51,6 @@ PS C:\temp> invoke-rubeus
 
   v1.6.4
 
-
  Ticket requests and renewals:
 
     Retrieve a TGT based on a user password/hash, optionally saving to a file or applying to the current logon session or a specific LUID:
