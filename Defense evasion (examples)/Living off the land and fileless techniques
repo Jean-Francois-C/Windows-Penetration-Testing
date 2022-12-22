@@ -10,14 +10,15 @@ I.   Reminder & Definitions
      ➤ Microsoft Antimalware Scan Interface (AMSI)
      ➤ Windows Security features and Microsoft security products
 
-II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (AMSI) and AV products to be able to download and execute (in-memory) 
-     any offensive PowerShell scripts (and PE files thanks to Invoke-ReflectivePEInjection technique)
+II.  Examples of AMSI bypass techniques to be able to download and execute straight into memory any offensive PowerShell scripts (and PE files 
+     thanks to the Invoke-ReflectivePEInjection technique) without being detected by AV products 
      ➤ Examples of AV bypass by forcing the AMSI initialization to fail in a PowerShell session 
      ➤ Examples of AV bypass by patching the AMSI DLL
      ➤ Examples of AV bypass by modifying a registry key to diasable the AMSI (admin priv required)
      ➤ Examples of AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 
-III. Examples of techniques to download and execute in-memory offensive Portable Executable (PE) files (without using PowerShell) to bypass AV products
+III. Examples of techniques to bypass AV products and to download and execute straight into memory any offensive Portable Executable (PE) files
+     (without using PowerShell) 
      ➤ Example of AV bypass (ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE'   (it runs only C/C++/ASM based binaries)
      ➤ Example of AV bypass (AMSI + ETW patching) using the tool 'ExecRemoteAssembly' 		 (it runs only .Net assemblies based on C#)
      ➤ Example of AV bypass (AMSI patching) using the tool 'EAPrimer'				 (it runs only .Net assemblies based on C#)
