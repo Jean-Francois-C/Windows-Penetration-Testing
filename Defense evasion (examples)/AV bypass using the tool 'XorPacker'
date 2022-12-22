@@ -4,7 +4,7 @@ AV bypass using the tool 'XorPacker'
 
 => Source: https://github.com/tmenochet/XorPacker
 
-It is a packer software that uses XOR encryption. The resulting packed PE uses a bruteforce attack to decrypt the payload and evade AV sandbox.
+It is a packer software that uses XOR encryption. The resulting packed PE uses a bruteforce attack to decrypt the payload and evade AV sandbox checks.
 
 XorPacker can be used to pack:
 => PE
