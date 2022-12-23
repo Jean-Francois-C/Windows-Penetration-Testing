@@ -127,7 +127,9 @@ Windows Security features and Microsoft security products
   - It is a post-breach solution that complements Microsoft Defender AV.
   - It is an EDR that detects and remediates advanced attacks on endpoints. 
   
- 
+> The Windows Lockdown Policy (WLDP aka Device Guard) 
+  - It checks the digital signature of dynamic code.
+
 ================================================================================================================================================
 II.  Examples of AMSI bypass techniques to be able to download and execute straight into memory any offensive PowerShell scripts (and PE files 
      thanks to the Invoke-ReflectivePEInjection technique) without being detected by AV products 
