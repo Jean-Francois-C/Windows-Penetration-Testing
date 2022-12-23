@@ -4,7 +4,7 @@ AV bypass using the tool 'Invoke-SharpLoader'
 
 Source => https://github.com/S3cur3Th1sSh1t/Invoke-SharpLoader
 
-The objective is to load encrypted and compressed offensive security C# file from a remote Webserver or from a local disk straight into memory and execute it there.
+The objective is to load and execute straight into memory encrypted and compressed offensive security C# tools from a remote Web Server or from a local disk.
 
 AV evasion techniques used:
 ---------------------------
