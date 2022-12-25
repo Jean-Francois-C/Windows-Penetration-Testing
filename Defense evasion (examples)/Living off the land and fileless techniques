@@ -151,13 +151,13 @@ There are several methods to load straight into memory .Net Assemblies (PE and D
     [System.Reflection.Assembly]::Load($bytes)
 
 
-Examples of PowerShell scripts that can be used to load .NET assemblies (PE and DLL) and shellcodes straight into memory
-----------------------------------------------------------------------------------------------------------------------------
+Examples of PowerShell scripts that can be used to load remote .NET assemblies (PE and DLL) and shellcodes straight into memory
+--------------------------------------------------------------------------------------------------------------------------------
 
-=> PowerSharpPack is a tool with many useful offensive CSharp Projects wraped into one PowerShell script that can be remrely loaded into memory for easy usage.
+=> PowerSharpPack is a tool with many useful offensive CSharp Projects wraped into one PowerShell script that can be remotely loaded into memory for easy usage.
    + https://github.com/S3cur3Th1sSh1t/PowerSharpPack
    
-=> The PowerShell script 'PowerLoader.ps1' builds script block which safely loads into-memory PowerShell script, .NET assemblies, and shellcodes.
+=> The PowerShell script 'PowerLoader.ps1' builds script block which safely loads into-memory remote PowerShell script, .NET assemblies, and shellcodes.
    + https://github.com/tmenochet/PowerExec/blob/master/PowerLoader.ps1
    
 => The PowerSploit frameworks - Old ( Invoke-ReflectivePEInjection.ps1, Invoke-DllInjection.ps1, Invoke-Shellcode.ps1)
