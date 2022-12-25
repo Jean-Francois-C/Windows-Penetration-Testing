@@ -9,8 +9,11 @@ Chimera is a PowerShell obfuscation script designed to bypass AMSI and commercia
 The objective is to use 'Chimera.sh' to obfuscate offensive powershell scripts so we can copy them on the disk of a target Windows laptop or Windows server   
 and then run them without being detected and deleted by the Microsoft Defender AV (or other AV products).
 
-Chimera uses several techniques to evade common detection signatures such as comment deletion/substitution, string substitution (variables, functions, data-types) and encoding. 
-
+Chimera uses several techniques to evade common detection signatures such as:
+> comment deletion/substitution, 
+> string substitution (variables, functions, data-types),
+> encoding
+> ...
 
 =========================================================================================================================================================
 PoC - Example with the script 'Invoke-WMIExec.ps1' running on a Windows 10 laptop (fully patched with Defender AV enabled and up-to-date)
@@ -31,28 +34,19 @@ jeff@kali:~/Documents/Tools/Chimera$ ./Chimera.sh
 
   options:
     -a, --all           same as: -l 0 -v -t -c -i -p -h -s -b -j -k -e
-    -l, --level         level of string manipulation (0=random,1=low,
-                        2=med,3=high,4=higher,5=insane. default: 0)
-    -v, --variables     replace variables with arbitrary strings,
-                        use -v </usr/share/dict/words> to utilize
-                        custom wordlist as variable name substitutions
-    -t, --typedata      replace data types with arbitrary strings (e.g.,
-                        System.IO.StreamWriter). use -t <string,string> to
-                        include more
+    -l, --level         level of string manipulation (0=random,1=low,2=med,3=high,4=higher,5=insane. default: 0)
+    -v, --variables     replace variables with arbitrary strings,use -v </usr/share/dict/words> to utilize custom wordlist as variable name substitutions
+    -t, --typedata      replace data types with arbitrary strings (e.g., System.IO.StreamWriter). use -t <string,string> to include more
     -c, --comments      replace comments with arbitrary strings
-                        use -c <custom_comments.txt> to utillized custom
-                        text instead of random strings
+                        use -c <custom_comments.txt> to utillized custom text instead of random strings
     -i, --insert        insert arbitrary comments into every line
     -h, --hex           convert ip addresses to hexidecimal values
     -s, --string        obfuscate provided strings, use -s <getstream,getstring>
     -b, --backticks     insert backticks into provided string, e.g., ne`w`-OB`je`cT
     -j, --functions     replace function names with arbitrary strings
-    -d, --decimal       convert obfuscated payload to decimal format
-                        improves AMSI evasion; increases AV detection
+    -d, --decimal       convert obfuscated payload to decimal format improves AMSI evasion; increases AV detection
     -g, --nishang       remove nishang-specific characteristics
-    -k, --keywords      search obfuscated output for words that may trigger
-                        AV/VT. By default searches for common words (backdoor,
-                        payload,nishang), use -k <word,word> to include more
+    -k, --keywords      search obfuscated output for words that may trigger AV/VT. By default searches for common words (backdoor, payload,nishang), use -k <word,word> to include more
     -r, --random        randomize character punctuation
     -p, --prepend       prepend random number of spaces to lines
 
