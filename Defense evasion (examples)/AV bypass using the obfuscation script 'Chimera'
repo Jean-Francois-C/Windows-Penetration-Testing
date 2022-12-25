@@ -9,6 +9,8 @@ Chimera is a PowerShell obfuscation script designed to bypass AMSI and commercia
 The objective is to use 'Chimera.sh' to obfuscate offensive powershell scripts so we can copy them on the disk of a target Windows laptop or Windows server   
 and then run them without being detected and deleted by the Microsoft Defender AV (or other AV products).
 
+Chimera uses several techniques to evade common detection signatures such as comment deletion/substitution, string substitution (variables, functions, data-types)
+and encoding. 
 
 =========================================================================================================================================================
 PoC - Example with the script 'Invoke-WMIExec.ps1' running on a Windows 10 laptop (fully patched with Defender AV enabled and up-to-date)
