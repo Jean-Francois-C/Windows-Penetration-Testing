@@ -23,7 +23,6 @@ PoC - Download and execute into memory a packed/encrypted version of the script 
       without being detected nor blocked by the Windows Defender AV
 =========================================================================================================================================================
 
-
 Step 1 - Generate a packed/encrypted version of the script 'Invoke-mimkatz.ps1' with FuckThatPacker
 -----------------------------------------------------------------------------------------------------
 
