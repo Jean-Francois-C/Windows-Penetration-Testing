@@ -161,7 +161,6 @@ Payload size: 201308 bytes
 Final size of exe file: 392704 bytes
 Saved as: shellcode-stageless-pslistx64.exe
 
-
 ---------------------------------------------------------------------------------------------------------------------------------------
 Step 2 - Use 'AtomPePacker' to generate a packed version of the Meterpreter HTTPS reverse shell (x64)
 ---------------------------------------------------------------------------------------------------------------------------------------
@@ -177,7 +176,6 @@ C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\AtomPePacker-m
 [+] Section .ATOM is Created Containing The Input Packed Pe
 
 => Rename the file "H_PP64Stub.exe" by "PePacker-Shellcode.exe"
-
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Step 3 - Download and execute on a Windows 10 laptop the packed version of the Meterpreter HTTPS reverse shell (x64) without being 
@@ -201,11 +199,10 @@ Important note regarding AV detection
 -------------------------------------
 => While the Meterpreter was not detected by the Microsoft Defender Antivirus it was flagged by the HP Malware Protection and Threat containment solution
    running on the Windows 10 laptop.
-=> In general, if you want to limit the chance of being detected & blocked by antivirus it is recommanded to use the Meterpreter session mainly as a way 
-   to pivot and perform lateral movement (i.e. socks_proxy + proxychains).  
-   Indeed, if you use well knwon post-exploitation modules like "hashdump" or even just the "shell" command, antivirus like MS Defender will detect these 
+=> In general, with Metasploit if you want to limit the chance of being detected & blocked by antivirus solutions, it is recommanded to avoid using well known 
+   post-exploitation modules and to use the Meterpreter session mainly as a way to pivot and perform lateral movement (i.e. socks_proxy + proxychains).  
+   Indeed, if you use well knwon post-exploitation modules like "hashdump" or even just the "shell" command, antivirus like MS Defender will often detect these 
    actions as 'Behavior:Win32/Meterpreter.gen!D' or 'Behavior:Win32/Meterpreter.A!sms' and will kill the Meterpreter session.
-
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Step 4 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop 
