@@ -127,13 +127,34 @@ Windows Security features and Microsoft security products
   - ETW provides a way to trace and log events from both user and kernel mode. 
   - It is used by AV and EDR to detect attacks.
   
+> LSASS & Protected Process Light (PPL)
+  - On Windows the Local Security Authority Subsystem is responsible for safeguarding the NTLM hashes, Kerberos tickets and anything that has to do with 
+    authentication and authorization.
+  - To prevent the bad guys from stealing credentials, a security feature called LSA (Local Security Authority) Protection Light was introduced.
+  - RunAsPPL for LSASS is a true quick win. It is very easy to configure as the only thing you have to do is add a simple value in the registry and reboot. 
+    Like any other protection though, it is not bulletproof and it is not sufficient on its own, but it is still particularly efficient. 
+    Attackers will have to use some relatively advanced tricks if they want to work around it, which ultimately increases their chance of being detected.
+    
+> Windows Defender Credential Guard 
+  - It uses virtualization-based security to isolate secrets so that only privileged system software can access them. 
+    Unauthorized access to these secrets can lead to credential theft attacks, such as Pass-the-Hash or Pass-The-Ticket. 
+    Windows Defender Credential Guard prevents these attacks by protecting NTLM password hashes, Kerberos Ticket Granting Tickets, and credentials stored 
+    by applications as domain credentials.
+  - By enabling Windows Defender Credential Guard, the following features and solutions are provided:
+    + Hardware security NTLM, Kerberos, and Credential Manager take advantage of platform security features, including Secure Boot and virtualization, 
+      to protect credentials.
+    + Virtualization-based security Windows NTLM and Kerberos derived credentials and other secrets run in a protected environment that is isolated from 
+      the running operating system.
+    + Better protection against advanced persistent threats When Credential Manager domain credentials, NTLM, and Kerberos derived credentials are protected 
+      using virtualization-based security, the credential theft attack techniques and tools used in many targeted attacks are blocked. Malware running in the 
+      operating system with administrative privileges cannot extract secrets that are protected by virtualization-based security.
+
 > Microsoft Defender for Endpoint (formerly known as Microsoft Defender Advanced Threat Protection (ATP))
   - It is a post-breach solution that complements Microsoft Defender AV.
   - It is an EDR that detects and remediates advanced attacks on endpoints. 
   
 > The Windows Lockdown Policy (WLDP aka Device Guard) 
   - It checks the digital signature of dynamic code.
-
 
 
 ================================================================================================================================================
