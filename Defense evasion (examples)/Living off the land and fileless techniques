@@ -10,7 +10,7 @@ I.   Reminder & Definitions
      ➤ Microsoft Antimalware Scan Interface (AMSI)
      ➤ Windows Security features and Microsoft security products
 
-II.  Examples of "living off the land" techniques using PowerShell (i.e. download & execute straight into memory remote .Net Assemblies (PE/DLL) & PoSh scripts) 
+II.  Examples of "living off the land" techniques using PowerShell (i.e. download and execute straight into memory PE, DLL and PoSh scripts) 
 
 III. Examples of "living off the land" techniques using LOLBAS (i.e. Living Off The Land Binaries, Scripts and Libraries)
 
