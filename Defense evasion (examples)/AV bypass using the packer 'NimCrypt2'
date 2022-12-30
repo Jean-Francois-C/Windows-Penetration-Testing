@@ -75,7 +75,7 @@ Hint: gc: refc; opt: size; options: -d:release
 [+] Stub compiled successfully as NimSharpSecDump.exe
 
 
-STEP 3 - Run the packed version of tool 'NimSharSecDump.exe' whithout being detected nor blocked by Defender AV
+STEP 3 - Run the packed version of tool 'NimSharSecDump.exe' without being detected nor blocked by Defender AV
 ----------------------------------------------------------------------------------------------------------------
 
 The tool is run on a Windows 10 laptop (with Defender AV enabled and up-to-date) and the target is a fully patched Windows 2016 of my pentest lab
@@ -166,7 +166,7 @@ Hint: gc: refc; opt: size; options: -d:release
 1270751 lines; 15.251s; 349.383MiB peakmem; proj: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/stub.nim; out: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/NimRubeus.exe [SuccessX]
 
 
-STEP 3 - Run the packed version of tool 'NimRubeus.exe' whithout being detected nor blocked by Defender AV
+STEP 3 - Run the packed version of tool 'NimRubeus.exe' without being detected nor blocked by Defender AV
 -----------------------------------------------------------------------------------------------------------
 
 The tool is run on a Windows 2016 server (with Defender AV enabled and up-to-date) and the target is a fully patched Windows 2016 Domain Controller of my pentest lab
