@@ -74,10 +74,6 @@ Requirement already satisfied: altgraph in c:\users\administrator\appdata\local\
 Requirement already satisfied: setuptools>=42.0.0 in c:\program files\windowsapps\pythonsoftwarefoundation.python.3.10_3.10.2544.0_x64__qbz5n2kfra8p0\lib\site-packages (from pyinstaller) (65.5.0)
 Collecting pefile>=2022.5.30
   Using cached pefile-2022.5.30.tar.gz (72 kB)
-  Installing build dependencies ... done
-  Getting requirements to build wheel ... done
-  Preparing metadata (pyproject.toml) ... done
-Collecting future
 <SNIP>
 
 
@@ -87,9 +83,6 @@ Collecting frida
      ---------------------------------------- 30.7/30.7 MB 6.7 MB/s eta 0:00:00
 Collecting frida-tools
   Downloading frida-tools-12.0.4.tar.gz (177 kB)
-     ---------------------------------------- 177.6/177.6 kB 973.1 kB/s eta 0:00:00
-  Installing build dependencies ... done
-  Getting requirements to build wheel ... done
 <SNIP>
  
 
@@ -113,10 +106,6 @@ Requirement already satisfied: future in c:\users\administrator\appdata\local\pa
 357 INFO: PyInstaller: 5.7.0
 357 INFO: Python: 3.10.9
 <SNIP>
-38765 INFO: Fixing EXE headers
-39001 INFO: Building EXE from EXE-00.toc completed successfully.
-
-C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main>
 
 C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 update-config.py
 [*] Identified multiple VS Installations
@@ -171,8 +160,6 @@ C:\Program Files\Microsoft Visual Studio\2022\
 
 C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py -h
 Traceback (most recent call last):
-  File "C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor\inceptor.py", line 13, in <module>
-    from generators.PowerShellArtifactGenerator import PowerShellArtifactGenerator
 <SNIP>
     from obfuscators.powershell.chameleon.chameleon import Chameleon
 ModuleNotFoundError: No module named 'obfuscators.powershell.chameleon.chameleon'
@@ -184,8 +171,7 @@ C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\
 
 usage: inceptor.py [-h] [-hh] [--list-modules] [-Z] {native,dotnet,powershell} ...
 
-inceptor: A Windows-based PE Packing framework designed to help
-          Red Team Operators to bypass common AV and EDR solutions
+inceptor: A Windows-based PE Packing framework designed to help Red Team Operators to bypass common AV and EDR solutions
 
 positional arguments:
   {native,dotnet,powershell}
@@ -201,7 +187,6 @@ options:
 
 
 C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py --list-modules
-
   - amsi
   - anti_debug
   - delay
@@ -260,7 +245,7 @@ C:\Users\Administrator.PO718687\Documents\Tools-Pentest\1-Antivirus-bypass\incep
 [+] .Net Artifact Generator Finished At 2022-12-28 04:19:25.105320
 
 
-Other examples: python3 inceptor.py dotnet -t donut C:\temp\mimikatz.exe --outfile C:\temp\Inceptor-Mimi2.exe --sgn --sign --module amsi --encoder aes --arch x64 --delay 120
+Other example: python3 inceptor.py dotnet -t donut C:\temp\mimikatz.exe --outfile C:\temp\Inceptor-Mimi2.exe --sgn --sign --module amsi --encoder aes --arch x64 --delay 120
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------
