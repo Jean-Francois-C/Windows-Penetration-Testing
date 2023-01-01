@@ -152,7 +152,6 @@ Exploitation - Windows VM (target)
 	The command completed successfully.
 
 
-
 3. In the command prompt type: 
 
 	C:\Temp> sc start reginasvc
@@ -199,4 +198,3 @@ Exploitation - Windows VM (target)
 	Global Group memberships     *None                 
 	The command completed successfully.
 
-	
