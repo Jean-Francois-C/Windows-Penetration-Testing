@@ -4,7 +4,8 @@ Pivoting with Ligolo  (basic example)
 
 => Github page "https://github.com/sysdream/ligolo"
 
-Ligolo is a simple and lightweight tool for establishing SOCKS5 or TCP tunnels from a reverse connection in complete safety (TLS certificate with elliptical curve).
+Ligolo is a simple and lightweight tool for establishing SOCKS5 or TCP tunnels from a reverse connection in complete safety (TLS certificate 
+with elliptical curve).
 It is comparable to Meterpreter with Autoroute + Socks4a, but more stable and faster.
 
 Ligolo consists of two modules:
@@ -13,10 +14,11 @@ Ligolo consists of two modules:
 
 Context
 --------
-During a penetration test, you managed to hack a vulnerable Internet-facing system (e.g. insecure website, misconfigured/unpatched Exchange server or Citrix server)
-and you are able to run OS commands on the underlying Windows server.
-This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between your attack server 
-(e.g. Kali Linux VM in AWS) and this Windows server to be able to access to the internal network (like you were remotely connected with a VPN client).
+During a penetration test, you managed to hack a vulnerable Internet-facing system (e.g. insecure website, misconfigured/unpatched Exchange 
+server or Citrix server) and you are able to run OS commands on the underlying Windows server.
+This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between your
+attack server (e.g. Kali Linux VM in AWS) and this Windows server to be able to access to the internal network (like you were remotely connected
+with a VPN client).
 
 
 ===========================================================================================================================================
