@@ -350,7 +350,7 @@ HTTP request sent, awaiting response... 200 OK
 Length: unspecified [text/html]
 Saving to: ‘index.html’
 
-index.html                                     [ <=>                                                                                     ]   3.28K  --.-KB/s    in 0.04s
+index.html            [ <=> ]   3.28K  --.-KB/s    in 0.04s
 
 2022-11-01 19:24:06 (92.4 KB/s) - ‘index.html’ saved [3357]
 
