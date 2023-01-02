@@ -43,8 +43,8 @@ In general, to avoid AV detection it is recommended to use:
 > Fileless techniques
 > stageless or staged Meterpreter payload with HTTPs communication such as "windows/x64/meterpreter_reverse_https" and "windows/x64/meterpreter/reverse_https"  
 
-3. Difference "Staged" vs "Stageless" 
---------------------------------------
+3. Difference between "Staged" and "Stageless" payloads 
+--------------------------------------------------------
 > Staged Meterpreter payload (e.g. windows/meterpreter/reverse_https) 
   Payload that is as compact as possible and performs the single task of providing the means for an attacker to upload something bigger.
   It uses a (small) stager that connects to metasploit handler to download and execute the stage (the final payload).
