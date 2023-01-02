@@ -4,10 +4,10 @@ Pivoting with SSH Tunnels and Plink on a Windows server (basic example)
 
 Context
 --------
-During a penetration test, you managed to hack a vulnerable Internet-facing website (e.g. unpatched known RCE vulnerability, insecure file upload function, RFI, LFI)
-and you uploaded a webshell on the underlying IIS Web server which is running on a Windows server 2016.
-This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between your pentester machine 
-(e.g. Kali Linux VM in AWS) and this Windows server or other machines located on the internal network.
+During a penetration test, you managed to hack a vulnerable Internet-facing website (e.g. unpatched known RCE vulnerability, insecure file upload
+function, RFI, LFI) and you uploaded a webshell on the underlying IIS Web server which is running on a Windows server 2016.
+This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between your
+pentester machine (e.g. Kali Linux VM in AWS) and this Windows server or other machines located on the internal network.
 
 Below are the steps to follow to be able to log into the compromised Windows server from the Internet (RDP over a SSH tunnel with plink) and then use this machine
 as a pivot to attack the other servers located on the internal network.
