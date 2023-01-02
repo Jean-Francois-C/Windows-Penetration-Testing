@@ -9,7 +9,7 @@ The Metasploit Community Edition is an open-source framework that can be easily 
 => https://www.kali.org/tools/metasploit-framework/
 
 Context
-=========
+========
 During during penetration tests, Command and Control solutions (C2) like the Metasploit framework can be used to create a reverse tunnel between
 a target Windows/Linux server or a Windows laptop located inside a company internal network and an Internet-facing remote server belonging to the
 pentesters (e.g. a Kali VM running in AWS or Azure).
@@ -36,12 +36,12 @@ Miscellaneous notes
 
 2. AV detection of Meterpreter payloads 
 ----------------------------------------
-To avoid AV detection it is recommended to use:
-> obfuscation & encrypting methods (e.g. custom msfvenom encrypter module => https://github.com/Sogeti-Pentest/Encrypter-Metasploit)
-> AMSI bypass techniques 
-> stageless (preferred) Meterpreter payload with HTTPs communication using payloads like "windows/x64/meterpreter_reverse_https"
-  or "staged" Meterpreter payloads with HTTPs communication using payloads like "windows/x64/meterpreter/reverse_https"
-Please note that these techniques are not sufficient to bypass modern EDR products (e.g. NTDLL hooking, ETW). 
+Please note that due to its popularity, Metasploit's payloads and post-exploitation modules are detected by most AV solutions (signatures and behaviour-based detection). 
+In general, to avoid AV detection it is recommended to use:
+> obfuscation, encryption and compression methods with a packer or a shellcode loader
+> AMSI and ETW bypass techniques 
+> Fileless techniques
+> stageless or staged Meterpreter payload with HTTPs communication such as "windows/x64/meterpreter_reverse_https" and "windows/x64/meterpreter/reverse_https"  
 
 3. Difference "Staged" vs "Stageless" 
 --------------------------------------
