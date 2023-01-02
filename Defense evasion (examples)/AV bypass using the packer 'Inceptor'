@@ -164,7 +164,7 @@ Traceback (most recent call last):
     from obfuscators.powershell.chameleon.chameleon import Chameleon
 ModuleNotFoundError: No module named 'obfuscators.powershell.chameleon.chameleon'
 
-=> To fix that error, I donwoaded the project "chameleon" from Github and add it in the folder 'inceptor-main\inceptor\obfuscators\powershell\chameleon'.
+=> To fix that error, I downloaded the project "chameleon" from Github and add it in the folder 'inceptor-main\inceptor\obfuscators\powershell\chameleon'.
 
 
 C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py -h
