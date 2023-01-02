@@ -1,6 +1,6 @@
-===========================================================================================================================================
+=======================================================================================================================================
 Pivoting with the SLIVER Adversary emulation / Red Team Framework
-===========================================================================================================================================
+=======================================================================================================================================
 
 SLIVER is an open source cross-platform adversary emulation/red team framework, it can be used by organizations of all sizes to perform security testing.
 
@@ -42,3 +42,178 @@ To avoid AV detection it is recommended to use:
 > AMSI and ETW bypass techniques
 > Fileless techniques
 > etc...
+
+
+=======================================================================================================================================
+PoC - Step 1 - Install the SLIVER C2 framework on the Kali Linux box
+=======================================================================================================================================
+
+jeff@kali:~/Documents/Tools$ sudo apt-get install sliver
+[sudo] password for jeff: 
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  cpp-9 dh-elpa-helper dkms hashcat-data libasan5 libavresample4 libc-devtools libc6-dev:i386 libclang1-8 libcroco3 libcrypt-dev:i386 libdav1d5
+  libfaudio0 libgcc-8-dev libigdgmm11 libindicator3-7 libjsoncpp24 libllvm8 libmpx2 libnsl-dev:i386 libnsl2:i386 libobjc-8-dev libodbc1 libodbccr2
+  libomp-8-dev libomp5-8 libpocl2-common libstb0 libstdc++-8-dev libsvtav1enc0 libtirpc-dev:i386 libtirpc3:i386 linux-compiler-gcc-10-x86
+  linux-headers-5.14.0-kali4-amd64 linux-headers-5.14.0-kali4-common linux-headers-5.4.0-kali3-common linux-headers-amd64 linux-kbuild-5.14
+  linux-kbuild-5.4 linux-libc-dev:i386 llvm-8 llvm-8-dev llvm-8-runtime openjdk-11-jre openjdk-8-jre python-babel-localedata python3-babel
+  python3-chameleon python3-flask-babelex python3-repoze.lru python3-waitress python3-webtest python3-zope.component python3-zope.event
+  python3-zope.hookable python3.7 python3.7-minimal virtualbox-guest-dkms virtualbox-guest-utils x11-session-utils xinit xorg-docs-core
+Use 'sudo apt autoremove' to remove them.
+The following additional packages will be installed:
+  binutils-mingw-w64 build-essential
+The following NEW packages will be installed:
+  binutils-mingw-w64 build-essential sliver
+0 upgraded, 3 newly installed, 0 to remove and 1464 not upgraded.
+Need to get 170 MB of archives.
+After this operation, 250 MB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Get:1 http://ftp.free.fr/pub/kali kali-rolling/main amd64 binutils-mingw-w64 all 2.37-7+9 [144 kB]
+Get:2 http://ftp.free.fr/pub/kali kali-rolling/main amd64 build-essential amd64 12.9 [7,704 B]
+Get:3 http://ftp.free.fr/pub/kali kali-rolling/main amd64 sliver amd64 1.5.31-0kali1 [170 MB]
+Fetched 170 MB in 6s (28.1 MB/s)                                                                                                                          
+Selecting previously unselected package binutils-mingw-w64.
+(Reading database ... 371370 files and directories currently installed.)
+Preparing to unpack .../binutils-mingw-w64_2.37-7+9_all.deb ...
+Unpacking binutils-mingw-w64 (2.37-7+9) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../build-essential_12.9_amd64.deb ...
+Unpacking build-essential (12.9) ...
+Selecting previously unselected package sliver.
+Preparing to unpack .../sliver_1.5.31-0kali1_amd64.deb ...                                                                                                 
+Unpacking sliver (1.5.31-0kali1) ...                                                                                                                       
+Setting up binutils-mingw-w64 (2.37-7+9) ...                                                                                                               
+Setting up build-essential (12.9) ...                                                                                                                      
+Setting up sliver (1.5.31-0kali1) ...                                                                                                                      
+Processing triggers for kali-menu (2021.2.1) ...  
+
+=======================================================================================================================================
+PoC - Step 2 - Start the SLIVER server and create an operator on the Kali Linux box
+=======================================================================================================================================
+
+jeff@kali:~/Documents/Tools/SLiver-C2$ sudo sliver-server
+
+Sliver  Copyright (C) 2022  Bishop Fox
+This program comes with ABSOLUTELY NO WARRANTY; for details type 'licenses'.
+This is free software, and you are welcome to redistribute it
+under certain conditions; type 'licenses' for details.
+
+Unpacking assets ...
+
+          â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ  â–ˆâ–ˆâ–“     â–ˆâ–ˆâ–“ â–ˆâ–ˆâ–’   â–ˆâ–“â–“â–ˆâ–ˆâ–ˆâ–ˆâ–ˆ  â–ˆâ–ˆâ–€â–ˆâ–ˆâ–ˆ                                                                                                       
+        â–’â–ˆâ–ˆ    â–’ â–“â–ˆâ–ˆâ–’    â–“â–ˆâ–ˆâ–’â–“â–ˆâ–ˆâ–‘   â–ˆâ–’â–“â–ˆ   â–€ â–“â–ˆâ–ˆ â–’ â–ˆâ–ˆâ–’                                                                                                     
+        â–‘ â–“â–ˆâ–ˆâ–„   â–’â–ˆâ–ˆâ–‘    â–’â–ˆâ–ˆâ–’ â–“â–ˆâ–ˆ  â–ˆâ–’â–‘â–’â–ˆâ–ˆâ–ˆ   â–“â–ˆâ–ˆ â–‘â–„â–ˆ â–’                                                                                                     
+          â–’   â–ˆâ–ˆâ–’â–’â–ˆâ–ˆâ–‘    â–‘â–ˆâ–ˆâ–‘  â–’â–ˆâ–ˆ â–ˆâ–‘â–‘â–’â–“â–ˆ  â–„ â–’â–ˆâ–ˆâ–€â–€â–ˆâ–„                                                                                                       
+        â–’â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–’â–’â–‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–’â–‘â–ˆâ–ˆâ–‘   â–’â–€â–ˆâ–‘  â–‘â–’â–ˆâ–ˆâ–ˆâ–ˆâ–’â–‘â–ˆâ–ˆâ–“ â–’â–ˆâ–ˆâ–’                                                                                                     
+        â–’ â–’â–“â–’ â–’ â–‘â–‘ â–’â–‘â–“  â–‘â–‘â–“     â–‘ â–â–‘  â–‘â–‘ â–’â–‘ â–‘â–‘ â–’â–“ â–‘â–’â–“â–‘                                                                                                     
+        â–‘ â–‘â–’  â–‘ â–‘â–‘ â–‘ â–’  â–‘ â–’ â–‘   â–‘ â–‘â–‘   â–‘ â–‘  â–‘  â–‘â–’ â–‘ â–’â–‘                                                                                                     
+        â–‘  â–‘  â–‘    â–‘ â–‘    â–’ â–‘     â–‘â–‘     â–‘     â–‘â–‘   â–‘                                                                                                      
+                  â–‘      â–‘  â–‘ â–‘        â–‘     â–‘  â–‘   â–‘                                                                                                      
+                                                                                                                                                           
+All hackers gain conspire
+[*] Server v1.5.31 - kali
+[*] Welcome to the sliver shell, please type 'help' for options
+
+[*] Check for updates with the 'update' command
+
+[server] sliver > help
+
+Commands:
+=========
+  clear       clear the screen
+  exit        exit the shell
+  help        use 'help [command]' for command help
+  monitor     Monitor threat intel platforms for Sliver implants
+  wg-config   Generate a new WireGuard client config
+  wg-portfwd  List ports forwarded by the WireGuard tun interface
+  wg-socks    List socks servers listening on the WireGuard tun interface
+
+Generic:
+========
+  aliases           List current aliases
+  armory            Automatically download and install extensions/aliases
+  background        Background an active session
+  beacons           Manage beacons
+  builders          List external builders
+  canaries          List previously generated canaries
+  cursed            Chrome/electron post-exploitation tool kit (âˆ©ï½€-Â´)âŠƒâ”â˜†ï¾Ÿ.*ï½¥ï½¡ï¾Ÿ
+  dns               Start a DNS listener
+  env               List environment variables
+  generate          Generate an implant binary
+  hosts             Manage the database of hosts
+  http              Start an HTTP listener
+  https             Start an HTTPS listener
+  implants          List implant builds
+  jobs              Job control
+  licenses          Open source licenses
+  loot              Manage the server's loot store
+  mtls              Start an mTLS listener
+  prelude-operator  Manage connection to Prelude's Operator
+  profiles          List existing profiles
+  reaction          Manage automatic reactions to events
+  regenerate        Regenerate an implant
+  sessions          Session management
+  settings          Manage client settings
+  stage-listener    Start a stager listener
+  tasks             Beacon task management
+  update            Check for updates
+  use               Switch the active session or beacon
+  version           Display version information
+  websites          Host static content (used with HTTP C2)
+  wg                Start a WireGuard listener
+
+Multiplayer:
+============
+  kick-operator  Kick an operator from the server
+  multiplayer    Enable multiplayer mode
+  new-operator   Create a new operator config file
+  operators      Manage operators
+
+For even more information, please see our wiki: https://github.com/BishopFox/sliver/wiki
+
+
+Creation of the new-operator 'jeff' and activation of the "multiplayer" mode
+-----------------------------------------------------------------------------
+
+[server] sliver > new-operator --name jeff --lhost localhost --save /home/jeff/.sliver-client
+
+[*] Generating new client certificate, please wait ... 
+[*] Saved new client config to: /home/jeff/.sliver-client/jeff_localhost.cfg 
+
+[server] sliver >  
+[server] sliver > multiplayer
+
+[*] Multiplayer mode enabled!
+
+[*] jeff has joined the game
+
+
+Commands to join the SLIVER C2 server as 'jeff' client
+--------------------------------------------------------
+jeff@kali:~/.sliver-client/configs$ sudo chown -R jeff:jeff /home/jeff/.sliver-client/configs && chmod 764 /home/jeff/.sliver-client
+
+jeff@kali:~/.sliver-client/configs$ sliver-client
+Connecting to localhost:31337 ...
+
+.------..------..------..------..------..------.                                                                                                           
+|S.--. ||L.--. ||I.--. ||V.--. ||E.--. ||R.--. |                                                                                                           
+| :/\: || :/\: || (\/) || :(): || (\/) || :(): |                                                                                                           
+| :\/: || (__) || :\/: || ()() || :\/: || ()() |                                                                                                           
+| '--'S|| '--'L|| '--'I|| '--'V|| '--'E|| '--'R|                                                                                                           
+`------'`------'`------'`------'`------'`------'                                                                                                           
+                                                                                                                                                           
+All hackers gain prowess
+[*] Server v1.5.31 - kali
+[*] Welcome to the sliver shell, please type 'help' for options
+
+[*] Check for updates with the 'update' command
+
+sliver >  
+
+
+===========================================================================================================================================
+PoC - Step 3 - Generate a SLIVER implant (reverse HTTPS payload) and set up a SLIVER HTTPS handler
+===========================================================================================================================================
+
