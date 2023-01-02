@@ -9,8 +9,8 @@ function, RFI, LFI) and you uploaded a webshell on the underlying IIS Web server
 This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between your
 pentester machine (e.g. Kali Linux VM in AWS) and this Windows server or other machines located on the internal network.
 
-Below are the steps to follow to be able to log into the compromised Windows server from the Internet (RDP over a SSH tunnel with plink) and then use this machine
-as a pivot to attack the other servers located on the internal network.
+Below are the steps to follow to be able to log into the compromised Windows server from the Internet (RDP over a SSH tunnel with plink) and then 
+use this machine as a pivot to attack the other servers located on the internal network.
 
 
 Step 1. Using your webshell and native commands like 'Test-NetConnection' (or tools like 'portqry'), check that the underlying Windows server 
