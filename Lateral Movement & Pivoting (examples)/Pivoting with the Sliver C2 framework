@@ -1,0 +1,44 @@
+===========================================================================================================================================
+Pivoting with the SLIVER Adversary emulation / Red Team Framework
+===========================================================================================================================================
+
+SLIVER is an open source cross-platform adversary emulation/red team framework, it can be used by organizations of all sizes to perform security testing.
+
+=> https://github.com/BishopFox/sliver
+=> https://redsiege.com/blog/2022/11/introduction-to-sliver/
+=> https://dominicbreuker.com/post/learning_sliver_c2_01_installation/
+
+Context
+========
+During during penetration tests, Command and Control solutions (C2) like the SLIVER framework can be used to create a reverse tunnel between
+a target Windows/Linux server or a Windows laptop located inside a company internal network and an Internet-facing remote server belonging to the
+pentesters (e.g. a Kali VM running in AWS or Azure).
+Creating a reverse tunnel is usefull to pass trhough firewalls and pivot inside a company's internal network after having compromise 
+for example a vulnerable internet-facing website (e.g. unpatched RCE flaws) or a laptop via a phishing attack.
+
+Basic test lab
+===============
+> Kali Linux (192.168.56.104)
+> Windows 10 Laptop with Defender AV enabled and up-to-date (192.168.1.113)
+> Windows 2016 server with Defender AV enabled and up-to-date (192.168.1.51)
+> Windows DC 2016 with Defender AV enabled and up-to-date (192.168.1.167)
+
+The Kali Linux box can't reach the network 192.168.1.0/24. 
+To be able to reach the machines located in the network 192.168.1.0/24 we will execute a meterpreter session (reverse HTTPS shell with the autoroute
+command and a proxy socks) on the Windows 10 laptop to pivot and then attack the machines located in the network 192.168.1.0/24.
+
+
+Miscellaneous notes
+====================
+
+1. Pivoting with SLIVER C2
+---------------------------
+> SLIVER session (implant) + command "socks5 start" + Proxychains
+
+2. AV detection of SLIVER payloads 
+----------------------------------------
+To avoid AV detection it is recommended to use:
+> obfuscation, encryption and compression methods with a packer or a shellcode loader
+> AMSI and ETW bypass techniques
+> Fileless techniques
+> etc...
