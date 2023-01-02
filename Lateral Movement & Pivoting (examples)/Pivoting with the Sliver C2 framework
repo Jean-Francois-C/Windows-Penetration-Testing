@@ -36,13 +36,24 @@ Miscellaneous notes
 ---------------------------
 > SLIVER session (implant) + command "socks5 start" + Proxychains
 
-2. AV detection of SLIVER payloads 
-----------------------------------------
+2. AV detection of SLIVER implants (C2 agents)
+----------------------------------------------
 To avoid AV detection it is recommended to use:
 > obfuscation, encryption and compression methods with a packer or a shellcode loader
 > AMSI and ETW bypass techniques
 > Fileless techniques
 > etc...
+
+3. Difference between a "Session" implant and a "Beacon" implant 
+-----------------------------------------------------------------
+> The session mode makes the SLIVER implant establishes an interactive session with immediate command execution and feedback. 
+> The beacon mode makes the SLIVER implant connect back and fetch jobs in regular intervals. 
+
+4. Difference between "Staged" and "Stageless" payloads
+-------------------------------------------------------
+> A staged payload is as compact as possible and performs the single task of providing the means for an attacker to upload something bigger.
+  It uses a (small) stager that connects to the SLIVER handler to download and execute the stage (the final payload).
+> A stageless payload is self-contained and completely standalone.
 
 
 =====================================================================================================================
