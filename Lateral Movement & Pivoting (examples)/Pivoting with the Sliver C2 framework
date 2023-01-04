@@ -368,7 +368,9 @@ server] sliver (BOILING_LIVER) > background
 Notes
 # apt-get install proxychains
 # cp /etc/proxychains.conf /etc/proxychains.conf.backup
-# echo "socks5 127.0.0.1 1080" > /etc/proxychains.conf
+# echo "socks5 127.0.0.1 1081" >> /etc/proxychains.conf
+------------------------------------------------------------------
+Configuration of Proxychains
 ------------------------------------------------------------------
 
 jeff@kali:~$ tail /etc/proxychains.conf 
