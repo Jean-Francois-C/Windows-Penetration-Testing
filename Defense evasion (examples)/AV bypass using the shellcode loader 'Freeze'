@@ -8,7 +8,6 @@ Freeze is a payload creation tool used for circumventing EDR security controls t
 Freeze utilizes multiple techniques to not only remove Userland EDR hooks, but to also execute shellcode in such a way that it circumvents
 other endpoint monitoring controls.
 
-
 Main features
 --------------
 > EDR bypass using suspended processes
