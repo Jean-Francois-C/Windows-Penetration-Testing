@@ -2,8 +2,16 @@
 Pivoting with SSH Tunnels and Plink on a Windows server (basic example)
 ======================================================================================================
 
+Plink is a command-line connection tool similar to UNIX ssh that can be used to create remote ssh tunnel.
+It is part of the PuTTY tool suite.
+
+=> https://www.putty.org/
+=> https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
+=> https://the.earth.li/~sgtatham/putty/0.78/htmldoc/
+
+
 Context
---------
+=======
 During a penetration test, you managed to hack a vulnerable Internet-facing website (e.g. unpatched known RCE vulnerability, insecure 
 file upload function, RFI, LFI) and you uploaded a webshell on the underlying IIS Web server which is running on a Windows server 2016.
 This Windows server is located inside your client's internal network (protected by a firewall) and you want to establish a tunnel between
@@ -12,7 +20,8 @@ your pentester machine (e.g. Kali Linux VM in AWS) and this Windows server or ot
 Below are the steps to follow to be able to log into the compromised Windows server from the Internet (RDP over a SSH tunnel with plink)
 and then use this machine as a pivot to attack the other servers located on the internal network.
 
-
+How to
+=======
 Step 1. Using your webshell and native commands like 'Test-NetConnection' (or tools like 'portqry'), check that the underlying Windows 
         server can browse the Internet without going through a corporate proxy.
 
