@@ -99,6 +99,66 @@ drwxr-xr-x  2 jeff jeff    4096 Jun 14  2022 Struct
 drwxr-xr-x  2 jeff jeff    4096 Jun 14  2022 Utils
 jeff@kali:~/Documents/Tools/ScareCrow-main$ 
 
+jeff@kali:~/Documents/Tools/ScareCrow-main$ ./ScareCrow -h
+  _________                           _________                       
+ /   _____/ ____ _____ _______   ____ \_   ___ \_______  ______  _  __
+ \_____  \_/ ___\\__  \\_  __ \_/ __ \/    \  \/\_  __ \/  _ \ \/ \/ /
+ /        \  \___ / __ \|  | \/\  ___/\     \____|  | \(  <_> )     / 
+/_______  /\___  >____  /__|    \___  >\______  /|__|   \____/ \/\_/  
+        \/     \/     \/            \/        \/                      
+                                                        (@Tyl0us)
+        â€œFear, you must understand is more than a mere obstacle. 
+        Fear is a TEACHER. the first one you ever had.â€
+
+Usage of ./ScareCrow:
+  -I string
+        Path to the raw 64-bit shellcode.
+  -Loader string
+        Sets the type of process that will sideload the malicious payload:
+        [*] binary - Generates a binary based payload. (This type does not benefit from any sideloading)
+        [*] control - Loads a hidden control applet - the process name would be rundll32 if -O is specified a JScript loader will be generated.
+        [*] dll - Generates just a DLL file. Can be executed with commands such as rundll32 or regsvr32 with DllRegisterServer, DllGetClassObject as export functions.
+        [*] excel - Loads into a hidden Excel process using a JScript loader.
+        [*] msiexec - Loads into MSIexec process using a JScript loader.
+        [*] wscript - Loads into WScript process using a JScript loader. (default "binary")
+  -O string
+        Name of output file (e.g. loader.js or loader.hta). If Loader is set to dll or binary this option is not required.
+  -configfile string
+        The path to a json based configuration file to generate custom file attributes. This will not use the default ones.
+  -console
+        Only for Binary Payloads - Generates verbose console information when the payload is executed. This will disable the hidden window feature.
+  -delivery string
+        Generates a one-liner command to download and execute the payload remotely:
+        [*] bits - Generates a Bitsadmin one liner command to download, execute and remove the loader (Compatible with Binary, Control, Excel, and Wscript Loaders).
+        [*] hta - Generates a blank hta file containing the loader along with an MSHTA command to execute the loader remotely in the background (Compatible with Control and Excel Loaders). 
+        [*] macro - Generates an office macro that will download and execute the loader remotely (Compatible with Control, Excel, and Wscript Loaders).
+  -domain string
+        The domain name to use for creating a fake code signing cert. (e.g. www.acme.com) 
+  -injection string
+        Enables Process Injection Mode and specify the path to the process to create/inject into (use \ for the path).
+  -noamsi
+        Disables the AMSI patching that prevents AMSI BuffferScanner.
+  -noetw
+        Disables the ETW patching that prevents ETW events from being generated.
+  -nosign
+        Disables file signing, making -domain/-valid/-password parameters not required.
+  -nosleep
+        Disables the sleep delay before the loader unhooks and executes the shellcode.
+  -outpath string
+        The path to put the final Payload/Loader once it's compiled.
+  -password string
+        The password for code signing cert. Required when -valid is used.
+  -sandbox
+        Enables sandbox evasion using IsDomainJoined calls.
+  -sha256
+        Provides the SHA256 value of the loaders (This is useful for tracking)
+  -unmodified
+        When enabled will generate a DLL loader that WILL NOT removing the EDR hooks in system DLLs and only use custom syscalls (set to false by default)
+  -url string
+        URL associated with the Delivery option to retrieve the payload. (e.g. https://acme.com/)
+  -valid string
+        The path to a valid code signing cert. Used instead -domain if a valid code signing cert is desired.
+        
 
 --------------------------------------------------------------------------------------------------------
 Step 2 - Generate a stageless Meterpreter (x64) https reverse shell using Msfvenom
