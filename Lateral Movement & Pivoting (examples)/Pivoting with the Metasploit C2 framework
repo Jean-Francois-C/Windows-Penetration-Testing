@@ -40,8 +40,9 @@ Please note that due to its popularity, Metasploit's payloads and post-exploitat
 In general, to avoid AV detection it is recommended to use:
 > obfuscation, encryption and compression methods with a packer or a shellcode loader
 > AMSI and ETW bypass techniques 
-> Fileless techniques
-> stageless or staged Meterpreter payload with HTTPs communication such as "windows/x64/meterpreter_reverse_https" and "windows/x64/meterpreter/reverse_https"  
+> fileless techniques
+> stageless (preferred) or staged Meterpreter payload with HTTPs communication such as "windows/x64/meterpreter_reverse_https" and "windows/x64/meterpreter/reverse_https"  
+> use HTTPS with a free legitimate certificate from Let’s Encrypt or a paid provider of your choice.
 
 3. Difference between "Staged" and "Stageless" payloads 
 --------------------------------------------------------
