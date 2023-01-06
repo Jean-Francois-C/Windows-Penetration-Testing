@@ -14,11 +14,12 @@ Main features
 > AMSI bypass
 > ETW bypass
 > Fake code signing signature 
+> sandbox evasion (sleep timer)
 > ...
 
 
 =========================================================================================================================================================
-PoC - Example with a stageless Meterpreter (x64) https reverse shell running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+PoC 1 - Example with a stageless Meterpreter (x64) https reverse shell running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
 =========================================================================================================================================================
 
 --------------------------------------------------------------------------------------------------------
