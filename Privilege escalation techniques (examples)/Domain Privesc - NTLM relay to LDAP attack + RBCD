@@ -1,12 +1,12 @@
 ===============================================================================================================================
-Remote Computer Takeover using PetitPotam + NTLM relay to LDAP attack + RBCD
+Domain Privesc - Remote Computer Takeover using PetitPotam + NTLM relay to LDAP attack + RBCD
 ===============================================================================================================================
 
-Using a low-privilege Windows domain account, it's possible to gain administrative privileges over any remote Windows computer (given we have network
-access to that computer) in a Windows environment that has the following weaknesses:
-> SMB signing and EPA (Extended Protection for Authentication) are disabled
-> the "MachineAccountQuota" allows any Windows domain account to create a computer account and set an SPN for it (Note: it is the default value).
-> Presence of unpatched vulnerabilities (e.g. Drop the MIC, CVE-2019-1040/CVE-2019-1166) that allow attackers to operate cross-protocols unsigning
+Using a low-privileged Windows domain account, it's possible to gain administrative privileges over any remote Windows computer (given we have 
+network access to that computer) in a Windows environment that has the following weaknesses:
+> SMB signing and EPA (Extended Protection for Authentication) are disabled;
+> the "MachineAccountQuota" allows any Windows domain account to create a computer account and set an SPN for it (Note: it is the default value);
+> Presence of unpatched vulnerabilities (e.g. Drop the MIC:CVE-2019-1040/CVE-2019-1166) that allow attackers to operate cross-protocols unsigning
   relays (e.g. NTLM relay to LDAP attack) on Windows machines.
 
 
@@ -29,7 +29,7 @@ Basic test lab
 
 
 =====================================================================================================================================
-PoC / Step 1 - Coerce any remote Windows server to authenticate to our NTLM relay server (running on a kali VM) using the Petit Potam 
+PoC / Step 1 - Coerce any remote Windows server to authenticate to our NTLM relay server (running on a kali VM) using the Petit-Potam 
                exploit (and any low priv Windows domain user account)
 =====================================================================================================================================
 
@@ -275,7 +275,7 @@ Cached Tickets: (2)
         Kdc Called:
         
         
-=> We have now a TGS for the Domain Admin account "company\administrator" and we can browse C$ of the server "oracleserver1.company.work"
+=> We have now a TGS (CIFS) for the Domain Admin account "company\administrator" and we can browse "C$" of the server "oracleserver1.company.work".
 
 PS C:\temp> ls \\192.168.1.51\C$
 
