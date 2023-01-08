@@ -258,9 +258,9 @@ Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
 [*] Setting up HTTP Server
 
 [*] Servers started, waiting for connections
-[*] HTTPD: Received connection from 192.168.1.50, attacking target 192.168.1.50
-[*] HTTPD: Received connection from 192.168.1.50, attacking target 192.168.1.50
-[*] SMBD: Received connection from 192.168.1.50, attacking target 192.168.1.50
+[*] HTTPD: Received connection from 192.168.1.41, attacking target 192.168.1.50
+[*] HTTPD: Received connection from 192.168.1.41, attacking target 192.168.1.50
+[*] SMBD: Received connection from 192.168.1.41, attacking target 192.168.1.50
 
 [-] Signature is REQUIRED on the other end, attack will not work
 [-] Authenticating against 192.168.1.50 as SECURITY-LAB\Qualys FAILED
