@@ -5,10 +5,10 @@ Domain Privesc - Active Directory Certificate Services (ADCS) + PetitPotam + NLT
 To complete...
 
 
-Conditions making an AD environment vulnerable to ADCS + NTLM relay attack:
--------------------------------------------------------------------------
+Conditions making an AD environment vulnerable to ADCS + NTLM relay attack
+---------------------------------------------------------------------------
 > ADCS is configured to allow NTLM authentication;
-> NTLM authentication is not protected by EPA (Extended Protection for Authentication) or SMB signing;
+> NTLM authentication is not protected by EPA (Extended Protection for Authentication) and SMB signing;
 > ADCS is running either of these services:
   + Certificate Authority Web Enrollment
   + Certificate Enrollment Web Service
