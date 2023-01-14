@@ -7,7 +7,7 @@ Antivirus/EDR bypass using the tool 'PowerLoader'
 The PowerShell script 'PowerLoader.ps1' builds script block which safely loads into-memory:
 > PowerShell script, 
 > .NET assembly,
-> shellcode.
+> shellcode (experimental).
 
 Several bypass techniques can be specified with the '-bypass' parameter within the function New-PowerLoader:
 > AMSI	-  Bypass Antimalware Scan Interface via in-memory patching
