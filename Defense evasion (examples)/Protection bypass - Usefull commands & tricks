@@ -193,19 +193,14 @@ Most EDR solutions use the gateway NTDLL.dll by “hooking” into it to watch f
 The Windows OS has two different privilege levels, that were implemented to protect the OS from for example crashes caused by installed applications. 
 All applications installed on a Windows System run in the so called User-mode and the kernel and device drivers run in the so called Kernel-mode. 
 
-Applications in the User-mode cannot access or manipulate memory sections in the Kernel-mode. AV/EDR systems can only monitor application behaviour in
-the User-mode, due to the Kernel Patch Protection. And the very last instance in the User-mode are the Windows API functions from NTDLL.dll. 
+Applications in the User-mode cannot access or manipulate memory sections in the Kernel-mode. AV/EDR systems can only monitor application behaviour in the User-mode, due to the Kernel Patch Protection. And the very last instance in the User-mode are the Windows API functions from NTDLL.dll. 
 
 If any function from NTDLL.dll is called, the CPU switches to Kernel-mode next, which cannot be monitored by AV/EDR vendors anymore. 
 The single functions of NTDLL.dll are called Syscalls.
-As of the NTDLL.dll functions are the last intance, that can be monitored for suspicious activities from attackers or malware by AV/EDR vendors, 
-they are typically doing exactly that. 
-They inject a custom DLL-file into every new process. You can find DLL files, loaded into a process from AV/EDR Vendors via for example 
-Sysinternals procexp64.exe.
+As of the NTDLL.dll functions are the last intance, that can be monitored for suspicious activities from attackers or malware by AV/EDR vendors, they are typically doing exactly that. 
+They inject a custom DLL-file into every new process. You can find DLL files, loaded into a process from AV/EDR Vendors via for example Sysinternals procexp64.exe.
 
-Unhooking refers to a method that attackers can use to load a fresh, unhooked version of ntdll.dll AFTER Windows has already loaded the EDR-hooked
-version at process launch. At this point the EDR is flying blind to any code that is running and it is unable to monitor the return address for 
-any API calls made, rendering it useless. 
+Unhooking refers to a method that attackers can use to load a fresh, unhooked version of ntdll.dll AFTER Windows has already loaded the EDR-hooked version at process launch. At this point the EDR is flying blind to any code that is running and it is unable to monitor the return address for any API calls made, rendering it useless. 
 
 Examples of tools
 ------------------
@@ -229,8 +224,7 @@ Examples of tools
 =============================================
 
 Event Tracing for Windows (ETW) is an efficient kernel-level tracing facility that lets you log kernel or application-defined events to a log file. 
-You can consume the events in real time or from a log file and use them to debug an application or to determine where performance issues are occurring 
-in the application.
+You can consume the events in real time or from a log file and use them to debug an application or to determine where performance issues are occurring in the application.
    
 EDR products have the option of using multiple sources to collect information on a Widows operating system. 
 One of these log sources is ETW (Event Tracing for Windows). 
@@ -472,6 +466,21 @@ OR copy and paste the command below into an elevated command prompt, and press e
 -------------------------------------------------------------------------------------
 C:\> Dism /online /Enable-Feature /FeatureName:"MicrosoftWindowsPowerShellV2Root" -All
 
+Example:
+---------
+C:\temp>powershell -version 2
+Windows PowerShell
+Copyright (C) 2009 Microsoft Corporation. All rights reserved.
+
+PS C:\temp> amsiscanbuffer
+amsiscanbuffer : The term 'amsiscanbuffer' is not recognized as the name of a cmdlet, function, script file, or operabl
+e program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:15
++ amsiscanbuffer <<<<
+    + CategoryInfo          : ObjectNotFound: (amsiscanbuffer:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS C:\temp>
 
 ====================================================================================================================================
 6. Commands to disable/enable the Windows Firewall 
