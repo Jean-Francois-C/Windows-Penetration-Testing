@@ -4,7 +4,7 @@
 # Author: https://github.com/Jean-Francois-C / GNU General Public License v3.0
 # ===============================================================================================================================
 # Features:
-# - Reflective shellcode loading into the memory of a target process
+# - Shellcode injection into the memory of a target process
 # - AES encryption and GZip compression (based on 'Xencrypt')
 # - AMSI bypass
 # - Blocking Event Tracing for Windows (ETW)
@@ -28,7 +28,7 @@ Usage:
 > Invoke-PoSH-ShellCodeLoader2 -FilePath C:\path\shellCode -TargetProcess explorer -OutFile C:\path\Packed-ShellCodeLoader.ps1
 
 Features:
-[*] Reflective shellcode loading into the memory of a target process
+[*] Shellcode injection into the memory of a target process
 [*] AES encryption and GZip compression
 [*] AMSI bypass
 [*] Blocking Event Tracing for Windows (ETW)
