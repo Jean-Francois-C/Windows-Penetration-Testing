@@ -35,11 +35,9 @@ Miscellaneous notes
 PoC - Step 1 - Install the HAVOC C2 framework on the Kali Linux box
 =====================================================================================================================
 
-
 1. Instal prerequisites packages
 ---------------------------------
 jeff@kali:~/Documents/Tools/HavocC2> sudo apt install -y git build-essential apt-utils cmake libfontconfig1 libglu1-mesa-dev libgtest-dev libspdlog-dev libboost-all-dev libncurses5-dev libgdbm-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev libbz2-dev mesa-common-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools libqt5websockets5 libqt5websockets5-dev qtdeclarative5-dev golang-go qtbase5-dev libqt5websockets5-dev libspdlog-dev python3-dev libboost-all-dev mingw-w64 nasm
-
 
 2. Set up the bookworm repo for Python 3.10
 --------------------------------------------
@@ -47,18 +45,14 @@ jeff@kali:~/Documents/Tools/HavocC2> echo 'deb http://ftp.de.debian.org/debian b
 sudo apt update
 sudo apt install python3-dev python3.10-dev libpython3.10 libpython3.10-dev python3.10
 
-
 3. Building the HAVOC Client
 -----------------------------
 
 jeff@kali:~/Documents/Tools/HavocC2> git clone https://github.com/HavocFramework/Havoc.git
-
 jeff@kali:~/Documents/Tools/HavocC2> cd Havoc/Client
-
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client/> make 
 
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc
-
 qt.qpa.xcb: could not connect to display
 qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
 This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
@@ -70,16 +64,19 @@ jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ export QT_QPA_PLATFORM=offscre
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc
 [00:05:59] [info] Havoc Framework [Version: 0.4.1] [CodeName: The Fool]
 
+Create a new profile
+> Name:
+> Host:
+> Port:
+> User:
+> Password:
 
 4. Building the HAVOC Teamserver
 --------------------------------
 
 jeff@kali:~/Documents/Tools/HavocC2> cd Havoc/Teamserver
-
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver> go mod download golang.org/x/sys  
-
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver>go mod download github.com/ugorji/go
-
 
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ ./teamserver 
               _______           _______  _______ 
@@ -108,4 +105,63 @@ Flags:
 
 Use "teamserver [command] --help" for more information about a command.
 
+
+=====================================================================================================================
+PoC - Step 2 - Create an operator and start the HAVOC teamserver and on the Kali Linux box
+=====================================================================================================================
+
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ gedit ./profiles/jeff-havoc-profile.yaotl
+Teamserver {
+        Host = "0.0.0.0"
+        Port = 40056
+
+        Build {
+            Compiler64 = "data/x86_64-w64-mingw32-cross/bin/x86_64-w64-mingw32-gcc"
+            Nasm = "/usr/bin/nasm"
+        }
+}
+
+Operators {
+        user "Jeff" {
+                Password = "<snip>"
+        }
+
+}
+
+Demon {
+    Sleep = 2
+
+    Injection {
+        Spawn64 = "C:\\Windows\\System32\\notepad.exe"
+        Spawn32 = "C:\\Windows\\SysWOW64\\notepad.exe"
+    }
+}
+
+
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ sudo ./teamserver server --profile ./profiles/jeff-havoc-profile.yaotl -v --debug
+[sudo] password for jeff:
+              _______           _______  _______
+    │\     /│(  ___  )│\     /│(  ___  )(  ____ \
+    │ )   ( ││ (   ) ││ )   ( ││ (   ) ││ (    \/
+    │ (___) ││ (___) ││ │   │ ││ │   │ ││ │
+    │  ___  ││  ___  │( (   ) )│ │   │ ││ │
+    │ (   ) ││ (   ) │ \ \_/ / │ │   │ ││ │
+    │ )   ( ││ )   ( │  \   /  │ (___) ││ (____/\
+    │/     \││/     \│   \_/   (_______)(_______/
+
+         pwn and elevate until it's done
+
+[00:28:28] [DBUG] [cmd.serverFunc:70]: Debug mode enabled
+[00:28:28] [INFO] Havoc Framework [Version: 0.4.1] [CodeName: The Fool]
+[00:28:28] [INFO] Havoc profile: ./profiles/jeff-havoc-profile.yaotl
+[00:28:28] [INFO] Build:
+ - Compiler x64 : data/x86_64-w64-mingw32-cross/bin/x86_64-w64-mingw32-gcc
+ - Compiler x86 : /usr/bin/i686-w64-mingw32-gcc
+ - Nasm         : /usr/bin/nasm
+[00:28:28] [INFO] Time: 16/01/2023 00:28:28
+[00:28:28] [INFO] Teamserver logs saved under: data/loot/16.01.2023_00:28:28
+[00:28:28] [DBUG] [teamserver.(*Teamserver).Start:47]: Starting teamserver...
+[00:28:28] [INFO] Starting Teamserver on ws://0.0.0.0:40056
+[00:28:28] [INFO] Opens existing database: data/havoc.db
+[00:28:28] [DBUG] [teamserver.(*Teamserver).Start:409]: Wait til the server shutdown
 
