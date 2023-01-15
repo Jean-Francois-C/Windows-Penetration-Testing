@@ -64,12 +64,6 @@ jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ export QT_QPA_PLATFORM=offscre
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc
 [00:05:59] [info] Havoc Framework [Version: 0.4.1] [CodeName: The Fool]
 
-Create a new profile
-> Name:
-> Host:
-> Port:
-> User:
-> Password:
 
 4. Building the HAVOC Teamserver
 --------------------------------
@@ -110,6 +104,9 @@ Use "teamserver [command] --help" for more information about a command.
 PoC - Step 2 - Create an operator and start the HAVOC teamserver and on the Kali Linux box
 =====================================================================================================================
 
+1. Creation of the new-operator 'jeff' 
+---------------------------------------
+
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ gedit ./profiles/jeff-havoc-profile.yaotl
 Teamserver {
         Host = "0.0.0.0"
@@ -137,6 +134,8 @@ Demon {
     }
 }
 
+2. Starting the HAVOC teamserver with the jeff profile
+-------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ sudo ./teamserver server --profile ./profiles/jeff-havoc-profile.yaotl -v --debug
 [sudo] password for jeff:
@@ -164,4 +163,10 @@ jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ sudo ./teamserver server -
 [00:28:28] [INFO] Starting Teamserver on ws://0.0.0.0:40056
 [00:28:28] [INFO] Opens existing database: data/havoc.db
 [00:28:28] [DBUG] [teamserver.(*Teamserver).Start:409]: Wait til the server shutdown
+
+
+3. Join the HAVOC C2 server as 'jeff' with the HAVOC client
+------------------------------------------------------------
+
+
 
