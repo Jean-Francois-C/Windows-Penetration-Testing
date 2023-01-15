@@ -64,7 +64,6 @@ jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ export QT_QPA_PLATFORM=offscre
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc
 [00:05:59] [info] Havoc Framework [Version: 0.4.1] [CodeName: The Fool]
 
-
 4. Building the HAVOC Teamserver
 --------------------------------
 
@@ -111,20 +110,16 @@ jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ gedit ./profiles/jeff-havo
 Teamserver {
         Host = "0.0.0.0"
         Port = 40056
-
         Build {
             Compiler64 = "data/x86_64-w64-mingw32-cross/bin/x86_64-w64-mingw32-gcc"
             Nasm = "/usr/bin/nasm"
         }
 }
-
 Operators {
         user "Jeff" {
                 Password = "<snip>"
         }
-
 }
-
 Demon {
     Sleep = 2
 
@@ -168,5 +163,65 @@ jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ sudo ./teamserver server -
 3. Join the HAVOC C2 server as 'jeff' with the HAVOC client
 ------------------------------------------------------------
 
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc 
+Qt: Session management error: Authentication Rejected, reason : None of the authentication protocols specified are supported and host-based authentication failed
+[00:33:41] [info] Havoc Framework [Version: 0.4.1] [CodeName: The Fool]
+[00:34:42] [error] Couldn't check if DemonClass is ready
+[00:34:42] [error] Couldn't check if AgentClass is ready
+[00:34:42] [error] Couldn't check if Event class is ready
+<SNIP>
 
+Connect box settings
+--------------------
+> Name: Test
+> Host: 127.0.0.1
+> Port: 40056
+> Name: Jeff
+> Password: <snip>
+
+In the Havoc Teamserver logs
+-----------------------------
+[00:34:42] [DBUG] [teamserver.(*Teamserver).ClientAuthenticate:552]: Found User: Jeff
+[00:34:42] [DBUG] [teamserver.(*Teamserver).ClientAuthenticate:566]: User Jeff is authenticated
+[00:34:42] [GOOD] User <Jeff> Authenticated
+
+
+=====================================================================================================================
+PoC - Step 3 - Set up a HAVOC HTTPS handler
+=====================================================================================================================
+
+To add a new HAVOC listener, go to:
+=> “View” => “Listeners” => “Add” (at the bottom of the window) => "Save" (at the bottom of the window)
+
+> Name: Test
+> Payload: Https
+> Host Rotation: round-robin
+> Host (Bind): 192.168.56.104
+> Port: 443
+> User Agents: Mozilla/5.0 <snip>
+> Enable Proxy connection: Off 
+
+
+=====================================================================================================================
+PoC - Step 4 - Generate a HAVOC implant (reverse HTTPS payload)
+=====================================================================================================================
+
+To generate a new payload, click on “Attack” => “Payload“ => "Generate" (at the bottom of the window)
+
+> Agent: Demon
+
+Options
+> Listener: Test
+> Arch: x64
+> Format: Windows Exe (choose between "Exe", "Dll", "Shellcode", "Servcie Exe")
+
+Config
+> Sleep: 2
+> Indirect Syscall: Enabled
+> Sleep Technique: WaitForSIngleObjectEx
+> Injection
+  > Alloc: Native/Syscall
+  > Execute: Native/Syscall
+  > Spawn64: C:\Windows\System32\notepad.exe
+  > Spawn32: C:\Windows\Syswow64\notepad.exe
 
