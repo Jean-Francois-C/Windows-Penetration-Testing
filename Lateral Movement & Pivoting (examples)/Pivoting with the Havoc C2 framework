@@ -1,0 +1,111 @@
+=======================================================================================================================================
+Pivoting with the HAVOC C2 Framework
+=======================================================================================================================================
+
+HAVOC is a modern and malleable post-exploitation command and control framework.
+
+=> https://github.com/HavocFramework/Havoc
+=> https://github.com/HavocFramework/Havoc/blob/main/WIKI.MD
+=> https://4pfsec.com/havoc-c2-first-look/
+=> https://payload.cafe/2022/10/02/havoc-c2-intro-inline-csharp-compilation-within-powershell/
+
+Context
+========
+During during penetration tests, Command and Control solutions (C2) like the Havoc framework can be used to create a reverse tunnel between a target Windows/Linux server or a Windows laptop located inside a company internal network and an Internet-facing remote server belonging to the pentesters (e.g. a Kali VM running in AWS or Azure).
+Creating a reverse tunnel is usefull to pass trhough firewalls and to pivot inside a company's internal network after having compromise for example a vulnerable internet-facing website (e.g. unpatched RCE flaws) or a laptop via a phishing attack.
+
+Basic test lab
+===============
+> Kali Linux (192.168.56.104)
+> Windows 10 Laptop with Defender AV enabled and up-to-date (192.168.1.113)
+> Windows 2016 server with Defender AV enabled and up-to-date (192.168.1.51)
+> Windows DC 2016 with Defender AV enabled and up-to-date (192.168.1.167)
+
+The Kali Linux box can't reach the network 192.168.1.0/24. 
+To be able to reach the machines located in the network 192.168.1.0/24 we will start a Havoc implant (reverse HTTPS shell with a proxy socks) 
+on the Windows 10 laptop to pivot and then attack the machines located in the network 192.168.1.0/24.
+
+
+Miscellaneous notes
+====================
+
+
+
+=====================================================================================================================
+PoC - Step 1 - Install the HAVOC C2 framework on the Kali Linux box
+=====================================================================================================================
+
+
+1. Instal prerequisites packages
+---------------------------------
+jeff@kali:~/Documents/Tools/HavocC2> sudo apt install -y git build-essential apt-utils cmake libfontconfig1 libglu1-mesa-dev libgtest-dev libspdlog-dev libboost-all-dev libncurses5-dev libgdbm-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev libbz2-dev mesa-common-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools libqt5websockets5 libqt5websockets5-dev qtdeclarative5-dev golang-go qtbase5-dev libqt5websockets5-dev libspdlog-dev python3-dev libboost-all-dev mingw-w64 nasm
+
+
+2. Set up the bookworm repo for Python 3.10
+--------------------------------------------
+jeff@kali:~/Documents/Tools/HavocC2> echo 'deb http://ftp.de.debian.org/debian bookworm main' >> /etc/apt/sources.list
+sudo apt update
+sudo apt install python3-dev python3.10-dev libpython3.10 libpython3.10-dev python3.10
+
+
+3. Building the HAVOC Client
+-----------------------------
+
+jeff@kali:~/Documents/Tools/HavocC2> git clone https://github.com/HavocFramework/Havoc.git
+
+jeff@kali:~/Documents/Tools/HavocC2> cd Havoc/Client
+
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client/> make 
+
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc
+
+qt.qpa.xcb: could not connect to display
+qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
+This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, vnc, xcb.
+Aborted
+
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ export QT_QPA_PLATFORM=offscreen
+
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc
+[00:05:59] [info] Havoc Framework [Version: 0.4.1] [CodeName: The Fool]
+
+
+4. Building the HAVOC Teamserver
+--------------------------------
+
+jeff@kali:~/Documents/Tools/HavocC2> cd Havoc/Teamserver
+
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver> go mod download golang.org/x/sys  
+
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver>go mod download github.com/ugorji/go
+
+
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ ./teamserver 
+              _______           _______  _______ 
+    │\     /│(  ___  )│\     /│(  ___  )(  ____ \                                                                                                          
+    │ )   ( ││ (   ) ││ )   ( ││ (   ) ││ (    \/                                                                                                          
+    │ (___) ││ (___) ││ │   │ ││ │   │ ││ │                                                                                                                
+    │  ___  ││  ___  │( (   ) )│ │   │ ││ │                                                                                                                
+    │ (   ) ││ (   ) │ \ \_/ / │ │   │ ││ │                                                                                                                
+    │ )   ( ││ )   ( │  \   /  │ (___) ││ (____/\                                                                                                          
+    │/     \││/     \│   \_/   (_______)(_______/                                                                                                          
+
+         pwn and elevate until it's done
+
+Havoc Teamserver
+
+Usage:
+  teamserver [flags]
+  teamserver [command]
+
+Available Commands:
+  help        Help about any command
+  server      server command
+
+Flags:
+  -h, --help   help for teamserver
+
+Use "teamserver [command] --help" for more information about a command.
+
+
