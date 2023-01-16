@@ -209,24 +209,22 @@ PoC - Step 4 - Generate a HAVOC implant (reverse HTTPS payload)
 To generate a new payload, click on “Attack” => “Payload“ => "Generate" (at the bottom of the window)
 By default HAVOC implant/demon are encrypted with the AES symmetric encryption protocol.
 
-
-> Agent: Demon
-
+Agent: Demon
 Options
-> Listener: Test
-> Arch: x64
-> Format: Windows Exe  (Choose between "Exe", "Dll", "Shellcode", "Servcie Exe")
-
+ > Listener: Test
+ > Arch: x64
+ > Format: Windows Exe  (Choose between "Exe", "Dll", "Shellcode", "Servcie Exe")
 Config
-> Sleep: 2                        //The default interval to sleep between check-ins for commands.
-> Indirect Syscall: Enabled
-> Sleep Technique: Ekko           //Choose between: "WaitForSIngleObjectEx" (no obfuscation), "Ekko" and "Foliage"
-> Injection
-  > Alloc: Native/Syscall
-  > Execute: Native/Syscall
-  > Spawn64: C:\Windows\System32\notepad.exe      //The full path to the process to spawn into for fork & run operations (64bit).
-  > Spawn32: C:\Windows\Syswow64\notepad.exe      //The full path to the process to spawn into for fork & run operations (32bit).
+ > Sleep: 2                        //The default interval to sleep between check-ins for commands.
+ > Indirect Syscall: Enabled
+ > Sleep Technique: Ekko           //Choose between: "WaitForSIngleObjectEx" (no obfuscation), "Ekko" and "Foliage"
+ > Injection
+   > Alloc: Native/Syscall
+   > Execute: Native/Syscall
+   > Spawn64: C:\Windows\System32\notepad.exe      //The full path to the process to spawn into for fork & run operations (64bit).
+   > Spawn32: C:\Windows\Syswow64\notepad.exe      //The full path to the process to spawn into for fork & run operations (32bit).
 
+Building Console
 [*] Starting build
 [*] Use indirect syscalls
 [*] Config size [412 bytes]
