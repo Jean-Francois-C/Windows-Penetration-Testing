@@ -215,9 +215,9 @@ Options
  > Arch: x64
  > Format: Windows Exe  (Choose between "Exe", "Dll", "Shellcode", "Servcie Exe")
 Config
- > Sleep: 2                        //The default interval to sleep between check-ins for commands.
+ > Sleep: 2                                        //The default interval to sleep between check-ins for commands.
  > Indirect Syscall: Enabled
- > Sleep Technique: Ekko           //Choose between: "WaitForSIngleObjectEx" (no obfuscation), "Ekko" and "Foliage"
+ > Sleep Technique: WaitForSIngleObjectEx          //Choose between: "WaitForSIngleObjectEx" (no obfuscation), "Ekko" and "Foliage"
  > Injection
    > Alloc: Native/Syscall
    > Execute: Native/Syscall
