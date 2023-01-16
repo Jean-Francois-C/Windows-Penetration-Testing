@@ -29,6 +29,18 @@ on the Windows 10 laptop to pivot and then attack the machines located in the ne
 Miscellaneous notes
 ====================
 
+1. Pivoting with HAVOC
+------------------------
+> HAVOC session + Socks4 + Proxychains
+
+2. AV detection of HAVOC agents 
+-----------------------------------
+In general, to avoid AV detection it is recommended to use:
+> obfuscation, encryption and compression methods with a packer or a shellcode loader
+> AMSI and ETW bypass techniques 
+> fileless techniques
+> use HTTPS with a free legitimate certificate from Let’s Encrypt or a paid provider of your choice.
+> ...
 
 
 =====================================================================================================================
