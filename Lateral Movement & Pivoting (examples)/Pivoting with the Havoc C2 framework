@@ -31,7 +31,7 @@ Miscellaneous notes
 
 1. Pivoting with HAVOC
 ------------------------
-> HAVOC session + Socks4 + Proxychains
+> HAVOC session + Socks4 (command "socks add") + Proxychains
 
 2. AV detection of HAVOC agents 
 -----------------------------------
@@ -218,9 +218,9 @@ To add a new HAVOC listener, go to:
 PoC - Step 4 - Generate a HAVOC implant (reverse HTTPS payload)
 =====================================================================================================================
 
---------------------------------------
+------------------------------------------
 Example 1 - HAVOC - Windows Exe file
---------------------------------------
+------------------------------------------
 To generate a new payload, click on “Attack” => “Payload“ => "Generate" (at the bottom of the window)
 By default HAVOC implant/demon are encrypted with the AES symmetric encryption protocol.
 
@@ -250,9 +250,9 @@ Building Console
 Payload saved under: /home/jeff/Documents/Tools/HavocC2/Havocdemon.exe
 
 
---------------------------------------
+------------------------------------------
 Example 2 - HAVOC - Windows Shellcode 
---------------------------------------
+------------------------------------------
 To generate a new payload, click on “Attack” => “Payload“ => "Generate" (at the bottom of the window)
 
 Agent: Demon
@@ -281,7 +281,7 @@ Building Console
 
 Payload saved under: /home/jeff/Documents/Tools/HavocC2/HavocShellcode.exe
 
-Preparing the shellcode in the format "PS1" to be able to use my shellcode loader generator tools
+Preparing the shellcode in the format "PS1" to be able to use my shellcode loader generator tool "Invoke-PoSH-ShellCodeLoader2.ps1"
 => https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/PowerShellTools
 
 Step 1 - Format the shellcode using xxd and sed
@@ -337,7 +337,7 @@ Usage:
 > Invoke-PoSH-ShellCodeLoader2 -FilePath C:\path\shellCode -TargetProcess explorer -OutFile C:\path\Packed-ShellCodeLoader.ps1
 
 Features:
-[*] Reflective shellcode loading into the memory of a target process
+[*] Shellcode injection into the memory of a target process
 [*] AES encryption and GZip compression
 [*] AMSI bypass
 [*] Blocking Event Tracing for Windows (ETW)
