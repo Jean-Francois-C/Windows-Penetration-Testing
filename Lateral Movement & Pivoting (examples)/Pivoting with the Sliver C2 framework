@@ -411,8 +411,7 @@ socks5  127.0.0.1 1081
                
                
 =====================================================================================================================================================
-PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session to pivot into the network '192.168.1.0/24' 
-               and to attack the machines hosted inside this subnet
+PoC - Step 7 - Use Proxychains on the Kali Linux server (192.168.56.104) and the SLIVER session (socks5) to pivot into the network '192.168.1.0/24'
 =====================================================================================================================================================
 
 without using Proxychains and the SLIVER session, the network traffic is filtered towards the Windows machines '192.168.1.113' and '192.168.1.167' from the Kali VM 
