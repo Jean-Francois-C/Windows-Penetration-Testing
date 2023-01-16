@@ -401,7 +401,7 @@ PORT     STATE    SERVICE
 Nmap done: 1 IP address (1 host up) scanned in 13.09 seconds
 
 
-Example 1 - Nmap port scan of the Windows machine '192.168.1.113' (from the KALI VM) over the SLIVER session
+Example 1 - Nmap port scan of the Windows machine '192.168.1.113' (from the KALI VM) over the HAVOC session
 ----------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~$ proxychains nmap -sT -Pn -p 3389 192.168.1.113
