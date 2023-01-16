@@ -59,7 +59,6 @@ sudo apt install python3-dev python3.10-dev libpython3.10 libpython3.10-dev pyth
 
 3. Building the HAVOC Client
 -----------------------------
-
 jeff@kali:~/Documents/Tools/HavocC2> git clone https://github.com/HavocFramework/Havoc.git
 jeff@kali:~/Documents/Tools/HavocC2> cd Havoc/Client
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client/> make 
@@ -78,7 +77,6 @@ jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc
 
 4. Building the HAVOC Teamserver
 --------------------------------
-
 jeff@kali:~/Documents/Tools/HavocC2> cd Havoc/Teamserver
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver> go mod download golang.org/x/sys  
 jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver>go mod download github.com/ugorji/go
@@ -112,7 +110,7 @@ Use "teamserver [command] --help" for more information about a command.
 
 
 =====================================================================================================================
-PoC - Step 2 - Create an operator and start the HAVOC teamserver and on the Kali Linux box
+PoC - Step 2 - Create an operator and start the HAVOC teamserver on the Kali Linux box
 =====================================================================================================================
 
 1. Creation of the new-operator 'jeff' 
