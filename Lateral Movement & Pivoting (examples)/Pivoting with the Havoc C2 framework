@@ -303,7 +303,7 @@ PoC - Step 5 - Generate a packed version of the HAVOC implant and run it on the 
 ------------------------------------------
 Example 1 - HAVOC - Windows Exe file
 ------------------------------------------
-The HAVOC demaons/implants generated with the Windows format ".exe" are easily detected by AV solution such as WIndows Defender. 
+The HAVOC demons/implants generated with the Windows format ".exe" are easily detected by AV solution such as WIndows Defender. 
 However, multiple tools can be used to "pack/obfuscate/encrypt" the HAVOC implants (Please refer to: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)) 
 
 PS C:\Users\Administrator\Downloads> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
