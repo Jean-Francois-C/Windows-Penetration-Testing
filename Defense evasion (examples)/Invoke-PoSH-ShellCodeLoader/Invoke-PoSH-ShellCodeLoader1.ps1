@@ -1,6 +1,6 @@
 # ===============================================================================================================================
 # Invoke-PoSH-ShellCodeLoader1 is a simple shellcode loader generator that aims to bypass AV solutions such as Windows Defender.
-# It works with shellcodes generated with the format 'ps1' such as 'msfvenom windows/x64/meterpreter/reverse_https -f ps1 ...'
+# It works with shellcodes generated with the format 'ps1' (e.g. [Byte[]] $buf = 0xfc,0x48,0x83,...)
 # Author: https://github.com/Jean-Francois-C / GNU General Public License v3.0
 # ===============================================================================================================================
 # Features:
