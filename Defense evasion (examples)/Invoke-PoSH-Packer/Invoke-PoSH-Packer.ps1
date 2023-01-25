@@ -26,7 +26,7 @@ Usage:
 > Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
 
 Features:
-[*] AES encryption, randomized variable names and GZip compression (based on 'Xencrypt')
+[*] AES encryption and GZip compression (based on 'Xencrypt')
 [*] AMSI bypass
 [*] Blocking Event Tracing for Windows (ETW)
 [*] Disabling PowerShell history logging
