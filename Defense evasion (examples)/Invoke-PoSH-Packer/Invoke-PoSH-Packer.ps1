@@ -3,7 +3,7 @@
 # Author: https://github.com/Jean-Francois-C / GNU General Public License v3.0
 # ==================================================================================================================
 # Features:
-# - AES encryption and GZip compression (based on 'Xencrypt')
+# - AES encryption and GZip/Deflate compression (based on 'Xencrypt')
 # - AMSI bypass
 # - Blocking Event Tracing for Windows (ETW)
 # - Disabling PowerShell history logging
@@ -26,7 +26,7 @@ Usage:
 > Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
 
 Features:
-[*] AES encryption and GZip compression (based on 'Xencrypt')
+[*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
 [*] AMSI bypass
 [*] Blocking Event Tracing for Windows (ETW)
 [*] Disabling PowerShell history logging
