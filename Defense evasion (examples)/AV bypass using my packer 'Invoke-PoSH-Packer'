@@ -2,7 +2,8 @@
 AV bypass using my PowerShell packer 'Invoke-PoSH-Packer'
 ================================================================================================================================================
 
-'Invoke-PoSH-Packer' allows to pack and encrypt offensive PowerShell scripts (e.g. invoke-mimikatz.ps1, invoke-rubeus.ps1) in order to bypass AV solutions such as Windows Defender.
+'Invoke-PoSH-Packer' allows to pack and encrypt offensive PowerShell scripts (e.g. invoke-mimikatz.ps1, invoke-rubeus.ps1) in order to bypass
+AV solutions such as Windows Defender.
 
 => URL: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-Packer
 
