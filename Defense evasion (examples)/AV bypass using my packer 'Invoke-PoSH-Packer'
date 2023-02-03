@@ -18,9 +18,9 @@ FEATURES
   + wait for 60 seconds before execution
 
 
-================================================================================================================================================
-Example 1 - Create & run a packed/encrypted version of "invoke-mimkatz.ps1" on a Windows 10 laptop without getting detected by Windows Defender
-================================================================================================================================================
+====================================================================================================================================================
+Example 1 - Create & then run a packed/encrypted version of "invoke-mimkatz.ps1" on a Windows 10 laptop without getting detected by Windows Defender
+====================================================================================================================================================
 
 Step 1 - Create a packed/encrypted version of the script 'Invoke-mimkatz.ps1' using 'Invoke-PoSH-Packer.ps1'
 ---------------------------------------------------------------------------------------------------------------
@@ -109,9 +109,9 @@ SID               : S-1-5-21-936125016-2310263949-2175806047-500
  <SNIP>
  
  
-================================================================================================================================================
-Example 2 - Create & run a packed/encrypted version of "invoke-rubeus.ps1" on a Windows 10 laptop without getting detected by Windows Defender
-================================================================================================================================================
+===================================================================================================================================================
+Example 2 - Create & then run a packed/encrypted version of "invoke-rubeus.ps1" on a Windows 10 laptop without getting detected by Windows Defender
+===================================================================================================================================================
 
 Step 1 - Create a packed/encrypted version of the script 'Invoke-rubeus.ps1' using 'Invoke-PoSH-Packer.ps1'
 -----------------------------------------------------------------------------------------------------------
@@ -206,9 +206,9 @@ PS C:\> invoke-rubeus "hash /password:SuperPassword"
 
 
 
-===================================================================================================================================================
-Example 3 - Create & run a packed/encrypted version of "invoke-nanodump.ps1" on a Windows Server 2016 without getting detected by Windows Defender
-===================================================================================================================================================
+=======================================================================================================================================================
+Example 3 - Create & then run a packed/encrypted version of "invoke-nanodump.ps1" on a Windows Server 2016 without getting detected by Windows Defender
+=======================================================================================================================================================
 
 Step 1 - Create a packed/encrypted version of the script 'invoke-nanodump.ps1' using 'Invoke-PoSH-Packer.ps1'
 -------------------------------------------------------------------------------------------------------------
@@ -442,7 +442,7 @@ luid 149493
 
 
 ===================================================================================================================================================
-Example 4 - Create & run a packed/encrypted version of a stageless (x64) Meterpreter reverse shell (.ps1) on a Windows Server 2016 without 
+Example 4 - Create & then run a packed/encrypted version of a stageless (x64) Meterpreter reverse shell (.ps1) on a Windows Server 2016 without 
             getting detected by Windows Defender
 ===================================================================================================================================================
 
