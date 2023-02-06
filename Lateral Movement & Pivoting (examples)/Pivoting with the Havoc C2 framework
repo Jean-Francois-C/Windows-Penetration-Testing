@@ -277,7 +277,7 @@ Building Console
 [*] Shellcode payload [66559 bytes]
 [+] Payload generated
 
-Payload saved under: /home/jeff/Documents/Tools/HavocC2/HavocShellcode.exe
+Payload saved under: /home/jeff/Documents/Tools/HavocC2/HavocShellcode.bin
 
 Preparing the shellcode in the format "PS1" to be able to use my shellcode loader generator tool "Invoke-PoSH-ShellCodeLoader2.ps1"
 => https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/PowerShellTools
