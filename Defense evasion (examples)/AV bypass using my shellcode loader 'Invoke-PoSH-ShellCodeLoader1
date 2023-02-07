@@ -1,5 +1,5 @@
 ================================================================================================================================================
-AV bypass using my PowerShell Shellcode loader 'Invoke-PoSH-ShellCodeLoader.ps1'
+AV bypass using my PowerShell Shellcode loader 'Invoke-PoSH-ShellCodeLoader.ps1' (v2.0)
 ================================================================================================================================================
 
 'Invoke-PoSH-ShellCodeLoader' is a shellcode loader script generator that aims to bypass AV solutions such as Windows Defender.
