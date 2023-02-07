@@ -129,7 +129,7 @@ function Invoke-PoSH-ShellCodeLoader {
 
         Write-Output "[*] File compression (GZip/Deflate)"
         $TempShellCodeLoaderFileRead = [System.IO.File]::ReadAllBytes($TempShellCodeLoaderFile)
-        #Del "C:\Windows\Temp\templateloader.ps1"
+        Del "C:\Windows\Temp\templateloader.ps1"
         [System.IO.MemoryStream] $output = New-Object System.IO.MemoryStream
         if ($compressiontype -eq "Gzip") {
         	$compressionStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
