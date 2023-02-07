@@ -15,8 +15,8 @@ FEATURES
 > Blocking Event Tracing for Windows (ETW)
 > Disabling PowerShell history logging
 > Basic sandbox evasion techniques (optional)
-> stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
-> wait for 60 seconds before execution
+  > stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
+  > wait for 60 seconds before execution
 > Compatible with shellcodes from multiple C2 frameworks (Metasploit, Silver and Havoc)
 
 
