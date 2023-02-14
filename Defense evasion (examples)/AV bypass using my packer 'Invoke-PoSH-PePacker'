@@ -3,6 +3,7 @@ AV bypass using my PowerShell packer 'Invoke-PoSH-PePacker'
 ================================================================================================================================================
 
 'Invoke-PoSH-PePacker' allows to pack and encrypt offensive PE files in order to bypass AV solutions such as Windows Defender.
+It generates an obfuscated and encrypted PowerShell script that embeds the PE file. 
 
 => URL: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-PePacker/
 
@@ -19,7 +20,8 @@ FEATURES
   
 
 ===================================================================================================================================================
-Example 1 - Create & then run a packed/encrypted version of a HAVOC C2 agent on a Windows 10 Laptop without getting detected by Windows Defender
+Example 1 - Create & then run a packed/encrypted PowerShell script that embeds a HAVOC C2 agent on a Windows 10 Laptop without getting detected
+            by Windows Defender
 ===================================================================================================================================================
 
 ----------------------------------------------------------------------------------------------------------------------
@@ -218,8 +220,10 @@ Hotfix(s):                 19 Hotfix(s) Installed.
 <SNIP>
 
 
+
 ===================================================================================================================================================
-Example 2 - Create & then run a packed/encrypted version of Mimikatz.exe on a Windows 10 Laptop without getting detected by Windows Defender
+Example 2 - Create & then run a packed/encrypted PowerShell script that embeds 'Mimikatz.exe' on a Windows 10 Laptop without getting detected
+            by Windows Defender
 ===================================================================================================================================================
 
 ---------------------------------------------------------------------------------------------------------------
