@@ -2,7 +2,7 @@
 AV bypass using my PowerShell packer 'Invoke-PoSH-PePacker'
 ================================================================================================================================================
 
-'Invoke-PoSH-PePacker' allows to pack and encrypt offensive PE files in order to bypass AV solutions
+'Invoke-PoSH-PePacker' allows to pack and encrypt offensive PE files in order to bypass AV solutions such as Windows Defender.
 
 => URL: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-PePacker/
 
