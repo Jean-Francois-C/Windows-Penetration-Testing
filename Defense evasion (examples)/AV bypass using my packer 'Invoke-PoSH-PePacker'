@@ -20,8 +20,8 @@ FEATURES
   
 
 ===================================================================================================================================================
-Example 1 - Create & then run a packed/encrypted PowerShell script that embeds a HAVOC C2 agent on a Windows 10 Laptop without getting detected
-            by Windows Defender
+Example 1 - Create & then run a obfuscated/encrypted PowerShell script that contains a HAVOC C2 agent on a Windows 10 Laptop without getting 
+            detected by Windows Defender
 ===================================================================================================================================================
 
 ----------------------------------------------------------------------------------------------------------------------
@@ -222,7 +222,7 @@ Hotfix(s):                 19 Hotfix(s) Installed.
 
 
 ===================================================================================================================================================
-Example 2 - Create & then run a packed/encrypted PowerShell script that embeds 'Mimikatz.exe' on a Windows 10 Laptop without getting detected
+Example 2 - Create & then run a obfuscated/encrypted PowerShell script that contains 'Mimikatz.exe' on a Windows 10 Laptop without getting detected
             by Windows Defender
 ===================================================================================================================================================
 
