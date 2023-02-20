@@ -2,10 +2,9 @@
 AV bypass using the obfuscation tool 'ConfuserEx'
 ===============================================================================================================================
 
-ConfuserEx 2 is an open-source protector for .NET applications. It is the successor of the Confuser project and the ConfuserEx project.
+ConfuserEx v2 is an open-source protector for .NET applications. It is the successor of the Confuser project and the ConfuserEx project.
 
 ConfuserEx supports .NET Framework from 2.0 - 4.8, .NET Standard, .NET Core and Mono. 
-It supports most of the protections you'll find in commercial protectors, and some more.
 
 Sources:
 => https://github.com/mkaring/ConfuserEx
