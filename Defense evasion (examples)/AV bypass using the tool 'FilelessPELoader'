@@ -8,8 +8,7 @@ The tool "FilelessPELoader" allows to load and execute directly into memory an e
 
 Notes regarding AV detection
 -----------------------------
-This loader works well with hacking tools that are not heavily signed by antivirus solutions. 
-For instance, when I tried to load the tool "Mimikitaz.exe" and a meterpeeter shell they were both detected and blocked by Windows Defender.
+This loader works well however during my tests well-known hacking tools such as "Mimikatz.exe" or meterpreter shells were detected & blocked by Windows Defender.
 
 
 ====================================================================================================================================================
