@@ -438,9 +438,7 @@ function Invoke-PoSH-ShellCodeLoader {
 
         if ($Filepath) {	
         Write-Output "[*] Loading the Havoc shellcode: '$($Filepath)"
-        #$ShellCodestring = Get-Content $Filepath
-        #$ShellCodebyte = [IO.File]::ReadAllBytes($Filepath)
-        $ShellCodebyte = [System.IO.File]::ReadAllBytes($filepath)
+        $ShellCodestring = Get-Content $Filepath
 
         Write-Output "[*] Creating the shellcode loader script"
         [System.IO.File]::WriteAllText($TempShellCodeLoaderFile, $ShellCodeLoaderPart1);
