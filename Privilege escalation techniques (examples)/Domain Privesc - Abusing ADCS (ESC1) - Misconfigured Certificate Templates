@@ -1,9 +1,9 @@
 =======================================================================================================================================
-ADCS Domain Escalation technique "ESC1" - Misconfigured Certificate Templates Allows requesters to specify a SAN
+ADCS Domain Escalation technique "ESC1" - Misconfigured Certificate Templates allows requesters to specify a SAN
 =======================================================================================================================================
 
 -----------------------------------------------------------------------------------------------
-Explanation / Context - Misconfigured Certificate Templates - ESC1
+Conditions making an AD environment vulnerable to "ESC1" - Misconfigured Certificate Templates
 -----------------------------------------------------------------------------------------------
 - The Enterprise CA grants low-privileged users enrolment rights
 - Manager approval is disabled
