@@ -649,7 +649,7 @@ jeff@kali:~$ certipy-ad find -u LowPrivUser@company.work -p 'SuperGenialPwd' -ta
 
 
 =======================================================================================================================================
-PoC 2 - Step 2 - Find vulnerable certificate templates (ESC1) with the C# tool 'Certify.exe'
+PoC - Step 2 - Find vulnerable certificate templates (ESC1) with the C# tool 'Certify.exe'
 =======================================================================================================================================
 
 Command to find vulnerable/abusable certificate templates using default low-privileged groups
