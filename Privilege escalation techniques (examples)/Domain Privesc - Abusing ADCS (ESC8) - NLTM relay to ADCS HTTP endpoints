@@ -1,21 +1,30 @@
 ==========================================================================================================================================
-Domain Privesc -  PetitPotam + NLTM Relay to ADCS (Active Directory Certificate Services)
+ADCS Domain Escalation technique "ESC8" - Abusing NTLM relay to ADCS HTTP endpoints 
 ==========================================================================================================================================
 
-Conditions making an AD environment vulnerable to "NLTM Relay to ADCS" attacks
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+Conditions making an AD environment vulnerable to "ESC8" - NLTM relay to ADCS HTTP endpoints
+---------------------------------------------------------------------------------------------
 > ADCS is configured to allow NTLM authentication;
 > NTLM authentication is not protected by EPA (Extended Protection for Authentication) and SMB signing;
 > ADCS is running either of these services:
   + Certificate Authority Web Enrollment
   + Certificate Enrollment Web Service
+  
+> The Certificate Authority Web Enrollment, Certificate Enrollment Policy Web Service, and Network Device Enrollment Service roles in AD CS 
+  support HTTP-based certificate enrollment. 
+  If NTLM relay protections are not enabled (by default they are not), then these enrollment interfaces are vulnerable to NTLM relay attacks. 
+  The Web Enrollment interface is accessible via "http://<ca-server>/certsrv/" and by default it supports HTTP and allows NTLM authentication.
 
-Usefull tools
----------------
+---------------------------------------------------------------------------
+Various tools can be used to identify and exploit the "ESC8" vulnerability 
+---------------------------------------------------------------------------
 > Certify.exe (https://github.com/GhostPack/Certify)
-> PetitPotam.py (https://github.com/topotam/PetitPotam)
 > Ntlmrelayx.py (https://github.com/fortra/impacket/blob/master/examples/ntlmrelayx.py)
 > Rubeus.exe (https://github.com/GhostPack/Rubeus)
+> PetitPotam.py (https://github.com/topotam/PetitPotam)
+> SpoolSample (https://github.com/leechristensen/SpoolSample)
+
 
 ==========================================================================================================================================
 PoC 1 - Basic test with the tools "Certify.exe", "PetitPotam.py", "Ntlmrelayx.py" and "Rubeus.exe"
