@@ -175,7 +175,7 @@ The tool allows to:
 
 (Note: the commands below are executed with a low-privileged domain user account logged on a domain joined machine.)
 
-Command to find information about all registered Certificate Authorities (you need to use
+Command to find information about all registered Certificate Authorities
 -------------------------------------------------------------------------
  
 C:\temp> Packed_Certify.exe cas /domain:company.work /ldapserver:dc1.company.work /path:CN=Configuration,DC=company,DC=work /showAllPermissions
