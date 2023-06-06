@@ -1,9 +1,9 @@
 =======================================================================================================================================
-ADCS Domain Escalation technique "ESC1" - Misconfigured Certificate Templates allows requesters to specify a SAN
+ADCS Domain Escalation technique "ESC1" - Misconfigured Certificate Template allows requesters to specify a SAN
 =======================================================================================================================================
 
 -----------------------------------------------------------------------------------------------
-Conditions making an AD environment vulnerable to "ESC1" - Misconfigured Certificate Templates
+Conditions making an AD environment vulnerable to "ESC1" - Misconfigured Certificate Template
 -----------------------------------------------------------------------------------------------
 - The Enterprise CA grants low-privileged users enrolment rights
 - Manager approval is disabled
@@ -34,7 +34,7 @@ Info
 
 
 ========================================================================================================================================
-PoC - Privilege escalation from Domain User to Domain Admin by exploiting the "Misconfigured Certificate Templates" vulnerability (ESC1) 
+PoC - Privilege escalation from Domain User to Domain Admin by exploiting the "Misconfigured Certificate Template" vulnerability (ESC1) 
 ========================================================================================================================================
 
 =================================================================================================================
