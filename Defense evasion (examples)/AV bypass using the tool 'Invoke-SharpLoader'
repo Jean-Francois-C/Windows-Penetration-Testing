@@ -17,7 +17,7 @@ There are two scripts:
 > Invoke-SharpLoader.ps1 - It is used to decrypt and load straight into memory the offensive security C# files.
 
 Important note: 
-> I had to obfuscate the script "Invoke-SharpLoader.ps1" beacause the version available on Github is now flaged by multiple AV solutions (e.g. Windows Defednder AV). 
+> I had to obfuscate the script "Invoke-SharpLoader.ps1" because the version available on Github is now flaged by multiple AV solutions (e.g. Windows Defednder AV). 
 
 
 ===========================================================================================================================================================
