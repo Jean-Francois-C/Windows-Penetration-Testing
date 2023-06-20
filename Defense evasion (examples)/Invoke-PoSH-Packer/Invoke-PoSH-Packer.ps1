@@ -92,7 +92,7 @@ function Invoke-PoSH-Packer {
         $compressiontypes = 'Gzip','Deflate'
         $compressiontype = $compressiontypes | Get-Random
 
-        Write-Output "[*] File compression (GZip)"
+        Write-Output "[*] File compression (GZip/Deflate)"
         [System.IO.MemoryStream] $output = New-Object System.IO.MemoryStream
         if ($compressiontype -eq "Gzip") {
             $compressionStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
