@@ -1,5 +1,5 @@
 ================================================================================================================================
-Killing AV/EDR protected processes using the tool 'Terminator' (BYOVD technique)
+Killing Antivirus/EDR protected processes using the tool 'Terminator' (BYOVD technique)
 ================================================================================================================================
 
 Source: https://github.com/ZeroMemoryEx/Terminator
@@ -43,7 +43,6 @@ Step 1 - Download the code from GitHub, compile it and then use a packer to be a
 
 Visual Studio logs
 -------------------
-
 Build started...
 1>------ Build All started: Project: Terminator, Configuration: Release x64 ------
 1>Terminator.cpp
