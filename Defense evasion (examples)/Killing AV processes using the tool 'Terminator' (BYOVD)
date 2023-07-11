@@ -4,9 +4,9 @@ Killing AV/EDR protected processes using the tool 'Terminator' (BYOVD technique)
 
 Source: https://github.com/ZeroMemoryEx/Terminator
 
-=> The tool terminator allows to kill multiple anti-malware (AV and EDR) protected processes using a "Bring Your Own Vulnerable Driver" (BYOVD) technique.
+=> The tool 'Terminator' allows to kill multiple anti-malware (AV and EDR) protected processes using a "Bring Your Own Vulnerable Driver" (BYOVD) technique.
 => It reproduces the "Spyboy" technique to terminate EDR/XDR/AVs processes.
-=> The tools is composed of an executable file (terminator.exe) and a driver file (terminator.sys).
+=> The tool is composed of an executable file (terminator.exe) and a driver file (terminator.sys).
 
 Important note:
 ---------------
