@@ -10,7 +10,7 @@ Source: https://github.com/ZeroMemoryEx/Terminator
 
 Important note:
 ---------------
-The tool "Terminator.exe" is flagged by AV solutions so you need to manually obfuscate the code before compiling it (or use a packer).
+The file "Terminator.exe" is flagged by AV solutions so you need to manually obfuscate the code before compiling it (or use a packer).
 
 By default the tool will try to kill the following list of anti-malware (AV and EDR) protected processes:
 ---------------------------------------------------------------------------------------------------------
