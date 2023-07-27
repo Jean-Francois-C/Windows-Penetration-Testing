@@ -6,7 +6,7 @@
 # Features:
 # - Shellcode injection into the memory of the current process
 # - AES encryption and GZip/Deflate compression (based on 'Xencrypt')
-# - AMSI bypass
+# - AMSI bypass (pseudo random)
 # - Blocking Event Tracing for Windows (ETW)
 # - Disabling PowerShell history logging
 # - Basic sandbox evasion techniques (optional -sandbox)
