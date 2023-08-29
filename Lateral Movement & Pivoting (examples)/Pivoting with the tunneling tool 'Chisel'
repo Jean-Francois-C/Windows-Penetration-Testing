@@ -3,7 +3,7 @@ Pivoting with Chisel  (basic example)
 ======================================================================================================================================================
 
 Chisel is a fast TCP/UDP tunnel, transported over HTTP, secured via SSH. It is a single executable including both client and server (written in Go (golang)). 
-During during penetration tests, Chisel can be executed on a target Windows or Linux server (or a Windows laptop) to create a tunnel between this target machine 
+During penetration tests, Chisel can be executed on a target Windows or Linux server (or a Windows laptop) to create a tunnel between this target machine 
 and an Internet-facing remote server belonging to the pentesters (e.g. a Kali VM running in AWS or Azure).
 This tool is usefull to pass trhough firewalls and pivot inside a company's internal network after having compromise for example a vulnerable internet-facing website
 or a laptop via a phishing attack.
