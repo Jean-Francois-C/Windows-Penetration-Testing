@@ -157,8 +157,8 @@ Reverse Socks Connection Received: 192.168.56.1:50248
 
 
 =========================================================================================================================================================
-POC - Step 3 - Use Proxychains on the attack server (Kali VM - 192.168.56.101) and the reverse socks proxy connection established from the compromised
-               Windows laptop (192.168.1.144) to pivot into the subnet '192.168.1.0/24'.
+POC - Step 3 - Use Proxychains on the Kali VM (192.168.56.101) and the tunnel established with the compromised Windows laptop (192.168.1.144)
+               to pivot into the subnet '192.168.1.0/24'.
 =========================================================================================================================================================
 
 Context - Without using Proxychains & the reverse socks proxy tunnel, the network traffic towards the subnet 192.168.1.0/24 is filtered from the Kali VM 
