@@ -193,9 +193,9 @@ time="2022-08-07T02:58:21+02:00" level=info msg="Accepted new connection !" acti
 <SNIP>
 
 
-======================================================================================================================================
-Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with Ligolo to pivot to the internal network
-======================================================================================================================================
+========================================================================================================================================
+Step 4 - Use Proxychains on your attack server (e.g. Kali VM) and the tunnel established with Ligolo to pivot into the internal network
+========================================================================================================================================
 
 Example 1 - Nmap port scans of internal servers over the ligolo tunnel
 --------------------------------------------------------------------------------
