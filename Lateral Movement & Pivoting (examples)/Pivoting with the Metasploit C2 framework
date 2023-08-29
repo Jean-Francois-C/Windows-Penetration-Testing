@@ -10,7 +10,7 @@ The Metasploit Community Edition is an open-source framework that can be easily 
 
 Context
 ========
-During during penetration tests, Command and Control solutions (C2) like the Metasploit framework can be used to create a reverse tunnel between a target Windows/Linux server or a Windows laptop located inside a company internal network and an Internet-facing remote server belonging to the pentesters (e.g. a Kali VM running in AWS or Azure).
+During penetration tests, Command and Control solutions (C2) like the Metasploit framework can be used to create a reverse tunnel between a target Windows/Linux server or a Windows laptop located inside a company internal network and an Internet-facing remote server belonging to the pentesters (e.g. a Kali VM running in AWS or Azure).
 Creating a reverse tunnel is usefull to pass trhough firewalls and pivot inside a company's internal network after having compromise for example a vulnerable internet-facing website (e.g. unpatched RCE flaws) or a laptop via a phishing attack.
 
 Basic test lab
