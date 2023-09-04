@@ -59,7 +59,6 @@ Build started...
 ========== Build started at 2:00 AM and took 02.310 seconds ==========
 
 
-
 C:\Users\pentester\Documents\Tools-Pentest\1-Antivirus-bypass\Backstab\x64\Release> dir
  Volume in drive C is Windows
  Volume Serial Number is F06E-DC58
@@ -94,9 +93,9 @@ Mode                LastWriteTime         Length Name
 
 Important notes regarding the AV solution running on the target Windows 10 laptop during my tests
 --------------------------------------------------------------------------------------------------
-
-> The Norton 360 Security solution (Antivirus) is running, up-to-date and with the real-time protection enabled (however 'heuristic detection' is Off).
-  Windows Defender is running but is not "active".
+> The Norton 360 Security solution (Antivirus) is running, up-to-date and with the real-time protection enabled, 
+  however the 'heuristic detection' is Off.
+> Windows Defender is running but is not 'active'.
 
 PS C:\Temp> Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct                                                                                     
 
@@ -121,7 +120,8 @@ PSComputerName
   + 2 are named 'NortonSecurity' with the PID '7592' and '3136'
   + 1 is named 'nsWscSvc' (Norton Security WSC Service) with the PID '2612'
 
-PS C:\Temp> ps *NortonSecurity*                                                                                                                                             
+PS C:\Temp> ps *NortonSecurity*    
+
  NPM(K)    PM(M)      WS(M)     CPU(s)      Id  SI ProcessName
  ------    -----      -----     ------      --  -- -----------
      80   289.75      30.14     104.86    3136   0 NortonSecurity
