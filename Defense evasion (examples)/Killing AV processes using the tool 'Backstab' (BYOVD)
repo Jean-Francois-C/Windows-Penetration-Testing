@@ -1,5 +1,5 @@
 ================================================================================================================================
-Killing Antivirus/EDR protected processes using the tool 'Backstab'
+Killing Antivirus/EDR protected processes using the tool 'Backstab' (BYOVD)
 ================================================================================================================================
 
 Source: https://github.com/Yaxser/Backstab
@@ -10,8 +10,8 @@ Source: https://github.com/Yaxser/Backstab
    When you use the UI, you cannot kill a protected process, but you can kill it handles because ProcExp UI instructs the kernel driver to kill those handles.
    Backstab does the same thing but without the UI element.
 
-OpSec considerations
----------------------
+OpSec considerations from the Github project page 
+-------------------------------------------------
 1. Embedded driver is dropped to disk
 2. Registry key under HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services is created
 3. The privilege SE_PRIVILEGE_ENABLED is acquired because it is necessary to load the driver
@@ -19,6 +19,11 @@ OpSec considerations
 5. The created Registry key is deleted (service not visible during execution)
 6. Communication with the driver is via using DeviceIoControl
 7. For handle enumeration, NtQuerySystemInformation is called
+
+Important note
+--------------
+=> Nowadays, the sysinternals’ Process Explorer (ProcExp) driver might be detected as potentially malicious and blocked by some EDR solutions
+   and AV products when it is launched with local admin privileges.
 
 
 ==========================================================================================================================================
@@ -209,7 +214,7 @@ Driver loaded as ProcExp64
 
 
 => Mixed results :-(
------------------
+---------------------
 > The Norton AV GUI has shutdown but only the Norton AV process named 'NortonSecurity' with the PID '7592' has been killed. 
 > Even if the Norton AV is not working properly anymore, 2 Norton AV processes are still running so the tool did not worked properly.
 
