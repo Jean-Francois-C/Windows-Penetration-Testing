@@ -21,7 +21,7 @@ Write-Output "
  | _ \ __|__| _ \__  __| |_____ _ _ 
  |  _/ _|___|  _/ _|/ _| / / -_)  _|
  |_| |___|  |_| \__,\__|_\_\___|_|  
-                                   v1.2
+                                   v1.1
 
 Usage: 
 > Import-Module ./Invoke-PoSH-PePacker.ps1
