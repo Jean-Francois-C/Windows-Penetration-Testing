@@ -2,9 +2,12 @@
 Domain Privesc - Privilege escalation by impersonating a highly privileged Domain account logged on a Windows server/laptop that we have compromised 
 =========================================================================================================================================================
 
-During a penetration test, as soon as you obtain local administrator privileges over several Windows servers or laptops, you can use Windows 
-authentication token impersonation techniques to run OS commands, binaries and C2 agents as any of the other users logged on these servers or 
-laptops without knowing their passwords (or needing to dump them).
+Token impersonation is a Windows post-exploitation technique that allows an attacker to steal the access token of a logged-on user on the system without
+knowing their credentials and impersonate them to perform operations with their privileges.
+
+During a penetration test, as soon as you obtain local administrator privileges over several Windows servers or laptops, you can use Windows authentication 
+token impersonation techniques to run OS commands, binaries and C2 agents as any of the other users logged on these servers or laptops without knowing 
+their passwords (or needing to dump them).
 If one the logged accounts is highly privileged, then you can impersonate it to escalate your privileges and try to take over the entire Windows domain.
 
 Numerous tools and scripts can be used to impersonate/manipulate/alter Windows authentication tokens in processes.
