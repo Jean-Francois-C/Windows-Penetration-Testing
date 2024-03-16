@@ -1,11 +1,11 @@
 =====================================================================================================================================
-AV bypass using my PowerShell packer 'Invoke-PoSH-CsharpPacker'
+AV bypass using my PowerShell packer 'Invoke-PoSH-SharpPacker'
 =====================================================================================================================================
 
 'Invoke-PoSH-CsharpPacker' allows to pack and encrypt offensive (C#) .NET executable files in order to bypass AV solutions such as Windows Defender. 
 It generates an obfuscated and encrypted PowerShell script that contains the (C#) .NET executable file.
 
-=> https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-CsharpPacker
+=> https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-SharpPacker
 
 Features
 ---------
