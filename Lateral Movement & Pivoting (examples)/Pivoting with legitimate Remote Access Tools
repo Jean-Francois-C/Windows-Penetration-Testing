@@ -1,0 +1,120 @@
+=============================================================================================================
+Pivoting with legitimate Remote Access Tools (e.g., TeamViewer, Anydesk, Chrome Remote Desktop, RustDesk)
+=============================================================================================================
+
+During penetration tests, legitimate remote access software such as TeamViewer, Anydesk or Chrome Remote Desktop, can be used to establish a command and control channel 
+and obtain an interactive remote session with a target machine. 
+
+The legitimate Remote Access Tools (RATs):
+> can be used post-compromise as a (backup) C2 channel to pivot inside the internal network of the target company and/or for persistence
+> are very often not blocked by antivirus and EDR solutions 
+
+In addition, multiple remote access software offer:
+> a communty version or free trial 
+> a portable client application that do not require administrator rights on the target machine
+
+Examples
+---------
+> AnyDesk (https://anydesk.com)
+> TeamViewer (https://www.teamviewer.com)
+> Chrome Remote Desktop extension (https://remotedesktop.google.com/)
+> RustDesk (https://github.com/rustdesk/)
+> Atera (https://www.atera.com)
+> SplashTop (https://www.splashtop.com)
+> Logmein (https://www.logmein.com)
+> ...
+
+
+=============================================================================================================
+Example 1 - AnyDesk (https://anydesk.com)
+=============================================================================================================
+
+AnyDesk is a remote desktop application that provides platform-independent remote access to personal computers and other devices running the host application.
+It offers remote control, file transfer, and VPN functionality. 
+
+> Download URL: https://anydesk.com/fr/downloads/thank-you?dv=win_exe
+
+> Features (Availability of features is dependent upon the license of the individual user)
+  --------
+  + Remote access for multiple operating systems (Windows, Linux, macOS, iOS, Android, etc.)
+  + File transfer and manager
+  + Remote print
+  + VPN
+  + Unattended access
+  + Whiteboard
+  + Auto-discovery (automatic analysis of local network)
+  + Chat function
+  + REST API
+  + Custom clients
+  + Session protocol
+  + Two-factor authentication
+  + Individual host server
+
+
+=============================================================================================================
+Example 2 - TeamViewer (https://www.teamviewer.com)
+=============================================================================================================
+
+TeamViewer is a remote access and remote control computer software, allowing maintenance of computers and other devices.
+
+> Download URLs
+  -------------
+  + https://www.teamviewer.com/en/download/windows/
+  + https://download.teamviewer.com/download/TeamViewerQS_x64.exe
+  + https://download.teamviewer.com/download/TeamViewer_Setup_x64.exe
+
+> Features
+  --------
+  + The functionality of TeamViewer differs depending on the device and variant or version of the software. 
+  + The core of TeamViewer is remote access to computers and other endpoints as well as their control and maintenance.
+  + After the connection is established, the remote screen is visible to the user at the other endpoint. 
+    Both endpoints can send and receive files as well as access a shared clipboard.
+
+> TeamViewer QuickSupport (If you want to receive support)
+  ----------------------- 
+  + TeamViewer QuickSupport is a small customer module that does not require installation or administrator rights.
+  + Simply download, double click, and join the remote session by entering the session code provided to allow the remote acces. 
+
+> TeamViewer Full Client  (If you want to provide support)
+  ----------------------
+  + Establish incoming and outgoing connections between devices
+  + Real-time remote access and support
+  + Monitor, patch, and protect your devices
+
+
+==================================================================================
+Example 3 - Chrome Remote Desktop extension (https://remotedesktop.google.com/)
+==================================================================================
+
+The "Chrome Remote Desktop" extension is the companion extension for the Chrome Remote Desktop website (https://remotedesktop.google.com). 
+
+> URL: https://remotedesktop.google.com
+
+> Features
+  --------
+  + This extension enables you to install, view, and modify the Chrome Remote Desktop native client from the web UI.
+  + Chrome Remote Desktop allows users to remotely access another computer through Chrome browser or a Chromebook.  
+    Computers can be made available on an short-term basis for scenarios such as ad hoc remote support, or on a more long-term basis
+    for remote access to your applications and files.
+  + Chrome Remote Desktop is fully cross-platform.  
+  + Provide remote assistance to Windows, Mac and Linux users, or access your Windows and Mac desktops at any time, all from the Chrome browser on virtually any device, including Chromebooks.
+
+
+==================================================================================
+Example 4 - RustDesk (https://github.com/rustdesk)
+==================================================================================
+
+RustDesk is a full-featured open source remote control alternative (written in Rust) for self-hosting and security with minimal configuration. 
+
+> URls
+  ----
+  + https://github.com/rustdesk/rustdesk
+  + https://rustdesk.com/docs/en
+
+> Features
+  --------
+  + The client is open-source and you can self-host your own RustDesk server (it is free and open source). 
+  + You have full control of your data, with no concerns about security. 
+  + It works out of the box with no or limited configuration required.
+  + You can use a rendezvous/relay server, set up your own, or write your own rendezvous/relay server. 
+  + ...
