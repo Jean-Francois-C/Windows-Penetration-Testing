@@ -10,7 +10,6 @@ This will allow you to bypass the network perimeter firewall and pivot inside th
 
 The Neo-reGeorg Web tunnels are stable with command line tools like smbclient, evil-winrm, impacket and netexec but not with RDP connections.
 
-
 Basic Usage
 ------------
 > Step 1. Generate the Neo-reGeorg tunnel servers (i.e. Webshell files - aspx|ashx|jsp|jspx|php) and upload the relevant one on your target web server.
