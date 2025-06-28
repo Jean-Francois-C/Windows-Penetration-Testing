@@ -103,7 +103,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
    - Windows: MS17-010 (EternalBlue), CVE-2020-1472 (Zerologon, risky to run in a production environment), old MS08-067, ...
    - Web servers: WebLogic RCE (CVE-2023-21839, CVE-2022-21371, CVE-2020-14882, CVE-2019-2725), Apache Struts RCE (CVE-2017-9805), JBoss RCE (CVE-2017-12149), Java RMI RCE, ...
    - CMS: Telerik (CVE 2019-18935, CVE-2017-9248), Kentico (CVE-2019-10068), Drupal (DrupalGeddon2/CVE-2018-7600), DotNetNuke (CVE-2017-9822), ...
-   - Citrix (ADC & Gateway): CVE-2023-3519, CVE-2020-8193, CVE-2019-19781
+   - Citrix (ADC & Gateway): Citrix Bleed2 (CVE-2025-6543), Citrix Bleed (CVE-2023-4966), CVE-2023-3519, CVE-2020-8193, CVE-2019-19781
    - Atlassian software: Jira (CVE-2019-11581), Confluence (CVE-2022-26134)
    - Applications using the Java library Log4j: CVE-2021-44228 (Log4shell)
    - Outlook: ProxyLogon (CVE-2021-26855), ProxyNotShell (CVE-2022-41040, CVE-2022-41082)
@@ -125,7 +125,8 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ➤ NLTM Relay techniques + ADCS attacks (i.e. ESC8 - NTLM Relay to AD CS HTTP Endpoints)
 ➤ Unpatched/obsolete systems prone to an authenticated Remote Code Execution vulnerability with a public exploit available 
    Examples:
-   - Windows: 
+   - Windows:
+     - CVE-2025-33073 (NTLM reflection SMB flaw)
      - Certifried vulnerability (CVE-2022-26923)
      - noPAC / SamAccountName impersonation vulnerability (CVE-2021-42278/CVE-2021-42287)
      - PrintNightmare vulnerability (CVE-2021-1675 & CVE-2021-34527)
@@ -166,11 +167,15 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 -----------------------------------------------------------------------------------------
 ➤ Dumping the registry hives (SAM, SYSTEM, SECURITY)
    Examples:
-   - Reg save / Reg export
-   - Esentutl.exe
-   - Volume Shadow Copy (VSSadmin)
+   - Reg save
+   - Reg export / Registry Editor (GUI)
+   - Esentutl
+   - VSSadmin
+   - Diskshadow + Robocopy
+   - NetExec
    - SecretsDump (Impacket)
    - SharpSecDump
+   - Mimikatz (lsadump::sam)
    - OLD/Legacy - pwdumpX
    
 ➤ Memory dumping of the LSASS process 
@@ -290,7 +295,8 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
    - Diskshadow + Secretsdump
    - VSSadmin + Secretsdump
    - Secretsdump
-   - NetExec / CrackMapExec (legacy)
+   - NetExec
+   - CrackMapExec (legacy)
    - Mimikatz (dcsync technique)
    - ...
 ➤ Crack (with John or Hashcat) the password hashes of all the Windows domain accounts
@@ -347,9 +353,14 @@ For instance, in Red teaming, avoid at all costs using "noisy & easy to detect" 
 -------------------------------------------------------------------
 ➤ All the AV bypass techniques listed in the previous section
 ➤ Kill the anti-malware (AV) protected processes using "Bring Your Own Vulnerable Driver" (BYOVD) techniques
-➤ Temporarily disable or uninstall the AV software if it is not protected by a password
 ➤ Install VirtualBox or VMware Workstation on a compromised Windows laptop/workstation and run hacking tools and scripts inside a VM to avoid detection
-➤ Modify the registry keys or rename the AV executable files on a compromised Windows machine and then restart it to disable the AV software
+➤ If the AV configuration panel is not password protected on a Windows computer, very often you can use local admin rights to:
+  - Disable or downgrade the AV protection
+  - Set new AV exclusions for your hacking tools, etc.
+➤ If the AV anti-tampering protections are disabled on a Windows computer, very often you can use local admin rights to:
+  - Modify the registry keys or rename the AV executable files and then restart it to disable the AV software
+  - Suspend the AV processes with PsSuspend (sysinternals)
+  - Uninstall the AV software
 ➤ ...
 ```
 ```
@@ -390,7 +401,7 @@ For instance, in Red teaming, avoid at all costs using "noisy & easy to detect" 
 ```
 5. Common techniques to bypass SIEM detection use cases / rules (e.g., YARA/SIGMA rules, audit trail based detections)
 ---------------------------------------------------------------------------------------------------------------------
-➤ Use Windows/Linux OS command obfuscation techniques
+➤ Use Windows/Linux OS command-line obfuscation techniques
 ➤ Use in priority less-known tools and command aliases
 ➤ Avoid using "one-liner" commands that are easier to catch in event log files
 ➤ Copy and rename Windows/Linux native binaries before using them is sometimes sufficient to bypass basic detection
@@ -443,7 +454,9 @@ For instance, in Red teaming, avoid at all costs using "noisy & easy to detect" 
 | Post-Exploitation, Defense evasion | AMSI.fail | <br> https://amsi.fail | It generates obfuscated PowerShell snippets that break or disable AMSI for the current process  |
 | Post-Exploitation, Defense evasion | Nimcrypt2 | </br> https://github.com/icyguider/Nimcrypt2 | .NET, PE and raw shellcode packer/loader designed to bypass AV/EDR |
 | Post-Exploitation, Defense evasion | ProtectMyTooling | </br> https://github.com/mgeeky/ProtectMyTooling | Multi-Packer wrapper letting us daisy-chain various packers, obfuscators and other Red Team oriented weaponry.|
-| Post-Exploitation, Defense evasion | FilelessRemotePE | </br> https://github.com/D1rkMtr/FilelessRemotePE | Loading Fileless Remote PE from URI to memory with argument passing and ETW patching and NTDLL unhooking and no new thread technique|
+| Post-Exploitation, Defense evasion | IronSharpPack | </br> https://github.com/BC-SECURITY/IronSharpPack | Repository of popular C# offensive security projects (e.g., Rubeus, Certify) that have been embedded into IronPython scripts that execute an AMSI bypass and then reflective load the C# projects |
+| Post-Exploitation, Defense evasion | Pyramid | </br> https://github.com/naksyn/Pyramid | Perform post-exploitation task in an evasive manner, executing offensive tooling from a signed binary (e.g. python.exe) by importing their dependencies in memory |
+| Post-Exploitation, Defense evasion | FilelessPELoader | </br> https://github.com/SaadAhla/FilelessPELoader | Loading Remote AES encrypted PE in memory, then decrypt and run it |
 | Post-Exploitation, Defense evasion | Invoke-Obfuscation | </br> https://github.com/danielbohannon/Invoke-Obfuscation | PowerShell scripts obfuscator|
 | Post-Exploitation, Defense evasion | Chameleon | </br> https://github.com/klezVirus/chameleon | PowerShell scripts obfuscator|
 | Post-Exploitation C2, Network Lateral Movement, Pivoting | Cobalt Strike | </br> https://www.cobaltstrike.com | Cobalt Strike gives you a post-exploitation agent and covert channels to emulate a quiet long-term embedded actor in your customer's network |
