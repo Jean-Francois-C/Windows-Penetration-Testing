@@ -22,7 +22,7 @@ GadgetToJScript
   + Generates VBS/VBA and JS/HTA scripts relying on registration-free activation of .NET based COM components
 
 > OPSEC notes
-  + It is necessary to manually obfuscate the JS/VBS/HTS scripts generated with 'GadgetToJScript' to fully bypass AV like MS Defender.
+  + It is necessary to manually obfuscate the JS/VBS scripts generated with 'GadgetToJScript' to fully bypass AV like MS Defender.
   + Example of basic obfuscation for the JS scripts:
     > Rename the functions and variables in the script
     > Delete existing comments and add fake ones
@@ -31,8 +31,8 @@ GadgetToJScript
       var part1 = " XXXXX";
       var part2 = " XXXXX";    
       var stage_1 = part1.concat(part2);
-    > Change the extension file format from '.js' to '.txt' or '.log' or '.csv', etc.
-      You will need to specify in the WSCRIPT or CSCRIPT command that it is a JS script to run 
+    > Change the file extension from '.js' to '.txt' or '.log' or '.csv', etc.
+      You will need to specify in the WSCRIPT or CSCRIPT command that it is a JS script to run. 
       => Example: C:\temp> wscript.exe //E:javascript script-name.txt
 
 
@@ -129,10 +129,9 @@ Basic obfuscation to avoid static AV detection
     var part1 = " XXXXX";
     var part2 = " XXXXX";    
     var stage_1 = part1.concat(part2);
-> Change the extension file format '.js' to '.txt' or '.log' or '.xml', ...
+> Change the file extension '.js' to '.txt' or '.log' or '.xml', ...
   => 'JS-script.js' become 'JS-script.txt'
-
-  Note: We will specify that it is a JS script to run in the WSCRIPT command
+  Note: We will need to specify in the WSCRIPT or CSCRIPT command that it is a JS script to run.
   => Example: C:\temp> wscript.exe //E:javascript script-name.txt
 
 
@@ -152,12 +151,10 @@ Basic obfuscation to avoid static AV detection
 ===============================================
 > Rename the functions and variables in the VBS script
 > Delete existing comments and add fake ones
-> Change the extension file format '.vbs' to '.txt' or '.log' or '.xml', ...
+> Change the file extension '.vbs' to '.txt' or '.log' or '.xml', ...
   => 'VB-script.vbs' become 'VB-script.log'
-
-  Note: We will specify that it is a VBS script to run in the CSCRIPT command
+  Note: We will need to specify in the WSCRIPT or CSCRIPT command that it is a VBS script to run
   => Example: C:\temp> cscript.exe //E:vbscript script-name.log
-
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
