@@ -434,6 +434,9 @@ For instance, in Red teaming, avoid at all costs using "noisy & easy to detect" 
 | Gaining Access, MITM | Inveigh | </br> https://github.com/Kevin-Robertson/Inveigh | .NET IPv4/IPv6 machine-in-the-middle tool for penetration testers |
 | Gaining Access, MITM | Smbrelayx & Ntlmrelayx |  </br> https://github.com/fortra/impacket/tree/master/examples | SMB and NTLM relay tools which are part of the Python offensive security framework 'Impackets' |
 | Recon, Gaining Access | Vulnerability scanners |  </br> (https://github.com/greenbone/openvas-scanner/releases) (https://www.tenable.com/) (https://www.qualys.com/) (https://www.rapid7.com/products/nexpose/) | e.g. OpenVAS, Nessus, Qualys, Nexpose, ... | 
+| Recon, Gaining Access | SMBmap | </br> https://github.com/ShawnDEvans/smbmap | SMB enumeration tool | 
+| Recon, Gaining Access | SauronEye | </br> https://github.com/vivami/SauronEye | Search tool to find files containing passwords in network shares | 
+| Gaining Access | SharpSpray | </br> https://github.com/iomoath/SharpSpray | Active Directory password spraying tool. Auto fetches user list and avoids potential lockouts | 
 | Gaining Access | Hydra | </br> https://github.com/vanhauser-thc/thc-hydra | Online password bruteforce tool | 
 | Post-Exploitation, Privesc | Mimikatz | </br> https://github.com/gentilkiwi/mimikatz | Extract plaintexts passwords, hash, PIN code and kerberos tickets from memory|
 | Post-Exploitation, Creds dumping | SharpKatz | </br> https://github.com/b4rtik/SharpKatz | Porting in C# of mimikatz sekurlsa::logonpasswords, sekurlsa::ekeys and lsadump::dcsync commands |
