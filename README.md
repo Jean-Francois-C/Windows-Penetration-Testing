@@ -467,10 +467,10 @@ For instance, in Red teaming, avoid at all costs using "noisy & easy to detect" 
 | Post-Exploitation C2, Network Lateral Movement, Pivoting | Sliver | </br> https://github.com/BishopFox/sliver| Open source cross-platform adversary emulation/red team framework |
 | Post-Exploitation C2, Network Lateral Movement, Pivoting | Havoc | </br> https://github.com/HavocFramework/Havoc| Havoc is a modern and malleable post-exploitation command and control framework|
 | Post-Exploitation C2, Network Lateral Movement, Pivoting | Covenant | </br> https://github.com/cobbr/Covenant| Covenant is a collaborative .NET C2 framework for red teamers|
-| Network Lateral Movement, Pivoting | Impacket Framework | </br> https://github.com/SecureAuthCorp/impacket | Python offensive security framework (e.g. WMIexec.py, SMBexec.py, Secretsdump.py) |
-| Network Lateral Movement, Pivoting | NetExec | </br> https://github.com/Pennyw0rth/NetExec | Swiss army knife for pentesting Windows networks|
-| Network Lateral Movement, Pivoting | CrackMapExec (legacy)| </br> https://github.com/byt3bl33d3r/CrackMapExec | Swiss army knife for pentesting Windows networks|
-| Network Lateral Movement, Pivoting | SharpMapExec | </br> https://github.com/cube0x0/SharpMapExec | Swiss army knife for pentesting Windows networks |
+| Recon, Gaining Access, Network Lateral Movement, Pivoting | Impacket Framework | </br> https://github.com/SecureAuthCorp/impacket | Python offensive security framework (e.g. WMIexec.py, SMBexec.py, Secretsdump.py) |
+| Recon, Gaining Access, Network Lateral Movement, Pivoting | NetExec | </br> https://github.com/Pennyw0rth/NetExec | Swiss army knife for pentesting Windows networks|
+| Recon, Gaining Access, Network Lateral Movement, Pivoting | CrackMapExec (legacy)| </br> https://github.com/byt3bl33d3r/CrackMapExec | Swiss army knife for pentesting Windows networks|
+| Recon, Gaining Access, Network Lateral Movement, Pivoting | SharpMapExec | </br> https://github.com/cube0x0/SharpMapExec | Swiss army knife for pentesting Windows networks |
 | Network Lateral Movement, Pivoting | Powercat | </br> https://github.com/besimorhino/powercat | PowerShell TCP/IP swiss army knife like netcat | 
 | Network Lateral Movement, Pivoting | Invoke-TheHash  | </br> https://github.com/Kevin-Robertson/Invoke-TheHash | It contains PowerShell functions for performing pass-the-hash WMI and SMB tasks |
 | Network Lateral Movement, Pivoting | Chisel  | </br> https://github.com/jpillora/chisel https://github.com/shantanu561993/SharpChisel | Chisel is a fast TCP/UDP tunnel, transported over HTTP, secured via SSH |
