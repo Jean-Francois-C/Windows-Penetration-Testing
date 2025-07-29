@@ -451,7 +451,7 @@ Enter PEM pass phrase:
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
-Step 4 - Use the signed Python binary (python-3.10.4-embed-amd64.zip) to download, decrypt and execute in-memory the pyhton module 'shellcode.py'
+Step 4 - Use the signed Python binary (python-3.10.4-embed-amd64.zip) to download, decrypt and execute in-memory the python module 'shellcode.py'
          (which contains our Meterpreter HTTP reverse shell) on the Windows server 2022 without being detected by the Microsoft Defender AV 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 
