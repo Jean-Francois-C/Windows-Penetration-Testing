@@ -455,11 +455,13 @@ For instance, in Red teaming, avoid at all costs using "noisy & easy to detect" 
 | Post-Exploitation, Privesc | Tokenvator | </br> https://github.com/0xbadjuju/Tokenvator | Windows Tokens impersonation tool|
 | AD Privesc | BloodyAD | </br> https://github.com/CravateRouge/bloodyAD |BloodyAD is an Active Directory Privilege Escalation Framework |
 | Post-Exploitation, Defense evasion | AMSI.fail | <br> https://amsi.fail | It generates obfuscated PowerShell snippets that break or disable AMSI for the current process  |
-| Post-Exploitation, Defense evasion | Nimcrypt2 | </br> https://github.com/icyguider/Nimcrypt2 | .NET, PE and raw shellcode packer/loader designed to bypass AV/EDR |
+| Post-Exploitation, Defense evasion | SharpKiller | </br> https://github.com/S1lkys/SharpKiller | AMSI bypass tool |
 | Post-Exploitation, Defense evasion | ProtectMyTooling | </br> https://github.com/mgeeky/ProtectMyTooling | Multi-Packer wrapper letting us daisy-chain various packers, obfuscators and other Red Team oriented weaponry.|
-| Post-Exploitation, Defense evasion | IronSharpPack | </br> https://github.com/BC-SECURITY/IronSharpPack | Repository of popular C# offensive security projects (e.g., Rubeus, Certify) that have been embedded into IronPython scripts that execute an AMSI bypass and then reflective load the C# projects |
+| Post-Exploitation, Defense evasion | IronSharpPack | </br> https://github.com/BC-SECURITY/IronSharpPack | Repository of popular C# offensive security projects (e.g., Rubeus, Certify) embedded into IronPython scripts that execute an AMSI bypass and then reflective load the C# projects |
 | Post-Exploitation, Defense evasion | Pyramid | </br> https://github.com/naksyn/Pyramid | Perform post-exploitation task in an evasive manner, executing offensive tooling from a signed binary (e.g. python.exe) by importing their dependencies in memory |
-| Post-Exploitation, Defense evasion | FilelessPELoader | </br> https://github.com/SaadAhla/FilelessPELoader | Loading Remote AES encrypted PE in memory, then decrypt and run it |
+| Post-Exploitation, Defense evasion | FilelessPELoader | </br> https://github.com/SaadAhla/FilelessPELoader | Load, decrypt and execute in-memory remote AES encrypted PE |
+| Post-Exploitation, Defense evasion | EAPrimer | </br> https://github.com/m8sec/EAPrimer | Load and execute in-memory remote .Net assemblies (C# projects) after bypassing AMSI |
+| Post-Exploitation, Defense evasion | ExecRemoteNET | </br> https://github.com/m1ddl3w4r3/ExecRemoteNET | Load and execute in-memory remote .Net assemblies (C# projects) with AMSI and ETW patching |
 | Post-Exploitation, Defense evasion | Invoke-Obfuscation | </br> https://github.com/danielbohannon/Invoke-Obfuscation | PowerShell scripts obfuscator|
 | Post-Exploitation, Defense evasion | Chameleon | </br> https://github.com/klezVirus/chameleon | PowerShell scripts obfuscator|
 | Post-Exploitation C2, Network Lateral Movement, Pivoting | Cobalt Strike | </br> https://www.cobaltstrike.com | Cobalt Strike gives you a post-exploitation agent and covert channels to emulate a quiet long-term embedded actor in your customer's network |
