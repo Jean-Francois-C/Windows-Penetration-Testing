@@ -41,7 +41,7 @@ Examples
 
   - STEP 4. Manually obfuscate the C# shellcode loader file
 	- Rename the namespace, the class, the methods, the variables, ...
-	- Delete the comments and add fakes ones
+	- Delete the comments and add fake ones
 
   - STEP 5. Compile the C# shellcode loader 
 ```  
