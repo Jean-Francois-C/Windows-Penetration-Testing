@@ -448,20 +448,23 @@ For instance, in Red teaming, avoid at all costs using "noisy & easy to detect" 
 | Post-Exploitation, Privesc | PrivescCheck  | </br> https://github.com/itm4n/PrivescCheck | This script aims to enumerate common Windows configuration issues that can be leveraged for local privilege escalation |
 | Post-Exploitation, Privesc  | Seatbelt | </br> https://github.com/GhostPack/Seatbelt | C# project that performs a number of security oriented host-survey "safety checks" relevant from both offensive & defensive security perspectives |
 | Post-Exploitation, Privesc | KrbRelayUp  | </br> https://github.com/Dec0ne/KrbRelayUp | KrbRelayUp - a universal no-fix local privilege escalation in windows domain environments where LDAP signing is not enforced (the default settings) |
-| Privesc | Juicy potato exploit | </br> https://github.com/ohpe/juicy-potato | Local privesc tool |
-| Privesc | Rotten potato exploit | </br> https://github.com/breenmachine/RottenPotatoNG | Local privesc tool |
+| Privesc | Juicy-potato exploit | </br> https://github.com/ohpe/juicy-potato | Local privesc tool |
+| Privesc | Rotten-potato exploit | </br> https://github.com/breenmachine/RottenPotatoNG | Local privesc tool |
+| Privesc | God-potato exploit | </br> https://github.com/BeichenDream/GodPotato | Local privesc tool |
+| Privesc | Efs-Potato exploit | </br> https://github.com/zcgonvh/EfsPotato | Local privesc tool |
 | Post-Exploitation, Privesc | Nightly builds of common C# offensive tools | </br> https://github.com/Flangvik/SharpCollection | Nightly builds of common C# offensive tools, fresh from their respective master branches built and released in a CDI fashion using Azure DevOps release pipelines |
 | Post-Exploitation, Privesc | SharpImpersonation | </br> https://github.com/S3cur3Th1sSh1t/SharpImpersonation | A user impersonation tool via Token or Shellcode injection |
 | Post-Exploitation, Privesc | Tokenvator | </br> https://github.com/0xbadjuju/Tokenvator | Windows Tokens impersonation tool|
 | AD Privesc | BloodyAD | </br> https://github.com/CravateRouge/bloodyAD |BloodyAD is an Active Directory Privilege Escalation Framework |
 | Post-Exploitation, Defense evasion | AMSI.fail | <br> https://amsi.fail | It generates obfuscated PowerShell snippets that break or disable AMSI for the current process  |
+| Post-Exploitation, Defense evasion | Nuke-AMSI | <br> https://github.com/anonymous300502/Nuke-AMSI | AMSI bypass tool |
 | Post-Exploitation, Defense evasion | SharpKiller | </br> https://github.com/S1lkys/SharpKiller | AMSI bypass tool |
 | Post-Exploitation, Defense evasion | ProtectMyTooling | </br> https://github.com/mgeeky/ProtectMyTooling | Multi-Packer wrapper letting us daisy-chain various packers, obfuscators and other Red Team oriented weaponry.|
 | Post-Exploitation, Defense evasion | IronSharpPack | </br> https://github.com/BC-SECURITY/IronSharpPack | Repository of popular C# offensive security projects (e.g., Rubeus, Certify) embedded into IronPython scripts that execute an AMSI bypass and then reflective load the C# projects |
 | Post-Exploitation, Defense evasion | Pyramid | </br> https://github.com/naksyn/Pyramid | Perform post-exploitation task in an evasive manner, executing offensive tooling from a signed binary (e.g. python.exe) by importing their dependencies in memory |
 | Post-Exploitation, Defense evasion | FilelessPELoader | </br> https://github.com/SaadAhla/FilelessPELoader | Load, decrypt and execute in-memory remote AES encrypted PE |
 | Post-Exploitation, Defense evasion | EAPrimer | </br> https://github.com/m8sec/EAPrimer | Load and execute in-memory remote .Net assemblies (C# projects) after bypassing AMSI |
-| Post-Exploitation, Defense evasion | ExecRemoteNET | </br> https://github.com/m1ddl3w4r3/ExecRemoteNET | Load and execute in-memory remote .Net assemblies (C# projects) with AMSI and ETW patching |
+| Post-Exploitation, Defense evasion | BetterNetLoader | </br> https://github.com/racoten/BetterNetLoader | Load and execute in-memory remote .Net assemblies (C# projects) with AMSI and ETW bypass |
 | Post-Exploitation, Defense evasion | Invoke-Obfuscation | </br> https://github.com/danielbohannon/Invoke-Obfuscation | PowerShell scripts obfuscator|
 | Post-Exploitation, Defense evasion | Chameleon | </br> https://github.com/klezVirus/chameleon | PowerShell scripts obfuscator|
 | Post-Exploitation C2, Network Lateral Movement, Pivoting | Cobalt Strike | </br> https://www.cobaltstrike.com | Cobalt Strike gives you a post-exploitation agent and covert channels to emulate a quiet long-term embedded actor in your customer's network |
