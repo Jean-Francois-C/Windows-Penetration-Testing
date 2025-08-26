@@ -1,6 +1,6 @@
 ### C# ShellCode Loader 1
 --------------------------------------
-Shellcode loader (written in C#) that implements several common defense evasion techniques to bypass antivirus solutions such as Microsoft Defender.
+Shellcode loader (written in C#) that implements several antivirus bypass and defense evasion techniques.
 
 #### FEATURES
   - Classic shellcode injection technique using the function 'NtCreateThreadEx'
