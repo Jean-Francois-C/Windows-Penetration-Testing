@@ -41,3 +41,5 @@ Obviously, both the encrypted shellcode and your XOR key must be added in the fi
 - You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary—if you performed sufficient manual obfuscation.
 - Alternatively, you may choose to remotely download and execute the C# binary in memory using PowerShell and reflection-based code loading. This approach avoids writing the binary to disk, enhancing stealth and reducing forensic traces.
   
+#### LICENSE
+  - GNU General Public License v3.0
