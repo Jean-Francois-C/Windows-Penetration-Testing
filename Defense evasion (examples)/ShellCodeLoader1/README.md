@@ -35,7 +35,8 @@ Examples
 
   - STEP 4. OPSEC requirements - Manually obfuscate the C# shellcode loader file
   	- Rename the namespace, classes, methods, and variables.
-  	- Remove all real comments and insert fake or misleading ones.
+  	- Remove all existing comments and insert fake ones.
+    - Remove all console output messages (i.e., Console.WriteLine("text")).
   	- Modify the code structure or logic slightly if needed to evade signature-based detection.
 
   - STEP 5. Compile the C# shellcode loader 
