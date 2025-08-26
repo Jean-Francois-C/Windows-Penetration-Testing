@@ -43,7 +43,9 @@ Examples
 [*] Example with "Developer PowerShell for VS 2022" - Microsoft (R) Visual C# Compiler
     Command: csc /t:exe /out:C:\path\Loader.exe C:\path\CsharpShellCodeLoader.cs
 ``` 
-<i/>Optional – You may compress and obfuscate the shellcode loader executable using a packer like ConfuserEx, but this is not strictly necessary. If you have sufficiently obfuscated it manually in Step 4, it should bypass most antivirus solutions.</i>
-
+  - STEP 6: Optional Actions
+  	- You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary—if you performed sufficient manual obfuscation in Step 4, the executable should bypass most antivirus solutions.
+  	- Alternatively, you may choose to remotely download and execute the C# binary in memory using PowerShell and reflection-based code loading. This approach avoids writing the binary to disk, enhancing stealth and reducing forensic traces.
+    
 #### LICENSE
   - GNU General Public License v3.0
