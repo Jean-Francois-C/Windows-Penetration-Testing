@@ -1,8 +1,6 @@
 ### C# ShellCode Loader 2
 --------------------------------------
-Shellcode loader (written in C#) that implements several antivirus bypass and defense evasion techniques. <br> 
-
-<i/>Note: I simply reused and modified codes from various Github projects.</i>
+Shellcode loader (written in C#) that implements several antivirus bypass and defense evasion techniques.
 
 #### FEATURES
   - Classic shellcode injection technique using the function 'CreateThreadpoolWait'
@@ -16,9 +14,6 @@ Shellcode loader (written in C#) that implements several antivirus bypass and de
     - Exit if making an uncommon API call fails (i.e. we are running in an AV sandbox that can't emulating it)
   - Compatible with shellcodes of multiple C2 frameworks such as Metasploit and Havoc
     
-#### TESTS
-- Succesfully tested on a Windows 10 x64 laptop (target) with Windows Defender enabled (without 'Automatic sample submission') and shellcodes of multiple C2 frameworks (in C# format & encrypted with XOR cipher algorithm)
-
 #### INPUT (Shellcode formats)
 Your shellcode must be in C# format (see examples below) and then encrypted using XOR cipher algorithm.
 Obviously, both the encrypted shellcode and your XOR key must be added in the file 'CsharpShellCodeLoader.cs' before you compile it.
@@ -38,6 +33,11 @@ Obviously, both the encrypted shellcode and your XOR key must be added in the fi
   - Command: csc /t:exe /out:C:\path\Loader.exe C:\path\CsharpShellCodeLoader2.cs
 
 #### OPSEC Advices
-- The file 'CsharpShellCodeLoader.cs' is not obfuscated. Class/function/variable names should be changed and all comments must be deleted or modified before compiling this file.
-- Once compiled, if you want to compress and obfuscate the shellcodeloader executable you can use packers like "ConfuserEx" (but it is not necessary in order to bypass most AV solutions).
+- The file 'CsharpShellCodeLoader.cs' is not obfuscated. You should manually obfuscate it:
+  - Rename the namespace, classes, methods, and variables.
+  - Remove all existing comments and insert fake ones.
+  - Remove all console output messages (i.e., Console.WriteLine("text")).
+  - Modify the code structure or logic slightly if needed to evade signature-based detection.
+- You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary—if you performed sufficient manual obfuscation.
+- Alternatively, you may choose to remotely download and execute the C# binary in memory using PowerShell and reflection-based code loading. This approach avoids writing the binary to disk, enhancing stealth and reducing forensic traces.
   
