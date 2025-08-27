@@ -3,7 +3,7 @@
 Shellcode loader (written in C#) that implements several antivirus bypass and defense evasion techniques.
 
 #### FEATURES
-  - Implements classic shellcode injection via Asynchronous Procedure Calls (APC)
+  - Implements shellcode injection using Asynchronous Procedure Call (APC) and the NtTestAlert function
   - Shellcode handling
     - AES-256 encryption in CBC mode
     - Encrypted shellcode is Base64-encoded and loaded from a local file
@@ -50,7 +50,7 @@ Examples
     Command: csc /t:exe /out:C:\path\Loader.exe C:\path\CsharpShellCodeLoader.cs
 ``` 
   - STEP 5. Optional Actions
-  	- You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary—if you performed sufficient manual obfuscation in Step 3.
+  	- You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary to bypass most AV solutions if you performed sufficient manual obfuscation in Step 3.
   	- Alternatively, you may choose to remotely download and execute the C# binary in memory using PowerShell and reflection-based code loading. This approach avoids writing the binary to disk, enhancing stealth and reducing forensic traces.
   - STEP 6. Execution
 ```
