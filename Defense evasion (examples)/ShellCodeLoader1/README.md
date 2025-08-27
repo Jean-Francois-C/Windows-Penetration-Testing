@@ -3,7 +3,7 @@
 Shellcode loader (written in C#) that implements several antivirus bypass and defense evasion techniques.
 
 #### FEATURES
-  - Classic shellcode injection technique using the function 'NtCreateThreadEx'
+  - Implements shellcode injection using the function 'NtCreateThreadEx'
   - NTDLL unhooking (it loads a fresh new copy of ntdll.dll via file mapping and imports functions from this ntdll.dll)
   - Shellcode encryption (XOR)
   - AMSI bypass (AmsiScanBuffer patching technique)
