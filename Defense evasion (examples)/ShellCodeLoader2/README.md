@@ -3,7 +3,7 @@
 Shellcode loader (written in C#) that implements several antivirus bypass and defense evasion techniques.
 
 #### FEATURES
-  - Classic shellcode injection technique using the function 'CreateThreadpoolWait'
+  - Implements shellcode injection using the function 'CreateThreadpoolWait'
   - Shellcode encryption (XOR)
   - ETW bypass
   - AMSI bypass
@@ -38,7 +38,7 @@ Obviously, both the encrypted shellcode and your XOR key must be added in the fi
   - Remove all existing comments and insert fake ones.
   - Remove all console output messages (i.e., Console.WriteLine("text")).
   - Modify the code structure or logic slightly if needed to evade signature-based detection.
-- You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary—if you performed sufficient manual obfuscation.
+- You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary to bypass most AV solutions if you performed sufficient manual obfuscation.
 - Alternatively, you may choose to remotely download and execute the C# binary in memory using PowerShell and reflection-based code loading. This approach avoids writing the binary to disk, enhancing stealth and reducing forensic traces.
   
 #### LICENSE
