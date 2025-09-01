@@ -16,7 +16,7 @@ It generates an obfuscated and encrypted shellcode loader (Python script) that i
 - STEP 1. Generate an obfuscated shellcode loader (Python script) using a raw shellcode from your preferred C2 framework as input.
 ```
 Example:
-C:\path\python-3.10.4> .\Invoke-Python-ShellCodeLoader.py ".\raw-shellcode.txt" ".\obfuscated_shellcodeloader.py"
+C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shellcode.txt" ".\obfuscated_shellcodeloader.py"
 ```
 
 - STEP 2. On the target Windows machine if Python is not already installed, download the Python embeddable package which provides a signed (portable) Python interpreter with a good reputation.
