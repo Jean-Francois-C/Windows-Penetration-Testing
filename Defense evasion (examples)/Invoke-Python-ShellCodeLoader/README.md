@@ -9,7 +9,7 @@ It generates an obfuscated and encrypted shellcode loader (Python script) that i
   - Script obfuscation (function and variable names are randomized + multiple encoding layer)
   - Dynamic API resolution (via GetProcAddress and LoadLibraryA)
   - Memory protection change after copy (PAGE_READWRITE changed to PAGE_EXECUTE_READ)
-  - Delayed execution to bypass fast sandbox analysis
+  - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
   - Compatible with shellcodes of multiple C2 frameworks such as Metasploit and Havoc
 
 #### USAGE
