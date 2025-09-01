@@ -6,8 +6,8 @@ It generates obfuscated Python scripts, designed to run with IronPython (https:/
 <i/>Note: this an improved version of the cool project 'IronSharpPack'</i>
 
 #### FEATURES
-  - AMSI bypass
-  - ETW bypass
+  - AMSI bypass (patching method / AmsiScanBuffer function)
+  - ETW bypass (patching method / EtwEventWrite function)
   - XOR encryption
   - Reflective C# code loading in-memory
   - Obfuscation, compression (Zlib) and encoding (Base64)
@@ -49,3 +49,6 @@ Example:
 --------
 C:\temp\IronPython.3.4.2\Net462> ipy.exe .\Packed-Python-Script-Seatbelt.py  "AMSIProviders"
 ```
+
+#### LICENSE
+  - GNU General Public License v3.0
