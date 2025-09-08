@@ -79,7 +79,7 @@ C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shel
 
 #### OPSEC advices
 - Remove all existing comments in the script (loader template) before generating your obfuscated shellcode loader.
-- When possible use fileless delivery technique to enhance stealth and helps evade static antivirus detection.
+- When possible use fileless delivery technique to enhance stealth and evade static antivirus detection.
   
 #### LICENSE
   - GNU General Public License v3.0
