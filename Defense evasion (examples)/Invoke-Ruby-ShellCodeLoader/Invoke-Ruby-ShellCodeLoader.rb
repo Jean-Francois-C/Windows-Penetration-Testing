@@ -5,11 +5,11 @@
 # =================================================================================================================================================================
 # Features: 
 # > Shellcode injection into the memory of the current process (Ruby)
-# > Shellcode encryption (XOR) and compression (Zlib)
+# > Shellcode encryption (XOR)
 # > Script obfuscation (function and variable names are randomized + multiple encoding layer)
-# > Dynamic API resolution (via GetProcAddress and LoadLibraryA)
-# > Memory protection change after copy (PAGE_READWRITE changed to PAGE_EXECUTE_READ)
-# > Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
+# > ETW bypass in user-mode (patching method / EtwEventWrite function)
+# > Dynamic API resolution (via GetProcAddress + hash-based API resolution)
+# > Basic sandbox detection and evasion (Terminates execution if a 'sleep acceleration' is detected)
 # > Compatible with shellcodes of multiple C2 frameworks (e.g., Metasploit, Havoc)
 # OPSEC advice: remove all existing comments in this script before generating your obfuscated shellcode loader.
 # =================================================================================================================================================================
