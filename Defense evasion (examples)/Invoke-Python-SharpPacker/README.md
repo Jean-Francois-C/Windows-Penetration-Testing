@@ -7,7 +7,7 @@ It generates obfuscated Python scripts, designed to run with IronPython (https:/
 
 #### FEATURES
   - AMSI bypass (patching method / AmsiScanBuffer function)
-  - ETW bypass (patching method / EtwEventWrite function)
+  - ETW user-mode bypass (patching method / EtwEventWrite function)
   - XOR encryption and Zlib compression
   - Reflective C# code loading in-memory
   - Script obfuscation and encoding (Base64)
