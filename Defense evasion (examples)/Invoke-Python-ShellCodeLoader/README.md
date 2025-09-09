@@ -6,7 +6,8 @@ It generates an obfuscated and encrypted shellcode loader (Python script) that i
 #### FEATURES
   - Shellcode injection into the memory of the current process (Python)
   - Shellcode encryption (XOR) and compression (Zlib)
-  - Dynamic API resolution (via GetProcAddress and LoadLibraryA)
+  - ETW bypass in user-mode (patching 'NtTraceEvent')
+  - Dynamic API resolution for the shellcode injection (via GetProcAddress and LoadLibraryA)
   - Memory protection change after copy (PAGE_READWRITE changed to PAGE_EXECUTE_READ)
   - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
   - Script obfuscation + Reflective code loading
