@@ -6,7 +6,7 @@ It generates an obfuscated and encrypted shellcode loader (Ruby script) that imp
 #### FEATURES
   - Shellcode injection into the memory of the current process (Ruby)
   - Shellcode encryption (XOR)
-  - ETW user-mode bypass (patching method / EtwEventWrite function)
+  - ETW bypass in user-mode (patching method / EtwEventWrite function)
   - Dynamic API resolution (via GetProcAddress + hash-based API resolution)
   - Basic sandbox detection and evasion (Terminates execution if a 'sleep acceleration' is detected)
   - Script obfuscation + Reflective code loading
