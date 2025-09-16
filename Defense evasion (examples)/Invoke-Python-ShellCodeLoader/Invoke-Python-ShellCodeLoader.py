@@ -15,7 +15,7 @@
 # OPSEC advice: remove all existing comments in this script before generating your obfuscated shellcode loader.
 # =================================================================================================================================================================
 # Usage (example):
-# + C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-C2-shellcode.txt" ".\obfuscated_shellcodeloader.py"
+# + C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-C2-shellcode.bin" ".\obfuscated_shellcodeloader.py"
 # =================================================================================================================================================================
 
 import sys
