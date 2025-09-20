@@ -29,7 +29,12 @@ c:\path-to-project\Fileless-Remote-PE-Loader> cl /TC Fileless-Remote-PE-Loader.c
 ```
 
 - STEP 3 - Host on a web server the ZIP file embeding the offensive security tool (x64 PE) that you want to execute
-		
+```
+Examples:
+- http://XX.XX.XX.XX:8080/file.zip
+- http://XX.XX.XX.XX/file.zip
+- https://your.website/file.zip
+```
 - STEP 4 - Upload the tool 'Fileless-Remote-PE-Loader.exe' on a target Windows machine and use it to download, unzip and execute in-memory your remote compressed offensive security tool
 ```
 1. Download the loader
