@@ -1,8 +1,8 @@
-# =================================================================================================================================================================
-# Fileless-Remote-PE-Loader.c enables direct in-memory execution of a remote x64 PE (exe) file retrieved from a web server.
-# It downloads, decompresses (unzip), and loads offensive security executables without writing them to disk to evade static AV detection and reduce forensic footprint.
-# Author: https://github.com/Jean-Francois-C / GNU General Public License v3.0
-# =================================================================================================================================================================
+// =================================================================================================================================================================
+// 'Fileless-Remote-PE-Loader.c' enables direct in-memory execution of a remote x64 PE (exe) file retrieved from a web server.
+// It downloads, decompresses (unzip), and loads offensive security executables without writing them to disk to evade static AV detection and reduce forensic footprint.
+// Author: https://github.com/Jean-Francois-C / GNU General Public License v3.0
+// =================================================================================================================================================================
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
