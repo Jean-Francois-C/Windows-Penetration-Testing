@@ -5,11 +5,11 @@ This loader allows to download, unzip, and execute directly in-memory a compress
 #### FEATURES
 - Fileless delivery + Reflective PE loading (Download, decompress, and execute in-memory a zipped x64 PE)
 - ETW bypass in user-mode (patching EtwEventWrite functions)
+- Dynamic API resolution (avoid static imports of suspicious API 'VirtualAlloc')
 - PE header erasure (After mapping the PE into memory, the DOS + NT headers are zeroed out to reduce forensic visibility) 
 - Memory protection hardening (Applies section-specific memory permissions i.e. first writable, then switched to execute-only)
 - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
 - Compatible with many offensive security tools (x64 EXE, unmanaged code, no GUI) such as C2 agents (e.g. Sliver, Havoc), ...
-
 
 #### USAGE
 - STEP 1 - Obfuscate the source code by removing all comments and 'printf' statements, renaming function and variable names, etc.
