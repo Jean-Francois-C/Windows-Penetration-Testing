@@ -10,7 +10,7 @@ It generates an obfuscated and encrypted shellcode loader (Perl script) that imp
   - ETW bypass in user-mode (patching 'NtTraceEvent')
   - Dynamic API resolution for the shellcode injection (via GetProcAddress + hash-based API resolution)
   - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
-  - Compatible with shellcodes of multiple C2 frameworks such as Metasploit and Havoc
+  - Compatible with shellcodes of multiple C2 frameworks such as Metasploit, Sliver and Havoc
 
 #### USAGE
 - STEP 1. Generate an obfuscated shellcode loader (Perl script) using a raw shellcode from your preferred C2 framework as input.
