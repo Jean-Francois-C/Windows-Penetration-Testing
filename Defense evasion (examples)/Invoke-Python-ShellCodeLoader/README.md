@@ -11,7 +11,7 @@ It generates an obfuscated and encrypted shellcode loader (Python script) that i
   - Dynamic API resolution for the shellcode injection (via GetProcAddress and LoadLibraryA)
   - Memory protection change after copy (PAGE_READWRITE changed to PAGE_EXECUTE_READ)
   - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
-  - Compatible with shellcodes of multiple C2 frameworks such as Metasploit and Havoc
+  - Compatible with shellcodes of multiple C2 frameworks such as Metasploit, Sliver and Havoc
 
 #### USAGE
 - STEP 1. Generate an obfuscated shellcode loader (Python script) using a raw shellcode from your preferred C2 framework as input.
