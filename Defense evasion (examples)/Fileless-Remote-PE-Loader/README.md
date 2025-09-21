@@ -1,7 +1,6 @@
 ### Fileless-Remote-PE-Loader
 --------------------------------------
-This loader enables direct in-memory execution of a x64 PE file (exe embeded in a zip file) retrieved from a remote web server.
-It implements several defense evasion techniques (e.g. fileless delivery + reflective PE loading, ETW bypass, sandbox checks) designed to bypass antivirus solutions such as Windows Defender.
+This loader allows to download, unzip, and execute directly in-memory a compressed offensive security tool (x64 PE executable embeded in a zip file) retrieved from a remote web server. It implements several defense evasion techniques (e.g. fileless delivery + reflective PE loading, ETW bypass, sandbox checks) designed to bypass antivirus solutions such as Windows Defender.
 
 #### FEATURES
 - Fileless delivery + Reflective PE loading (Downloads, decompresses, and executes in-memory a remote x64 PE) 
