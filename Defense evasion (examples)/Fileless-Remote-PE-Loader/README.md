@@ -5,7 +5,7 @@ This loader allows to download, unzip, and execute directly in-memory a compress
 #### FEATURES
 - Fileless delivery + Reflective PE loading (Download, decompress, and execute in-memory a zipped x64 PE)
 - ETW bypass in user-mode (patching EtwEventWrite functions)
-- Dynamic API resolution (avoid static imports of suspicious API 'VirtualAlloc')
+- Dynamic API resolution (avoid static import of suspicious API 'VirtualAlloc')
 - PE header erasure (After mapping the PE into memory, the DOS + NT headers are zeroed out to reduce forensic visibility) 
 - Memory protection hardening (Applies section-specific memory permissions i.e. first writable, then switched to execute-only)
 - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
