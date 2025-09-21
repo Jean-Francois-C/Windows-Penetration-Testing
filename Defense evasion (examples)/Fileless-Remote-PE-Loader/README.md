@@ -3,9 +3,9 @@
 This loader allows to download, unzip, and execute directly in-memory a compressed offensive security tool (x64 PE executable embeded in a zip file) retrieved from a remote web server. It implements several defense evasion techniques (e.g. fileless delivery + reflective PE loading, ETW bypass, sandbox checks) designed to bypass antivirus solutions such as Windows Defender.
 
 #### FEATURES
-- Fileless delivery + Reflective PE loading (Download, decompress, and execute in-memory a zipped x64 PE)
-- ETW bypass in user-mode (patching EtwEventWrite functions)
-- Dynamic API resolution (avoid static import of suspicious API 'VirtualAlloc')
+- Fileless delivery + Reflective PE loading (Downloads, decompresses, and executes in-memory a zipped x64 PE)
+- ETW bypass in user-mode (Patching EtwEventWrite functions)
+- Dynamic API resolution (Avoids static import of suspicious API 'VirtualAlloc')
 - PE header erasure (After mapping the PE into memory, the DOS + NT headers are zeroed out to reduce forensic visibility) 
 - Memory protection hardening (Applies section-specific memory permissions i.e. first writable, then switched to execute-only)
 - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
