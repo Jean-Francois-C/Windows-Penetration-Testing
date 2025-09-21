@@ -21,6 +21,9 @@ typedef struct {
     BOOL is64Bit;
 } ThreadParams;
 
+// Dynamic API resolution
+typedef LPVOID(WINAPI *pVirtualAlloc)(LPVOID, SIZE_T, DWORD, DWORD);
+
 // Thread function to set up stack and call EXE entry point
 DWORD WINAPI ExecuteEntryPoint(LPVOID lpParam) {
     ThreadParams *params = (ThreadParams *)lpParam;
@@ -65,10 +68,12 @@ void ExecutePEInMemory(const char *peBuffer, SIZE_T peSize, int argc, char **arg
         ((IMAGE_NT_HEADERS64 *)ntHeaders)->OptionalHeader.AddressOfEntryPoint :
         ((IMAGE_NT_HEADERS32 *)ntHeaders)->OptionalHeader.AddressOfEntryPoint;
 
-	LPVOID imageBase = VirtualAlloc((LPVOID)imageBasePreferred, sizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	// Resolve VirtualAlloc dynamically
+	pVirtualAlloc VirtualAllocFn = (pVirtualAlloc)GetProcAddress(GetModuleHandle("kernel32.dll"), "VirtualAlloc");
+	LPVOID imageBase = VirtualAllocFn((LPVOID)imageBasePreferred, sizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
     if (!imageBase) {
-        imageBase = VirtualAlloc(NULL, sizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        imageBase = VirtualAllocFn(NULL, sizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
         if (!imageBase) {
             printf("[!] Failed to allocate memory: %lu\n", GetLastError());
             return;
