@@ -18,7 +18,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
   - [Useful resources](#USEFUL-RESOURCES)
 
 ----------------
-#### STEP 1. BYPASSING NETWORK ACCESS CONTROL (NAC) - if any 🔐🕸🧑🏼‍💻
+#### STEP 1. BYPASSING NETWORK ACCESS CONTROL (NAC) - if any 🔐
 <i>If a NAC solution is implemented, the purpose of this phase will be to bypass it to get access to the internal network and start the internal penetration test.</i>
 ```
 1. Pre-connect scenario => NAC checks are made before granting any access to the internal network
@@ -78,7 +78,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ```
 
 -----------------
-#### STEP 3. GAINING ACCESS 🔓🧑🏼‍💻
+#### STEP 3. GAINING ACCESS 🔓
 <i>The purpose of this phase is to gain (unauthorized) access to several internal systems (e.g. servers, file shares, databases) by exploiting common security issues such as: default/weak passwords, OS security misconfiguration, insecure network protocols and unpatched known vulnerabilities.</i>
 ```
 1. Black-box penetration test (we start with no account)
@@ -89,8 +89,8 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ➤ Default/weak admin credentials for a software installed on a Windows server that will lead to a RCE
    Examples:
    - Web servers (e.g. Tomcat, WebLogic, JBoss) => Webshell upload
-   - Jenkins, JIRA => OS command execution
-   - CMS (e.g. WordPress, DNN, Kentico, Drupal) => Webshell upload
+   - Jenkins, JIRA, Splunk => OS command execution
+   - CMS (e.g. WordPress, DNN, Kentico, Drupal, Liferay) => Webshell upload
    - Databases (e.g. MSSQL, Oracle, PostgreSQL, Sybase) => OS command execution
    - PhpMyAdmin => Webshell upload
    - SAP => OS command execution
@@ -138,7 +138,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ```
 
 ---------------
-#### STEP 4. POST-EXPLOITATION and LOCAL PRIVILEGE ESCALATION 🛠🧑🏼‍💻 
+#### STEP 4. POST-EXPLOITATION and LOCAL PRIVILEGE ESCALATION 🛠
 <i>The purpose of the post-exploitation phase is to determine the value of the systems compromised during the previous phase (e.g. sensitivity of the data stored on it, usefulness in further compromising the network) and to escalate privileges to harvest credentials (e.g. to steal the password of a privileged account from the memory of a Windows server/laptop). During this phase, the system(s) compromised can be set-up as a pivot to reach machines that are located in other networks. </i>
 
 ```
@@ -205,7 +205,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ```
 
 -----------------
-#### STEP 5. NETWORK LATERAL MOVEMENT and PRIVILEGED ACCOUNTS HUNTING 🕸🧑🏼‍💻 
+#### STEP 5. NETWORK LATERAL MOVEMENT and PRIVILEGED ACCOUNTS HUNTING 🕸
 <i>The purpose of the lateral movement phase is to identify Windows servers and laptops on which high privileged user and service accounts are logged (e.g. administrator of all servers, administrator of all workstations/laptops, Domain Admin account). Then try to log into these Windows servers and laptops (for example by re-using the credentials harvested during the previous phase) and take over the high privileged accounts using various hacking techniques (e.g., dumping credentials from memory, token impersonation). </i>
 ```
 1. Network lateral movement techniques 
@@ -217,7 +217,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ```
 2. Network pivoting techniques 
 ------------------------------
-➤ Use a C2 post-exploitation agent (e.g. Meterpreter, Cobalt Strike, Sliver) + SOCKS proxy + proxychains
+➤ Use a C2 post-exploitation agent (e.g. Meterpreter, Cobalt Strike, Sliver, Havoc) + SOCKS proxy + proxychains
 ➤ SSH tunnelling using Putty.exe or Plink.exe (e.g. local/remote port forwarding)
 ➤ Remote access tools (RAT) such as TeamViewer and AnyDesk portable software, Chrome Remote Desktop, VNC, ...
 ➤ Tunneling/pivoting tools such as Ligolo-ng, Rpivot, Socat, Chisel, ...
@@ -244,7 +244,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ➤ ...
 ```
 -----------------
-#### STEP 6. WINDOWS DOMAIN COMPROMISE (Privilege escalation to become "Domain Admin" + Persistence) 🔥🧑🏼‍💻 
+#### STEP 6. WINDOWS DOMAIN COMPROMISE (Privilege escalation to become "Domain Admin" + Persistence) 🔥 
 <i>The purpose of this phase is to take full control over the target Windows domain.</i>
 
 ```
@@ -312,7 +312,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ➤ ...
 ```
 -----------------
-#### STEP 7. FOREST ROOT DOMAIN COMPROMISE (Privilege escalation to become "Enterprise Admin") 🔥🔥🧑🏼‍💻 
+#### STEP 7. FOREST ROOT DOMAIN COMPROMISE (Privilege escalation to become "Enterprise Admin") 🔥🔥 
 <i>The purpose of this phase is to take full control over the Forest root domain and all the other domains in the target network.</i>
 ```
 ➤ Forge a Kerberos Golden Ticket (TGT) with a 'SID History' for the Forest 'Enterprise Admins' group
