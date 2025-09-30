@@ -4,7 +4,7 @@
 It generates an obfuscated Python script that embeds a compressed and encrypted version of the target PE file, and implements several defense evasion techniques.
 
 #### FEATURES
-  - Reflective PE injection using the 'PythonMemoryModule'
+  - Reflective PE loading using the 'PythonMemoryModule'
   - PE encryption (XOR) and compression (Zlib)
   - ETW bypass in user-mode (patching 'NtTraceEvent')
   - Script obfuscation (Function and variable names are randomized + Nested payloads)
