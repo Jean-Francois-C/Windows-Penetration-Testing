@@ -1,13 +1,13 @@
 ### Invoke-Python-PePacker.py
 --------------------------------------
 'Invoke-Python-PePacker.py' allows to pack and encrypt offensive PE files (x64 exe) in order to bypass AV solutions such as Windows Defender.
-It generates an obfuscated and encrypted Python script that embeds the PE file that you want to pack and implements several antivirus bypass and defense evasion techniques.
+It generates an obfuscated Python script that embeds a compressed and encrypted version of the target PE file, and implements several defense evasion techniques.
 
 #### FEATURES
   - Reflective PE injection in-memory using the 'PythonMemoryModule'
   - PE encryption (XOR) and compression (Zlib)
-  - Script obfuscation (function and variable names are randomized + multiple encoding layer)
   - ETW bypass in user-mode (patching 'NtTraceEvent')
+  - Script obfuscation (Function and variable names are randomized + Nested payloads)
   - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
   - Compatible with many offensive security tools (x64 EXE, unmanaged code, no GUI) such as mimikatz, pplblade, etc.
 
