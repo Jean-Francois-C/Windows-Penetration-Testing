@@ -9,7 +9,7 @@ This loader allows to download, unzip, and execute directly in-memory a compress
 - PE header erasure (After mapping the PE into memory, the DOS + NT headers are zeroed out to reduce forensic visibility) 
 - Memory protection hardening (Applies section-specific memory permissions i.e. first writable, then switched to execute-only)
 - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
-- Compatible with many offensive security tools (x64 EXE, unmanaged code, no GUI) such as C2 agents (e.g. Sliver, Havoc), ...
+- Compatible with many offensive security tools (x64 EXE, unmanaged code, no GUI) such as C2 agents (e.g. Sliver, Havoc), NanoDump, PPLblade, ...
 
 #### USAGE
 - STEP 1 - Obfuscate the source code by removing all comments and 'printf' statements, renaming function and variable names, etc.
